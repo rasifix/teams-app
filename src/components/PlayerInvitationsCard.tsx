@@ -5,12 +5,14 @@ interface PlayerInvitationsCardProps {
   invitations: Invitation[];
   onInviteClick: () => void;
   onStatusChange: (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => void;
+  onAutoSelect?: () => void;
 }
 
 export default function PlayerInvitationsCard({
   invitations,
   onInviteClick,
   onStatusChange,
+  onAutoSelect,
 }: PlayerInvitationsCardProps) {
   const acceptedCount = invitations.filter(inv => inv.status === 'accepted').length;
   const openCount = invitations.filter(inv => inv.status === 'open').length;
@@ -20,12 +22,23 @@ export default function PlayerInvitationsCard({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Player Invitations</h2>
-        <button 
-          onClick={onInviteClick}
-          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-        >
-          Invite Players
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={onInviteClick}
+            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+          >
+            Invite Players
+          </button>
+          {onAutoSelect && (
+            <button 
+              onClick={onAutoSelect}
+              disabled={acceptedCount === 0}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              Auto Select
+            </button>
+          )}
+        </div>
       </div>
       {invitations.length > 0 && (
         <div className="mb-3 text-sm text-gray-600">

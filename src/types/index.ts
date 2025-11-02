@@ -9,14 +9,12 @@ export interface Player {
 export interface Team {
   id: string;
   name: string;
-  maxPlayers: number;
-  eventId: string;
+  selectedPlayers: string[]; // Player IDs assigned to this team
 }
 
 export interface Invitation {
   id: string;
   playerId: string;
-  eventId: string;
   status: 'open' | 'accepted' | 'declined';
 }
 
@@ -25,9 +23,9 @@ export interface Event {
   name: string;
   date: string; // ISO date string
   startTime: string; // HH:MM format
-  teams: Team[];
+  maxPlayersPerTeam: number; // Max players applies to all teams in this event
+  teams: Team[]; // Teams are contained within the event
   invitations: Invitation[];
-  selectedPlayers: string[]; // Player IDs
 }
 
 export interface PlayerSelection {

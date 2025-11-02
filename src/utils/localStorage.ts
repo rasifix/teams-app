@@ -1,4 +1,4 @@
-import type { Player } from '../types';
+import type { Player, Event } from '../types';
 
 const STORAGE_KEYS = {
   PLAYERS: 'players',
@@ -67,4 +67,44 @@ export function deletePlayer(playerId: string): boolean {
 export function getPlayerById(playerId: string): Player | null {
   const players = getPlayers();
   return players.find(p => p.id === playerId) || null;
+}
+
+// Event-specific localStorage functions
+export function getEvents(): Event[] {
+  return getFromStorage(STORAGE_KEYS.EVENTS, []);
+}
+
+export function saveEvents(events: Event[]): boolean {
+  return saveToStorage(STORAGE_KEYS.EVENTS, events);
+}
+
+export function addEvent(event: Event): boolean {
+  const events = getEvents();
+  const updatedEvents = [...events, event];
+  return saveEvents(updatedEvents);
+}
+
+export function updateEvent(eventId: string, updates: Partial<Omit<Event, 'id'>>): boolean {
+  const events = getEvents();
+  const eventIndex = events.findIndex(e => e.id === eventId);
+  
+  if (eventIndex === -1) {
+    console.error(`Event with id ${eventId} not found`);
+    return false;
+  }
+  
+  const updatedEvents = [...events];
+  updatedEvents[eventIndex] = { ...updatedEvents[eventIndex], ...updates };
+  return saveEvents(updatedEvents);
+}
+
+export function deleteEvent(eventId: string): boolean {
+  const events = getEvents();
+  const filteredEvents = events.filter(e => e.id !== eventId);
+  return saveEvents(filteredEvents);
+}
+
+export function getEventById(eventId: string): Event | null {
+  const events = getEvents();
+  return events.find(e => e.id === eventId) || null;
 }

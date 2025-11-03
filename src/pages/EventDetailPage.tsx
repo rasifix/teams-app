@@ -14,6 +14,7 @@ export default function EventDetailPage() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<{ id: string; name: string } | null>(null);
+  const [dragOverTeamId, setDragOverTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -156,6 +157,40 @@ export default function EventDetailPage() {
     }
   };
 
+  const handleAddPlayerToTeam = (teamId: string, playerId: string) => {
+    if (!event || !id) return;
+
+    // Check if player is already assigned to any team
+    const isAlreadyAssigned = event.teams.some(team => 
+      (team.selectedPlayers || []).includes(playerId)
+    );
+    if (isAlreadyAssigned) return;
+
+    const updatedTeams = event.teams.map(team => {
+      if (team.id === teamId) {
+        const currentPlayers = team.selectedPlayers || [];
+        // Check capacity
+        if (currentPlayers.length >= event.maxPlayersPerTeam) {
+          return team;
+        }
+        return {
+          ...team,
+          selectedPlayers: [...currentPlayers, playerId],
+        };
+      }
+      return team;
+    });
+
+    const success = updateEvent(id, { teams: updatedTeams });
+
+    if (success) {
+      setEvent({
+        ...event,
+        teams: updatedTeams,
+      });
+    }
+  };
+
   if (!event) {
     return (
       <div className="page-container">
@@ -208,8 +243,39 @@ export default function EventDetailPage() {
             <div className="space-y-3">
               {event.teams.map((team) => {
                 const selectedPlayers = team.selectedPlayers || [];
+                const hasCapacity = selectedPlayers.length < event.maxPlayersPerTeam;
+                const isDragOver = dragOverTeamId === team.id;
+                
                 return (
-                  <div key={team.id} className="border border-gray-200 rounded-lg p-4">
+                  <div 
+                    key={team.id} 
+                    className={`border rounded-lg p-4 transition-colors ${
+                      isDragOver && hasCapacity 
+                        ? 'border-green-500 bg-green-50' 
+                        : isDragOver 
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-200'
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = hasCapacity ? 'move' : 'none';
+                      setDragOverTeamId(team.id);
+                    }}
+                    onDragLeave={() => {
+                      setDragOverTeamId(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOverTeamId(null);
+                      
+                      if (!hasCapacity) return;
+                      
+                      const playerId = e.dataTransfer.getData('playerId');
+                      if (playerId) {
+                        handleAddPlayerToTeam(team.id, playerId);
+                      }
+                    }}
+                  >
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-semibold text-gray-900">{team.name}</h3>
@@ -271,6 +337,7 @@ export default function EventDetailPage() {
           onInviteClick={() => setIsInviteModalOpen(true)}
           onStatusChange={handleInvitationStatusChange}
           onAutoSelect={handleAutoSelect}
+          assignedPlayerIds={event.teams.flatMap(team => team.selectedPlayers || [])}
         />
       </div>
 

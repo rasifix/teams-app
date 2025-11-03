@@ -7,6 +7,7 @@ interface PlayerInvitationsCardProps {
   onInviteClick: () => void;
   onStatusChange: (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => void;
   onAutoSelect?: () => void;
+  assignedPlayerIds?: string[];
 }
 
 export default function PlayerInvitationsCard({
@@ -14,6 +15,7 @@ export default function PlayerInvitationsCard({
   onInviteClick,
   onStatusChange,
   onAutoSelect,
+  assignedPlayerIds = [],
 }: PlayerInvitationsCardProps) {
   const acceptedCount = invitations.filter(inv => inv.status === 'accepted').length;
   const openCount = invitations.filter(inv => inv.status === 'open').length;
@@ -71,8 +73,22 @@ export default function PlayerInvitationsCard({
             })
             .map((invitation) => {
             const player = getPlayerById(invitation.playerId);
+            const isAccepted = invitation.status === 'accepted';
+            const isAssigned = assignedPlayerIds.includes(invitation.playerId);
+            const isDraggable = isAccepted && !isAssigned;
+            
             return (
-              <div key={invitation.id} className="border border-gray-200 rounded-lg p-3">
+              <div 
+                key={invitation.id} 
+                className={`border border-gray-200 rounded-lg p-3 ${isDraggable ? 'cursor-move' : ''}`}
+                draggable={isDraggable}
+                onDragStart={(e) => {
+                  if (isDraggable) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('playerId', invitation.playerId);
+                  }
+                }}
+              >
                 <div className="flex justify-between items-center gap-3">
                   <div className="flex items-center gap-2 flex-1">
                     <span className="text-sm text-gray-900">

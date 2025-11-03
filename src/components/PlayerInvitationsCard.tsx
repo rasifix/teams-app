@@ -1,5 +1,6 @@
 import { getPlayerById } from '../utils/localStorage';
 import type { Invitation } from '../types';
+import Level from './Level';
 
 interface PlayerInvitationsCardProps {
   invitations: Invitation[];
@@ -56,14 +57,29 @@ export default function PlayerInvitationsCard({
         </div>
       ) : (
         <div className="space-y-2">
-          {invitations.map((invitation) => {
+          {[...invitations]
+            .sort((a, b) => {
+              const playerA = getPlayerById(a.playerId);
+              const playerB = getPlayerById(b.playerId);
+              
+              if (!playerA || !playerB) return 0;
+              
+              const lastNameCompare = playerA.lastName.toLowerCase().localeCompare(playerB.lastName.toLowerCase());
+              if (lastNameCompare !== 0) return lastNameCompare;
+              
+              return playerA.firstName.toLowerCase().localeCompare(playerB.firstName.toLowerCase());
+            })
+            .map((invitation) => {
             const player = getPlayerById(invitation.playerId);
             return (
               <div key={invitation.id} className="border border-gray-200 rounded-lg p-3">
                 <div className="flex justify-between items-center gap-3">
-                  <span className="text-sm text-gray-900 flex-1">
-                    {player ? `${player.firstName} ${player.lastName}` : `Player ID: ${invitation.playerId}`}
-                  </span>
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-sm text-gray-900">
+                      {player ? `${player.firstName} ${player.lastName}` : `Player ID: ${invitation.playerId}`}
+                    </span>
+                    {player && <Level level={player.level} className="text-sm" />}
+                  </div>
                   <select
                     value={invitation.status}
                     onChange={(e) => onStatusChange(invitation.id, e.target.value as 'open' | 'accepted' | 'declined')}

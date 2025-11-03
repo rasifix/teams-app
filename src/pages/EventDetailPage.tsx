@@ -5,6 +5,7 @@ import type { Event, Invitation } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditTeamNameModal from '../components/EditTeamNameModal';
+import EditEventModal from '../components/EditEventModal';
 import { autoSelectTeams } from '../utils/selectionAlgorithm';
 import Level from '../components/Level';
 
@@ -13,6 +14,7 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
+  const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<{ id: string; name: string } | null>(null);
   const [dragOverTeamId, setDragOverTeamId] = useState<string | null>(null);
 
@@ -66,6 +68,21 @@ export default function EventDetailPage() {
 
     setEditingTeam(null);
     setIsEditTeamModalOpen(false);
+  };
+
+  const handleSaveEvent = (data: { name: string; date: string; startTime: string; maxPlayersPerTeam: number }) => {
+    if (!event || !id) return;
+
+    const success = updateEvent(id, data);
+
+    if (success) {
+      setEvent({
+        ...event,
+        ...data,
+      });
+    }
+
+    setIsEditEventModalOpen(false);
   };
 
   const handleInvitePlayers = (playerIds: string[]) => {
@@ -214,13 +231,23 @@ export default function EventDetailPage() {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-title">{event.name}</h1>
-        <p className="page-subtitle">
-          {formatDate(event.date)} at {event.startTime}
-        </p>
-        <p className="mt-3 text-gray-600">
-          Max players: {event.maxPlayersPerTeam}
-        </p>
+        <div className="flex justify-between items-start gap-4">
+          <div className="flex-1">
+            <h1 className="page-title">{event.name}</h1>
+            <p className="page-subtitle">
+              {formatDate(event.date)} at {event.startTime}
+            </p>
+            <p className="mt-3 text-gray-600">
+              Max players: {event.maxPlayersPerTeam}
+            </p>
+          </div>
+          <button 
+            onClick={() => setIsEditEventModalOpen(true)}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          >
+            Edit Event
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -353,6 +380,19 @@ export default function EventDetailPage() {
         onClose={() => setIsEditTeamModalOpen(false)}
         onSave={handleSaveTeamName}
         currentName={editingTeam?.name || ''}
+      />
+
+      <EditEventModal
+        isOpen={isEditEventModalOpen}
+        onClose={() => setIsEditEventModalOpen(false)}
+        onSave={handleSaveEvent}
+        currentData={{
+          name: event.name,
+          date: event.date,
+          startTime: event.startTime,
+          maxPlayersPerTeam: event.maxPlayersPerTeam,
+        }}
+        minMaxPlayers={Math.max(...event.teams.map(team => (team.selectedPlayers || []).length), 1)}
       />
     </div>
   );

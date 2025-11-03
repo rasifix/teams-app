@@ -321,8 +321,15 @@ export default function EventDetailPage() {
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <h4 className="text-xs font-medium text-gray-500 mb-2">Players:</h4>
                         <div className="space-y-1">
-                          {selectedPlayers.map(playerId => {
-                            const player = getPlayerById(playerId);
+                          {selectedPlayers
+                            .map(playerId => ({ playerId, player: getPlayerById(playerId) }))
+                            .sort((a, b) => {
+                              if (!a.player || !b.player) return 0;
+                              const lastNameCompare = a.player.lastName.toLowerCase().localeCompare(b.player.lastName.toLowerCase());
+                              if (lastNameCompare !== 0) return lastNameCompare;
+                              return a.player.firstName.toLowerCase().localeCompare(b.player.firstName.toLowerCase());
+                            })
+                            .map(({ playerId, player }) => {
                             return player ? (
                               <div key={playerId} className="text-sm text-gray-700 flex justify-between items-center gap-2">
                                 <span className="flex-1">{player.firstName} {player.lastName}</span>

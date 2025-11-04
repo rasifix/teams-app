@@ -1,7 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
+import { downloadDataAsJSON } from '../utils/localStorage';
 
 export default function Header() {
   const location = useLocation();
+
+  const handleExport = () => {
+    downloadDataAsJSON();
+  };
 
   const navItems = [
     { path: '/players', label: 'Players' },
@@ -19,7 +24,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-8 items-center">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -33,6 +38,27 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            <button
+              onClick={handleExport}
+              className="px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:bg-blue-500 hover:text-white transition-colors flex items-center gap-1"
+              title="Export data"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export
+            </button>
           </nav>
 
           {/* Mobile menu button */}
@@ -79,6 +105,26 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            <button
+              onClick={handleExport}
+              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-blue-100 hover:bg-blue-500 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export Data
+            </button>
           </div>
         </div>
       </div>

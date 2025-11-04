@@ -7,7 +7,6 @@ export interface Player {
 }
 
 export interface Invitation {
-  id: string;
   playerId: string;
   status: 'open' | 'accepted' | 'declined';
 }

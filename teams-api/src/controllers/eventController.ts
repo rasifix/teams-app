@@ -95,7 +95,6 @@ export const upsertInvitations = (req: Request, res: Response) => {
   for (const playerId of playerIds) {
     if (!existingPlayerIds.has(playerId)) {
       newInvitations.push({
-        id: randomUUID(),
         playerId,
         status: 'open'
       });

@@ -57,7 +57,9 @@ export default function EventsList({ events, onEventClick }: EventsListProps) {
                 </div>
               </div>
               <div className="ml-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  hasSelections ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                }`}>
                   {hasSelections ? 'Selected' : 'Pending'}
                 </span>
               </div>

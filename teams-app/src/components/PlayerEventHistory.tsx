@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import type { Event } from '../types';
 import { Card, CardBody, CardTitle } from './ui';
+import { formatDate } from '../utils/dateFormatter';
 
 interface PlayerEventHistoryProps {
   playerEvents: Event[];
-  formatDate: (dateString: string) => string;
   getInvitationStatus: (event: Event) => string;
   isSelected: (event: Event) => boolean;
   getTeamName: (event: Event) => string | undefined;
@@ -12,7 +12,6 @@ interface PlayerEventHistoryProps {
 
 export default function PlayerEventHistory({
   playerEvents,
-  formatDate,
   getInvitationStatus,
   isSelected,
   getTeamName

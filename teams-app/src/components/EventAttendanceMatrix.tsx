@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { Player, Event } from '../types';
 import { Card, CardBody, CardTitle } from './ui';
+import { formatDate } from '../utils/dateFormatter';
 
 interface EventAttendanceMatrixProps {
   players: Player[];
@@ -49,15 +50,6 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       default:
         return { icon: '-', color: 'text-gray-400', bg: 'bg-gray-50' };
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: 'numeric'
-    });
   };
 
   // Sort players by last name, then first name

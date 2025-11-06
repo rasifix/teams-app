@@ -10,6 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { autoSelectTeams } from '../utils/selectionAlgorithm';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
+import { formatDate } from '../utils/dateFormatter';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -273,16 +274,6 @@ export default function EventDetailPage() {
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
 
   return (
     <div className="page-container">

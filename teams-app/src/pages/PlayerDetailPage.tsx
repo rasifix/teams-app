@@ -8,6 +8,7 @@ import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { Button } from '../components/ui';
 import PlayerEventHistory from '../components/PlayerEventHistory';
+import { formatDate } from '../utils/dateFormatter';
 
 export default function PlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,15 +56,6 @@ export default function PlayerDetailPage() {
       return isFuture && isNotInvited;
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Soonest first
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
   const getInvitationStatus = (event: Event) => {
     const invitation = event.invitations.find(inv => inv.playerId === player.id);
@@ -167,7 +159,6 @@ export default function PlayerDetailPage() {
       <div>
         <PlayerEventHistory
           playerEvents={playerEvents}
-          formatDate={formatDate}
           getInvitationStatus={getInvitationStatus}
           isSelected={isSelected}
           getTeamName={getTeamName}

@@ -1,5 +1,6 @@
 import type { Event } from '../types';
 import Strength from './Strength';
+import { formatDate } from '../utils/dateFormatter';
 
 interface EventsListProps {
   events: Event[];
@@ -14,16 +15,6 @@ export default function EventsList({ events, onEventClick }: EventsListProps) {
       </div>
     );
   }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
   const handleEventClick = (event: Event) => {
     onEventClick?.(event.id);

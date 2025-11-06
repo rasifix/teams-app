@@ -196,22 +196,59 @@ export default function EventDetailPage() {
     }
   };
 
+  // Validate and clean up teams to ensure no player is in multiple teams
+  const validateAndCleanTeams = (teams: Event['teams']) => {
+    const seenPlayers = new Set<string>();
+    return teams.map(team => {
+      const cleanedPlayers = (team.selectedPlayers || []).filter(playerId => {
+        if (seenPlayers.has(playerId)) {
+          // Player already in another team, skip
+          return false;
+        }
+        seenPlayers.add(playerId);
+        return true;
+      });
+      return {
+        ...team,
+        selectedPlayers: cleanedPlayers,
+      };
+    });
+  };
+
   const handleAddPlayerToTeam = (teamId: string, playerId: string, allowMove: boolean = false) => {
     if (!event || !id) return;
 
     // Check if player is already assigned to any team
-    const isAlreadyAssigned = event.teams.some(team => 
+    const currentTeam = event.teams.find(team => 
       (team.selectedPlayers || []).includes(playerId)
     );
-    if (isAlreadyAssigned && !allowMove) return;
+    
+    // If player is already in a team and we're not allowing moves, return
+    if (currentTeam && !allowMove) return;
 
     const updatedTeams = event.teams.map(team => {
+      // Remove player from their current team if moving
+      if (currentTeam && team.id === currentTeam.id && allowMove) {
+        return {
+          ...team,
+          selectedPlayers: (team.selectedPlayers || []).filter(pId => pId !== playerId),
+        };
+      }
+      
+      // Add player to target team
       if (team.id === teamId) {
         const currentPlayers = team.selectedPlayers || [];
+        
         // Check capacity
         if (currentPlayers.length >= event.maxPlayersPerTeam) {
           return team;
         }
+        
+        // Don't add if player is already in this team
+        if (currentPlayers.includes(playerId)) {
+          return team;
+        }
+        
         return {
           ...team,
           selectedPlayers: [...currentPlayers, playerId],
@@ -220,12 +257,15 @@ export default function EventDetailPage() {
       return team;
     });
 
-    const success = updateEvent(id, { teams: updatedTeams });
+    // Validate to ensure no duplicates across teams
+    const validatedTeams = validateAndCleanTeams(updatedTeams);
+
+    const success = updateEvent(id, { teams: validatedTeams });
 
     if (success) {
       setEvent({
         ...event,
-        teams: updatedTeams,
+        teams: validatedTeams,
       });
     }
   };
@@ -255,12 +295,15 @@ export default function EventDetailPage() {
       return team;
     });
 
-    const success = updateEvent(id, { teams: updatedTeams });
+    // Validate to ensure no duplicates across teams
+    const validatedTeams = validateAndCleanTeams(updatedTeams);
+
+    const success = updateEvent(id, { teams: validatedTeams });
 
     if (success) {
       setEvent({
         ...event,
-        teams: updatedTeams,
+        teams: validatedTeams,
       });
     }
   };
@@ -364,8 +407,7 @@ export default function EventDetailPage() {
                       const sourceTeamId = e.dataTransfer.getData('sourceTeamId');
                       
                       if (selectedPlayerId && sourceTeamId && sourceTeamId !== team.id) {
-                        // Move player from source team to target team
-                        handleRemovePlayerFromTeam(sourceTeamId, selectedPlayerId);
+                        // Move player from source team to target team (handleAddPlayerToTeam handles removal)
                         handleAddPlayerToTeam(team.id, selectedPlayerId, true);
                       }
                     }}

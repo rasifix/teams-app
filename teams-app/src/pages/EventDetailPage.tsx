@@ -282,7 +282,7 @@ export default function EventDetailPage() {
           <div className="flex-1">
             <h1 className="page-title">{event.name}</h1>
             <p className="page-subtitle">
-              {formatDate(event.date)} at {event.startTime}
+              {formatDate(event.date)} 🕐 {event.startTime}
             </p>
             <p className="mt-3 text-gray-600">
               Max players: {event.maxPlayersPerTeam}

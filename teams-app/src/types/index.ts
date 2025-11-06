@@ -33,3 +33,13 @@ export interface PlayerSelection {
   playerId: string;
   teamId: string;
 }
+
+export interface PlayerEventHistoryItem {
+  eventId: string;
+  eventName: string;
+  eventDate: string; // ISO date string
+  eventStartTime: string; // HH:MM format
+  invitationStatus: 'open' | 'accepted' | 'declined';
+  isSelected: boolean;
+  teamName?: string;
+}

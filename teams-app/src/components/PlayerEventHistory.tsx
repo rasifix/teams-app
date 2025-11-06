@@ -1,20 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import type { Event } from '../types';
+import type { PlayerEventHistoryItem } from '../types';
 import { Card, CardBody, CardTitle } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 
 interface PlayerEventHistoryProps {
-  playerEvents: Event[];
-  getInvitationStatus: (event: Event) => string;
-  isSelected: (event: Event) => boolean;
-  getTeamName: (event: Event) => string | undefined;
+  eventHistory: PlayerEventHistoryItem[];
 }
 
 export default function PlayerEventHistory({
-  playerEvents,
-  getInvitationStatus,
-  isSelected,
-  getTeamName
+  eventHistory
 }: PlayerEventHistoryProps) {
   const navigate = useNavigate();
 
@@ -22,44 +16,40 @@ export default function PlayerEventHistory({
     <Card>
       <CardBody>
         <CardTitle>Event History</CardTitle>
-        {playerEvents.length === 0 ? (
+        {eventHistory.length === 0 ? (
           <div className="empty-state">
             <p>No event invitations yet.</p>
           </div>
         ) : (
           <div className="mt-4 space-y-3">
-            {playerEvents.map((event) => {
-              const status = getInvitationStatus(event);
-              const selected = isSelected(event);
-              const teamName = getTeamName(event);
-
+            {eventHistory.map((item) => {
               return (
                 <div 
-                  key={event.id}
+                  key={item.eventId}
                   className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/events/${event.id}`)}
+                  onClick={() => navigate(`/events/${item.eventId}`)}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{event.name}</h3>
+                      <h3 className="font-semibold text-gray-900">{item.eventName}</h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        📅 {formatDate(event.date)} at {event.startTime}
+                        📅 {formatDate(item.eventDate)} 🕐 {item.eventStartTime}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        status === 'declined' ? 'bg-red-100 text-red-800' :
+                        item.invitationStatus === 'accepted' ? 'bg-green-100 text-green-800' :
+                        item.invitationStatus === 'declined' ? 'bg-red-100 text-red-800' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {status === 'open' ? 'Pending' : status.charAt(0).toUpperCase() + status.slice(1)}
+                        {item.invitationStatus === 'open' ? 'Pending' : item.invitationStatus.charAt(0).toUpperCase() + item.invitationStatus.slice(1)}
                       </span>
-                      {selected && (
+                      {item.isSelected && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Selected {teamName ? `- ${teamName}` : ''}
+                          Selected {item.teamName ? `- ${item.teamName}` : ''}
                         </span>
                       )}
-                      {!selected && status === 'accepted' && (
+                      {!item.isSelected && item.invitationStatus === 'accepted' && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                           Not Selected
                         </span>

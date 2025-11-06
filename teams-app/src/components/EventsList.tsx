@@ -36,7 +36,7 @@ export default function EventsList({ events, onEventClick }: EventsListProps) {
                 <h3 className="text-lg font-semibold text-gray-900">{event.name}</h3>
                 <div className="mt-2 space-y-1">
                   <p className="text-sm text-gray-600">
-                    📅 {formatDate(event.date)} at {event.startTime}
+                    📅 {formatDate(event.date)} 🕐 {event.startTime}
                   </p>
                   {event.teams.map((team) => (
                     <p key={team.id} className="text-sm text-gray-600 flex items-center gap-1">

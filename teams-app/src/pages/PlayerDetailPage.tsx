@@ -192,7 +192,7 @@ export default function PlayerDetailPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{event.name}</h3>
                       <p className="text-sm text-gray-600 mt-1">
-                        {formatDate(event.date)} at {event.startTime}
+                        📅 {formatDate(event.date)} at {event.startTime}
                       </p>
                     </div>
                     <Button

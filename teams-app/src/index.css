@@ -2,20 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@theme {
-  --color-orange-50: "#FFEAE6";
-  --color-orange-100: "#FFC3B8";
-  --color-orange-200: "#FF9D8A";
-  --color-orange-300: "#FF775C";
-  --color-orange-400: "#FF5533";
-  --color-orange-500: "#FF2A00";
-  --color-orange-600: "#D12300";
-  --color-orange-700: "#A31B00";
-  --color-orange-800: "#751400";
-  --color-orange-900: "#470C00";
-  --color-orange-950: "#1A0400";
-}
-
 @layer components {
   /* Card Components */
   .card {

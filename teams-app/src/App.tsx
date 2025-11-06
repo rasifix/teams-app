@@ -7,6 +7,8 @@ import PlayerDetailPage from './pages/PlayerDetailPage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import StatisticsPage from './pages/StatisticsPage';
+import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
+import EventAttendancePage from './pages/EventAttendancePage';
 import { migrateScoreToLevel, migrateMaxPlayersToEvent } from './utils/migrations';
 
 function App() {
@@ -27,7 +29,10 @@ function App() {
             <Route path="/players/:id" element={<PlayerDetailPage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
-            <Route path="/statistics" element={<StatisticsPage />} />
+            <Route path="/statistics" element={<StatisticsPage />}>
+              <Route path="player-statistics" element={<PlayerStatisticsPage />} />
+              <Route path="event-attendance" element={<EventAttendancePage />} />
+            </Route>
           </Routes>
         </main>
       </div>

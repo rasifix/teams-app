@@ -1,0 +1,122 @@
+import { getPlayerById } from '../utils/localStorage';
+import type { Invitation } from '../types';
+import Level from './Level';
+
+interface PlayerInvitationsCardProps {
+  invitations: Invitation[];
+  onInviteClick: () => void;
+  onStatusChange: (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => void;
+  onAutoSelect?: () => void;
+  assignedPlayerIds?: string[];
+}
+
+export default function PlayerInvitationsCard({
+  invitations,
+  onInviteClick,
+  onStatusChange,
+  onAutoSelect,
+  assignedPlayerIds = [],
+}: PlayerInvitationsCardProps) {
+  const acceptedCount = invitations.filter(inv => inv.status === 'accepted').length;
+  const openCount = invitations.filter(inv => inv.status === 'open').length;
+  const declinedCount = invitations.filter(inv => inv.status === 'declined').length;
+  const hasAnySelections = assignedPlayerIds.length > 0;
+
+  return (
+    <div className="bg-white shadow rounded-lg p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">Player Invitations</h2>
+        <div className="flex gap-2">
+          <button 
+            onClick={onInviteClick}
+            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
+          >
+            Invite Players
+          </button>
+          {onAutoSelect && (
+            <button 
+              onClick={onAutoSelect}
+              disabled={acceptedCount === 0}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              Auto Select
+            </button>
+          )}
+        </div>
+      </div>
+      {invitations.length > 0 && (
+        <div className="mb-3 text-sm text-gray-600">
+          <span className="text-green-600 font-medium">{acceptedCount}</span>
+          {' / '}
+          <span className="text-yellow-600 font-medium">{openCount}</span>
+          {' / '}
+          <span className="text-red-600 font-medium">{declinedCount}</span>
+          <span className="ml-2 text-gray-500">(accepted / open / declined)</span>
+        </div>
+      )}
+      {invitations.length === 0 ? (
+        <div className="text-gray-500 text-center py-4">
+          <p>No invitations sent yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {[...invitations]
+            .sort((a, b) => {
+              const playerA = getPlayerById(a.playerId);
+              const playerB = getPlayerById(b.playerId);
+              
+              if (!playerA || !playerB) return 0;
+              
+              const lastNameCompare = playerA.lastName.toLowerCase().localeCompare(playerB.lastName.toLowerCase());
+              if (lastNameCompare !== 0) return lastNameCompare;
+              
+              return playerA.firstName.toLowerCase().localeCompare(playerB.firstName.toLowerCase());
+            })
+            .map((invitation) => {
+            const player = getPlayerById(invitation.playerId);
+            const isAccepted = invitation.status === 'accepted';
+            const isAssigned = assignedPlayerIds.includes(invitation.playerId);
+            const isDraggable = isAccepted && !isAssigned;
+            const shouldDim = hasAnySelections && (invitation.status === 'declined' || invitation.status === 'open' || isAssigned);
+            
+            return (
+              <div 
+                key={invitation.id} 
+                className={`border border-gray-200 rounded-lg p-3 ${isDraggable ? 'cursor-move' : ''} ${shouldDim ? 'opacity-40' : ''}`}
+                draggable={isDraggable}
+                onDragStart={(e) => {
+                  if (isDraggable) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('playerId', invitation.playerId);
+                  }
+                }}
+              >
+                <div className="flex justify-between items-center gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-sm text-gray-900">
+                      {player ? `${player.firstName} ${player.lastName}` : `Player ID: ${invitation.playerId}`}
+                    </span>
+                    {player && <Level level={player.level} className="text-sm" />}
+                  </div>
+                  <select
+                    value={invitation.status}
+                    onChange={(e) => onStatusChange(invitation.id, e.target.value as 'open' | 'accepted' | 'declined')}
+                    className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                      invitation.status === 'accepted' ? 'bg-green-100 text-green-800 border-green-300' :
+                      invitation.status === 'declined' ? 'bg-red-100 text-red-800 border-red-300' :
+                      'bg-yellow-100 text-yellow-800 border-yellow-300'
+                    }`}
+                  >
+                    <option value="open">open</option>
+                    <option value="accepted">accepted</option>
+                    <option value="declined">declined</option>
+                  </select>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

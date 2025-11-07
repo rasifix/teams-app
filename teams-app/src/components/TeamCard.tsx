@@ -1,4 +1,4 @@
-import { getPlayerById } from '../utils/localStorage';
+import { getPlayerById } from '../services/playerService';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Team } from '../types';
 import Level from './Level';

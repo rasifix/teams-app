@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getEventById, updateEvent, deleteEvent, getPlayers } from '../utils/localStorage';
+import { useEvents } from '../hooks/useEvents';
+import { usePlayers } from '../hooks/usePlayers';
+import { getEventById } from '../services/eventService';
 import type { Event, Invitation } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
@@ -14,6 +16,8 @@ import { formatDate } from '../utils/dateFormatter';
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { updateEvent, deleteEvent } = useEvents();
+  const { players } = usePlayers();
   const [event, setEvent] = useState<Event | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
@@ -30,7 +34,7 @@ export default function EventDetailPage() {
     }
   }, [id]);
 
-  const handleAddTeam = () => {
+  const handleAddTeam = async () => {
     if (!event || !id) return;
 
     const newTeam = {
@@ -41,7 +45,7 @@ export default function EventDetailPage() {
     };
 
     const updatedTeams = [...event.teams, newTeam];
-    const success = updateEvent(id, { teams: updatedTeams });
+    const success = await updateEvent(id, { teams: updatedTeams });
 
     if (success) {
       setEvent({
@@ -56,14 +60,14 @@ export default function EventDetailPage() {
     setIsEditTeamModalOpen(true);
   };
 
-  const handleSaveTeamName = (newName: string, newStrength: number) => {
+  const handleSaveTeamName = async (newName: string, newStrength: number) => {
     if (!event || !id || !editingTeam) return;
 
     const updatedTeams = event.teams.map(team =>
       team.id === editingTeam.id ? { ...team, name: newName, strength: newStrength } : team
     );
 
-    const success = updateEvent(id, { teams: updatedTeams });
+    const success = await updateEvent(id, { teams: updatedTeams });
 
     if (success) {
       setEvent({
@@ -76,10 +80,10 @@ export default function EventDetailPage() {
     setIsEditTeamModalOpen(false);
   };
 
-  const handleSaveEvent = (data: { name: string; date: string; startTime: string; maxPlayersPerTeam: number }) => {
+  const handleSaveEvent = async (data: { name: string; date: string; startTime: string; maxPlayersPerTeam: number }) => {
     if (!event || !id) return;
 
-    const success = updateEvent(id, data);
+    const success = await updateEvent(id, data);
 
     if (success) {
       setEvent({
@@ -95,10 +99,12 @@ export default function EventDetailPage() {
     setIsDeleteConfirmOpen(true);
   };
 
-  const confirmDeleteEvent = () => {
+  const confirmDeleteEvent = async () => {
     if (id) {
-      deleteEvent(id);
-      navigate('/events');
+      const success = await deleteEvent(id);
+      if (success) {
+        navigate('/events');
+      }
     }
   };
 
@@ -106,7 +112,7 @@ export default function EventDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
-  const handleInvitePlayers = (playerIds: string[]) => {
+  const handleInvitePlayers = async (playerIds: string[]) => {
     if (!event || !id) return;
 
     const newInvitations: Invitation[] = playerIds.map(playerId => ({
@@ -117,7 +123,7 @@ export default function EventDetailPage() {
 
     const updatedInvitations = [...event.invitations, ...newInvitations];
     
-    const success = updateEvent(id, { invitations: updatedInvitations });
+    const success = await updateEvent(id, { invitations: updatedInvitations });
     
     if (success) {
       setEvent({
@@ -127,14 +133,14 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleInvitationStatusChange = (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => {
+  const handleInvitationStatusChange = async (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => {
     if (!event || !id) return;
 
     const updatedInvitations = event.invitations.map(inv =>
       inv.id === invitationId ? { ...inv, status: newStatus } : inv
     );
 
-    const success = updateEvent(id, { invitations: updatedInvitations });
+    const success = await updateEvent(id, { invitations: updatedInvitations });
 
     if (success) {
       setEvent({
@@ -144,7 +150,7 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleAutoSelect = () => {
+  const handleAutoSelect = async () => {
     if (!event || !id) return;
 
     const acceptedCount = event.invitations.filter(inv => inv.status === 'accepted').length;
@@ -162,7 +168,7 @@ export default function EventDetailPage() {
     // Run auto-selection algorithm
     const updatedTeams = autoSelectTeams(event);
     
-    const success = updateEvent(id, { teams: updatedTeams });
+    const success = await updateEvent(id, { teams: updatedTeams });
 
     if (success) {
       setEvent({
@@ -172,7 +178,7 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleRemovePlayerFromTeam = (teamId: string, playerId: string) => {
+  const handleRemovePlayerFromTeam = async (teamId: string, playerId: string) => {
     if (!event || !id) return;
 
     const updatedTeams = event.teams.map(team => {
@@ -185,7 +191,7 @@ export default function EventDetailPage() {
       return team;
     });
 
-    const success = updateEvent(id, { teams: updatedTeams });
+    const success = await updateEvent(id, { teams: updatedTeams });
 
     if (success) {
       setEvent({
@@ -214,7 +220,7 @@ export default function EventDetailPage() {
     });
   };
 
-  const handleAddPlayerToTeam = (teamId: string, playerId: string, allowMove: boolean = false) => {
+  const handleAddPlayerToTeam = async (teamId: string, playerId: string, allowMove: boolean = false) => {
     if (!event || !id) return;
 
     // Check if player is already assigned to any team
@@ -259,7 +265,7 @@ export default function EventDetailPage() {
     // Validate to ensure no duplicates across teams
     const validatedTeams = validateAndCleanTeams(updatedTeams);
 
-    const success = updateEvent(id, { teams: validatedTeams });
+    const success = await updateEvent(id, { teams: validatedTeams });
 
     if (success) {
       setEvent({
@@ -269,7 +275,7 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleSwitchPlayers = (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => {
+  const handleSwitchPlayers = async (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => {
     if (!event || !id || sourceTeamId === targetTeamId) return;
 
     const updatedTeams = event.teams.map(team => {
@@ -297,7 +303,7 @@ export default function EventDetailPage() {
     // Validate to ensure no duplicates across teams
     const validatedTeams = validateAndCleanTeams(updatedTeams);
 
-    const success = updateEvent(id, { teams: validatedTeams });
+    const success = await updateEvent(id, { teams: validatedTeams });
 
     if (success) {
       setEvent({
@@ -403,7 +409,7 @@ export default function EventDetailPage() {
         onClose={() => setIsInviteModalOpen(false)}
         onInvite={handleInvitePlayers}
         alreadyInvitedPlayerIds={event.invitations.map(inv => inv.playerId)}
-        players={getPlayers()}
+        players={players}
       />
 
       <EditTeamModal

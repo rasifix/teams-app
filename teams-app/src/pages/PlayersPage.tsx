@@ -9,10 +9,10 @@ export default function PlayersPage() {
   const { players, loading, error, addPlayer } = usePlayers();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddPlayer = (
+  const handleAddPlayer = async (
     playerData: Omit<import("../types").Player, "id">
   ) => {
-    const success = addPlayer(playerData);
+    const success = await addPlayer(playerData);
     if (success) {
       setIsModalOpen(false);
     }
@@ -30,13 +30,6 @@ export default function PlayersPage() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title">Players</h1>
-        <p className="page-subtitle">
-          Manage your soccer players, their levels, and information.
-        </p>
-      </div>
-
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}

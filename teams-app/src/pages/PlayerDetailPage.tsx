@@ -1,7 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getPlayerById, getEvents, updatePlayer, deletePlayer, updateEvent } from '../utils/localStorage';
-import type { Player, Event, Invitation, PlayerEventHistoryItem } from '../types';
+import { useEvents } from '../hooks/useEvents';
+import { usePlayers } from '../hooks/usePlayers';
+import { getPlayerById } from '../services/playerService';
+import type { Player, Invitation, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
@@ -13,8 +15,9 @@ import { formatDate } from '../utils/dateFormatter';
 export default function PlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { events, updateEvent } = useEvents();
+  const { updatePlayer, deletePlayer } = usePlayers();
   const [player, setPlayer] = useState<Player | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
@@ -22,10 +25,6 @@ export default function PlayerDetailPage() {
     if (id) {
       const loadedPlayer = getPlayerById(id);
       setPlayer(loadedPlayer);
-      
-      // Get all events
-      const allEvents = getEvents();
-      setEvents(allEvents);
     }
   }, [id]);
 
@@ -81,8 +80,8 @@ export default function PlayerDetailPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleUpdatePlayer = (playerId: string, playerData: Omit<Player, 'id'>) => {
-    const success = updatePlayer(playerId, playerData);
+  const handleUpdatePlayer = async (playerId: string, playerData: Omit<Player, 'id'>) => {
+    const success = await updatePlayer(playerId, playerData);
     if (success) {
       setPlayer({ ...playerData, id: playerId });
       setIsEditModalOpen(false);
@@ -93,10 +92,12 @@ export default function PlayerDetailPage() {
     setIsDeleteConfirmOpen(true);
   };
 
-  const confirmDeletePlayer = () => {
+  const confirmDeletePlayer = async () => {
     if (id) {
-      deletePlayer(id);
-      navigate('/players');
+      const success = await deletePlayer(id);
+      if (success) {
+        navigate('/players');
+      }
     }
   };
 
@@ -104,7 +105,7 @@ export default function PlayerDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
-  const handleInviteToEvent = (eventId: string) => {
+  const handleInviteToEvent = async (eventId: string) => {
     const event = events.find(e => e.id === eventId);
     if (!event) return;
 
@@ -115,12 +116,10 @@ export default function PlayerDetailPage() {
     };
 
     const updatedInvitations = [...event.invitations, newInvitation];
-    const success = updateEvent(eventId, { invitations: updatedInvitations });
+    const success = await updateEvent(eventId, { invitations: updatedInvitations });
     
     if (success) {
-      // Reload events to reflect the change
-      const allEvents = getEvents();
-      setEvents(allEvents);
+      // The events will be automatically updated through the useEvents hook
     }
   };
 

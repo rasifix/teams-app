@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Player } from '../types';
-import { getPlayers, addPlayer, updatePlayer, deletePlayer } from '../utils/localStorage';
+import * as playerService from '../services/playerService';
 
 // Helper function to sort players by lastName, then by firstName
 function sortPlayers(players: Player[]): Player[] {
@@ -20,38 +20,37 @@ export function usePlayers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load players from localStorage on mount
+  // Load players from service on mount
   useEffect(() => {
-    try {
-      const storedPlayers = getPlayers();
-      setPlayers(sortPlayers(storedPlayers));
-      setError(null);
-    } catch (err) {
-      setError('Failed to load players from storage');
-      console.error('Error loading players:', err);
-    } finally {
-      setLoading(false);
-    }
+    const loadPlayers = async () => {
+      try {
+        const storedPlayers = await playerService.getPlayers();
+        setPlayers(sortPlayers(storedPlayers));
+        setError(null);
+      } catch (err) {
+        setError('Failed to load players from storage');
+        console.error('Error loading players:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPlayers();
   }, []);
 
-  const handleAddPlayer = (playerData: Omit<Player, 'id'>): boolean => {
+  const handleAddPlayer = async (playerData: Omit<Player, 'id'>): Promise<boolean> => {
     try {
       const newPlayer: Player = {
         ...playerData,
         id: crypto.randomUUID(),
       };
 
-      const success = addPlayer(newPlayer);
-      if (success) {
-        // Re-fetch from localStorage to ensure consistency
-        const allPlayers = getPlayers();
-        setPlayers(sortPlayers(allPlayers));
-        setError(null);
-        return true;
-      } else {
-        setError('Failed to save player to storage');
-        return false;
-      }
+      await playerService.addPlayer(newPlayer);
+      // Re-fetch from service to ensure consistency
+      const allPlayers = await playerService.getPlayers();
+      setPlayers(sortPlayers(allPlayers));
+      setError(null);
+      return true;
     } catch (err) {
       setError('Failed to add player');
       console.error('Error adding player:', err);
@@ -59,19 +58,14 @@ export function usePlayers() {
     }
   };
 
-  const handleUpdatePlayer = (playerId: string, updates: Partial<Omit<Player, 'id'>>): boolean => {
+  const handleUpdatePlayer = async (playerId: string, updates: Partial<Omit<Player, 'id'>>): Promise<boolean> => {
     try {
-      const success = updatePlayer(playerId, updates);
-      if (success) {
-        // Re-fetch from localStorage to ensure consistency
-        const allPlayers = getPlayers();
-        setPlayers(sortPlayers(allPlayers));
-        setError(null);
-        return true;
-      } else {
-        setError('Failed to update player in storage');
-        return false;
-      }
+      await playerService.updatePlayer(playerId, updates);
+      // Re-fetch from service to ensure consistency
+      const allPlayers = await playerService.getPlayers();
+      setPlayers(sortPlayers(allPlayers));
+      setError(null);
+      return true;
     } catch (err) {
       setError('Failed to update player');
       console.error('Error updating player:', err);
@@ -79,19 +73,14 @@ export function usePlayers() {
     }
   };
 
-  const handleDeletePlayer = (playerId: string): boolean => {
+  const handleDeletePlayer = async (playerId: string): Promise<boolean> => {
     try {
-      const success = deletePlayer(playerId);
-      if (success) {
-        // Re-fetch from localStorage to ensure consistency
-        const allPlayers = getPlayers();
-        setPlayers(sortPlayers(allPlayers));
-        setError(null);
-        return true;
-      } else {
-        setError('Failed to delete player from storage');
-        return false;
-      }
+      await playerService.deletePlayer(playerId);
+      // Re-fetch from service to ensure consistency
+      const allPlayers = await playerService.getPlayers();
+      setPlayers(sortPlayers(allPlayers));
+      setError(null);
+      return true;
     } catch (err) {
       setError('Failed to delete player');
       console.error('Error deleting player:', err);

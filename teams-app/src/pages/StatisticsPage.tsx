@@ -84,9 +84,6 @@ export default function StatisticsPage() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">Statistics</h1>
-        <p className="page-subtitle">
-          View player attendance and selection fairness metrics.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

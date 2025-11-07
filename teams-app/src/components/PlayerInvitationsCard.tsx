@@ -1,4 +1,4 @@
-import { getPlayerById } from '../utils/localStorage';
+import { getPlayerById } from '../services/playerService';
 import type { Invitation } from '../types';
 import Level from './Level';
 

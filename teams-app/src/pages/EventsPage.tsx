@@ -12,7 +12,7 @@ export default function EventsPage() {
   const { events, addEvent } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleAddEvent = (eventData: { 
+  const handleAddEvent = async (eventData: { 
     name: string; 
     date: string; 
     startTime: string; 
@@ -27,7 +27,7 @@ export default function EventsPage() {
       selectedPlayers: [], // Players will be assigned during selection
     }));
 
-    const success = addEvent({
+    const success = await addEvent({
       name: eventData.name,
       date: eventData.date,
       startTime: eventData.startTime,

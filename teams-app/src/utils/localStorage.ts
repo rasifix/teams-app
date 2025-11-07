@@ -148,3 +148,58 @@ export function downloadDataAsJSON(): void {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+// Import data from JSON file
+export function importDataFromJSON(file: File): Promise<boolean> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      try {
+        const jsonString = event.target?.result as string;
+        const data = JSON.parse(jsonString);
+        
+        // Validate that the imported data has the expected structure
+        const expectedKeys = Object.values(STORAGE_KEYS);
+        const hasValidStructure = expectedKeys.every(key => 
+          data.hasOwnProperty(key) || data[key] === undefined
+        );
+        
+        if (!hasValidStructure) {
+          console.error('Invalid data structure in imported file');
+          resolve(false);
+          return;
+        }
+        
+        // Clear existing data and import new data
+        Object.values(STORAGE_KEYS).forEach(key => {
+          localStorage.removeItem(key);
+        });
+        
+        // Import each data type
+        Object.entries(data).forEach(([key, value]) => {
+          if (Object.values(STORAGE_KEYS).includes(key as any) && value !== undefined) {
+            try {
+              localStorage.setItem(key, JSON.stringify(value));
+            } catch (error) {
+              console.error(`Error importing ${key}:`, error);
+            }
+          }
+        });
+        
+        console.log('Data imported successfully');
+        resolve(true);
+      } catch (error) {
+        console.error('Error parsing imported file:', error);
+        resolve(false);
+      }
+    };
+    
+    reader.onerror = () => {
+      console.error('Error reading file');
+      resolve(false);
+    };
+    
+    reader.readAsText(file);
+  });
+}

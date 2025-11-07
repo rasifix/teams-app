@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { getPlayers } from '../utils/localStorage';
 import type { Player } from '../types';
 import Level from './Level';
 
@@ -8,23 +7,22 @@ interface InvitePlayersModalProps {
   onClose: () => void;
   onInvite: (playerIds: string[]) => void;
   alreadyInvitedPlayerIds: string[];
+  players: Player[];
 }
 
 export default function InvitePlayersModal({ 
   isOpen, 
   onClose, 
   onInvite,
-  alreadyInvitedPlayerIds 
+  alreadyInvitedPlayerIds,
+  players
 }: InvitePlayersModalProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
   const [minLevel, setMinLevel] = useState<number>(1);
   const [maxLevel, setMaxLevel] = useState<number>(5);
 
   useEffect(() => {
     if (isOpen) {
-      const allPlayers = getPlayers();
-      setPlayers(allPlayers);
       setSelectedPlayerIds(new Set());
       setMinLevel(1);
       setMaxLevel(5);

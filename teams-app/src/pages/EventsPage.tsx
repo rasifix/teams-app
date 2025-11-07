@@ -52,7 +52,7 @@ export default function EventsPage() {
       <Card>
         <CardBody>
           <div className="flex justify-between items-center mb-4">
-            <CardTitle>All Events</CardTitle>
+            <CardTitle>All Events ({events.length})</CardTitle>
             <Button 
               variant="success"
               onClick={() => setIsModalOpen(true)}

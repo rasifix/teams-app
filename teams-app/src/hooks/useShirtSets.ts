@@ -106,14 +106,14 @@ export function useShirtSets() {
   };
 
   // Remove shirt from set
-  const removeShirtFromSet = async (shirtSetId: string, shirtId: string): Promise<boolean> => {
+  const removeShirtFromSet = async (shirtSetId: string, shirtNumber: number): Promise<boolean> => {
     try {
       setError(null);
-      await shirtService.removeShirtFromSet(shirtSetId, shirtId);
+      await shirtService.removeShirtFromSet(shirtSetId, shirtNumber);
       setShirtSets(prev => 
         prev.map(shirtSet => 
           shirtSet.id === shirtSetId 
-            ? { ...shirtSet, shirts: shirtSet.shirts.filter(shirt => shirt.id !== shirtId) }
+            ? { ...shirtSet, shirts: shirtSet.shirts.filter(shirt => shirt.number !== shirtNumber) }
             : shirtSet
         )
       );
@@ -134,7 +134,7 @@ export function useShirtSets() {
         prev.map(shirtSet => 
           shirtSet.id === shirtSetId 
             ? { ...shirtSet, shirts: shirtSet.shirts.map(shirt => 
-                shirt.id === updatedShirt.id ? updatedShirt : shirt
+                shirt.number === updatedShirt.number ? updatedShirt : shirt
               )}
             : shirtSet
         )

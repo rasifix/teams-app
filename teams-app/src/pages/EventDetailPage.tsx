@@ -189,6 +189,21 @@ export default function EventDetailPage() {
     }
   };
 
+  const handleRemoveInvitation = async (invitationId: string) => {
+    if (!event || !id) return;
+
+    const updatedInvitations = event.invitations.filter(inv => inv.id !== invitationId);
+
+    const success = await updateEvent(id, { invitations: updatedInvitations });
+
+    if (success) {
+      setEvent({
+        ...event,
+        invitations: updatedInvitations,
+      });
+    }
+  };
+
   const handleAutoSelect = async () => {
     if (!event || !id) return;
 
@@ -445,6 +460,7 @@ export default function EventDetailPage() {
           invitations={event.invitations}
           onInviteClick={() => setIsInviteModalOpen(true)}
           onStatusChange={handleInvitationStatusChange}
+          onRemoveInvitation={handleRemoveInvitation}
           onAutoSelect={handleAutoSelect}
           assignedPlayerIds={event.teams.flatMap(team => team.selectedPlayers || [])}
         />

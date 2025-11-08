@@ -92,7 +92,7 @@ export default function TeamPrintSummary({ event, teams, isOpen, onClose }: Team
                             <div key={player!.id} className="border-b border-gray-100 pb-1 relative">
                                 <div className="flex items-center justify-center">
                                   {shirtNumber && shirtNumber > 0 && (
-                                    <span className="absolute left-0 text-blue-600 text-sm font-medium">#{shirtNumber}</span>
+                                    <span className="absolute right-0 text-gray-800 text-sm font-bold">{shirtNumber}</span>
                                   )}
                                   <p className="text-sm font-medium text-gray-900">
                                     {player!.firstName} {player!.lastName}

@@ -77,10 +77,10 @@ export default function ShirtSetCard({
                     .sort((a, b) => a.number - b.number)
                     .map((shirt) => (
                         <ShirtCard
-                          key={shirt.id}
+                          key={shirt.number}
                           shirt={shirt}
                           onEdit={() => onEditShirt(shirt)}
-                          onRemove={() => onRemoveShirt(shirt.id, shirt.number)}
+                          onRemove={() => onRemoveShirt(shirtSet.id, shirt.number)}
                         />
                       ))}
                   

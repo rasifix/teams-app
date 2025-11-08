@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Player, Event } from '../types';
 import { Card, CardBody, CardTitle } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import PlayerLevelFilter from './PlayerLevelFilter';
+import Level from './Level';
 
 interface EventAttendanceMatrixProps {
   players: Player[];
@@ -11,12 +12,17 @@ interface EventAttendanceMatrixProps {
 }
 
 export default function EventAttendanceMatrix({ players, events }: EventAttendanceMatrixProps) {
+  const navigate = useNavigate();
   const [minLevel, setMinLevel] = useState<number>(1);
   const [maxLevel, setMaxLevel] = useState<number>(5);
 
   const handleReset = () => {
     setMinLevel(1);
     setMaxLevel(5);
+  };
+
+  const handlePlayerClick = (playerId: string) => {
+    navigate(`/players/${playerId}`);
   };
 
   const attendanceData = useMemo(() => {
@@ -147,14 +153,19 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             </thead>
             <tbody>
               {sortedData.map(({ player, attendance }) => (
-                <tr key={player.id} className="border-b border-gray-200 hover:bg-gray-50 max-h-[40px]">
+                <tr 
+                  key={player.id} 
+                  className="border-b border-gray-200 hover:bg-gray-50 max-h-[40px] cursor-pointer"
+                  onClick={() => handlePlayerClick(player.id)}
+                >
                   <td className="sticky left-0 bg-white z-10 px-4 py-2 text-sm font-medium text-gray-900 border-r border-gray-200 max-h-[40px]">
-                    <Link 
-                      to={`/players/${player.id}`}
-                      className="whitespace-nowrap text-blue-600 hover:text-blue-800 hover:underline"
-                    >
+                    <div className="text-sm font-medium text-gray-900">
                       {player.firstName} {player.lastName}
-                    </Link>
+                      <span className="text-xs text-muted m-2">{player.birthYear}</span>
+                    </div>
+                    <div className="text-xs flex items-center gap-2">
+                      <Level level={player.level} className="text-xs" />
+                    </div>
                   </td>
                   {attendance.map(({ status, event }, index) => {
                     const statusInfo = getStatusIcon(status);

@@ -39,7 +39,6 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
     }
 
     onSave({
-      id: shirt.id,
       number: numberValue,
       size: formData.size,
       isGoalkeeper: formData.isGoalkeeper

@@ -82,7 +82,7 @@ export default function ShirtSetsPage() {
 
   const confirmRemoveShirt = async () => {
     if (deletingShirt) {
-      await removeShirtFromSet(deletingShirt.shirtSetId, deletingShirt.shirtId);
+      await removeShirtFromSet(deletingShirt.shirtSetId, deletingShirt.shirtNumber);
       setDeletingShirt(null);
     }
   };
@@ -201,7 +201,7 @@ export default function ShirtSetsPage() {
           onSave={(updatedShirt) => handleEditShirt(editingShirt.shirtSetId, updatedShirt)}
           shirt={editingShirt.shirt}
           existingNumbers={shirtSets.find(set => set.id === editingShirt.shirtSetId)?.shirts
-            .filter(s => s.id !== editingShirt.shirt.id)
+            .filter(s => s.number !== editingShirt.shirt.number)
             .map(shirt => shirt.number) || []}
         />
       )}

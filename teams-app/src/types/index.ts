@@ -43,3 +43,17 @@ export interface PlayerEventHistoryItem {
   isSelected: boolean;
   teamName?: string;
 }
+
+export interface Shirt {
+  id: string;
+  number: number;
+  size: 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
+  isGoalkeeper: boolean;
+}
+
+export interface ShirtSet {
+  id: string;
+  sponsor: string;
+  color: string;
+  shirts: Shirt[];
+}

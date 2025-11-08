@@ -1,10 +1,11 @@
-import type { Player, Event } from '../types';
+import type { Player, Event, ShirtSet } from '../types';
 
 const STORAGE_KEYS = {
   PLAYERS: 'players',
   EVENTS: 'events',
   TEAMS: 'teams',
   INVITATIONS: 'invitations',
+  SHIRT_SETS: 'shirtSets',
 } as const;
 
 // Generic localStorage utility functions
@@ -202,4 +203,52 @@ export function importDataFromJSON(file: File): Promise<boolean> {
     
     reader.readAsText(file);
   });
+}
+
+// ShirtSet-specific localStorage functions
+export function getShirtSets(): ShirtSet[] {
+  return getFromStorage(STORAGE_KEYS.SHIRT_SETS, []);
+}
+
+export function saveShirtSets(shirtSets: ShirtSet[]): boolean {
+  return saveToStorage(STORAGE_KEYS.SHIRT_SETS, shirtSets);
+}
+
+export function addShirtSet(shirtSet: ShirtSet): boolean {
+  const shirtSets = getShirtSets();
+  const updatedShirtSets = [...shirtSets, shirtSet];
+  return saveShirtSets(updatedShirtSets);
+}
+
+export function updateShirtSet(shirtSetId: string, updates: Partial<Omit<ShirtSet, 'id'>>): boolean {
+  const shirtSets = getShirtSets();
+  const shirtSetIndex = shirtSets.findIndex(s => s.id === shirtSetId);
+  
+  if (shirtSetIndex === -1) {
+    console.error(`Shirt set with ID ${shirtSetId} not found`);
+    return false;
+  }
+
+  const updatedShirtSet = { ...shirtSets[shirtSetIndex], ...updates };
+  const updatedShirtSets = [...shirtSets];
+  updatedShirtSets[shirtSetIndex] = updatedShirtSet;
+  
+  return saveShirtSets(updatedShirtSets);
+}
+
+export function deleteShirtSet(shirtSetId: string): boolean {
+  const shirtSets = getShirtSets();
+  const filteredShirtSets = shirtSets.filter(s => s.id !== shirtSetId);
+  
+  if (filteredShirtSets.length === shirtSets.length) {
+    console.error(`Shirt set with ID ${shirtSetId} not found`);
+    return false;
+  }
+  
+  return saveShirtSets(filteredShirtSets);
+}
+
+export function getShirtSetById(shirtSetId: string): ShirtSet | null {
+  const shirtSets = getShirtSets();
+  return shirtSets.find(s => s.id === shirtSetId) || null;
 }

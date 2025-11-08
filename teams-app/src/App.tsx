@@ -4,6 +4,7 @@ import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import PlayersPage from './pages/PlayersPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
+import TrainersPage from './pages/TrainersPage';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import StatisticsPage from './pages/StatisticsPage';
@@ -28,6 +29,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/players" element={<PlayersPage />} />
             <Route path="/players/:id" element={<PlayerDetailPage />} />
+            <Route path="/trainers" element={<TrainersPage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/shirt-sets" element={<ShirtSetsPage />} />

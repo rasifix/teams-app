@@ -44,6 +44,7 @@ export default function Header() {
 
   const navItems = [
     { path: '/players', label: 'Players' },
+    { path: '/trainers', label: 'Trainers' },
     { path: '/events', label: 'Events' },
     { path: '/shirt-sets', label: 'Shirt Sets' },
     { path: '/statistics', label: 'Statistics' },

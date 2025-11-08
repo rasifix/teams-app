@@ -1,4 +1,4 @@
-import type { Player, Event, ShirtSet } from '../types';
+import type { Player, Event, ShirtSet, Trainer } from '../types';
 
 const STORAGE_KEYS = {
   PLAYERS: 'players',
@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   TEAMS: 'teams',
   INVITATIONS: 'invitations',
   SHIRT_SETS: 'shirtSets',
+  TRAINERS: 'trainers',
 } as const;
 
 // Generic localStorage utility functions
@@ -251,4 +252,44 @@ export function deleteShirtSet(shirtSetId: string): boolean {
 export function getShirtSetById(shirtSetId: string): ShirtSet | null {
   const shirtSets = getShirtSets();
   return shirtSets.find(s => s.id === shirtSetId) || null;
+}
+
+// Trainer-specific localStorage functions
+export function getTrainers(): Trainer[] {
+  return getFromStorage(STORAGE_KEYS.TRAINERS, []);
+}
+
+export function saveTrainers(trainers: Trainer[]): boolean {
+  return saveToStorage(STORAGE_KEYS.TRAINERS, trainers);
+}
+
+export function addTrainer(trainer: Trainer): boolean {
+  const trainers = getTrainers();
+  const updatedTrainers = [...trainers, trainer];
+  return saveTrainers(updatedTrainers);
+}
+
+export function updateTrainer(trainerId: string, updates: Partial<Omit<Trainer, 'id'>>): boolean {
+  const trainers = getTrainers();
+  const trainerIndex = trainers.findIndex(t => t.id === trainerId);
+  
+  if (trainerIndex === -1) {
+    console.error(`Trainer with id ${trainerId} not found`);
+    return false;
+  }
+  
+  const updatedTrainers = [...trainers];
+  updatedTrainers[trainerIndex] = { ...updatedTrainers[trainerIndex], ...updates };
+  return saveTrainers(updatedTrainers);
+}
+
+export function deleteTrainer(trainerId: string): boolean {
+  const trainers = getTrainers();
+  const filteredTrainers = trainers.filter(t => t.id !== trainerId);
+  return saveTrainers(filteredTrainers);
+}
+
+export function getTrainerById(trainerId: string): Trainer | null {
+  const trainers = getTrainers();
+  return trainers.find(t => t.id === trainerId) || null;
 }

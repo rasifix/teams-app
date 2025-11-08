@@ -1,5 +1,6 @@
 import { getPlayerById } from '../services/playerService';
 import { getTrainerById } from '../services/trainerService';
+import { getShirtSetById } from '../services/shirtService';
 import { formatDate } from '../utils/dateFormatter';
 import type { Event, Team } from '../types';
 
@@ -50,6 +51,7 @@ export default function TeamPrintSummary({ event, teams, isOpen, onClose }: Team
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
               const trainer = team.trainerId ? getTrainerById(team.trainerId) : null;
+              const shirtSet = team.shirtSetId ? getShirtSetById(team.shirtSetId) : null;
               const playersData = selectedPlayers
                 .map(playerId => getPlayerById(playerId))
                 .filter(Boolean)
@@ -69,6 +71,9 @@ export default function TeamPrintSummary({ event, teams, isOpen, onClose }: Team
                       <p>📅 {formatDate(event.date)} 🕐 {event.startTime}</p>
                       {trainer && (
                         <p className="text-blue-600 font-medium">👨‍🏫 {trainer.firstName} {trainer.lastName}</p>
+                      )}
+                      {shirtSet && (
+                        <p className="text-gray-600 font-medium">👕 {shirtSet.sponsor}</p>
                       )}
                     </div>
                   </div>

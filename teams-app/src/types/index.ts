@@ -12,6 +12,7 @@ export interface Team {
   strength: number; // 1 (highest) to 3 (lowest), default 2
   selectedPlayers: string[]; // Player IDs assigned to this team
   trainerId?: string; // Trainer ID assigned to this team
+  shirtSetId?: string; // Shirt set ID assigned to this team
 }
 
 export interface Invitation {

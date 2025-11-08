@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useEvents } from '../hooks/useEvents';
 import { usePlayers } from '../hooks/usePlayers';
 import { useTrainers } from '../hooks/useTrainers';
+import { useShirtSets } from '../hooks/useShirtSets';
 import { getEventById } from '../services/eventService';
 import type { Event, Invitation } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
@@ -20,14 +21,16 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   const { updateEvent, deleteEvent } = useEvents();
   const { players } = usePlayers();
-  const { trainers } = useTrainers();
+  // Initialize hooks for child components
+  useTrainers();
+  useShirtSets();
   const [event, setEvent] = useState<Event | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<{ id: string; name: string; strength: number; trainerId?: string } | null>(null);
+  const [editingTeam, setEditingTeam] = useState<{ id: string; name: string; strength: number; trainerId?: string; shirtSetId?: string } | null>(null);
   const [dragOverTeamId, setDragOverTeamId] = useState<string | null>(null);
   const [dragOverPlayerId, setDragOverPlayerId] = useState<string | null>(null);
 
@@ -59,16 +62,16 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleEditTeamName = (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string) => {
-    setEditingTeam({ id: teamId, name: currentName, strength: currentStrength, trainerId: currentTrainerId });
+  const handleEditTeamName = (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string, currentShirtSetId?: string) => {
+    setEditingTeam({ id: teamId, name: currentName, strength: currentStrength, trainerId: currentTrainerId, shirtSetId: currentShirtSetId });
     setIsEditTeamModalOpen(true);
   };
 
-  const handleSaveTeamName = async (newName: string, newStrength: number, newTrainerId?: string) => {
+  const handleSaveTeamName = async (newName: string, newStrength: number, newTrainerId?: string, newShirtSetId?: string) => {
     if (!event || !id || !editingTeam) return;
 
     const updatedTeams = event.teams.map(team =>
-      team.id === editingTeam.id ? { ...team, name: newName, strength: newStrength, trainerId: newTrainerId } : team
+      team.id === editingTeam.id ? { ...team, name: newName, strength: newStrength, trainerId: newTrainerId, shirtSetId: newShirtSetId } : team
     );
 
     const success = await updateEvent(id, { teams: updatedTeams });
@@ -336,9 +339,6 @@ export default function EventDetailPage() {
             <p className="page-subtitle">
               📅 {formatDate(event.date)} 🕐 {event.startTime}
             </p>
-            <p className="mt-3 text-gray-600">
-              Max players: {event.maxPlayersPerTeam}
-            </p>
           </div>
           <div className="flex gap-3">
             <button 
@@ -432,6 +432,7 @@ export default function EventDetailPage() {
         currentName={editingTeam?.name || ''}
         currentStrength={editingTeam?.strength || 2}
         currentTrainerId={editingTeam?.trainerId}
+        currentShirtSetId={editingTeam?.shirtSetId}
       />
 
       <EditEventModal

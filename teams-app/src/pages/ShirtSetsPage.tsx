@@ -175,27 +175,17 @@ export default function ShirtSetsPage() {
 
                         {expandedSets.has(shirtSet.id) && (
                           <div className="mt-4">
-                            <div className="flex justify-between items-center mb-3">
+                            <div className="mb-3">
                               <h4 className="font-medium">Shirts in this set:</h4>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => setAddingShirtToSet(shirtSet.id)}
-                              >
-                                Add Shirt
-                              </Button>
                             </div>
                             
-                            {shirtSet.shirts.length === 0 ? (
-                              <p className="text-gray-500 text-sm">No shirts in this set yet.</p>
-                            ) : (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                                {shirtSet.shirts
-                                  .sort((a, b) => a.number - b.number)
-                                  .map((shirt) => (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                              {shirtSet.shirts
+                                .sort((a, b) => a.number - b.number)
+                                .map((shirt) => (
                                     <div 
                                       key={shirt.id} 
-                                      className={`flex items-center justify-between p-2 rounded border ${
+                                      className={`flex items-center justify-between p-2 rounded border h-11 ${
                                         shirt.isGoalkeeper ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
                                       }`}
                                     >
@@ -228,8 +218,23 @@ export default function ShirtSetsPage() {
                                       </div>
                                     </div>
                                   ))}
+                              
+                              {/* Add Shirt Card */}
+                              <div 
+                                onClick={() => setAddingShirtToSet(shirtSet.id)}
+                                className="flex items-center justify-center p-2 rounded border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition-all duration-200 group h-11"
+                              >
+                                <svg 
+                                  className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
                               </div>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>

@@ -1,5 +1,6 @@
 import { getPlayerById } from '../services/playerService';
 import { getTrainerById } from '../services/trainerService';
+import { getShirtSetById } from '../services/shirtService';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Team } from '../types';
 import Level from './Level';
@@ -11,7 +12,7 @@ interface TeamCardProps {
   maxPlayersPerTeam: number;
   isDragOver: boolean;
   dragOverPlayerId: string | null;
-  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string) => void;
+  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string, currentShirtSetId?: string) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
   onSwitchPlayers: (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => void;
   onAddPlayerToTeam: (teamId: string, playerId: string, allowMove?: boolean) => void;
@@ -34,6 +35,7 @@ export default function TeamCard({
   const selectedPlayers = team.selectedPlayers || [];
   const hasCapacity = selectedPlayers.length < maxPlayersPerTeam;
   const trainer = team.trainerId ? getTrainerById(team.trainerId) : null;
+  const shirtSet = team.shirtSetId ? getShirtSetById(team.shirtSetId) : null;
 
   const { events } = useEvents();
 
@@ -90,9 +92,14 @@ export default function TeamCard({
               👨‍🏫 {trainer.firstName} {trainer.lastName}
             </p>
           )}
+          {shirtSet && (
+            <p className="text-sm text-gray-600">
+              👕 {shirtSet.sponsor}
+            </p>
+          )}
         </div>
         <button 
-          onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.trainerId)}
+          onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.trainerId, team.shirtSetId)}
           className="text-blue-600 hover:text-blue-700 text-sm"
         >
           Edit

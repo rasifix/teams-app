@@ -13,6 +13,7 @@ export interface Team {
   selectedPlayers: string[]; // Player IDs assigned to this team
   trainerId?: string; // Trainer ID assigned to this team
   shirtSetId?: string; // Shirt set ID assigned to this team
+  shirtAssignments?: Array<{ playerId: string; shirtId: string }>; // Individual shirt assignments
 }
 
 export interface Invitation {

@@ -12,7 +12,8 @@ interface TeamCardProps {
   maxPlayersPerTeam: number;
   isDragOver: boolean;
   dragOverPlayerId: string | null;
-  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string, currentShirtSetId?: string) => void;
+  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string) => void;
+  onAssignShirts: (team: Team) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
   onSwitchPlayers: (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => void;
   onAddPlayerToTeam: (teamId: string, playerId: string, allowMove?: boolean) => void;
@@ -26,6 +27,7 @@ export default function TeamCard({
   isDragOver,
   dragOverPlayerId,
   onEditTeam,
+  onAssignShirts,
   onRemovePlayer,
   onSwitchPlayers,
   onAddPlayerToTeam,
@@ -94,16 +96,24 @@ export default function TeamCard({
           )}
           {shirtSet && (
             <p className="text-sm text-gray-600">
-              👕 {shirtSet.sponsor}
+              👕 {shirtSet.sponsor} {team.shirtAssignments && team.shirtAssignments.length > 0 && `(${team.shirtAssignments.length} assigned)`}
             </p>
           )}
         </div>
-        <button 
-          onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.trainerId, team.shirtSetId)}
-          className="text-blue-600 hover:text-blue-700 text-sm"
-        >
-          Edit
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.trainerId)}
+            className="text-blue-600 hover:text-blue-700 text-sm"
+          >
+            Edit
+          </button>
+          <button 
+            onClick={() => onAssignShirts(team)}
+            className="text-green-600 hover:text-green-700 text-sm"
+          >
+            👕 Shirts
+          </button>
+        </div>
       </div>
       {selectedPlayers.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100">
@@ -155,7 +165,22 @@ export default function TeamCard({
                     }
                   }}
                 >
-                  <span className="flex-1">{player.firstName} {player.lastName}</span>
+                  <span className="flex-1">
+                    {(() => {
+                      // Get shirt number if assigned
+                      const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === playerId);
+                      const shirtNumber = shirtAssignment && team.shirtSetId 
+                        ? getShirtSetById(team.shirtSetId)?.shirts.find(s => s.id === shirtAssignment.shirtId)?.number 
+                        : null;
+                      
+                      return (
+                        <>
+                          {shirtNumber && <span className="text-blue-600 font-mono text-xs mr-1">#{shirtNumber}</span>}
+                          {player.firstName} {player.lastName}
+                        </>
+                      );
+                    })()}
+                  </span>
                   <Level level={player.level} className="text-sm" />
                   <span 
                     className="text-xs text-gray-500 font-mono"

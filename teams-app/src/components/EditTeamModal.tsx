@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
 import { useTrainers } from '../hooks/useTrainers';
-import { useShirtSets } from '../hooks/useShirtSets';
 
 interface EditTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, strength: number, trainerId?: string, shirtSetId?: string) => void;
+  onSave: (name: string, strength: number, trainerId?: string) => void;
   currentName: string;
   currentStrength: number;
   currentTrainerId?: string;
-  currentShirtSetId?: string;
 }
 
 export default function EditTeamModal({ 
@@ -21,26 +19,23 @@ export default function EditTeamModal({
   currentName,
   currentStrength,
   currentTrainerId,
-  currentShirtSetId
 }: EditTeamModalProps) {
   const [teamName, setTeamName] = useState(currentName);
   const [strength, setStrength] = useState(currentStrength);
   const [trainerId, setTrainerId] = useState(currentTrainerId || '');
-  const [shirtSetId, setShirtSetId] = useState(currentShirtSetId || '');
+
   const { trainers } = useTrainers();
-  const { shirtSets } = useShirtSets();
 
   useEffect(() => {
     setTeamName(currentName);
     setStrength(currentStrength);
     setTrainerId(currentTrainerId || '');
-    setShirtSetId(currentShirtSetId || '');
-  }, [currentName, currentStrength, currentTrainerId, currentShirtSetId, isOpen]);
+  }, [currentName, currentStrength, currentTrainerId, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
-      onSave(teamName.trim(), strength, trainerId || undefined, shirtSetId || undefined);
+      onSave(teamName.trim(), strength, trainerId || undefined);
       onClose();
     }
   };
@@ -100,25 +95,6 @@ export default function EditTeamModal({
                 {trainers.map(trainer => (
                   <option key={trainer.id} value={trainer.id}>
                     {trainer.firstName} {trainer.lastName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="shirtSet" className="form-label">
-                Shirt Set
-              </label>
-              <select
-                id="shirtSet"
-                value={shirtSetId}
-                onChange={(e) => setShirtSetId(e.target.value)}
-                className="form-input"
-              >
-                <option value="">No shirt set assigned</option>
-                {shirtSets.map(shirtSet => (
-                  <option key={shirtSet.id} value={shirtSet.id}>
-                    {shirtSet.sponsor} - {shirtSet.color}
                   </option>
                 ))}
               </select>

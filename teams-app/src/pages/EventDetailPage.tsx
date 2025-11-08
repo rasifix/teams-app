@@ -5,10 +5,11 @@ import { usePlayers } from '../hooks/usePlayers';
 import { useTrainers } from '../hooks/useTrainers';
 import { useShirtSets } from '../hooks/useShirtSets';
 import { getEventById } from '../services/eventService';
-import type { Event, Invitation } from '../types';
+import type { Event, Team, Invitation } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditTeamModal from '../components/EditTeamModal';
+import AssignShirtsModal from '../components/AssignShirtsModal';
 import EditEventModal from '../components/EditEventModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TeamCard from '../components/TeamCard';
@@ -27,10 +28,12 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
+  const [isAssignShirtsModalOpen, setIsAssignShirtsModalOpen] = useState(false);
   const [isEditEventModalOpen, setIsEditEventModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<{ id: string; name: string; strength: number; trainerId?: string; shirtSetId?: string } | null>(null);
+  const [editingTeam, setEditingTeam] = useState<{ id: string; name: string; strength: number; trainerId?: string } | null>(null);
+  const [assigningShirtsTeam, setAssigningShirtsTeam] = useState<Team | null>(null);
   const [dragOverTeamId, setDragOverTeamId] = useState<string | null>(null);
   const [dragOverPlayerId, setDragOverPlayerId] = useState<string | null>(null);
 
@@ -62,16 +65,16 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleEditTeamName = (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string, currentShirtSetId?: string) => {
-    setEditingTeam({ id: teamId, name: currentName, strength: currentStrength, trainerId: currentTrainerId, shirtSetId: currentShirtSetId });
+  const handleEditTeamName = (teamId: string, currentName: string, currentStrength: number, currentTrainerId?: string) => {
+    setEditingTeam({ id: teamId, name: currentName, strength: currentStrength, trainerId: currentTrainerId });
     setIsEditTeamModalOpen(true);
   };
 
-  const handleSaveTeamName = async (newName: string, newStrength: number, newTrainerId?: string, newShirtSetId?: string) => {
+  const handleSaveTeamName = async (newName: string, newStrength: number, newTrainerId?: string) => {
     if (!event || !id || !editingTeam) return;
 
     const updatedTeams = event.teams.map(team =>
-      team.id === editingTeam.id ? { ...team, name: newName, strength: newStrength, trainerId: newTrainerId, shirtSetId: newShirtSetId } : team
+      team.id === editingTeam.id ? { ...team, name: newName, strength: newStrength, trainerId: newTrainerId } : team
     );
 
     const success = await updateEvent(id, { teams: updatedTeams });
@@ -85,6 +88,34 @@ export default function EventDetailPage() {
 
     setEditingTeam(null);
     setIsEditTeamModalOpen(false);
+  };
+
+  const handleAssignShirts = (team: Team) => {
+    setAssigningShirtsTeam(team);
+    setIsAssignShirtsModalOpen(true);
+  };
+
+  const handleSaveShirtAssignments = async (shirtSetId: string, playerShirtAssignments: Array<{ playerId: string; shirtId: string }>) => {
+    if (!event || !id || !assigningShirtsTeam) return;
+
+    // Update the team with the new shirt set and individual shirt assignments
+    const updatedTeams = event.teams.map(team =>
+      team.id === assigningShirtsTeam.id 
+        ? { ...team, shirtSetId, shirtAssignments: playerShirtAssignments } 
+        : team
+    );
+
+    const success = await updateEvent(id, { teams: updatedTeams });
+
+    if (success) {
+      setEvent({
+        ...event,
+        teams: updatedTeams,
+      });
+    }
+
+    setAssigningShirtsTeam(null);
+    setIsAssignShirtsModalOpen(false);
   };
 
   const handleSaveEvent = async (data: { name: string; date: string; startTime: string; maxPlayersPerTeam: number }) => {
@@ -395,6 +426,7 @@ export default function EventDetailPage() {
                     isDragOver={isDragOver}
                     dragOverPlayerId={dragOverPlayerId}
                     onEditTeam={handleEditTeamName}
+                    onAssignShirts={handleAssignShirts}
                     onRemovePlayer={handleRemovePlayerFromTeam}
                     onSwitchPlayers={handleSwitchPlayers}
                     onAddPlayerToTeam={handleAddPlayerToTeam}
@@ -432,8 +464,18 @@ export default function EventDetailPage() {
         currentName={editingTeam?.name || ''}
         currentStrength={editingTeam?.strength || 2}
         currentTrainerId={editingTeam?.trainerId}
-        currentShirtSetId={editingTeam?.shirtSetId}
       />
+
+      {assigningShirtsTeam && (
+        <AssignShirtsModal
+          isOpen={isAssignShirtsModalOpen}
+          onClose={() => setIsAssignShirtsModalOpen(false)}
+          onSave={handleSaveShirtAssignments}
+          team={assigningShirtsTeam}
+          currentShirtSetId={assigningShirtsTeam?.shirtSetId}
+          currentShirtAssignments={assigningShirtsTeam?.shirtAssignments}
+        />
+      )}
 
       <EditEventModal
         isOpen={isEditEventModalOpen}

@@ -84,11 +84,25 @@ export default function TeamPrintSummary({ event, teams, isOpen, onClose }: Team
                       <p className="text-gray-500 italic text-sm">No players selected for this team yet.</p>
                     ) : (
                       <div className="space-y-2">
-                        {playersData.map((player) => (
-                          <div key={player!.id} className="border-b border-gray-100 pb-1 text-center">
-                              <p className="text-sm font-medium text-gray-900">{player!.firstName} {player!.lastName}</p>
-                          </div>
-                        ))}
+                        {playersData.map((player) => {
+                          const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player!.id);
+                          const shirtNumber = shirtAssignment && shirtSet 
+                            ? shirtSet.shirts.find(s => s.id === shirtAssignment.shirtId)?.number 
+                            : null;
+                          
+                          return (
+                            <div key={player!.id} className="border-b border-gray-100 pb-1 relative">
+                                <div className="flex items-center justify-center">
+                                  {shirtNumber && (
+                                    <span className="absolute left-0 text-blue-600 text-sm font-medium">#{shirtNumber}</span>
+                                  )}
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {player!.firstName} {player!.lastName}
+                                  </p>
+                                </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

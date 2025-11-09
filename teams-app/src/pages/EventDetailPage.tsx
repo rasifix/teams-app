@@ -329,6 +329,34 @@ export default function EventDetailPage() {
     }
   };
 
+  const handleReplacePlayer = async (teamId: string, oldPlayerId: string, newPlayerId: string) => {
+    if (!event || !id) return;
+
+    const updatedTeams = event.teams.map(team => {
+      if (team.id === teamId) {
+        const currentPlayers = team.selectedPlayers || [];
+        // Replace the old player with the new player
+        const updatedPlayers = currentPlayers.map(playerId => 
+          playerId === oldPlayerId ? newPlayerId : playerId
+        );
+        return {
+          ...team,
+          selectedPlayers: updatedPlayers,
+        };
+      }
+      return team;
+    });
+
+    const success = await updateEvent(id, { teams: updatedTeams });
+
+    if (success) {
+      setEvent({
+        ...event,
+        teams: updatedTeams,
+      });
+    }
+  };
+
   const handleSwitchPlayers = async (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => {
     if (!event || !id || sourceTeamId === targetTeamId) return;
 
@@ -446,6 +474,7 @@ export default function EventDetailPage() {
                     onRemovePlayer={handleRemovePlayerFromTeam}
                     onSwitchPlayers={handleSwitchPlayers}
                     onAddPlayerToTeam={handleAddPlayerToTeam}
+                    onReplacePlayer={handleReplacePlayer}
                     onDragOverTeam={setDragOverTeamId}
                     onDragOverPlayer={setDragOverPlayerId}
                   />

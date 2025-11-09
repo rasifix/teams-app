@@ -17,6 +17,7 @@ interface TeamCardProps {
   onRemovePlayer: (teamId: string, playerId: string) => void;
   onSwitchPlayers: (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => void;
   onAddPlayerToTeam: (teamId: string, playerId: string, allowMove?: boolean) => void;
+  onReplacePlayer: (teamId: string, oldPlayerId: string, newPlayerId: string) => void;
   onDragOverTeam: (teamId: string | null) => void;
   onDragOverPlayer: (playerId: string | null) => void;
 }
@@ -31,6 +32,7 @@ export default function TeamCard({
   onRemovePlayer,
   onSwitchPlayers,
   onAddPlayerToTeam,
+  onReplacePlayer,
   onDragOverTeam,
   onDragOverPlayer
 }: TeamCardProps) {
@@ -163,6 +165,15 @@ export default function TeamCard({
                     e.stopPropagation();
                     onDragOverPlayer(null);
                     
+                    // Check if it's a player from invitations list being dropped on existing player
+                    const invitationPlayerId = e.dataTransfer.getData('playerId');
+                    if (invitationPlayerId && invitationPlayerId !== playerId) {
+                      // Replace the existing player with the invitation player
+                      onReplacePlayer(team.id, playerId, invitationPlayerId);
+                      return;
+                    }
+                    
+                    // Handle switching players between teams (existing functionality)
                     const draggedPlayerId = e.dataTransfer.getData('selectedPlayerId');
                     const sourceTeamId = e.dataTransfer.getData('sourceTeamId');
                     

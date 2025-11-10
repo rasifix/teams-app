@@ -31,10 +31,48 @@ npm install
    ```
 
 ### Database Setup
-The API will automatically:
+
+#### Option 1: Local MongoDB Installation
+Install MongoDB locally and the API will automatically:
 - Connect to MongoDB on startup
 - Create required collections (`people`, `events`, `shirt-sets`)
 - Create optimized indexes for performance
+
+#### Option 2: Docker Compose (Recommended for Development)
+Start MongoDB using Docker Compose:
+
+```bash
+# Start MongoDB container
+docker-compose up -d
+
+# Check if MongoDB is running
+docker-compose ps
+```
+
+This will:
+- Start a MongoDB 7.0 container on port 27017
+- Create a `teams` database with a user `teamsapi/teamsapi123`
+- Persist data in a Docker volume
+- Set up proper networking
+
+Configure your `.env` file for Docker Compose:
+```bash
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_DATABASE=teams
+MONGODB_USERNAME=teamsapi
+MONGODB_PASSWORD=teamsapi123
+```
+
+Stop the container:
+```bash
+docker-compose down
+```
+
+Remove data volume (if you want to start fresh):
+```bash
+docker-compose down -v
+```
 
 ### Development
 ```bash
@@ -54,12 +92,12 @@ npm start
 
 ## API Endpoints
 
-### Players
-* `GET /api/players` - Get all players
-* `GET /api/players/:id` - Get a player by ID
-* `POST /api/players` - Create a new player
-* `PUT /api/players/:id` - Update an existing player
-* `DELETE /api/players/:id` - Delete a player
+### Members
+* `GET /api/members` - Get all members (players and trainers)
+* `GET /api/members/:id` - Get a member by ID
+* `POST /api/members` - Create a new member (player or trainer)
+* `PUT /api/members/:id` - Update an existing member
+* `DELETE /api/members/:id` - Delete a member
 
 ### Events
 * `GET /api/events` - Get all events
@@ -79,7 +117,7 @@ npm start
 The API uses MongoDB with three collections:
 
 ### Collections
-- `people` - Unified collection for players and trainers
+- `members` - Unified collection for players and trainers
 - `events` - Events with embedded teams and invitations  
 - `shirt-sets` - Shirt sets with embedded shirts
 

@@ -1,4 +1,3 @@
-import { ObjectId } from 'mongodb';
 import type { 
   PersonDocument, 
   EventDocument, 
@@ -22,7 +21,7 @@ export function personDocumentToPlayer(doc: PersonDocument): Player | null {
   }
   
   return {
-    id: doc._id.toString(),
+    id: doc._id,
     firstName: doc.firstName,
     lastName: doc.lastName,
     birthYear: doc.birthYear,
@@ -37,7 +36,7 @@ export function personDocumentToTrainer(doc: PersonDocument): Trainer | null {
   }
   
   return {
-    id: doc._id.toString(),
+    id: doc._id,
     firstName: doc.firstName,
     lastName: doc.lastName
   };
@@ -67,7 +66,7 @@ export function trainerToPersonDocument(trainer: Omit<Trainer, 'id'>): Omit<Pers
 export function embeddedInvitationToInvitation(embedded: InvitationEmbedded): Invitation {
   return {
     id: embedded.id,
-    playerId: embedded.playerId.toString(),
+    playerId: embedded.playerId,
     status: embedded.status
   };
 }
@@ -76,7 +75,7 @@ export function embeddedInvitationToInvitation(embedded: InvitationEmbedded): In
 export function invitationToEmbedded(invitation: Invitation): InvitationEmbedded {
   return {
     id: invitation.id,
-    playerId: new ObjectId(invitation.playerId),
+    playerId: invitation.playerId,
     status: invitation.status,
     sentAt: new Date(),
     respondedAt: invitation.status !== 'open' ? new Date() : undefined
@@ -90,11 +89,11 @@ export function embeddedTeamToTeam(embedded: TeamEmbedded): Team {
     name: embedded.name,
     strength: embedded.strength,
     startTime: embedded.startTime,
-    selectedPlayers: embedded.selectedPlayers.map(id => id.toString()),
-    trainerId: embedded.trainerId?.toString(),
-    shirtSetId: embedded.shirtSetId?.toString(),
+    selectedPlayers: embedded.selectedPlayers,
+    trainerId: embedded.trainerId,
+    shirtSetId: embedded.shirtSetId,
     shirtAssignments: embedded.shirtAssignments?.map(assignment => ({
-      playerId: assignment.playerId.toString(),
+      playerId: assignment.playerId,
       shirtNumber: assignment.shirtNumber
     }))
   };
@@ -107,11 +106,11 @@ export function teamToEmbedded(team: Team): TeamEmbedded {
     name: team.name,
     strength: team.strength,
     startTime: team.startTime,
-    selectedPlayers: team.selectedPlayers.map(id => new ObjectId(id)),
-    trainerId: team.trainerId ? new ObjectId(team.trainerId) : undefined,
-    shirtSetId: team.shirtSetId ? new ObjectId(team.shirtSetId) : undefined,
+    selectedPlayers: team.selectedPlayers,
+    trainerId: team.trainerId,
+    shirtSetId: team.shirtSetId,
     shirtAssignments: team.shirtAssignments?.map(assignment => ({
-      playerId: new ObjectId(assignment.playerId),
+      playerId: assignment.playerId,
       shirtNumber: assignment.shirtNumber
     }))
   };
@@ -120,7 +119,7 @@ export function teamToEmbedded(team: Team): TeamEmbedded {
 // Convert MongoDB EventDocument to API Event
 export function eventDocumentToEvent(doc: EventDocument): Event {
   return {
-    id: doc._id.toString(),
+    id: doc._id,
     name: doc.name,
     date: doc.eventDate.toISOString().split('T')[0], // Convert Date to ISO string
     maxPlayersPerTeam: doc.maxPlayersPerTeam,
@@ -143,7 +142,7 @@ export function eventToEventDocument(event: Omit<Event, 'id'>): Omit<EventDocume
 // Convert MongoDB ShirtSetDocument to API ShirtSet
 export function shirtSetDocumentToShirtSet(doc: ShirtSetDocument): ShirtSet {
   return {
-    id: doc._id.toString(),
+    id: doc._id,
     sponsor: doc.sponsor,
     color: doc.color,
     shirts: doc.shirts // Shirts are embedded and have the same structure
@@ -158,14 +157,4 @@ export function shirtSetToShirtSetDocument(shirtSet: Omit<ShirtSet, 'id'>): Omit
     shirts: shirtSet.shirts, // Shirts have the same structure
     active: true
   };
-}
-
-// Utility function to create ObjectId from string
-export function toObjectId(id: string): ObjectId {
-  return new ObjectId(id);
-}
-
-// Utility function to check if string is valid ObjectId
-export function isValidObjectId(id: string): boolean {
-  return ObjectId.isValid(id);
 }

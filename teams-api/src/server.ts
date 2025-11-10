@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { mongoConnection } from './database/connection';
-import peopleRoutes from './routes/peopleRoutes';
+import membersRoutes from './routes/membersRoutes';
 import eventRoutes from './routes/eventRoutes';
 import shirtSetRoutes from './routes/shirtSetRoutes';
 
@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/people', peopleRoutes);
+app.use('/api/members', membersRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/shirtsets', shirtSetRoutes);
 
@@ -54,8 +54,8 @@ async function startServer() {
       console.log(`🩺 Health check: http://localhost:${PORT}/health`);
       console.log('');
       console.log('Available endpoints:');
-      console.log('  GET    /api/people?role=player|trainer');
-      console.log('  POST   /api/people');
+      console.log('  GET    /api/members?role=player|trainer');
+      console.log('  POST   /api/members');
       console.log('  GET    /api/events');
       console.log('  POST   /api/events');
       console.log('  GET    /api/shirtsets');

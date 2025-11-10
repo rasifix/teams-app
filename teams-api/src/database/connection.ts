@@ -109,8 +109,8 @@ class DatabaseConnection {
   }
 
   // Get typed collections
-  getPeopleCollection(): Collection<PersonDocument> {
-    return this.getDb().collection<PersonDocument>(COLLECTIONS.PEOPLE);
+  getMembersCollection(): Collection<PersonDocument> {
+    return this.getDb().collection<PersonDocument>(COLLECTIONS.MEMBERS);
   }
 
   getEventsCollection(): Collection<EventDocument> {
@@ -152,13 +152,13 @@ class DatabaseConnection {
   private async createIndexes(): Promise<void> {
     console.log('🔍 Creating database indexes...');
     
-    // People collection indexes
-    const peopleCollection = this.getPeopleCollection();
-    await peopleCollection.createIndex({ role: 1 });
-    await peopleCollection.createIndex({ firstName: 1, lastName: 1 });
-    await peopleCollection.createIndex({ role: 1, birthYear: 1 }); // For player queries
-    await peopleCollection.createIndex({ role: 1, level: 1 }); // For player queries
-    await peopleCollection.createIndex({ createdAt: -1 });
+    // Members collection indexes
+    const membersCollection = this.getMembersCollection();
+    await membersCollection.createIndex({ role: 1 });
+    await membersCollection.createIndex({ firstName: 1, lastName: 1 });
+    await membersCollection.createIndex({ role: 1, birthYear: 1 }); // For player queries
+    await membersCollection.createIndex({ role: 1, level: 1 }); // For player queries
+    await membersCollection.createIndex({ createdAt: -1 });
 
     // Events collection indexes
     const eventsCollection = this.getEventsCollection();

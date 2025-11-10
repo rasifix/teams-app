@@ -1,13 +1,11 @@
-import { ObjectId } from 'mongodb';
-
 // Base MongoDB document interface
 export interface BaseDocument {
-  _id: ObjectId;
+  _id: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// People Collection - Unified collection for players and trainers
+// Members Collection - Unified collection for players and trainers
 export interface PersonDocument extends BaseDocument {
   firstName: string;
   lastName: string;
@@ -20,7 +18,7 @@ export interface PersonDocument extends BaseDocument {
 // Embedded invitation document (within events)
 export interface InvitationEmbedded {
   id: string;
-  playerId: ObjectId; // Reference to PersonDocument with role 'player'
+  playerId: string; // Reference to PersonDocument with role 'player'
   status: 'open' | 'accepted' | 'declined';
   sentAt?: Date;
   respondedAt?: Date;
@@ -28,7 +26,7 @@ export interface InvitationEmbedded {
 
 // Embedded shirt assignment (within teams)
 export interface ShirtAssignmentEmbedded {
-  playerId: ObjectId; // Reference to PersonDocument with role 'player'
+  playerId: string; // Reference to PersonDocument with role 'player'
   shirtNumber: number;
 }
 
@@ -38,9 +36,9 @@ export interface TeamEmbedded {
   name: string;
   strength: number; // 1 (highest) to 3 (lowest), default 2
   startTime: string; // HH:MM format
-  selectedPlayers: ObjectId[]; // References to PersonDocument with role 'player'
-  trainerId?: ObjectId; // Reference to PersonDocument with role 'trainer'
-  shirtSetId?: ObjectId; // Reference to ShirtSetDocument
+  selectedPlayers: string[]; // References to PersonDocument with role 'player'
+  trainerId?: string; // Reference to PersonDocument with role 'trainer'
+  shirtSetId?: string; // Reference to ShirtSetDocument
   shirtAssignments?: ShirtAssignmentEmbedded[];
 }
 
@@ -92,7 +90,7 @@ export function isTrainerDocument(person: PersonDocument): person is TrainerDocu
 
 // Collection names constants
 export const COLLECTIONS = {
-  PEOPLE: 'people',
+  MEMBERS: 'members',
   EVENTS: 'events',
   SHIRT_SETS: 'shirt-sets'
 } as const;

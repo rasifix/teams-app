@@ -3,8 +3,8 @@ import { dataStore } from '../data/store';
 import { Player, Trainer } from '../types';
 import { randomUUID } from 'crypto';
 
-// GET /api/people?role=player|trainer or GET /api/people (returns all)
-export const getAllPeople = async (req: Request, res: Response): Promise<void> => {
+// GET /api/members?role=player|trainer or GET /api/members (returns all)
+export const getAllMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { role } = req.query;
     
@@ -28,13 +28,13 @@ export const getAllPeople = async (req: Request, res: Response): Promise<void> =
       res.status(400).json({ error: 'Invalid role. Must be "player" or "trainer"' });
     }
   } catch (error) {
-    console.error('Error fetching people:', error);
-    res.status(500).json({ error: 'Failed to fetch people' });
+    console.error('Error fetching members:', error);
+    res.status(500).json({ error: 'Failed to fetch members' });
   }
 };
 
-// GET /api/people/:id
-export const getPersonById = async (req: Request, res: Response): Promise<void> => {
+// GET /api/members/:id
+export const getMemberById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     
@@ -51,15 +51,15 @@ export const getPersonById = async (req: Request, res: Response): Promise<void> 
       return;
     }
     
-    res.status(404).json({ error: 'Person not found' });
+    res.status(404).json({ error: 'Member not found' });
   } catch (error) {
-    console.error('Error fetching person:', error);
-    res.status(500).json({ error: 'Failed to fetch person' });
+    console.error('Error fetching member:', error);
+    res.status(500).json({ error: 'Failed to fetch member' });
   }
 };
 
-// POST /api/people
-export const createPerson = async (req: Request, res: Response): Promise<void> => {
+// POST /api/members
+export const createMember = async (req: Request, res: Response): Promise<void> => {
   try {
     const { role, firstName, lastName, birthYear, level } = req.body;
     
@@ -105,13 +105,13 @@ export const createPerson = async (req: Request, res: Response): Promise<void> =
       res.status(201).json({ ...createdTrainer, role: 'trainer' });
     }
   } catch (error) {
-    console.error('Error creating person:', error);
-    res.status(500).json({ error: 'Failed to create person' });
+    console.error('Error creating member:', error);
+    res.status(500).json({ error: 'Failed to create member' });
   }
 };
 
-// PUT /api/people/:id
-export const updatePerson = async (req: Request, res: Response): Promise<void> => {
+// PUT /api/members/:id
+export const updateMember = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { role, firstName, lastName, birthYear, level } = req.body;
@@ -164,13 +164,13 @@ export const updatePerson = async (req: Request, res: Response): Promise<void> =
       res.json({ ...updatedTrainer, role: 'trainer' });
     }
   } catch (error) {
-    console.error('Error updating person:', error);
-    res.status(500).json({ error: 'Failed to update person' });
+    console.error('Error updating member:', error);
+    res.status(500).json({ error: 'Failed to update member' });
   }
 };
 
-// DELETE /api/people/:id
-export const deletePerson = async (req: Request, res: Response): Promise<void> => {
+// DELETE /api/members/:id
+export const deleteMember = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     
@@ -187,9 +187,9 @@ export const deletePerson = async (req: Request, res: Response): Promise<void> =
       return;
     }
     
-    res.status(404).json({ error: 'Person not found' });
+    res.status(404).json({ error: 'Member not found' });
   } catch (error) {
-    console.error('Error deleting person:', error);
-    res.status(500).json({ error: 'Failed to delete person' });
+    console.error('Error deleting member:', error);
+    res.status(500).json({ error: 'Failed to delete member' });
   }
 };

@@ -13,28 +13,24 @@ import {
   eventDocumentToEvent,
   eventToEventDocument,
   shirtSetDocumentToShirtSet,
-  shirtSetToShirtSetDocument,
-  toObjectId,
-  isValidObjectId
+  shirtSetToShirtSetDocument
 } from '../types/mappers';
 
 // MongoDB-based data store
 class DataStore {
   // Player operations
   async getAllPlayers(): Promise<Player[]> {
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const playerDocs = await peopleCollection.find({ role: 'player' }).toArray();
+    const membersCollection = mongoConnection.getMembersCollection();
+    const playerDocs = await membersCollection.find({ role: 'player' }).toArray();
     return playerDocs
       .map(personDocumentToPlayer)
       .filter((player): player is Player => player !== null);
   }
 
   async getPlayerById(id: string): Promise<Player | undefined> {
-    if (!isValidObjectId(id)) return undefined;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const playerDoc = await peopleCollection.findOne({ 
-      _id: toObjectId(id), 
+    const membersCollection = mongoConnection.getMembersCollection();
+    const playerDoc = await membersCollection.findOne({ 
+      _id: id, 
       role: 'player' 
     });
     
@@ -42,32 +38,30 @@ class DataStore {
   }
 
   async createPlayer(player: Player): Promise<Player> {
-    const peopleCollection = mongoConnection.getPeopleCollection();
+    const membersCollection = mongoConnection.getMembersCollection();
     const personDoc = playerToPersonDocument(player);
     const now = new Date();
     
     const newDoc: PersonDocument = {
-      _id: toObjectId(player.id),
+      _id: player.id,
       ...personDoc,
       createdAt: now,
       updatedAt: now
     };
     
-    await peopleCollection.insertOne(newDoc);
+    await membersCollection.insertOne(newDoc);
     return player;
   }
 
   async updatePlayer(id: string, updates: Partial<Omit<Player, 'id'>>): Promise<Player | null> {
-    if (!isValidObjectId(id)) return null;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
+    const membersCollection = mongoConnection.getMembersCollection();
     const updateDoc = {
       ...updates,
       updatedAt: new Date()
     };
     
-    const result = await peopleCollection.findOneAndUpdate(
-      { _id: toObjectId(id), role: 'player' },
+    const result = await membersCollection.findOneAndUpdate(
+      { _id: id, role: 'player' },
       { $set: updateDoc },
       { returnDocument: 'after' }
     );
@@ -76,11 +70,9 @@ class DataStore {
   }
 
   async deletePlayer(id: string): Promise<boolean> {
-    if (!isValidObjectId(id)) return false;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const result = await peopleCollection.deleteOne({ 
-      _id: toObjectId(id), 
+    const membersCollection = mongoConnection.getMembersCollection();
+    const result = await membersCollection.deleteOne({ 
+      _id: id, 
       role: 'player' 
     });
     
@@ -95,10 +87,8 @@ class DataStore {
   }
 
   async getEventById(id: string): Promise<Event | undefined> {
-    if (!isValidObjectId(id)) return undefined;
-    
     const eventsCollection = mongoConnection.getEventsCollection();
-    const eventDoc = await eventsCollection.findOne({ _id: toObjectId(id) });
+    const eventDoc = await eventsCollection.findOne({ _id: id });
     
     return eventDoc ? eventDocumentToEvent(eventDoc) : undefined;
   }
@@ -109,7 +99,7 @@ class DataStore {
     const now = new Date();
     
     const newDoc: EventDocument = {
-      _id: toObjectId(event.id),
+      _id: event.id,
       ...eventDoc,
       createdAt: now,
       updatedAt: now
@@ -120,8 +110,6 @@ class DataStore {
   }
 
   async updateEvent(id: string, updates: Partial<Omit<Event, 'id'>>): Promise<Event | null> {
-    if (!isValidObjectId(id)) return null;
-    
     const eventsCollection = mongoConnection.getEventsCollection();
     
     // Convert updates to MongoDB format
@@ -140,7 +128,7 @@ class DataStore {
     }
     
     const result = await eventsCollection.findOneAndUpdate(
-      { _id: toObjectId(id) },
+      { _id: id },
       { $set: updateDoc },
       { returnDocument: 'after' }
     );
@@ -149,29 +137,24 @@ class DataStore {
   }
 
   async deleteEvent(id: string): Promise<boolean> {
-    if (!isValidObjectId(id)) return false;
-    
     const eventsCollection = mongoConnection.getEventsCollection();
-    const result = await eventsCollection.deleteOne({ _id: toObjectId(id) });
-    
+    const result = await eventsCollection.deleteOne({ _id: id });
     return result.deletedCount > 0;
   }
 
   // Trainer operations
   async getAllTrainers(): Promise<Trainer[]> {
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const trainerDocs = await peopleCollection.find({ role: 'trainer' }).toArray();
+    const membersCollection = mongoConnection.getMembersCollection();
+    const trainerDocs = await membersCollection.find({ role: 'trainer' }).toArray();
     return trainerDocs
       .map(personDocumentToTrainer)
       .filter((trainer): trainer is Trainer => trainer !== null);
   }
 
   async getTrainerById(id: string): Promise<Trainer | undefined> {
-    if (!isValidObjectId(id)) return undefined;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const trainerDoc = await peopleCollection.findOne({ 
-      _id: toObjectId(id), 
+    const membersCollection = mongoConnection.getMembersCollection();
+    const trainerDoc = await membersCollection.findOne({ 
+      _id: id, 
       role: 'trainer' 
     });
     
@@ -179,32 +162,30 @@ class DataStore {
   }
 
   async createTrainer(trainer: Trainer): Promise<Trainer> {
-    const peopleCollection = mongoConnection.getPeopleCollection();
+    const membersCollection = mongoConnection.getMembersCollection();
     const personDoc = trainerToPersonDocument(trainer);
     const now = new Date();
     
     const newDoc: PersonDocument = {
-      _id: toObjectId(trainer.id),
+      _id: trainer.id,
       ...personDoc,
       createdAt: now,
       updatedAt: now
     };
     
-    await peopleCollection.insertOne(newDoc);
+    await membersCollection.insertOne(newDoc);
     return trainer;
   }
 
   async updateTrainer(id: string, updates: Partial<Omit<Trainer, 'id'>>): Promise<Trainer | null> {
-    if (!isValidObjectId(id)) return null;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
+    const membersCollection = mongoConnection.getMembersCollection();
     const updateDoc = {
       ...updates,
       updatedAt: new Date()
     };
     
-    const result = await peopleCollection.findOneAndUpdate(
-      { _id: toObjectId(id), role: 'trainer' },
+    const result = await membersCollection.findOneAndUpdate(
+      { _id: id, role: 'trainer' },
       { $set: updateDoc },
       { returnDocument: 'after' }
     );
@@ -213,31 +194,27 @@ class DataStore {
   }
 
   async deleteTrainer(id: string): Promise<boolean> {
-    if (!isValidObjectId(id)) return false;
-    
-    const peopleCollection = mongoConnection.getPeopleCollection();
-    const result = await peopleCollection.deleteOne({ 
-      _id: toObjectId(id), 
+    const membersCollection = mongoConnection.getMembersCollection();
+    const result = await membersCollection.deleteOne({ 
+      _id: id, 
       role: 'trainer' 
     });
     
     return result.deletedCount > 0;
   }
 
-  // ShirtSet operations
+  // Shirt Set operations
   async getAllShirtSets(): Promise<ShirtSet[]> {
     const shirtSetsCollection = mongoConnection.getShirtSetsCollection();
-    const shirtSetDocs = await shirtSetsCollection.find({ active: { $ne: false } }).sort({ createdAt: -1 }).toArray();
+    const shirtSetDocs = await shirtSetsCollection.find({ active: { $ne: false } }).toArray();
     return shirtSetDocs.map(shirtSetDocumentToShirtSet);
   }
 
   async getShirtSetById(id: string): Promise<ShirtSet | undefined> {
-    if (!isValidObjectId(id)) return undefined;
-    
     const shirtSetsCollection = mongoConnection.getShirtSetsCollection();
     const shirtSetDoc = await shirtSetsCollection.findOne({ 
-      _id: toObjectId(id),
-      active: { $ne: false }
+      _id: id, 
+      active: { $ne: false } 
     });
     
     return shirtSetDoc ? shirtSetDocumentToShirtSet(shirtSetDoc) : undefined;
@@ -249,7 +226,7 @@ class DataStore {
     const now = new Date();
     
     const newDoc: ShirtSetDocument = {
-      _id: toObjectId(shirtSet.id),
+      _id: shirtSet.id,
       ...shirtSetDoc,
       createdAt: now,
       updatedAt: now
@@ -260,8 +237,6 @@ class DataStore {
   }
 
   async updateShirtSet(id: string, updates: Partial<Omit<ShirtSet, 'id'>>): Promise<ShirtSet | null> {
-    if (!isValidObjectId(id)) return null;
-    
     const shirtSetsCollection = mongoConnection.getShirtSetsCollection();
     const updateDoc = {
       ...updates,
@@ -269,7 +244,7 @@ class DataStore {
     };
     
     const result = await shirtSetsCollection.findOneAndUpdate(
-      { _id: toObjectId(id), active: { $ne: false } },
+      { _id: id, active: { $ne: false } },
       { $set: updateDoc },
       { returnDocument: 'after' }
     );
@@ -278,18 +253,10 @@ class DataStore {
   }
 
   async deleteShirtSet(id: string): Promise<boolean> {
-    if (!isValidObjectId(id)) return false;
-    
     const shirtSetsCollection = mongoConnection.getShirtSetsCollection();
-    // Soft delete - mark as inactive instead of physical deletion
     const result = await shirtSetsCollection.updateOne(
-      { _id: toObjectId(id) },
-      { 
-        $set: { 
-          active: false, 
-          updatedAt: new Date() 
-        } 
-      }
+      { _id: id },
+      { $set: { active: false, updatedAt: new Date() } }
     );
     
     return result.modifiedCount > 0;

@@ -32,20 +32,6 @@ export interface Event {
   invitations: Invitation[];
 }
 
-export interface PlayerSelection {
-  playerId: string;
-  teamId: string;
-}
-
-export interface PlayerEventHistoryItem {
-  eventId: string;
-  eventName: string;
-  eventDate: string; // ISO date string
-  invitationStatus: 'open' | 'accepted' | 'declined';
-  isSelected: boolean;
-  teamName?: string;
-}
-
 export interface Shirt {
   number: number;
   size: '128' | '140' | '152' | '164' | 'XS' | 'S' | 'M' | 'L' | 'XL';

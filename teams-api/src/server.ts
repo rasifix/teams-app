@@ -2,9 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { mongoConnection } from './database/connection';
-import playerRoutes from './routes/playerRoutes';
+import peopleRoutes from './routes/peopleRoutes';
 import eventRoutes from './routes/eventRoutes';
-import trainerRoutes from './routes/trainerRoutes';
 import shirtSetRoutes from './routes/shirtSetRoutes';
 
 const app = express();
@@ -15,10 +14,9 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/players', playerRoutes);
+app.use('/api/people', peopleRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/trainers', trainerRoutes);
-app.use('/api/shirt-sets', shirtSetRoutes);
+app.use('/api/shirtsets', shirtSetRoutes);
 
 // Health check
 app.get('/health', async (_req, res) => {
@@ -56,14 +54,12 @@ async function startServer() {
       console.log(`🩺 Health check: http://localhost:${PORT}/health`);
       console.log('');
       console.log('Available endpoints:');
-      console.log('  GET    /api/players');
-      console.log('  POST   /api/players');
+      console.log('  GET    /api/people?role=player|trainer');
+      console.log('  POST   /api/people');
       console.log('  GET    /api/events');
       console.log('  POST   /api/events');
-      console.log('  GET    /api/trainers');
-      console.log('  POST   /api/trainers');
-      console.log('  GET    /api/shirt-sets');
-      console.log('  POST   /api/shirt-sets');
+      console.log('  GET    /api/shirtsets');
+      console.log('  POST   /api/shirtsets');
     });
     
   } catch (error) {

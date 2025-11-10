@@ -202,7 +202,7 @@ class DataStore {
   }
 
   // Trainer operations
-  async getAllTrainers(groupId?: string): Promise<Trainer[]> {
+  async getAllTrainers(groupId: string): Promise<Trainer[]> {
     const membersCollection = mongoConnection.getMembersCollection();
     const filter: any = { role: 'trainer' as const };
     if (groupId) {

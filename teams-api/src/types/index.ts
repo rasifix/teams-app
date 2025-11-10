@@ -7,6 +7,7 @@ export interface Player {
 }
 
 export interface Invitation {
+  id: string;
   playerId: string;
   status: 'open' | 'accepted' | 'declined';
 }
@@ -14,16 +15,38 @@ export interface Invitation {
 export interface Team {
   id: string;
   name: string;
-  strength: number; // 1-5
-  selectedPlayers: string[]; // Array of player IDs
+  strength: number; // 1 (highest) to 3 (lowest), default 2
+  startTime: string; // HH:MM format - each team can have different start times
+  selectedPlayers: string[]; // Player IDs assigned to this team
+  trainerId?: string; // Trainer ID assigned to this team
+  shirtSetId?: string; // Shirt set ID assigned to this team
+  shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
 }
 
 export interface Event {
   id: string;
   name: string;
   date: string; // ISO date string
-  startTime: string;
   maxPlayersPerTeam: number;
   teams: Team[];
   invitations: Invitation[];
+}
+
+export interface Shirt {
+  number: number;
+  size: '128' | '140' | '152' | '164' | 'XS' | 'S' | 'M' | 'L' | 'XL';
+  isGoalkeeper: boolean;
+}
+
+export interface ShirtSet {
+  id: string;
+  sponsor: string;
+  color: string;
+  shirts: Shirt[];
+}
+
+export interface Trainer {
+  id: string;
+  firstName: string;
+  lastName: string;
 }

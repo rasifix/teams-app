@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import playerRoutes from './routes/playerRoutes';
 import eventRoutes from './routes/eventRoutes';
+import trainerRoutes from './routes/trainerRoutes';
+import shirtSetRoutes from './routes/shirtSetRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +15,8 @@ app.use(express.json());
 // Routes
 app.use('/api/players', playerRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/trainers', trainerRoutes);
+app.use('/api/shirt-sets', shirtSetRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

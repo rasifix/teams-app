@@ -24,7 +24,7 @@ export default function PlayerInvitationsCard({
   onAutoSelect,
   assignedPlayerIds = [],
 }: PlayerInvitationsCardProps) {
-  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(true);
   const { events } = useEvents();
 
   // Function to calculate real-time statistics including current event state

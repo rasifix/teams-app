@@ -7,44 +7,35 @@ export function useEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const loadedEvents = await eventService.getEvents();
-        const sortedEvents = loadedEvents.sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-        setEvents(sortedEvents);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load events');
-        console.error('Error loading events:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const loadedEvents = await eventService.getEvents();
+      const sortedEvents = loadedEvents.sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      setEvents(sortedEvents);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load events from server');
+      console.error('Error loading events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadEvents();
   }, []);
 
   const addEvent = async (eventData: Omit<Event, 'id'>): Promise<boolean> => {
     try {
-      const newEvent: Event = {
-        ...eventData,
-        id: crypto.randomUUID(),
-      };
-
-      await eventService.addEvent(newEvent);
-      setEvents(prev => {
-        const updated = [...prev, newEvent];
-        return updated.sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-      });
+      await eventService.addEvent(eventData);
+      await loadEvents(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to add event');
+      setError('Failed to save event to server');
       console.error('Error adding event:', err);
       return false;
     }
@@ -53,18 +44,11 @@ export function useEvents() {
   const updateEvent = async (eventId: string, updates: Partial<Omit<Event, 'id'>>): Promise<boolean> => {
     try {
       await eventService.updateEvent(eventId, updates);
-      setEvents(prev => {
-        const updated = prev.map(event => 
-          event.id === eventId ? { ...event, ...updates } : event
-        );
-        return updated.sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-      });
+      await loadEvents(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to update event');
+      setError('Failed to update event on server');
       console.error('Error updating event:', err);
       return false;
     }
@@ -73,11 +57,11 @@ export function useEvents() {
   const deleteEvent = async (eventId: string): Promise<boolean> => {
     try {
       await eventService.deleteEvent(eventId);
-      setEvents(prev => prev.filter(event => event.id !== eventId));
+      await loadEvents(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to delete event');
+      setError('Failed to delete event on server');
       console.error('Error deleting event:', err);
       return false;
     }

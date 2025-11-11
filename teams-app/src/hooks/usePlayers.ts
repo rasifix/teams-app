@@ -21,38 +21,32 @@ export function usePlayers() {
   const [error, setError] = useState<string | null>(null);
 
   // Load players from service on mount
-  useEffect(() => {
-    const loadPlayers = async () => {
-      try {
-        const storedPlayers = await playerService.getPlayers();
-        setPlayers(sortPlayers(storedPlayers));
-        setError(null);
-      } catch (err) {
-        setError('Failed to load players from storage');
-        console.error('Error loading players:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadPlayers = async () => {
+    try {
+      setLoading(true);
+      const apiPlayers = await playerService.getPlayers();
+      setPlayers(sortPlayers(apiPlayers));
+      setError(null);
+    } catch (err) {
+      setError('Failed to load players from server');
+      console.error('Error loading players:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadPlayers();
   }, []);
 
   const handleAddPlayer = async (playerData: Omit<Player, 'id'>): Promise<boolean> => {
     try {
-      const newPlayer: Player = {
-        ...playerData,
-        id: crypto.randomUUID(),
-      };
-
-      await playerService.addPlayer(newPlayer);
-      // Re-fetch from service to ensure consistency
-      const allPlayers = await playerService.getPlayers();
-      setPlayers(sortPlayers(allPlayers));
+      await playerService.addPlayer(playerData);
+      await loadPlayers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to add player');
+      setError('Failed to save player to server');
       console.error('Error adding player:', err);
       return false;
     }
@@ -61,13 +55,11 @@ export function usePlayers() {
   const handleUpdatePlayer = async (playerId: string, updates: Partial<Omit<Player, 'id'>>): Promise<boolean> => {
     try {
       await playerService.updatePlayer(playerId, updates);
-      // Re-fetch from service to ensure consistency
-      const allPlayers = await playerService.getPlayers();
-      setPlayers(sortPlayers(allPlayers));
+      await loadPlayers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to update player');
+      setError('Failed to update player on server');
       console.error('Error updating player:', err);
       return false;
     }
@@ -76,13 +68,11 @@ export function usePlayers() {
   const handleDeletePlayer = async (playerId: string): Promise<boolean> => {
     try {
       await playerService.deletePlayer(playerId);
-      // Re-fetch from service to ensure consistency
-      const allPlayers = await playerService.getPlayers();
-      setPlayers(sortPlayers(allPlayers));
+      await loadPlayers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to delete player');
+      setError('Failed to delete player on server');
       console.error('Error deleting player:', err);
       return false;
     }

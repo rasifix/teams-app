@@ -21,38 +21,32 @@ export function useTrainers() {
   const [error, setError] = useState<string | null>(null);
 
   // Load trainers from service on mount
-  useEffect(() => {
-    const loadTrainers = async () => {
-      try {
-        const storedTrainers = await trainerService.getTrainers();
-        setTrainers(sortTrainers(storedTrainers));
-        setError(null);
-      } catch (err) {
-        setError('Failed to load trainers from storage');
-        console.error('Error loading trainers:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadTrainers = async () => {
+    try {
+      setLoading(true);
+      const apiTrainers = await trainerService.getTrainers();
+      setTrainers(sortTrainers(apiTrainers));
+      setError(null);
+    } catch (err) {
+      setError('Failed to load trainers from server');
+      console.error('Error loading trainers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadTrainers();
   }, []);
 
   const handleAddTrainer = async (trainerData: Omit<Trainer, 'id'>): Promise<boolean> => {
     try {
-      const newTrainer: Trainer = {
-        ...trainerData,
-        id: crypto.randomUUID(),
-      };
-
-      await trainerService.addTrainer(newTrainer);
-      // Re-fetch from service to ensure consistency
-      const allTrainers = await trainerService.getTrainers();
-      setTrainers(sortTrainers(allTrainers));
+      await trainerService.addTrainer(trainerData);
+      await loadTrainers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to add trainer');
+      setError('Failed to save trainer to server');
       console.error('Error adding trainer:', err);
       return false;
     }
@@ -61,13 +55,11 @@ export function useTrainers() {
   const handleUpdateTrainer = async (trainerId: string, updates: Partial<Omit<Trainer, 'id'>>): Promise<boolean> => {
     try {
       await trainerService.updateTrainer(trainerId, updates);
-      // Re-fetch from service to ensure consistency
-      const allTrainers = await trainerService.getTrainers();
-      setTrainers(sortTrainers(allTrainers));
+      await loadTrainers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to update trainer');
+      setError('Failed to update trainer on server');
       console.error('Error updating trainer:', err);
       return false;
     }
@@ -76,13 +68,11 @@ export function useTrainers() {
   const handleDeleteTrainer = async (trainerId: string): Promise<boolean> => {
     try {
       await trainerService.deleteTrainer(trainerId);
-      // Re-fetch from service to ensure consistency
-      const allTrainers = await trainerService.getTrainers();
-      setTrainers(sortTrainers(allTrainers));
+      await loadTrainers(); // Refresh from API
       setError(null);
       return true;
     } catch (err) {
-      setError('Failed to delete trainer');
+      setError('Failed to delete trainer on server');
       console.error('Error deleting trainer:', err);
       return false;
     }

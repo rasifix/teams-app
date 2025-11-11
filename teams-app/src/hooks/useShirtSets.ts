@@ -21,20 +21,21 @@ export function useShirtSets() {
   const [error, setError] = useState<string | null>(null);
 
   // Load shirt sets from service on mount
-  useEffect(() => {
-    const loadShirtSets = async () => {
-      try {
-        const storedShirtSets = await shirtService.getShirtSets();
-        setShirtSets(sortShirtSets(storedShirtSets));
-        setError(null);
-      } catch (err) {
-        setError('Failed to load shirt sets from storage');
-        console.error('Error loading shirt sets:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadShirtSets = async () => {
+    try {
+      setLoading(true);
+      const apiShirtSets = await shirtService.getShirtSets();
+      setShirtSets(sortShirtSets(apiShirtSets));
+      setError(null);
+    } catch (err) {
+      setError('Failed to load shirt sets from server');
+      console.error('Error loading shirt sets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadShirtSets();
   }, []);
 
@@ -43,10 +44,10 @@ export function useShirtSets() {
     try {
       setError(null);
       const newShirtSet = await shirtService.addShirtSet(shirtSetData);
-      setShirtSets(prev => sortShirtSets([...prev, newShirtSet]));
+      await loadShirtSets(); // Refresh from API
       return newShirtSet;
     } catch (err) {
-      setError('Failed to add shirt set');
+      setError('Failed to save shirt set to server');
       console.error('Error adding shirt set:', err);
       return null;
     }
@@ -57,15 +58,10 @@ export function useShirtSets() {
     try {
       setError(null);
       await shirtService.updateShirtSet(id, updates);
-      setShirtSets(prev => {
-        const updated = prev.map(shirtSet => 
-          shirtSet.id === id ? { ...shirtSet, ...updates } : shirtSet
-        );
-        return sortShirtSets(updated);
-      });
+      await loadShirtSets(); // Refresh from API
       return true;
     } catch (err) {
-      setError('Failed to update shirt set');
+      setError('Failed to update shirt set on server');
       console.error('Error updating shirt set:', err);
       return false;
     }
@@ -76,30 +72,24 @@ export function useShirtSets() {
     try {
       setError(null);
       await shirtService.deleteShirtSet(id);
-      setShirtSets(prev => prev.filter(shirtSet => shirtSet.id !== id));
+      await loadShirtSets(); // Refresh from API
       return true;
     } catch (err) {
-      setError('Failed to delete shirt set');
+      setError('Failed to delete shirt set on server');
       console.error('Error deleting shirt set:', err);
       return false;
     }
   };
 
   // Add shirt to set
-  const addShirtToSet = async (shirtSetId: string, shirtData: Omit<Shirt, 'id'>): Promise<Shirt | null> => {
+  const addShirtToSet = async (shirtSetId: string, shirtData: Shirt): Promise<Shirt | null> => {
     try {
       setError(null);
       const newShirt = await shirtService.addShirtToSet(shirtSetId, shirtData);
-      setShirtSets(prev => 
-        prev.map(shirtSet => 
-          shirtSet.id === shirtSetId 
-            ? { ...shirtSet, shirts: [...shirtSet.shirts, newShirt] }
-            : shirtSet
-        )
-      );
+      await loadShirtSets(); // Refresh from API
       return newShirt;
     } catch (err) {
-      setError('Failed to add shirt to set');
+      setError('Failed to add shirt to set on server');
       console.error('Error adding shirt to set:', err);
       return null;
     }
@@ -110,16 +100,10 @@ export function useShirtSets() {
     try {
       setError(null);
       await shirtService.removeShirtFromSet(shirtSetId, shirtNumber);
-      setShirtSets(prev => 
-        prev.map(shirtSet => 
-          shirtSet.id === shirtSetId 
-            ? { ...shirtSet, shirts: shirtSet.shirts.filter(shirt => shirt.number !== shirtNumber) }
-            : shirtSet
-        )
-      );
+      await loadShirtSets(); // Refresh from API
       return true;
     } catch (err) {
-      setError('Failed to remove shirt from set');
+      setError('Failed to remove shirt from set on server');
       console.error('Error removing shirt from set:', err);
       return false;
     }
@@ -130,18 +114,10 @@ export function useShirtSets() {
     try {
       setError(null);
       await shirtService.updateShirt(shirtSetId, updatedShirt);
-      setShirtSets(prev => 
-        prev.map(shirtSet => 
-          shirtSet.id === shirtSetId 
-            ? { ...shirtSet, shirts: shirtSet.shirts.map(shirt => 
-                shirt.number === updatedShirt.number ? updatedShirt : shirt
-              )}
-            : shirtSet
-        )
-      );
+      await loadShirtSets(); // Refresh from API
       return true;
     } catch (err) {
-      setError('Failed to update shirt');
+      setError('Failed to update shirt on server');
       console.error('Error updating shirt:', err);
       return false;
     }

@@ -1,122 +1,85 @@
+import { apiClient } from './apiClient';
 import type { ShirtSet, Shirt } from '../types';
-// Import localStorage utilities (temporary - will be replaced with API calls)
-import * as localStorage from '../utils/localStorage';
-
-// This service layer abstracts data access - easy to swap localStorage for API
 
 export async function getShirtSets(): Promise<ShirtSet[]> {
-  // Simulate async API call (for future backend compatibility)
-  return new Promise((resolve) => {
-    const shirtSets = localStorage.getShirtSets();
-    setTimeout(() => resolve(shirtSets), 0); // Simulate network delay in dev
-  });
+  return apiClient.request<ShirtSet[]>(
+    apiClient.getGroupEndpoint('/shirtsets')
+  );
 }
 
-export async function addShirtSet(shirtSetData: Omit<ShirtSet, 'id'>): Promise<ShirtSet> {
-  return new Promise((resolve, reject) => {
-    const newShirtSet: ShirtSet = {
-      ...shirtSetData,
-      id: crypto.randomUUID(),
-    };
-    
-    const success = localStorage.addShirtSet(newShirtSet);
-    if (success) {
-      setTimeout(() => resolve(newShirtSet), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to add shirt set')), 0);
+export async function addShirtSet(shirtData: Omit<ShirtSet, 'id'>): Promise<ShirtSet> {
+  return apiClient.request<ShirtSet>(
+    apiClient.getGroupEndpoint('/shirtsets'),
+    {
+      method: 'POST',
+      body: JSON.stringify(shirtData)
     }
-  });
+  );
 }
 
-export async function updateShirtSet(id: string, updates: Partial<Omit<ShirtSet, 'id'>>): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const success = localStorage.updateShirtSet(id, updates);
-    if (success) {
-      setTimeout(() => resolve(), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to update shirt set')), 0);
+export async function updateShirtSet(id: string, shirtData: Partial<ShirtSet>): Promise<ShirtSet> {
+  return apiClient.request<ShirtSet>(
+    apiClient.getGroupEndpoint(`/shirtsets/${id}`),
+    {
+      method: 'PUT',
+      body: JSON.stringify(shirtData)
     }
-  });
+  );
 }
 
 export async function deleteShirtSet(id: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const success = localStorage.deleteShirtSet(id);
-    if (success) {
-      setTimeout(() => resolve(), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to delete shirt set')), 0);
-    }
-  });
+  return apiClient.request<void>(
+    apiClient.getGroupEndpoint(`/shirtsets/${id}`),
+    { method: 'DELETE' }
+  );
 }
 
-export function getShirtSetById(id: string): ShirtSet | null {
-  // This one can remain synchronous as it's just a lookup
-  return localStorage.getShirtSetById(id);
+export async function getShirtSetById(id: string): Promise<ShirtSet | null> {
+  try {
+    return await apiClient.request<ShirtSet>(
+      apiClient.getGroupEndpoint(`/shirtsets/${id}`)
+    );
+  } catch (error) {
+    // If shirt set not found, return null
+    if (error instanceof Error && error.message.includes('404')) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 // Helper function to add a shirt to a shirt set
 export async function addShirtToSet(shirtSetId: string, shirtData: Shirt): Promise<Shirt> {
-  return new Promise((resolve, reject) => {
-    const shirtSet = localStorage.getShirtSetById(shirtSetId);
-    if (!shirtSet) {
-      setTimeout(() => reject(new Error('Shirt set not found')), 0);
-      return;
-    }
+  const shirtSet = await getShirtSetById(shirtSetId);
+  if (!shirtSet) {
+    throw new Error('Shirt set not found');
+  }
 
-    const newShirt: Shirt = {
-      ...shirtData,
-    };
-
-    const updatedShirts = [...shirtSet.shirts, newShirt];
-    const success = localStorage.updateShirtSet(shirtSetId, { shirts: updatedShirts });
-    
-    if (success) {
-      setTimeout(() => resolve(newShirt), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to add shirt to set')), 0);
-    }
-  });
+  const updatedShirts = [...shirtSet.shirts, shirtData];
+  await updateShirtSet(shirtSetId, { shirts: updatedShirts });
+  return shirtData;
 }
 
 // Helper function to remove a shirt from a shirt set
 export async function removeShirtFromSet(shirtSetId: string, shirtNumber: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const shirtSet = localStorage.getShirtSetById(shirtSetId);
-    if (!shirtSet) {
-      setTimeout(() => reject(new Error('Shirt set not found')), 0);
-      return;
-    }
+  const shirtSet = await getShirtSetById(shirtSetId);
+  if (!shirtSet) {
+    throw new Error('Shirt set not found');
+  }
 
-    const updatedShirts = shirtSet.shirts.filter(shirt => shirt.number !== shirtNumber);
-    const success = localStorage.updateShirtSet(shirtSetId, { shirts: updatedShirts });
-    
-    if (success) {
-      setTimeout(() => resolve(), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to remove shirt from set')), 0);
-    }
-  });
+  const updatedShirts = shirtSet.shirts.filter(shirt => shirt.number !== shirtNumber);
+  await updateShirtSet(shirtSetId, { shirts: updatedShirts });
 }
 
 // Helper function to update a shirt in a shirt set
 export async function updateShirt(shirtSetId: string, updatedShirt: Shirt): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const shirtSet = localStorage.getShirtSetById(shirtSetId);
-    if (!shirtSet) {
-      setTimeout(() => reject(new Error('Shirt set not found')), 0);
-      return;
-    }
+  const shirtSet = await getShirtSetById(shirtSetId);
+  if (!shirtSet) {
+    throw new Error('Shirt set not found');
+  }
 
-    const updatedShirts = shirtSet.shirts.map(shirt => 
-      shirt.number === updatedShirt.number ? updatedShirt : shirt
-    );
-    const success = localStorage.updateShirtSet(shirtSetId, { shirts: updatedShirts });
-    
-    if (success) {
-      setTimeout(() => resolve(), 0);
-    } else {
-      setTimeout(() => reject(new Error('Failed to update shirt')), 0);
-    }
-  });
+  const updatedShirts = shirtSet.shirts.map(shirt => 
+    shirt.number === updatedShirt.number ? updatedShirt : shirt
+  );
+  await updateShirtSet(shirtSetId, { shirts: updatedShirts });
 }

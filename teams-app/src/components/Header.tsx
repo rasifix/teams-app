@@ -1,10 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState, useRef } from 'react';
-import { downloadDataAsJSON, importDataFromJSON } from '../utils/localStorage';
+import { downloadDataAsJSON } from '../utils/localStorage';
 
 export default function Header() {
   const location = useLocation();
-  const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
@@ -13,33 +12,6 @@ export default function Header() {
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
-  };
-
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    
-    try {
-      const success = await importDataFromJSON(file);
-      if (success) {
-        alert('Data imported successfully! Please refresh the page to see the changes.');
-        // Optionally reload the page
-        // window.location.reload();
-      } else {
-        alert('Failed to import data. Please check the file format and try again.');
-      }
-    } catch (error) {
-      console.error('Import error:', error);
-      alert('An error occurred while importing data.');
-    } finally {
-      setIsImporting(false);
-      // Reset file input
-      if (event.target) {
-        event.target.value = '';
-      }
-    }
   };
 
   const navItems = [
@@ -77,28 +49,6 @@ export default function Header() {
               );
             })}
             <button
-              onClick={handleImportClick}
-              disabled={isImporting}
-              className="px-3 py-2 rounded-md text-sm font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Import data"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m4-8l-4-4m0 0L8 8m4-4v12"
-                />
-              </svg>
-              {isImporting ? 'Importing...' : 'Import'}
-            </button>
-            <button
               onClick={handleExport}
               className="px-3 py-2 rounded-md text-sm font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-1"
               title="Export data"
@@ -119,13 +69,6 @@ export default function Header() {
               </svg>
               Export
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-            />
           </nav>
 
           {/* Mobile menu button */}

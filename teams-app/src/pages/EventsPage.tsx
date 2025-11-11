@@ -12,6 +12,23 @@ export default function EventsPage() {
   const { events, loading, error, addEvent } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Get current date for comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+
+  // Split events into future and past
+  const futureEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
+
+  const pastEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  });
+
   const handleAddEvent = async (eventData: { 
     name: string; 
     date: string; 
@@ -65,25 +82,42 @@ export default function EventsPage() {
         </div>
       )}
 
-      <Card>
-        <CardBody>
-          <div className="flex justify-between items-center mb-4">
-            <CardTitle>All Events ({events.length})</CardTitle>
-            <Button 
-              variant="primary"
-              size="sm"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Add
-            </Button>
-          </div>
-          
-          <EventsList 
-            events={events} 
-            onEventClick={handleEventClick}
-          />
-        </CardBody>
-      </Card>
+      <div className="space-y-6">
+        {/* Future Events Section */}
+        <Card>
+          <CardBody>
+            <div className="flex justify-between items-center mb-4">
+              <CardTitle>Future Events ({futureEvents.length})</CardTitle>
+              <Button 
+                variant="primary"
+                size="sm"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Add
+              </Button>
+            </div>
+            
+            <EventsList 
+              events={futureEvents} 
+              onEventClick={handleEventClick}
+            />
+          </CardBody>
+        </Card>
+
+        {/* Past Events Section */}
+        {pastEvents.length > 0 && (
+          <Card>
+            <CardBody>
+              <CardTitle>Past Events ({pastEvents.length})</CardTitle>
+              
+              <EventsList 
+                events={pastEvents} 
+                onEventClick={handleEventClick}
+              />
+            </CardBody>
+          </Card>
+        )}
+      </div>
 
       <AddEventModal
         isOpen={isModalOpen}

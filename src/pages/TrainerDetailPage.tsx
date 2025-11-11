@@ -5,6 +5,7 @@ import type { Trainer } from '../types';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
 
 interface TrainerEventHistoryItem {
@@ -123,24 +124,6 @@ export default function TrainerDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
-  const getStrengthText = (strength: number) => {
-    switch (strength) {
-      case 1: return 'Strong';
-      case 2: return 'Medium';
-      case 3: return 'Weak';
-      default: return 'Medium';
-    }
-  };
-
-  const getStrengthColor = (strength: number) => {
-    switch (strength) {
-      case 1: return 'text-green-600';
-      case 2: return 'text-yellow-600';
-      case 3: return 'text-red-600';
-      default: return 'text-yellow-600';
-    }
-  };
-
   return (
     <div className="page-container">
       <div className="page-header">
@@ -198,9 +181,7 @@ export default function TrainerDetailPage() {
                           <span className="text-sm text-gray-700">
                             <strong>Team:</strong> {item.teamName}
                           </span>
-                          <span className={`text-sm font-medium ${getStrengthColor(item.teamStrength)}`}>
-                            {getStrengthText(item.teamStrength)}
-                          </span>
+                          <Strength level={item.teamStrength} />
                         </div>
                       </div>
                       <div className="text-right">

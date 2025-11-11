@@ -5,7 +5,6 @@ import Level from './Level';
 
 interface PlayersListProps {
   players: Player[];
-  onEdit: (player: Player) => void;
   onDelete: (player: Player) => void;
 }
 

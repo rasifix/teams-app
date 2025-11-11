@@ -2,16 +2,26 @@ import { useState } from "react";
 import AddTrainerModal from "../components/AddTrainerModal";
 import TrainersList from "../components/TrainersList";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { useTrainers } from "../hooks/useTrainers";
+import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
 import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
 import type { Trainer } from "../types";
 
 export default function TrainersPage() {
-  const { trainers, loading, error, addTrainer, updateTrainer, deleteTrainer } = useTrainers();
+  const { trainers, addTrainer, updateTrainer, deleteTrainer } = useTrainers();
+  
+  // Use individual selectors instead of useAppData
+  const isLoading = useAppLoading();
+  const hasErrors = useAppHasErrors();
+  const errors = useAppErrors();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrainer, setEditingTrainer] = useState<Trainer | null>(null);
   const [deletingTrainer, setDeletingTrainer] = useState<Trainer | null>(null);
+
+  // Use trainer-specific error if available, otherwise general error indicator
+  const error = errors.trainers || (hasErrors ? 'Failed to load data' : null);
+  const loading = isLoading;
 
   const handleAddTrainer = async (
     trainerData: Omit<Trainer, "id">

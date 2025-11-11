@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiErrorBoundary from './components/ApiErrorBoundary';
+import AppInitializer from './components/AppInitializer';
 import { ApiStatus } from './components/ApiStatus';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
@@ -32,29 +33,31 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Header />
-          <ApiStatus />
-          <ApiErrorBoundary>
-            <main>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/players" element={<PlayersPage />} />
-                <Route path="/players/:id" element={<PlayerDetailPage />} />
-                <Route path="/trainers" element={<TrainersPage />} />
-                <Route path="/events" element={<EventsPage />} />
-                <Route path="/events/:id" element={<EventDetailPage />} />
-                <Route path="/shirts" element={<ShirtSetsPage />} />
-                <Route path="/statistics" element={<StatisticsPage />}>
-                  <Route path="player-statistics" element={<PlayerStatisticsPage />} />
-                  <Route path="event-attendance" element={<EventAttendancePage />} />
-                </Route>
-              </Routes>
-            </main>
-          </ApiErrorBoundary>
-        </div>
-      </Router>
+      <AppInitializer>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Header />
+            <ApiStatus />
+            <ApiErrorBoundary>
+              <main>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/players" element={<PlayersPage />} />
+                  <Route path="/players/:id" element={<PlayerDetailPage />} />
+                  <Route path="/trainers" element={<TrainersPage />} />
+                  <Route path="/events" element={<EventsPage />} />
+                  <Route path="/events/:id" element={<EventDetailPage />} />
+                  <Route path="/shirts" element={<ShirtSetsPage />} />
+                  <Route path="/statistics" element={<StatisticsPage />}>
+                    <Route path="player-statistics" element={<PlayerStatisticsPage />} />
+                    <Route path="event-attendance" element={<EventAttendancePage />} />
+                  </Route>
+                </Routes>
+              </main>
+            </ApiErrorBoundary>
+          </div>
+        </Router>
+      </AppInitializer>
     </ErrorBoundary>
   );
 }

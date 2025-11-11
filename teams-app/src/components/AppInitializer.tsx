@@ -1,0 +1,77 @@
+import { useEffect, type ReactNode } from 'react';
+import { 
+  useStore, 
+  useAppInitialized, 
+  useAppLoading, 
+  useAppHasErrors, 
+  useAppErrors 
+} from '../store/useStore';
+
+interface AppInitializerProps {
+  children: ReactNode;
+}
+
+export default function AppInitializer({ children }: AppInitializerProps) {
+  const isInitialized = useAppInitialized();
+  const isLoading = useAppLoading();
+  const hasErrors = useAppHasErrors();
+  const errors = useAppErrors();
+  const initializeApp = useStore(state => state.initializeApp);
+
+  useEffect(() => {
+    if (!isInitialized && !isLoading) {
+      initializeApp();
+    }
+  }, [isInitialized, isLoading, initializeApp]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Application</h2>
+          <p className="text-gray-600">Fetching players, events, trainers, and equipment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasErrors) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Application</h2>
+          <div className="text-left text-sm text-gray-600 mb-4">
+            {errors.players && <p>• Players: {errors.players}</p>}
+            {errors.events && <p>• Events: {errors.events}</p>}
+            {errors.trainers && <p>• Trainers: {errors.trainers}</p>}
+            {errors.shirtSets && <p>• Shirt Sets: {errors.shirtSets}</p>}
+          </div>
+          <button
+            onClick={() => initializeApp()}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600">Initializing application...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}

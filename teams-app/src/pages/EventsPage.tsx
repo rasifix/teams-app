@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 
 export default function EventsPage() {
   const navigate = useNavigate();
-  const { events, addEvent } = useEvents();
+  const { events, loading, error, addEvent } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddEvent = async (eventData: { 
@@ -47,8 +47,24 @@ export default function EventsPage() {
     navigate(`/events/${eventId}`);
   };
 
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="empty-state">
+          <p>Loading events...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
       <Card>
         <CardBody>
           <div className="flex justify-between items-center mb-4">

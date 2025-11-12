@@ -104,9 +104,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
 
   return (
     <Card>
-      <CardBody>
-        <CardTitle>Player Statistics</CardTitle>
-        
+      <CardBody>        
         {/* Level Filter */}
         <PlayerLevelFilter
           minLevel={minLevel}

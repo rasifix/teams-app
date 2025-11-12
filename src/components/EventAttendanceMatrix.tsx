@@ -83,7 +83,6 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
     return (
       <Card>
         <CardBody>
-          <CardTitle>Event Attendance Matrix</CardTitle>
           <div className="empty-state">
             <p>No data available. Add players and events to see the attendance matrix.</p>
           </div>
@@ -94,9 +93,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
 
   return (
     <Card>
-      <CardBody>
-        <CardTitle>Event Attendance Matrix</CardTitle>
-        
+      <CardBody>        
         {/* Level Filter */}
         <PlayerLevelFilter
           minLevel={minLevel}

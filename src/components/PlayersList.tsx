@@ -33,6 +33,11 @@ export default function PlayersList({ players, onDelete }: PlayersListProps) {
         setSwipedPlayerId(playerId);
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
+      // If swiped right more than 30px while delete button is showing, hide it
+      } else if (diffX < -30) {
+        setSwipedPlayerId(null);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
       }
     };
     

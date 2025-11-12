@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Player, Event } from '../types';
-import { Card, CardBody, CardTitle } from './ui';
+import { Card, CardBody } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import PlayerLevelFilter from './PlayerLevelFilter';
 import Level from './Level';

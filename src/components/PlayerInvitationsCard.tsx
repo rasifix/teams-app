@@ -49,7 +49,6 @@ export default function PlayerInvitationsCard({
     return { acceptedCount, selectedCount };
   };
 
-  const acceptedCount = invitations.filter(inv => inv.status === 'accepted').length;
   const openCount = invitations.filter(inv => inv.status === 'open').length;
   const declinedCount = invitations.filter(inv => inv.status === 'declined').length;
 

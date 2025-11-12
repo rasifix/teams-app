@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import type { Player } from '../types';
 import Level from './Level';
-import { Card, CardBody, CardTitle } from './ui';
+import { Card, CardBody } from './ui';
 import PlayerLevelFilter from './PlayerLevelFilter';
 
 interface PlayerStats {

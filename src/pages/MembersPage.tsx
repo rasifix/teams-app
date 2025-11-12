@@ -2,8 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
-import PlayersList from "../components/PlayersList";
-import TrainersList from "../components/TrainersList";
+import MembersList from "../components/MembersList";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
 import { Card, CardBody, CardTitle } from "../components/ui";
@@ -162,9 +161,10 @@ export default function MembersPage() {
               </Button>
             </div>
 
-            <PlayersList
-              players={players}
+            <MembersList
+              members={players}
               onDelete={handleDeletePlayer}
+              memberType="players"
             />
           </CardBody>
         </Card>
@@ -185,9 +185,10 @@ export default function MembersPage() {
               </Button>
             </div>
 
-            <TrainersList
-              trainers={trainers}
+            <MembersList
+              members={trainers}
               onDelete={handleDeleteTrainer}
+              memberType="trainers"
             />
           </CardBody>
         </Card>

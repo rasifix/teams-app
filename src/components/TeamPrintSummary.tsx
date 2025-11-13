@@ -59,7 +59,6 @@ export default function TeamPrintSummary({
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
               const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
-              const shirtSet = team.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
               const playersData = selectedPlayers
                 .map(playerId => players.find(p => p.id === playerId))
                 .filter(Boolean)

@@ -16,7 +16,6 @@ export default function TeamPrintSummary({
   teams, 
   players, 
   trainers, 
-  shirtSets, 
   isOpen, 
   onClose 
 }: TeamPrintSummaryProps) {

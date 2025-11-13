@@ -130,7 +130,9 @@ export default function AssignShirtsModal({
                             className="form-input w-full text-sm py-1"
                           >
                             <option value={0}>No shirt</option>
-                            {selectedShirtSet.shirts.map(shirt => (
+                            {selectedShirtSet.shirts
+                              .sort((a, b) => a.number - b.number)
+                              .map(shirt => (
                               <option 
                                 key={shirt.number} 
                                 value={shirt.number}

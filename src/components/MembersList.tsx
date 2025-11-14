@@ -116,15 +116,12 @@ export default function MembersList<T extends Member>({
                     )}
                   </p>
                 </div>
-                {/* Level for players, chevron for trainers */}
-                <div className="ml-2 flex-shrink-0">
-                  {isPlayer(member) ? (
-                    <Level level={member.level} className="text-lg" />
-                  ) : (
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                  )}
+                {/* Level for players, chevron for all */}
+                <div className="ml-2 flex-shrink-0 flex items-center gap-2">
+                  {isPlayer(member) && <Level level={member.level} className="text-xs" />}
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
                 </div>
               </div>
             </div>

@@ -2,11 +2,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useEvents, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
 import type { Trainer } from '../types';
-import { Card, CardBody, CardTitle } from '../components/ui';
+import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Strength from '../components/Strength';
-import { formatDate } from '../utils/dateFormatter';
 
 interface TrainerEventHistoryItem {
   eventId: string;
@@ -164,34 +163,37 @@ export default function TrainerDetailPage() {
         <div className="mt-6">
           <Card>
             <CardBody>
-              <CardTitle>History</CardTitle>
+              <CardTitle>Events</CardTitle>
               <p className="text-sm text-gray-600 mt-1 mb-4">
                 Events where {trainer.firstName} was assigned as a trainer
               </p>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {trainerEventHistory.map((item) => (
                   <div
                     key={item.eventId}
                     className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => navigate(`/events/${item.eventId}`)}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{item.eventName}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          📅 {formatDate(item.eventDate)}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className="text-sm text-gray-700">
-                            <strong>Team:</strong> {item.teamName}
-                          </span>
-                          <Strength level={item.teamStrength} />
+                    <div className="flex items-center gap-4">
+                      {/* Date column */}
+                      <DateColumn date={item.eventDate} />
+                      
+                      {/* Content and chevron */}
+                      <div className="flex justify-between items-center flex-1">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">{item.eventName}</h3>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-sm text-gray-700">
+                              <strong>Team:</strong> {item.teamName}
+                            </span>
+                            <Strength level={item.teamStrength} />
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
+                        <div className="ml-4">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                   </div>

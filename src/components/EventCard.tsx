@@ -1,5 +1,6 @@
 import type { Event, Trainer } from '../types';
 import Strength from './Strength';
+import { DateColumn } from './ui';
 
 interface EventCardProps {
   event: Event;
@@ -9,11 +10,6 @@ interface EventCardProps {
 
 export default function EventCard({ event, trainers = [], onClick }: EventCardProps) {
   const hasSelections = event.teams.some(team => team.selectedPlayers?.length > 0);
-  
-  // Parse date for display
-  const eventDate = new Date(event.date);
-  const month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const day = eventDate.getDate();
   
   // Get earliest start time and total teams count
   const earliestStartTime = event.teams.length > 0 
@@ -34,10 +30,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
     >
       <div className="flex items-start gap-4">
         {/* Date column */}
-        <div className="flex-shrink-0 text-center bg-gray-50 rounded-lg p-3 min-w-[60px]">
-          <div className="text-xs font-medium text-gray-500">{month}</div>
-          <div className="text-xl font-bold text-gray-900">{day}</div>
-        </div>
+        <DateColumn date={event.date} />
         
         {/* Content and status */}
         <div className="flex justify-between items-start flex-1">

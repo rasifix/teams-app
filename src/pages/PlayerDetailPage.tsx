@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useEvents, usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
 import type { Player, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
-import { Card, CardBody, CardTitle } from '../components/ui';
+import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
@@ -183,47 +183,37 @@ export default function PlayerDetailPage() {
                 Invite {player.firstName} to these upcoming events
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                {futureEventsWithoutInvitation.map((event) => {
-                  // Parse date for display
-                  const eventDate = new Date(event.date);
-                  const month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-                  const day = eventDate.getDate();
-
-                  return (
-                    <div 
-                      key={event.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => navigate(`/events/${event.id}`)}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Date column */}
-                        <div className="flex-shrink-0 text-center bg-gray-50 rounded-lg p-3 min-w-[60px]">
-                          <div className="text-xs font-medium text-gray-500">{month}</div>
-                          <div className="text-xl font-bold text-gray-900">{day}</div>
+                {futureEventsWithoutInvitation.map((event) => (
+                  <div 
+                    key={event.id}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/events/${event.id}`)}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Date column */}
+                      <DateColumn date={event.date} />
+                      
+                      {/* Content and status */}
+                      <div className="flex justify-between items-center flex-1">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{event.name}</h3>
+                          <div className="mt-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              Not Invited
+                            </span>
+                          </div>
                         </div>
                         
-                        {/* Content and status */}
-                        <div className="flex justify-between items-center flex-1">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">{event.name}</h3>
-                            <div className="mt-2">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                Not Invited
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {/* Chevron icon */}
-                          <div className="ml-4 flex-shrink-0">
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                            </svg>
-                          </div>
+                        {/* Chevron icon */}
+                        <div className="ml-4 flex-shrink-0">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </CardBody>
           </Card>

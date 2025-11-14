@@ -1,21 +1,19 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useEvents, usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
-import type { Player, Invitation, PlayerEventHistoryItem } from '../types';
+import type { Player, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Button } from '../components/ui';
 import PlayerEventHistory from '../components/PlayerEventHistory';
-import { formatDate } from '../utils/dateFormatter';
 
 export default function PlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
   // Use store hooks
-  const { events, updateEvent } = useEvents();
+  const { events } = useEvents();
   const { updatePlayer, deletePlayer, getPlayerById } = usePlayers();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -129,24 +127,6 @@ export default function PlayerDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
-  const handleInviteToEvent = async (eventId: string) => {
-    const event = events.find(e => e.id === eventId);
-    if (!event) return;
-
-    const newInvitation: Invitation = {
-      id: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      playerId: player.id,
-      status: 'open'
-    };
-
-    const updatedInvitations = [...event.invitations, newInvitation];
-    const success = await updateEvent(eventId, { invitations: updatedInvitations });
-    
-    if (success) {
-      // The events will be automatically updated through the useEvents hook
-    }
-  };
-
   return (
     <div className="page-container">
       <div className="page-header">
@@ -205,26 +185,48 @@ export default function PlayerDetailPage() {
               <p className="text-sm text-gray-600 mt-1 mb-4">
                 Invite {player.firstName} to these upcoming events
               </p>
-              <div className="space-y-3">
-                {futureEventsWithoutInvitation.map((event) => (
-                  <div 
-                    key={event.id}
-                    className="border border-gray-200 rounded-lg p-4 flex justify-between items-center hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{event.name}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        📅 {formatDate(event.date)}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleInviteToEvent(event.id)}
-                      variant="primary"
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                {futureEventsWithoutInvitation.map((event) => {
+                  // Parse date for display
+                  const eventDate = new Date(event.date);
+                  const month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                  const day = eventDate.getDate();
+
+                  return (
+                    <div 
+                      key={event.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/events/${event.id}`)}
                     >
-                      Invite
-                    </Button>
-                  </div>
-                ))}
+                      <div className="flex items-start gap-4">
+                        {/* Date column */}
+                        <div className="flex-shrink-0 text-center bg-gray-50 rounded-lg p-3 min-w-[60px]">
+                          <div className="text-xs font-medium text-gray-500">{month}</div>
+                          <div className="text-xl font-bold text-gray-900">{day}</div>
+                        </div>
+                        
+                        {/* Content and status */}
+                        <div className="flex justify-between items-center flex-1">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate">{event.name}</h3>
+                            <div className="mt-2">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                Not Invited
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Chevron icon */}
+                          <div className="ml-4 flex-shrink-0">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardBody>
           </Card>

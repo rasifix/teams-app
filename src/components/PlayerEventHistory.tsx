@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { PlayerEventHistoryItem } from '../types';
 import { Card, CardBody, CardTitle } from './ui';
-import { formatDate } from '../utils/dateFormatter';
 
 interface PlayerEventHistoryProps {
   eventHistory: PlayerEventHistoryItem[];
@@ -15,50 +14,68 @@ export default function PlayerEventHistory({
   return (
     <Card>
       <CardBody>
-        <CardTitle>Event History</CardTitle>
+        <CardTitle>Events</CardTitle>
         {eventHistory.length === 0 ? (
           <div className="empty-state">
             <p>No event invitations yet.</p>
           </div>
         ) : (
-          <div className="mt-4 space-y-3">
-            {eventHistory.map((item) => {
-              return (
-                <div 
-                  key={item.eventId}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/events/${item.eventId}`)}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{item.eventName}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        📅 {formatDate(item.eventDate)}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.invitationStatus === 'accepted' ? 'bg-green-100 text-green-800' :
-                        item.invitationStatus === 'declined' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {item.invitationStatus === 'open' ? 'Pending' : item.invitationStatus.charAt(0).toUpperCase() + item.invitationStatus.slice(1)}
-                      </span>
-                      {item.isSelected && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          Selected {item.teamName ? `- ${item.teamName}` : ''}
-                        </span>
-                      )}
-                      {!item.isSelected && item.invitationStatus === 'accepted' && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                          Not Selected
-                        </span>
-                      )}
+          <div className="mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {eventHistory.map((item) => {
+                // Parse date for display
+                const eventDate = new Date(item.eventDate);
+                const month = eventDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                const day = eventDate.getDate();
+
+                return (
+                  <div 
+                    key={item.eventId}
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => navigate(`/events/${item.eventId}`)}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Date column */}
+                      <div className="flex-shrink-0 text-center bg-gray-50 rounded-lg p-3 min-w-[60px]">
+                        <div className="text-xs font-medium text-gray-500">{month}</div>
+                        <div className="text-xl font-bold text-gray-900">{day}</div>
+                      </div>
+                      
+                      {/* Content and status */}
+                      <div className="flex justify-between items-center flex-1">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 truncate">{item.eventName}</h3>
+                          <div className="mt-2">
+                            {item.isSelected ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Selected
+                              </span>
+                            ) : item.invitationStatus === 'accepted' ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Accepted
+                              </span>
+                            ) : (
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                item.invitationStatus === 'declined' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {item.invitationStatus === 'open' ? 'Open' : 'Declined'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Chevron icon */}
+                        <div className="ml-4 flex-shrink-0">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </CardBody>

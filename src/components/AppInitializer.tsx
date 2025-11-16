@@ -7,10 +7,12 @@ import {
   useAppLoading, 
   useAppHasErrors, 
   useAppErrors,
+  useGroup,
   useGroups,
   useGroupsLoading,
   useGroupsError
 } from '../store/useStore';
+import { getSelectedGroupId } from '../utils/localStorage';
 
 interface AppInitializerProps {
   children: ReactNode;
@@ -24,6 +26,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
+  const currentGroup = useGroup();
   const groups = useGroups();
   const groupsLoading = useGroupsLoading();
   const groupsError = useGroupsError();
@@ -34,15 +37,21 @@ export default function AppInitializer({ children }: AppInitializerProps) {
     if (isAuthenticated && !groupsLoading && groups.length === 0 && !groupsError) {
       loadGroups();
     }
-  }, [isAuthenticated, groupsLoading, groups.length, groupsError, loadGroups]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, groupsLoading, groups.length, groupsError]);
 
   useEffect(() => {
     // Handle group selection logic after groups are loaded
     if (isAuthenticated && !groupsLoading && groups.length > 0) {
-      const currentGroup = useStore.getState().group;
-      
       if (!currentGroup) {
-        if (groups.length === 1) {
+        // Check if there's a previously selected group in localStorage
+        const savedGroupId = getSelectedGroupId();
+        const savedGroup = savedGroupId ? groups.find(g => g.id === savedGroupId) : null;
+        
+        if (savedGroup) {
+          // Restore the previously selected group
+          selectGroup(savedGroup.id);
+        } else if (groups.length === 1) {
           // Auto-select the single group
           selectGroup(groups[0].id);
         } else if (groups.length > 1 && location.pathname !== '/groups') {
@@ -55,7 +64,8 @@ export default function AppInitializer({ children }: AppInitializerProps) {
         initializeApp();
       }
     }
-  }, [isAuthenticated, groupsLoading, groups, isInitialized, isLoading, selectGroup, initializeApp, navigate, location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, groupsLoading, groups.length, currentGroup, isInitialized, isLoading, location.pathname]);
 
   // Wait for auth to initialize before doing anything
   if (authLoading) {
@@ -115,7 +125,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   }
 
   // If no group selected yet, don't show app content
-  if (!useStore.getState().group) {
+  if (!currentGroup) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

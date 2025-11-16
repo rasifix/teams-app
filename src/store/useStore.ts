@@ -7,6 +7,7 @@ import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePla
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups } from '../services/groupService';
+import { setSelectedGroupId, clearSelectedGroupId } from '../utils/localStorage';
 
 // Helper function to sort players alphabetically by lastName + firstName
 const sortPlayers = (players: Player[]): Player[] => {
@@ -252,6 +253,7 @@ export const useStore = create<AppState>()(
       },
       
       clearAuthenticatedData: () => {
+        clearSelectedGroupId();
         set({
           group: null,
           groups: [],
@@ -300,6 +302,7 @@ export const useStore = create<AppState>()(
         const selectedGroup = groups.find(g => g.id === groupId);
         if (selectedGroup) {
           set({ group: selectedGroup });
+          setSelectedGroupId(groupId);
         }
       },
       

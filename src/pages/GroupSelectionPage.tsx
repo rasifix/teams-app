@@ -11,7 +11,8 @@ export default function GroupSelectionPage() {
 
   useEffect(() => {
     loadGroups();
-  }, [loadGroups]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGroupSelect = async (groupId: string) => {
     await selectGroup(groupId);

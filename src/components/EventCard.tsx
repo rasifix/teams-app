@@ -19,6 +19,12 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
     : undefined;
   const teamsCount = event.teams.length;
 
+  // Calculate player counts
+  const invitedCount = event.invitations.length;
+  const selectedCount = event.teams.reduce((sum, team) => sum + (team.selectedPlayers?.length || 0), 0);
+  const openCount = event.invitations.filter(inv => inv.status === 'open').length;
+  const declinedCount = event.invitations.filter(inv => inv.status === 'declined').length;
+
   const handleClick = () => {
     onClick?.(event.id);
   };
@@ -64,9 +70,45 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                     </p>
                   );
                 })}
-                <p className="text-sm text-gray-600">
-                  ✉️ {event.invitations.length} {event.invitations.length === 1 ? 'invitation' : 'invitations'}
-                </p>
+                <div className="flex items-center gap-3 text-sm">
+                  {/* Invited */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 border border-blue-600 rounded-full flex items-center justify-center">
+                      <svg className="w-2 h-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-600">{invitedCount}</span>
+                  </div>
+                  {/* Selected */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 border border-green-600 rounded-full flex items-center justify-center">
+                      <svg className="w-2 h-2 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-600">{selectedCount}</span>
+                  </div>
+                  {/* Open */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 border border-yellow-500 rounded-full flex items-center justify-center">
+                      <svg className="w-2 h-2 text-yellow-500" fill="currentColor" viewBox="0 0 8 8">
+                        <circle cx="4" cy="6.5" r="0.6"/>
+                        <rect x="3.4" y="1" width="1.2" height="4" rx="0.5"/>
+                      </svg>
+                    </div>
+                    <span className="text-gray-600">{openCount}</span>
+                  </div>
+                  {/* Declined */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 border border-red-600 rounded-full flex items-center justify-center">
+                      <svg className="w-2 h-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <span className="text-gray-600">{declinedCount}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

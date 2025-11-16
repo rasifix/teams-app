@@ -6,7 +6,6 @@ import type { Event } from '../types';
  * This provides an abstraction layer that handles API communication
  * for event-related operations.
  */
-
 export async function getEvents(groupId: string): Promise<Event[]> {
   return apiClient.request<Event[]>(
     apiClient.getGroupEndpoint(groupId, '/events')

@@ -2,11 +2,9 @@ import { API_CONFIG } from '../config/api';
 
 class ApiClient {
   private baseUrl: string;
-  private groupId: string;
 
   constructor() {
     this.baseUrl = API_CONFIG.baseUrl;
-    this.groupId = API_CONFIG.defaultGroupId;
   }
 
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -71,8 +69,8 @@ class ApiClient {
     }
   }
 
-  getGroupEndpoint(path: string): string {
-    return `/api/groups/${this.groupId}${path}`;
+  getGroupEndpoint(groupId: string, path: string): string {
+    return `/api/groups/${groupId}${path}`;
   }
 }
 

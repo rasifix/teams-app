@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Player } from '../types';
 import * as memberService from '../services/memberService';
+import { useGroup } from '../store/useStore';
 
 // Helper function to sort players by lastName, then by firstName
 function sortPlayers(players: Player[]): Player[] {
@@ -16,15 +17,18 @@ function sortPlayers(players: Player[]): Player[] {
 }
 
 export function usePlayers() {
+  const group = useGroup();
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load players from service on mount
-  const loadPlayers = async () => {
+  const loadPlayers = useCallback(async () => {
+    if (!group) return;
+    
     try {
       setLoading(true);
-      const apiPlayers = await memberService.getPlayers();
+      const apiPlayers = await memberService.getPlayers(group.id);
       setPlayers(sortPlayers(apiPlayers));
       setError(null);
     } catch (err) {
@@ -33,15 +37,17 @@ export function usePlayers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [group]);
 
   useEffect(() => {
     loadPlayers();
-  }, []);
+  }, [loadPlayers]);
 
   const handleAddPlayer = async (playerData: Omit<Player, 'id'>): Promise<boolean> => {
+    if (!group) return false;
+    
     try {
-      await memberService.addPlayer(playerData);
+      await memberService.addPlayer(group.id, playerData);
       await loadPlayers(); // Refresh from API
       setError(null);
       return true;
@@ -53,8 +59,10 @@ export function usePlayers() {
   };
 
   const handleUpdatePlayer = async (playerId: string, updates: Partial<Omit<Player, 'id'>>): Promise<boolean> => {
+    if (!group) return false;
+    
     try {
-      await memberService.updatePlayer(playerId, updates);
+      await memberService.updatePlayer(group.id, playerId, updates);
       await loadPlayers(); // Refresh from API
       setError(null);
       return true;
@@ -66,8 +74,10 @@ export function usePlayers() {
   };
 
   const handleDeletePlayer = async (playerId: string): Promise<boolean> => {
+    if (!group) return false;
+    
     try {
-      await memberService.deletePlayer(playerId);
+      await memberService.deletePlayer(group.id, playerId);
       await loadPlayers(); // Refresh from API
       setError(null);
       return true;

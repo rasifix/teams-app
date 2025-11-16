@@ -6,8 +6,7 @@ import { getPlayerStats } from '../utils/playerStats';
 import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroup, getGroups } from '../services/groupService';
-import { API_CONFIG } from '../config/api';
+import { getGroups } from '../services/groupService';
 
 // Helper function to sort players alphabetically by lastName + firstName
 const sortPlayers = (players: Player[]): Player[] => {
@@ -175,11 +174,16 @@ export const useStore = create<AppState>()(
         
         // Load all data in parallel
         const loadData = async () => {
+          const currentGroup = get().group;
+          if (!currentGroup) {
+            throw new Error('No group selected');
+          }
+          
           const results = await Promise.allSettled([
-            getGroup(API_CONFIG.defaultGroupId).then((group: Group) => ({ type: 'group' as const, data: group })),
-            getAllMembers().then((members) => ({ type: 'members' as const, data: members })),
-            getEvents().then((events: Event[]) => ({ type: 'events' as const, data: events })),
-            getShirtSets().then((shirtSets: ShirtSet[]) => ({ type: 'shirtSets' as const, data: shirtSets })),
+            Promise.resolve({ type: 'group' as const, data: currentGroup }),
+            getAllMembers(currentGroup.id).then((members) => ({ type: 'members' as const, data: members })),
+            getEvents(currentGroup.id).then((events: Event[]) => ({ type: 'events' as const, data: events })),
+            getShirtSets(currentGroup.id).then((shirtSets: ShirtSet[]) => ({ type: 'shirtSets' as const, data: shirtSets })),
           ]);
           
           const newState = {
@@ -307,8 +311,11 @@ export const useStore = create<AppState>()(
       
       // Player mutations
       addPlayer: async (playerData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const newPlayer = await addPlayerService(playerData);
+          const newPlayer = await addPlayerService(currentGroup.id, playerData);
           const currentPlayers = get().players;
           const updatedPlayers = [...currentPlayers, newPlayer];
           set({ players: sortPlayers(updatedPlayers) });
@@ -320,8 +327,11 @@ export const useStore = create<AppState>()(
       },
       
       updatePlayer: async (id, playerData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const updatedPlayer = await updatePlayerService(id, playerData);
+          const updatedPlayer = await updatePlayerService(currentGroup.id, id, playerData);
           const currentPlayers = get().players;
           const updatedPlayers = currentPlayers.map(player => 
             player.id === id ? { ...player, ...updatedPlayer } : player
@@ -335,8 +345,11 @@ export const useStore = create<AppState>()(
       },
       
       deletePlayer: async (id) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await deletePlayerService(id);
+          await deletePlayerService(currentGroup.id, id);
           const currentPlayers = get().players;
           const filteredPlayers = currentPlayers.filter(player => player.id !== id);
           set({ players: sortPlayers(filteredPlayers) });
@@ -349,8 +362,11 @@ export const useStore = create<AppState>()(
       
       // Event mutations
       addEvent: async (eventData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const newEvent = await addEventService(eventData);
+          const newEvent = await addEventService(currentGroup.id, eventData);
           const currentEvents = get().events;
           const updatedEvents = [...currentEvents, newEvent];
           set({ events: sortEvents(updatedEvents) });
@@ -362,8 +378,11 @@ export const useStore = create<AppState>()(
       },
       
       updateEvent: async (id, eventData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const updatedEvent = await updateEventService(id, eventData);
+          const updatedEvent = await updateEventService(currentGroup.id, id, eventData);
           const currentEvents = get().events;
           const updatedEvents = currentEvents.map(event => 
             event.id === id ? { ...event, ...updatedEvent } : event
@@ -377,8 +396,11 @@ export const useStore = create<AppState>()(
       },
       
       deleteEvent: async (id) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await deleteEventService(id);
+          await deleteEventService(currentGroup.id, id);
           const currentEvents = get().events;
           const filteredEvents = currentEvents.filter(event => event.id !== id);
           set({ events: sortEvents(filteredEvents) });
@@ -391,8 +413,11 @@ export const useStore = create<AppState>()(
       
       // Trainer mutations
       addTrainer: async (trainerData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const newTrainer = await addTrainerService(trainerData);
+          const newTrainer = await addTrainerService(currentGroup.id, trainerData);
           const currentTrainers = get().trainers;
           const updatedTrainers = [...currentTrainers, newTrainer];
           set({ trainers: sortTrainers(updatedTrainers) });
@@ -404,8 +429,11 @@ export const useStore = create<AppState>()(
       },
       
       updateTrainer: async (id, trainerData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const updatedTrainer = await updateTrainerService(id, trainerData);
+          const updatedTrainer = await updateTrainerService(currentGroup.id, id, trainerData);
           const currentTrainers = get().trainers;
           const updatedTrainers = currentTrainers.map(trainer => 
             trainer.id === id ? { ...trainer, ...updatedTrainer } : trainer
@@ -419,8 +447,11 @@ export const useStore = create<AppState>()(
       },
       
       deleteTrainer: async (id) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await deleteTrainerService(id);
+          await deleteTrainerService(currentGroup.id, id);
           const currentTrainers = get().trainers;
           const filteredTrainers = currentTrainers.filter(trainer => trainer.id !== id);
           set({ trainers: sortTrainers(filteredTrainers) });
@@ -433,8 +464,11 @@ export const useStore = create<AppState>()(
       
       // Shirt set mutations
       addShirtSet: async (shirtSetData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const newShirtSet = await addShirtSetService(shirtSetData);
+          const newShirtSet = await addShirtSetService(currentGroup.id, shirtSetData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = [...currentShirtSets, newShirtSet];
           set({ shirtSets: sortShirtSets(updatedShirtSets) });
@@ -446,8 +480,11 @@ export const useStore = create<AppState>()(
       },
       
       updateShirtSet: async (id, shirtSetData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await updateShirtSetService(id, shirtSetData);
+          await updateShirtSetService(currentGroup.id, id, shirtSetData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === id ? { ...shirtSet, ...shirtSetData } : shirtSet
@@ -461,8 +498,11 @@ export const useStore = create<AppState>()(
       },
       
       deleteShirtSet: async (id) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await deleteShirtSetService(id);
+          await deleteShirtSetService(currentGroup.id, id);
           const currentShirtSets = get().shirtSets;
           const filteredShirtSets = currentShirtSets.filter(shirtSet => shirtSet.id !== id);
           set({ shirtSets: sortShirtSets(filteredShirtSets) });
@@ -474,8 +514,11 @@ export const useStore = create<AppState>()(
       },
       
       addShirtToSet: async (shirtSetId, shirtData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          const newShirt = await addShirtToSetService(shirtSetId, shirtData);
+          const newShirt = await addShirtToSetService(currentGroup.id, shirtSetId, shirtData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 
@@ -491,8 +534,11 @@ export const useStore = create<AppState>()(
       },
       
       removeShirtFromSet: async (shirtSetId, shirtNumber) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await removeShirtFromSetService(shirtSetId, shirtNumber);
+          await removeShirtFromSetService(currentGroup.id, shirtSetId, shirtNumber);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 
@@ -508,8 +554,11 @@ export const useStore = create<AppState>()(
       },
       
       updateShirt: async (shirtSetId, updatedShirt) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+        
         try {
-          await updateShirtService(shirtSetId, updatedShirt);
+          await updateShirtService(currentGroup.id, shirtSetId, updatedShirt);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 

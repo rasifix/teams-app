@@ -21,6 +21,7 @@ import StatisticsPage from './pages/StatisticsPage';
 import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
 import EventAttendancePage from './pages/EventAttendancePage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
+import GroupSelectionPage from './pages/GroupSelectionPage';
 
 function App() {
   // API health check on startup
@@ -54,6 +55,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     
                     {/* Protected routes */}
+                    <Route path="/groups" element={<ProtectedRoute><GroupSelectionPage /></ProtectedRoute>} />
                     {/* Members routes */}
                     <Route path="/members" element={<Navigate to="/members/players" replace />} />
                     <Route path="/members/players" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />

@@ -6,7 +6,7 @@ import { getPlayerStats } from '../utils/playerStats';
 import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups } from '../services/groupService';
+import { getGroups, getGroup } from '../services/groupService';
 import { setSelectedGroupId, clearSelectedGroupId } from '../utils/localStorage';
 
 // Helper function to sort players alphabetically by lastName + firstName
@@ -301,8 +301,20 @@ export const useStore = create<AppState>()(
         const groups = get().groups;
         const selectedGroup = groups.find(g => g.id === groupId);
         
-        // If group is in the groups array, use it; otherwise create a minimal group object
-        const group = selectedGroup || { id: groupId, name: `Group ${groupId}` };
+        let group: Group;
+        if (selectedGroup) {
+          group = selectedGroup;
+        } else {
+          // Fetch the group from API if not in the groups array
+          try {
+            group = await getGroup(groupId);
+          } catch (error) {
+            console.error('Failed to fetch group:', error);
+            // Fallback to minimal group object
+            group = { id: groupId, name: `Group ${groupId}` };
+          }
+        }
+        
         set({ group });
         setSelectedGroupId(groupId);
       },

@@ -32,7 +32,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Title */}
           <Link to="/" className="flex items-center">
-            <h1 className="text-xl font-bold">{group?.name || 'My Team'}</h1>
+            <h1 className="text-xl font-bold">{isAuthenticated ? (group?.name || 'My Team') : 'My Team'}</h1>
           </Link>
 
           {/* Desktop Navigation */}

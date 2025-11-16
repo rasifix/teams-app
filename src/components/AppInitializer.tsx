@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { 
@@ -31,10 +31,25 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const groupsLoading = useGroupsLoading();
   const groupsError = useGroupsError();
   const { loadGroups, selectGroup, initializeApp } = useStore();
+  
+  // Use refs to prevent duplicate calls
+  const groupsLoadTriggered = useRef(false);
+  const groupSelectTriggered = useRef(false);
+  const appInitTriggered = useRef(false);
+  
+  // Reset refs when authentication state changes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      groupsLoadTriggered.current = false;
+      groupSelectTriggered.current = false;
+      appInitTriggered.current = false;
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     // Only load groups when user is authenticated
-    if (isAuthenticated && !groupsLoading && groups.length === 0 && !groupsError) {
+    if (isAuthenticated && !groupsLoading && groups.length === 0 && !groupsError && !groupsLoadTriggered.current) {
+      groupsLoadTriggered.current = true;
       loadGroups();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -43,24 +58,27 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   useEffect(() => {
     // Handle group selection logic after groups are loaded
     if (isAuthenticated && !groupsLoading && groups.length > 0) {
-      if (!currentGroup) {
+      if (!currentGroup && !groupSelectTriggered.current) {
         // Check if there's a previously selected group in localStorage
         const savedGroupId = getSelectedGroupId();
         const savedGroup = savedGroupId ? groups.find(g => g.id === savedGroupId) : null;
         
         if (savedGroup) {
           // Restore the previously selected group
+          groupSelectTriggered.current = true;
           selectGroup(savedGroup.id);
         } else if (groups.length === 1) {
           // Auto-select the single group
+          groupSelectTriggered.current = true;
           selectGroup(groups[0].id);
         } else if (groups.length > 1 && location.pathname !== '/groups') {
           // Navigate to group selection if multiple groups and not already there
           navigate('/groups');
           return;
         }
-      } else if (!isInitialized && !isLoading) {
+      } else if (currentGroup && !isInitialized && !isLoading && !appInitTriggered.current) {
         // Group is selected, load the data
+        appInitTriggered.current = true;
         initializeApp();
       }
     }

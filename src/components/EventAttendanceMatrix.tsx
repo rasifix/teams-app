@@ -106,7 +106,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             <span>Accepted</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-yellow-600 font-bold">✉</span>
+            <span className="text-yellow-600 font-bold">?</span>
             <span>Open</span>
           </div>
           <div className="flex items-center gap-1">

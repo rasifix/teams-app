@@ -6,7 +6,7 @@ import { getPlayerStats } from '../utils/playerStats';
 import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroup } from '../services/groupService';
+import { getGroup, getGroups } from '../services/groupService';
 import { API_CONFIG } from '../config/api';
 
 // Helper function to sort players alphabetically by lastName + firstName
@@ -50,6 +50,7 @@ const sortShirtSets = (shirtSets: ShirtSet[]): ShirtSet[] => {
 interface AppState {
   // Data
   group: Group | null;
+  groups: Group[];
   players: Player[];
   events: Event[];
   trainers: Trainer[];
@@ -58,6 +59,7 @@ interface AppState {
   // Loading states
   loading: {
     group: boolean;
+    groups: boolean;
     players: boolean;
     events: boolean;
     trainers: boolean;
@@ -67,6 +69,7 @@ interface AppState {
   // Error states
   errors: {
     group: string | null;
+    groups: string | null;
     players: string | null;
     events: string | null;
     trainers: string | null;
@@ -77,6 +80,8 @@ interface AppState {
   isInitialized: boolean;
   
   // Actions
+  loadGroups: () => Promise<void>;
+  selectGroup: (groupId: string) => Promise<void>;
   initializeApp: () => Promise<void>;
   clearAuthenticatedData: () => void;
   setPlayers: (players: Player[]) => void;
@@ -121,6 +126,7 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       // Initial state
       group: null,
+      groups: [],
       players: [],
       events: [],
       trainers: [],
@@ -128,6 +134,7 @@ export const useStore = create<AppState>()(
       isInitialized: false,
       loading: {
         group: false,
+        groups: false,
         players: false,
         events: false,
         trainers: false,
@@ -135,6 +142,7 @@ export const useStore = create<AppState>()(
       },
       errors: {
         group: null,
+        groups: null,
         players: null,
         events: null,
         trainers: null,
@@ -149,6 +157,7 @@ export const useStore = create<AppState>()(
         set({
           loading: {
             group: true,
+            groups: true,
             players: true,
             events: true,
             trainers: true,
@@ -156,6 +165,7 @@ export const useStore = create<AppState>()(
           },
           errors: {
             group: null,
+            groups: null,
             players: null,
             events: null,
             trainers: null,
@@ -175,6 +185,7 @@ export const useStore = create<AppState>()(
           const newState = {
             loading: {
               group: false,
+              groups: false,
               players: false,
               events: false,
               trainers: false,
@@ -182,12 +193,14 @@ export const useStore = create<AppState>()(
             },
             errors: {
               group: null,
+              groups: null,
               players: null,
               events: null,
               trainers: null,
               shirtSets: null,
             },
             group: state.group,
+            groups: state.groups,
             players: state.players,
             events: state.events,
             trainers: state.trainers,
@@ -237,6 +250,7 @@ export const useStore = create<AppState>()(
       clearAuthenticatedData: () => {
         set({
           group: null,
+          groups: [],
           players: [],
           events: [],
           trainers: [],
@@ -244,6 +258,7 @@ export const useStore = create<AppState>()(
           isInitialized: false,
           loading: {
             group: false,
+            groups: false,
             players: false,
             events: false,
             trainers: false,
@@ -251,12 +266,37 @@ export const useStore = create<AppState>()(
           },
           errors: {
             group: null,
+            groups: null,
             players: null,
             events: null,
             trainers: null,
             shirtSets: null,
           },
         });
+      },
+      
+      loadGroups: async () => {
+        set({ loading: { ...get().loading, groups: true }, errors: { ...get().errors, groups: null } });
+        
+        try {
+          const groups = await getGroups();
+          set({ groups, loading: { ...get().loading, groups: false } });
+        } catch (error) {
+          console.error('Failed to load groups:', error);
+          set({ 
+            loading: { ...get().loading, groups: false }, 
+            errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to load groups' }
+          });
+        }
+      },
+      
+      selectGroup: async (groupId: string) => {
+        // Set the selected group
+        const groups = get().groups;
+        const selectedGroup = groups.find(g => g.id === groupId);
+        if (selectedGroup) {
+          set({ group: selectedGroup });
+        }
       },
       
       // Actions
@@ -536,5 +576,11 @@ export const useAppHasErrors = () => useStore((state) =>
 export const useAppInitialized = () => useStore((state) => state.isInitialized);
 
 export const useGroup = () => useStore((state) => state.group);
+
+export const useGroups = () => useStore((state) => state.groups);
+
+export const useGroupsLoading = () => useStore((state) => state.loading.groups);
+
+export const useGroupsError = () => useStore((state) => state.errors.groups);
 
 export const useTrainers = () => useStore((state) => state.trainers);

@@ -14,6 +14,15 @@ class ApiClient {
     
     // Get token from localStorage
     const token = localStorage.getItem('token');
+    
+    // Check if this is a protected endpoint (all endpoints except auth-related ones)
+    const isProtectedEndpoint = !endpoint.startsWith('/api/auth/') && !endpoint.startsWith('/health');
+    
+    // If trying to access a protected endpoint without a token, fail fast
+    if (isProtectedEndpoint && !token) {
+      throw new Error('Authentication required. Please log in.');
+    }
+    
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };

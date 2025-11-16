@@ -40,8 +40,8 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppInitializer>
-          <Router>
+        <Router>
+          <AppInitializer>
             <div className="min-h-screen bg-gray-50">
               <Header />
               <ApiStatus />
@@ -51,9 +51,9 @@ function App() {
                     {/* Public routes */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/" element={<HomePage />} />
                     
                     {/* Protected routes */}
-                    <Route path="/" element={<HomePage />} />
                     {/* Members routes */}
                     <Route path="/members" element={<Navigate to="/members/players" replace />} />
                     <Route path="/members/players" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
@@ -75,8 +75,8 @@ function App() {
                 </main>
               </ApiErrorBoundary>
             </div>
-          </Router>
-        </AppInitializer>
+          </AppInitializer>
+        </Router>
       </AuthProvider>
     </ErrorBoundary>
   );

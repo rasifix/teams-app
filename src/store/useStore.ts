@@ -78,6 +78,7 @@ interface AppState {
   
   // Actions
   initializeApp: () => Promise<void>;
+  clearAuthenticatedData: () => void;
   setPlayers: (players: Player[]) => void;
   setEvents: (events: Event[]) => void;
   setTrainers: (trainers: Trainer[]) => void;
@@ -210,7 +211,8 @@ export const useStore = create<AppState>()(
             } else {
               // Map index to appropriate error handling
               if (index === 0) {
-                // Group call failed
+                // Group call failed - log warning but don't treat as fatal error
+                console.warn('Failed to load group:', result.reason?.message || 'Unknown error');
                 newState.errors.group = result.reason?.message || 'Failed to load group';
               } else if (index === 1) {
                 // Members call failed - set error for both players and trainers
@@ -230,6 +232,31 @@ export const useStore = create<AppState>()(
         };
 
         await loadData();
+      },
+      
+      clearAuthenticatedData: () => {
+        set({
+          group: null,
+          players: [],
+          events: [],
+          trainers: [],
+          shirtSets: [],
+          isInitialized: false,
+          loading: {
+            group: false,
+            players: false,
+            events: false,
+            trainers: false,
+            shirtSets: false,
+          },
+          errors: {
+            group: null,
+            players: null,
+            events: null,
+            trainers: null,
+            shirtSets: null,
+          },
+        });
       },
       
       // Actions
@@ -503,7 +530,7 @@ export const useAppLoading = () => useStore((state) =>
 export const useAppErrors = () => useStore((state) => state.errors);
 
 export const useAppHasErrors = () => useStore((state) => 
-  !!(state.errors.group || state.errors.players || state.errors.events || state.errors.trainers || state.errors.shirtSets)
+  !!(state.errors.players || state.errors.events || state.errors.trainers || state.errors.shirtSets)
 );
 
 export const useAppInitialized = () => useStore((state) => state.isInitialized);

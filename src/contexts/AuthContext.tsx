@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { authService, type User } from '../services/authService';
+import { useStore } from '../store/useStore';
 
 export interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const clearAuthenticatedData = useStore((state) => state.clearAuthenticatedData);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -52,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     authService.logout();
     setUser(null);
+    clearAuthenticatedData();
   };
 
   const value: AuthContextType = {

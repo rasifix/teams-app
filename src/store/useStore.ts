@@ -297,13 +297,14 @@ export const useStore = create<AppState>()(
       },
       
       selectGroup: async (groupId: string) => {
-        // Set the selected group
+        // Set the selected group (simplified: just use the groupId directly)
         const groups = get().groups;
         const selectedGroup = groups.find(g => g.id === groupId);
-        if (selectedGroup) {
-          set({ group: selectedGroup });
-          setSelectedGroupId(groupId);
-        }
+        
+        // If group is in the groups array, use it; otherwise create a minimal group object
+        const group = selectedGroup || { id: groupId, name: `Group ${groupId}` };
+        set({ group });
+        setSelectedGroupId(groupId);
       },
       
       // Actions

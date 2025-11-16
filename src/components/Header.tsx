@@ -1,23 +1,19 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { downloadDataAsJSON } from '../utils/localStorage';
 import { useGroup } from '../store/useStore';
 import { useAuth } from '../hooks/useAuth';
+import LoginButton from './LoginButton';
+import LogoutButton from './LogoutButton';
 
 export default function Header() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const group = useGroup();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const handleExport = () => {
     downloadDataAsJSON();
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   const toggleMobileMenu = () => {
@@ -90,20 +86,10 @@ export default function Header() {
                 <span className="text-sm text-orange-100">
                   {user?.firstName} {user?.lastName}
                 </span>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
-                >
-                  Logout
-                </button>
+                <LogoutButton />
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
-              >
-                Login
-              </Link>
+              <LoginButton />
             )}
           </nav>
 
@@ -173,24 +159,14 @@ export default function Header() {
                   <div className="px-3 py-2 text-base text-orange-100">
                     {user?.firstName} {user?.lastName}
                   </div>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      closeMobileMenu();
-                    }}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
-                  >
-                    Logout
-                  </button>
+                  <div className="px-3 py-2">
+                    <LogoutButton />
+                  </div>
                 </>
               ) : (
-                <Link
-                  to="/login"
-                  onClick={closeMobileMenu}
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
-                >
-                  Login
-                </Link>
+                <div className="px-3 py-2">
+                  <LoginButton />
+                </div>
               )}
             </div>
           </div>

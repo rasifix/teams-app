@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { downloadDataAsJSON } from '../utils/localStorage';
 import { useGroup } from '../store/useStore';
 import { useAuth } from '../hooks/useAuth';
 import LoginButton from './LoginButton';
@@ -11,10 +10,6 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const group = useGroup();
   const { isAuthenticated, user } = useAuth();
-
-  const handleExport = () => {
-    downloadDataAsJSON();
-  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -58,29 +53,6 @@ export default function Header() {
                 </Link>
               );
             })}
-            {isAuthenticated && (
-              <button
-                onClick={handleExport}
-                className="px-3 py-2 rounded-md text-sm font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-1"
-                title="Export data"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                Export
-              </button>
-            )}
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <span className="text-sm text-orange-100">
@@ -143,17 +115,6 @@ export default function Header() {
                   </Link>
                 );
               })}
-              {isAuthenticated && (
-                <button
-                  onClick={() => {
-                    handleExport();
-                    closeMobileMenu();
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors"
-                >
-                  Export
-                </button>
-              )}
               {isAuthenticated ? (
                 <>
                   <div className="px-3 py-2 text-base text-orange-100">

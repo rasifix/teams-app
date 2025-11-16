@@ -64,7 +64,7 @@ class ApiClient {
     try {
       return JSON.parse(text);
     } catch (error) {
-      console.warn('Failed to parse JSON response:', text);
+      console.warn('Failed to parse JSON response:', error);
       return undefined as T;
     }
   }

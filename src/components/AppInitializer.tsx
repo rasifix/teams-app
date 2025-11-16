@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { 
   useStore, 
   useAppInitialized, 
@@ -12,6 +13,7 @@ interface AppInitializerProps {
 }
 
 export default function AppInitializer({ children }: AppInitializerProps) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -19,16 +21,34 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const initializeApp = useStore(state => state.initializeApp);
 
   useEffect(() => {
-    if (!isInitialized && !isLoading) {
+    // Only initialize app when user is authenticated
+    if (isAuthenticated && !isInitialized && !isLoading) {
       initializeApp();
     }
-  }, [isInitialized, isLoading, initializeApp]);
+  }, [isAuthenticated, isInitialized, isLoading, initializeApp]);
+
+  // Wait for auth to initialize before doing anything
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, just show the children (which will redirect to login via ProtectedRoute)
+  if (!isAuthenticated) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Application</h2>
           <p className="text-gray-600">Fetching players, events, trainers, and equipment...</p>
         </div>
@@ -54,20 +74,10 @@ export default function AppInitializer({ children }: AppInitializerProps) {
           </div>
           <button
             onClick={() => initializeApp()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
             Retry
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-gray-600">Initializing application...</p>
         </div>
       </div>
     );

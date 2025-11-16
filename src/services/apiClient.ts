@@ -11,15 +11,34 @@ class ApiClient {
 
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    
+    // Get token from localStorage
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add Authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Merge with any additional headers from options
+    if (options?.headers) {
+      Object.assign(headers, options.headers);
+    }
+    
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
       ...options,
+      headers,
     });
 
     if (!response.ok) {
+      // If unauthorized, clear token and redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
     }
 
@@ -44,7 +63,7 @@ class ApiClient {
   }
 
   getGroupEndpoint(path: string): string {
-    return `/groups/${this.groupId}${path}`;
+    return `/api/groups/${this.groupId}${path}`;
   }
 }
 

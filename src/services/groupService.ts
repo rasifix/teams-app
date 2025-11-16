@@ -8,9 +8,9 @@ import type { Group } from '../types';
  */
 
 export async function getGroup(groupId: string): Promise<Group> {
-  return apiClient.request<Group>(`/groups/${groupId}`);
+  return apiClient.request<Group>(`/api/groups/${groupId}`);
 }
 
 export async function getGroups(): Promise<Group[]> {
-  return apiClient.request<Group[]>('/groups');
+  return apiClient.request<Group[]>('/api/groups');
 }

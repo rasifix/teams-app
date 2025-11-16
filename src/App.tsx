@@ -5,6 +5,10 @@ import ApiErrorBoundary from './components/ApiErrorBoundary';
 import AppInitializer from './components/AppInitializer';
 import { ApiStatus } from './components/ApiStatus';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './contexts/AuthContext';
+import LoginPage from './pages/LoginPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import HomePage from './pages/HomePage';
 import MembersPage from './pages/MembersPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
@@ -35,41 +39,45 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AppInitializer>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <ApiStatus />
-            <ApiErrorBoundary>
-              <main>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  {/* Members routes */}
-                  <Route path="/members" element={<Navigate to="/members/players" replace />} />
-                  <Route path="/members/players" element={<MembersPage />} />
-                  <Route path="/members/trainers" element={<MembersPage />} />
-                  {/* Redirect old routes to new members structure */}
-                  <Route path="/players" element={<Navigate to="/members/players" replace />} />
-                  <Route path="/trainers" element={<Navigate to="/members/trainers" replace />} />
-                  {/* Player detail still needs its own route */}
-                  <Route path="/players/:id" element={<PlayerDetailPage />} />
-                  {/* Trainer detail route */}
-                  <Route path="/trainers/:id" element={<TrainerDetailPage />} />
-                  <Route path="/events" element={<EventsPage />} />
-                  <Route path="/events/:id" element={<EventDetailPage />} />
-                  <Route path="/events/:eventId/teams/:teamId" element={<TeamDetailPage />} />
-                  <Route path="/events/:eventId/teams/:teamId/select-players" element={<TeamPlayerSelectionPage />} />
-                  <Route path="/shirts" element={<ShirtSetsPage />} />
-                  <Route path="/statistics" element={<StatisticsPage />}>
-                    <Route path="player-statistics" element={<PlayerStatisticsPage />} />
-                    <Route path="event-attendance" element={<EventAttendancePage />} />
-                  </Route>
-                </Routes>
-              </main>
-            </ApiErrorBoundary>
-          </div>
-        </Router>
-      </AppInitializer>
+      <AuthProvider>
+        <AppInitializer>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+              <Header />
+              <ApiStatus />
+              <ApiErrorBoundary>
+                <main>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    
+                    {/* Protected routes */}
+                    <Route path="/" element={<HomePage />} />
+                    {/* Members routes */}
+                    <Route path="/members" element={<Navigate to="/members/players" replace />} />
+                    <Route path="/members/players" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
+                    <Route path="/members/trainers" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
+                    {/* Player detail still needs its own route */}
+                    <Route path="/players/:id" element={<ProtectedRoute><PlayerDetailPage /></ProtectedRoute>} />
+                    {/* Trainer detail route */}
+                    <Route path="/trainers/:id" element={<ProtectedRoute><TrainerDetailPage /></ProtectedRoute>} />
+                    <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+                    <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
+                    <Route path="/events/:eventId/teams/:teamId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />
+                    <Route path="/events/:eventId/teams/:teamId/select-players" element={<ProtectedRoute><TeamPlayerSelectionPage /></ProtectedRoute>} />
+                    <Route path="/shirts" element={<ProtectedRoute><ShirtSetsPage /></ProtectedRoute>} />
+                    <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>
+                      <Route path="player-statistics" element={<PlayerStatisticsPage />} />
+                      <Route path="event-attendance" element={<EventAttendancePage />} />
+                    </Route>
+                  </Routes>
+                </main>
+              </ApiErrorBoundary>
+            </div>
+          </Router>
+        </AppInitializer>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

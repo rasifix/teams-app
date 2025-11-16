@@ -1,15 +1,23 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { downloadDataAsJSON } from '../utils/localStorage';
 import { useGroup } from '../store/useStore';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const group = useGroup();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleExport = () => {
     downloadDataAsJSON();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   const toggleMobileMenu = () => {
@@ -38,7 +46,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 items-center">
-            {navItems.map((item) => {
+            {isAuthenticated && navItems.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
               return (
                 <Link
@@ -54,27 +62,49 @@ export default function Header() {
                 </Link>
               );
             })}
-            <button
-              onClick={handleExport}
-              className="px-3 py-2 rounded-md text-sm font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-1"
-              title="Export data"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {isAuthenticated && (
+              <button
+                onClick={handleExport}
+                className="px-3 py-2 rounded-md text-sm font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors flex items-center gap-1"
+                title="Export data"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
-              Export
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Export
+              </button>
+            )}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-orange-100">
+                  {user?.firstName} {user?.lastName}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
+              >
+                Login
+              </Link>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -110,7 +140,7 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden" id="mobile-menu">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {navItems.map((item) => {
+              {isAuthenticated && navItems.map((item) => {
                 const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                 return (
                   <Link
@@ -127,15 +157,41 @@ export default function Header() {
                   </Link>
                 );
               })}
-              <button
-                onClick={() => {
-                  handleExport();
-                  closeMobileMenu();
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors"
-              >
-                Export
-              </button>
+              {isAuthenticated && (
+                <button
+                  onClick={() => {
+                    handleExport();
+                    closeMobileMenu();
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-orange-100 hover:bg-orange-500 hover:text-white transition-colors"
+                >
+                  Export
+                </button>
+              )}
+              {isAuthenticated ? (
+                <>
+                  <div className="px-3 py-2 text-base text-orange-100">
+                    {user?.firstName} {user?.lastName}
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      closeMobileMenu();
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={closeMobileMenu}
+                  className="block px-3 py-2 rounded-md text-base font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors"
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </div>
         )}

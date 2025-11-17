@@ -114,7 +114,7 @@ export default function TeamDetailPage() {
     <div className="page-container lg:px-4 px-0">
       {/* Sub Navigation */}
       <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
-        <div className="relative flex items-center">
+        <div className="relative flex items-center justify-between">
           <button 
             onClick={() => navigate(`/events/${eventId}`)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
@@ -122,11 +122,6 @@ export default function TeamDetailPage() {
             ← Back
           </button>
           <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{team.name}</span>
-        </div>
-      </div>
-      
-      <div className="px-4 lg:px-0">
-        <div className="flex justify-end items-start mb-6">
           <button
             onClick={() => setIsEditTeamModalOpen(true)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"

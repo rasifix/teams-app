@@ -14,7 +14,7 @@ interface PlayerInvitationsCardProps {
   assignedPlayerIds?: string[];
 }
 
-type TabType = 'accepted' | 'declined' | 'open';
+type TabType = 'accepted' | 'declined' | 'open' | 'assigned';
 
 export default function PlayerInvitationsCard({
   invitations,
@@ -52,9 +52,12 @@ export default function PlayerInvitationsCard({
   const acceptedCount = invitations.filter(inv => inv.status === 'accepted').filter(inv => !assignedPlayerIds.includes(inv.playerId)).length;
   const openCount = invitations.filter(inv => inv.status === 'open').length;
   const declinedCount = invitations.filter(inv => inv.status === 'declined').length;
+  const assignedCount = assignedPlayerIds.length;
 
   // Get invitations for the current tab
-  const tabInvitations = invitations.filter(inv => inv.status === activeTab);
+  const tabInvitations = activeTab === 'assigned' 
+    ? invitations.filter(inv => assignedPlayerIds.includes(inv.playerId))
+    : invitations.filter(inv => inv.status === activeTab);
 
   // Filter by availability only on accepted tab when toggle is enabled
   const filteredInvitations = activeTab === 'accepted'
@@ -77,50 +80,60 @@ export default function PlayerInvitationsCard({
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-4">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-4 lg:space-x-8 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('accepted')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'accepted'
+            onClick={() => setActiveTab('assigned')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap lg:hidden ${activeTab === 'assigned'
                 ? 'border-green-500 text-green-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
-            Accepted ({acceptedCount})
+            Assigned <span className="hidden lg:inline">({assignedCount})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('accepted')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'accepted'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            Accepted <span className="hidden lg:inline">({acceptedCount})</span>
           </button>
           <button
             onClick={() => setActiveTab('open')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'open'
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'open'
                 ? 'border-yellow-500 text-yellow-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
-            Open ({openCount})
+            Open <span className="hidden lg:inline">({openCount})</span>
           </button>
           <button
             onClick={() => setActiveTab('declined')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'declined'
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'declined'
                 ? 'border-red-500 text-red-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
           >
-            Declined ({declinedCount})
+            Declined <span className="hidden lg:inline">({declinedCount})</span>
           </button>
         </nav>
       </div>
 
-      {activeTab === 'accepted' && filteredInvitations.length < tabInvitations.length && (
-        <div className="mb-3 text-sm text-blue-600">
-          {tabInvitations.length - filteredInvitations.length} players are already assigned to teams
-        </div>
-      )}
       {filteredInvitations.length === 0 ? (
         <div className="text-gray-500 text-center py-4">
           {invitations.length === 0 ? (
             <p>No invitations sent yet.</p>
           ) : tabInvitations.length === 0 ? (
-            <p>No players have {activeTab === 'accepted' ? 'accepted' : activeTab === 'declined' ? 'declined' : 'open'} invitations.</p>
+            <p>No players have {
+              activeTab === 'accepted' ? 'accepted' : 
+              activeTab === 'declined' ? 'declined' : 
+              activeTab === 'assigned' ? 'been assigned' : 
+              'open'} invitations.</p>
           ) : activeTab === 'accepted' ? (
             <p>No available players. All accepted players are already assigned to teams.</p>
+          ) : activeTab === 'assigned' ? (
+            <p>No players assigned to teams yet.</p>
           ) : (
             <p>No players in this category.</p>
           )}

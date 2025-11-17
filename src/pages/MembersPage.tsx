@@ -113,15 +113,15 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container lg:px-4 px-0">
       {hasErrors && (errors.players || errors.trainers) && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
           {errors.players || errors.trainers}
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
+      <div className="border-b border-gray-200 mb-6 px-4 lg:px-0">
         <nav className="flex gap-8" aria-label="Tabs">
           <NavLink
             to="/members/players"
@@ -148,8 +148,8 @@ export default function MembersPage() {
 
       {/* Players Tab Content */}
       {(isPlayersTab) && (
-        <Card>
-          <CardBody>
+        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+          <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
               <CardTitle>All Players ({players.length})</CardTitle>
               <Button
@@ -172,8 +172,8 @@ export default function MembersPage() {
 
       {/* Trainers Tab Content */}
       {isTrainersTab && (
-        <Card>
-          <CardBody>
+        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+          <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
               <CardTitle>All Trainers ({trainers.length})</CardTitle>
               <Button

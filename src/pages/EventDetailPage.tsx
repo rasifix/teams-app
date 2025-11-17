@@ -389,7 +389,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="page-container lg:px-4 px-0">
-      <div className="page-header px-4 lg:px-0">
+      <div className="page-header px-4 lg:px-0 -mt-5 mb-6">
         {/* Navigation links */}
         <div className="flex justify-between items-center mb-4 text-sm">
           <div>

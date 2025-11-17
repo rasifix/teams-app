@@ -89,7 +89,7 @@ export default function MembersList<T extends Member>({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" onClick={handleBackdropClick}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-3 px-0" onClick={handleBackdropClick}>
       {members.map((member) => (
         <div 
           key={member.id}

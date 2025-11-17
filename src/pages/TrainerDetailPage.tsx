@@ -124,15 +124,17 @@ export default function TrainerDetailPage() {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div className="flex justify-between items-center mb-2">
+    <div className="page-container lg:px-4 px-0">
+      {/* Sub Navigation */}
+      <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
+        <div className="relative flex items-center justify-between">
           <button
             onClick={() => navigate('/members/trainers')}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            ← Back to Trainers
+            ← Back
           </button>
+          <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{trainer.firstName} {trainer.lastName}</span>
           <div className="flex gap-3">
             <button
               onClick={handleEditTrainer}
@@ -148,21 +150,18 @@ export default function TrainerDetailPage() {
             </button>
           </div>
         </div>
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <h1 className="page-title">{trainer.firstName} {trainer.lastName}</h1>
-          </div>
-        </div>
-        <div>
-          <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">Trainer</span>
-        </div>
+      </div>
+
+      {/* Trainer Badge */}
+      <div className="px-4 lg:px-0 mb-4">
+        <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">Trainer</span>
       </div>
 
       {/* Training History */}
       {trainerEventHistory.length > 0 && (
-        <div className="mt-6">
-          <Card>
-            <CardBody>
+        <div>
+          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+            <CardBody className="lg:p-6 p-4">
               <CardTitle>Events</CardTitle>
               <p className="text-sm text-gray-600 mt-1 mb-4">
                 Events where {trainer.firstName} was assigned as a trainer
@@ -205,9 +204,9 @@ export default function TrainerDetailPage() {
       )}
 
       {trainerEventHistory.length === 0 && (
-        <div className="mt-6">
-          <Card>
-            <CardBody>
+        <div>
+          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+            <CardBody className="lg:p-6 p-4">
               <CardTitle>Training History</CardTitle>
               <p className="text-gray-500 text-center py-8">
                 {trainer.firstName} hasn't been assigned to any teams yet.

@@ -12,8 +12,8 @@ export default function PlayerEventHistory({
   const navigate = useNavigate();
 
   return (
-    <Card>
-      <CardBody>
+    <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+      <CardBody className="lg:p-6 p-4">
         <CardTitle>Events</CardTitle>
         {eventHistory.length === 0 ? (
           <div className="empty-state">

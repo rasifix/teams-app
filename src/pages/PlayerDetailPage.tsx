@@ -128,28 +128,19 @@ export default function PlayerDetailPage() {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <button 
-          onClick={() => navigate('/players')}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2"
-        >
-          ← Back to Players
-        </button>
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <h1 className="page-title">{player.firstName} {player.lastName}</h1>
-            <div className="text-gray-600 text-sm">
-              {player.birthDate ? (
-                <div>
-                  <span>{new Date(player.birthDate).toLocaleDateString()}</span>
-                </div>
-              ) : <div></div>}
-            </div>
-            <div className="flex items-center gap-1">
-              <Level level={player.level} />
-            </div>
-          </div>
+    <div className="page-container lg:px-4 px-0">
+      {/* Sub Navigation */}
+      <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
+        <div className="relative flex items-center justify-between">
+          <button 
+            onClick={() => navigate('/players')}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          >
+            ← Back
+          </button>
+          <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">
+            {player.firstName} {player.lastName}
+          </span>
           <div className="flex gap-3">
             <button 
               onClick={handleEditPlayer}
@@ -167,6 +158,16 @@ export default function PlayerDetailPage() {
         </div>
       </div>
 
+      {/* Player Info */}
+      <div className="px-4 lg:px-0 mb-4 flex items-center gap-3">
+        {player.birthDate && (
+          <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">
+            {new Date(player.birthDate).toLocaleDateString()}
+          </span>
+        )}
+        <Level level={player.level} />
+      </div>
+
       <div>
         <PlayerEventHistory
           eventHistory={playerEventHistory}
@@ -175,9 +176,9 @@ export default function PlayerDetailPage() {
 
       {/* Available Future Events Section */}
       {futureEventsWithoutInvitation.length > 0 && (
-        <div className="mt-6">
-          <Card>
-            <CardBody>
+        <div className="lg:mt-6">
+          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+            <CardBody className="lg:p-6 p-4">
               <CardTitle>Events without Invitation</CardTitle>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 overflow-hidden">
                 {futureEventsWithoutInvitation.map((event) => (

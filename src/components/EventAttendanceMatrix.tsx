@@ -62,7 +62,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       case 'declined':
         return { icon: '✗', color: 'text-red-600', bg: 'bg-red-50' };
       case 'open':
-        return { icon: '✉', color: 'text-yellow-600', bg: 'bg-yellow-50' };
+        return { icon: '?', color: 'text-yellow-600', bg: 'bg-yellow-50' };
       default:
         return { icon: '-', color: 'text-gray-400', bg: 'bg-gray-50' };
     }

@@ -151,7 +151,7 @@ export default function MembersPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
-              <CardTitle>All Players ({players.length})</CardTitle>
+              <CardTitle className="mb-0">All Players ({players.length})</CardTitle>
               <Button
                 variant="primary"
                 size="sm"
@@ -175,7 +175,7 @@ export default function MembersPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
-              <CardTitle>All Trainers ({trainers.length})</CardTitle>
+              <CardTitle className="mb-0">All Trainers ({trainers.length})</CardTitle>
               <Button
                 variant="primary"
                 size="sm"

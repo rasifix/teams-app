@@ -27,6 +27,38 @@ export default function PlayerInvitationsCard({
   assignedPlayerIds = [],
 }: PlayerInvitationsCardProps) {
   const [activeTab, setActiveTab] = useState<TabType>('accepted');
+  const [swipedInvitationId, setSwipedInvitationId] = useState<string | null>(null);
+
+  const handleTouchStartInvitation = (invitationId: string, e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const startX = touch.clientX;
+    
+    const handleTouchMove = (moveEvent: TouchEvent) => {
+      const moveTouch = moveEvent.touches[0];
+      const diffX = startX - moveTouch.clientX;
+      
+      // If swiped left more than 50px, show delete button
+      if (diffX > 50 && swipedInvitationId !== invitationId) {
+        setSwipedInvitationId(invitationId);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      }
+      // If swiped right more than 30px while delete button is showing, hide it
+      else if (diffX < -30 && swipedInvitationId === invitationId) {
+        setSwipedInvitationId(null);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+    
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+  };
 
   // Function to calculate real-time statistics including current event state
   const getPlayerStatsWithCurrent = (playerId: string) => {
@@ -167,16 +199,22 @@ export default function PlayerInvitationsCard({
               return (
                 <div
                   key={invitation.id}
-                  className={`border border-gray-200 rounded-lg p-3 transition-all ${isDraggable ? 'cursor-move hover:border-green-300 hover:bg-green-50' : ''
-                    } ${shouldDim ? 'opacity-40' : ''}`}
-                  draggable={isDraggable}
-                  onDragStart={(e) => {
-                    if (isDraggable) {
-                      e.dataTransfer.effectAllowed = 'move';
-                      e.dataTransfer.setData('playerId', invitation.playerId);
-                    }
-                  }}
+                  className="relative overflow-hidden"
                 >
+                  <div
+                    className={`border border-gray-200 rounded-lg p-3 transition-all ${isDraggable ? 'cursor-move hover:border-green-300 hover:bg-green-50' : ''
+                      } ${shouldDim ? 'opacity-40' : ''} ${
+                        swipedInvitationId === invitation.id ? '-translate-x-20 lg:translate-x-0 rounded-r-none lg:rounded-r-lg' : 'translate-x-0'
+                      }`}
+                    draggable={isDraggable}
+                    onDragStart={(e) => {
+                      if (isDraggable) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('playerId', invitation.playerId);
+                      }
+                    }}
+                    onTouchStart={activeTab === 'open' && !isAssigned ? (e) => handleTouchStartInvitation(invitation.id, e) : undefined}
+                  >
                   <div className="flex justify-between items-center gap-3">
                     <div className="flex items-center gap-2 flex-1">
                       <div className="flex flex-col">
@@ -209,13 +247,14 @@ export default function PlayerInvitationsCard({
                         <option value="accepted">accepted</option>
                         <option value="declined">declined</option>
                       </select>
-                      {activeTab == 'open' && <button
+                      {activeTab === 'open' && <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onRemoveInvitation(invitation.id);
+                          setSwipedInvitationId(null);
                         }}
                         disabled={isAssigned}
-                        className={`p-1 rounded transition-colors ${isAssigned
+                        className={`p-1 rounded transition-colors hidden lg:block ${isAssigned
                             ? 'text-gray-300 cursor-not-allowed'
                             : 'text-red-500 hover:text-red-700 hover:bg-red-50'
                           }`}
@@ -228,6 +267,26 @@ export default function PlayerInvitationsCard({
                       }
                     </div>
                   </div>
+                  </div>
+
+                  {/* Delete button that appears on swipe (mobile only) */}
+                  {activeTab === 'open' && !isAssigned && (
+                    <div 
+                      className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 lg:hidden ${
+                        swipedInvitationId === invitation.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <button
+                        className="flex items-center justify-center w-full h-full text-white font-medium text-sm"
+                        onClick={() => {
+                          onRemoveInvitation(invitation.id);
+                          setSwipedInvitationId(null);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}

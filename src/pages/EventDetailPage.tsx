@@ -53,6 +53,7 @@ export default function EventDetailPage() {
   const [dragOverPlayerId, setDragOverPlayerId] = useState<string | null>(null);
   const [swipedTeamId, setSwipedTeamId] = useState<string | null>(null);
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
+  const [isSwipeGesture, setIsSwipeGesture] = useState(false);
 
   const handleAddTeam = async () => {
     if (!event || !id) return;
@@ -73,6 +74,7 @@ export default function EventDetailPage() {
   const handleTouchStartTeam = (teamId: string, e: React.TouchEvent) => {
     const touch = e.touches[0];
     const startX = touch.clientX;
+    setIsSwipeGesture(false);
     
     const handleTouchMove = (moveEvent: TouchEvent) => {
       const moveTouch = moveEvent.touches[0];
@@ -81,14 +83,20 @@ export default function EventDetailPage() {
       // If swiped left more than 50px, show delete button
       if (diffX > 50 && swipedTeamId !== teamId) {
         setSwipedTeamId(teamId);
+        setIsSwipeGesture(true);
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
       }
       // If swiped right more than 30px while delete button is showing, hide it
       else if (diffX < -30 && swipedTeamId === teamId) {
         setSwipedTeamId(null);
+        setIsSwipeGesture(true);
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
+      }
+      // If any movement detected, mark as potential swipe
+      else if (Math.abs(diffX) > 5) {
+        setIsSwipeGesture(true);
       }
     };
     
@@ -525,9 +533,12 @@ export default function EventDetailPage() {
                           swipedTeamId === team.id ? '-translate-x-20' : 'translate-x-0'
                         }`}
                         onClick={() => {
-                          if (swipedTeamId !== team.id) {
+                          // Only navigate if it wasn't a swipe gesture
+                          if (!isSwipeGesture) {
                             navigate(`/events/${id}/teams/${team.id}`);
                           }
+                          // Reset the flag for next interaction
+                          setIsSwipeGesture(false);
                         }}
                         onTouchStart={(e) => handleTouchStartTeam(team.id, e)}
                       >

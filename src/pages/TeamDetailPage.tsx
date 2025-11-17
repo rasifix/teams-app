@@ -126,60 +126,72 @@ export default function TeamDetailPage() {
       </div>
       
       <div className="px-4 lg:px-0">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Strength level={team.strength} />
-              </div>
-              <div>🕐 {team.startTime}</div>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsEditTeamModalOpen(true)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => setIsAssignShirtsModalOpen(true)}
-              className="text-green-600 hover:text-green-700 text-sm font-medium"
-              disabled={selectedPlayers.length === 0}
-            >
-              Assign Shirts
-            </button>
-          </div>
+        <div className="flex justify-end items-start mb-6">
+          <button
+            onClick={() => setIsEditTeamModalOpen(true)}
+            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          >
+            Edit
+          </button>
         </div>
       </div>
       
       {/* Team Details */}
       <div className="space-y-4">
-        {/* Trainer */}
+        {/* Trainer and Shirt Set */}
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4">
-            <CardTitle>Trainer</CardTitle>
-            {trainer ? (
-              <div className="text-sm">
-                {trainer.firstName} {trainer.lastName}
+          <CardBody className="lg:p-6 p-4 space-y-3">
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span>🕐</span>
+                <span className="font-medium text-sm">Start Time</span>
               </div>
-            ) : (
-              <div className="text-sm text-gray-500">No trainer assigned</div>
-            )}
-          </CardBody>
-        </Card>
-        
-        {/* Shirt Set */}
-        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4">
-            <CardTitle>Shirt Set</CardTitle>
-            {shirtSet ? (
               <div className="text-sm">
-                {shirtSet.sponsor}
+                {team.startTime}
               </div>
-            ) : (
-              <div className="text-sm text-gray-500">No shirt set assigned</div>
-            )}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span>💪</span>
+                <span className="font-medium text-sm">Strength</span>
+              </div>
+              <div className="text-sm">
+                <Strength level={team.strength} />
+              </div>
+            </div>            
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span>👤</span>
+                <span className="font-medium text-sm">Trainer</span>
+              </div>
+              {trainer ? (
+                <div className="text-sm">
+                  {trainer.firstName} {trainer.lastName}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">No trainer assigned</div>
+              )}
+            </div>
+            
+            <div 
+              className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -mx-6 px-6 py-2 rounded transition-colors"
+              onClick={() => selectedPlayers.length > 0 && setIsAssignShirtsModalOpen(true)}
+            >
+              <div className="flex items-center gap-2">
+                <span>👕</span>
+                <span className="font-medium text-sm">Shirt Set</span>
+              </div>
+              {shirtSet ? (
+                <div className="text-sm">
+                  {shirtSet.sponsor}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">No shirt set assigned</div>
+              )}
+            </div>
           </CardBody>
         </Card>
         

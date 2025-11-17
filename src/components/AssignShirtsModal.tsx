@@ -102,7 +102,7 @@ export default function AssignShirtsModal({
                 <option value="">Select a shirt set...</option>
                 {shirtSets.map(shirtSet => (
                   <option key={shirtSet.id} value={shirtSet.id}>
-                    {shirtSet.sponsor} - {shirtSet.color}
+                    {shirtSet.sponsor}
                   </option>
                 ))}
               </select>
@@ -110,8 +110,7 @@ export default function AssignShirtsModal({
 
             {selectedShirtSet && (
               <div>
-                <h3 className="text-lg font-medium mb-4">Assign Shirts to Players</h3>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
+                <div className="space-y-2 max-h-64 overflow-y-auto">
                   {team.selectedPlayers.map(playerId => {
                     const player = players.find(p => p.id === playerId);
                     const currentAssignment = playerShirtAssignments.find(a => a.playerId === playerId);

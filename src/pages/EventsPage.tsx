@@ -77,17 +77,17 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container lg:px-4 px-0">
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
           {error}
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Future Events Section */}
-        <Card>
-          <CardBody>
+        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+          <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
               <CardTitle>Future Events ({futureEvents.length})</CardTitle>
               <Button 
@@ -109,8 +109,8 @@ export default function EventsPage() {
 
         {/* Past Events Section */}
         {pastEvents.length > 0 && (
-          <Card>
-            <CardBody>
+          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+            <CardBody className="lg:p-6 p-4">
               <CardTitle>Past Events ({pastEvents.length})</CardTitle>
               
               <EventsList 

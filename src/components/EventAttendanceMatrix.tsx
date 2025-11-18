@@ -63,7 +63,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       case 'selected':
         return { icon: '✓', color: 'text-green-600', bg: 'bg-green-50' };
       case 'accepted':
-        return { icon: '✓', color: 'text-blue-600', bg: 'bg-blue-50' };
+        return { icon: '✓', color: 'text-gray-400', bg: 'bg-gray-50' };
       case 'declined':
         return { icon: '✗', color: 'text-red-600', bg: 'bg-red-50' };
       case 'open':
@@ -107,7 +107,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             <span>Selected</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-blue-600 font-bold">✓</span>
+            <span className="text-gray-400 font-bold">✓</span>
             <span>Accepted</span>
           </div>
           <div className="flex items-center gap-1">

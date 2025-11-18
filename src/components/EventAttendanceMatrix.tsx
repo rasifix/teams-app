@@ -127,7 +127,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="border-b-2 border-gray-300">
-                <th className="sticky left-0 bg-white z-10 px-4 py-3 text-left text-sm font-semibold text-gray-900 border-r-2 border-gray-300">
+                <th className="sticky left-0 bg-white z-10 px-4 py-3 text-left text-sm font-semibold text-gray-900 border-r-2 border-gray-300 min-w-[220px]">
                   Player
                 </th>
                 {events.map(event => (
@@ -153,7 +153,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                   className="border-b border-gray-200 hover:bg-gray-50 max-h-[40px] cursor-pointer"
                   onClick={() => handlePlayerClick(player.id)}
                 >
-                  <td className="sticky left-0 bg-white z-10 px-4 py-2 text-sm font-medium text-gray-900 border-r border-gray-200 max-h-[40px]">
+                  <td className="sticky left-0 bg-white z-10 px-4 py-2 text-sm font-medium text-gray-900 border-r border-gray-200 max-h-[40px] min-w-[220px]">
                     <div className="text-sm font-medium text-gray-900">
                       {player.firstName} {player.lastName}
                       <span className="text-xs text-muted m-2">{player.birthYear}</span>

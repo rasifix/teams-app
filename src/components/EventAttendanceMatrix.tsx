@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Player, Event } from '../types';
-import { Card, CardBody } from './ui';
+import { Card, CardBody, DateColumn } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
@@ -19,6 +19,11 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
 
   const handlePlayerClick = (playerId: string) => {
     navigate(`/players/${playerId}`);
+  };
+
+  const handleEventClick = (eventId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/events/${eventId}`);
   };
 
   const attendanceData = useMemo(() => {
@@ -131,11 +136,11 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                     className="px-3 py-3 text-center text-sm font-medium text-gray-900 min-w-[60px]"
                     title={`${event.name} - ${formatDate(event.date)}`}
                   >
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-2xl">📅</span>
-                      <span className="text-xs text-gray-500 truncate max-w-[60px]">
-                        {formatDate(event.date).split(',')[0]}
-                      </span>
+                    <div 
+                      className="flex justify-center cursor-pointer hover:opacity-70 transition-opacity"
+                      onClick={(e) => handleEventClick(event.id, e)}
+                    >
+                      <DateColumn date={event.date} />
                     </div>
                   </th>
                 ))}

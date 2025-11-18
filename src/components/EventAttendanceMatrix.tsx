@@ -133,7 +133,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                 {events.map(event => (
                   <th 
                     key={event.id} 
-                    className="px-3 py-3 text-center text-sm font-medium text-gray-900 min-w-[60px]"
+                    className="px-2 py-2 text-center text-sm font-medium text-gray-900 min-w-[50px]"
                     title={`${event.name} - ${formatDate(event.date)}`}
                   >
                     <div 

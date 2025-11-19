@@ -133,7 +133,7 @@ export default function PlayerDetailPage() {
       <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
         <div className="relative flex items-center justify-between">
           <button 
-            onClick={() => navigate('/players')}
+            onClick={() => navigate('/members')}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             ← Back

@@ -8,6 +8,7 @@ interface TeamPrintSummaryProps {
   players: Player[];
   trainers: Trainer[];
   shirtSets: ShirtSet[];
+  club?: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -18,7 +19,8 @@ export default function TeamPrintSummary({
   event, 
   teams, 
   players, 
-  trainers, 
+  trainers,
+  club,
   isOpen, 
   onClose 
 }: TeamPrintSummaryProps) {
@@ -116,7 +118,9 @@ export default function TeamPrintSummary({
                   {/* Header */}
                   <div className="text-center mb-4 border-b border-gray-200 pb-3">
                     <h2 className="text-lg font-semibold text-gray-700 mb-1">{event.name}</h2>
-                    <h1 className="text-xl font-bold text-gray-900 mb-1">Team {team.name}</h1>
+                    <h1 className="text-xl font-bold text-gray-900 mb-1">
+                      {format === 'organizer' && club ? `${club} - ` : ''} {team.name}
+                    </h1>
                     <div className="text-sm text-gray-600">
                       <p>📅 {formatDate(event.date)} {format === 'selection' && `🕐 ${team.startTime}`}</p>
                       {trainer && (

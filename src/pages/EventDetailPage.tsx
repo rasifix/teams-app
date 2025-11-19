@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
+import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from '../store';
 import type { Event, Team, Invitation } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
@@ -22,6 +22,7 @@ export default function EventDetailPage() {
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
+  const group = useGroup();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -665,6 +666,7 @@ export default function EventDetailPage() {
         players={players}
         trainers={trainers}
         shirtSets={shirtSets}
+        club={group?.club}
         isOpen={isPrintSummaryOpen}
         onClose={() => setIsPrintSummaryOpen(false)}
       />

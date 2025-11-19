@@ -160,7 +160,7 @@ export default function TeamPrintSummary({
                                     )}
                                   </div>
                                   {shirtNumber && shirtNumber > 0 && (
-                                    <span className="text-gray-800 text-sm font-bold">#{shirtNumber}</span>
+                                    <span className="text-gray-800 text-sm font-bold">{shirtNumber}</span>
                                   )}
                                 </div>
                               )}

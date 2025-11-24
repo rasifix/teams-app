@@ -123,6 +123,9 @@ export default function TeamPrintSummary({
                     </h1>
                     <div className="text-sm text-gray-600">
                       <p>📅 {formatDate(event.date)} {format === 'selection' && `🕐 ${team.startTime}`}</p>
+                      {event.location && format === 'selection' && (
+                        <p>📍 {event.location}</p>
+                      )}
                       {trainer && (
                         <p className="text-blue-600 font-medium">👤 {trainer.firstName} {trainer.lastName}</p>
                       )}

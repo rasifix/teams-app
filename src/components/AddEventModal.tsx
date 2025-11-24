@@ -3,13 +3,14 @@ import { useState } from 'react';
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number }) => void;
+  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; location?: string }) => void;
 }
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
+  const [location, setLocation] = useState('');
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
 
@@ -28,12 +29,14 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       startTime,
       numberOfTeams,
       maxPlayersPerTeam,
+      location: location.trim() || undefined,
     });
 
     // Reset form
     setName('');
     setDate('');
     setStartTime('');
+    setLocation('');
     setNumberOfTeams(1);
     setMaxPlayersPerTeam(11);
     onClose();
@@ -44,6 +47,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setName('');
     setDate('');
     setStartTime('');
+    setLocation('');
     setNumberOfTeams(1);
     setMaxPlayersPerTeam(11);
     onClose();
@@ -97,6 +101,20 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                   onChange={(e) => setStartTime(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="event-location" className="block text-sm font-medium text-gray-700 mb-1">
+                  Location
+                </label>
+                <input
+                  id="event-location"
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="e.g., Main Field, Sportplatz Seebach"
                 />
               </div>
 

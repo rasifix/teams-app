@@ -5,11 +5,12 @@ import Button from './ui/Button';
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number }) => void;
+  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number; location?: string }) => void;
   currentData: {
     name: string;
     date: string;
     maxPlayersPerTeam: number;
+    location?: string;
   };
   minMaxPlayers: number;
 }
@@ -23,6 +24,7 @@ export default function EditEventModal({
 }: EditEventModalProps) {
   const [name, setName] = useState(currentData.name);
   const [date, setDate] = useState(currentData.date);
+  const [location, setLocation] = useState(currentData.location || '');
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(currentData.maxPlayersPerTeam);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +32,7 @@ export default function EditEventModal({
     if (isOpen) {
       setName(currentData.name);
       setDate(currentData.date);
+      setLocation(currentData.location || '');
       setMaxPlayersPerTeam(currentData.maxPlayersPerTeam);
       setError(null);
     }
@@ -63,6 +66,7 @@ export default function EditEventModal({
       name: name.trim(),
       date,
       maxPlayersPerTeam,
+      location: location.trim() || undefined,
     });
     onClose();
   };
@@ -103,6 +107,20 @@ export default function EditEventModal({
                 onChange={(e) => setDate(e.target.value)}
                 required
                 className="form-input"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="eventLocation" className="form-label">
+                Location
+              </label>
+              <input
+                type="text"
+                id="eventLocation"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="form-input"
+                placeholder="e.g., Main Field, Sportplatz Seebach"
               />
             </div>
 

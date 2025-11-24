@@ -160,7 +160,7 @@ export default function EventDetailPage() {
     setIsAssignShirtsModalOpen(false);
   };
 
-  const handleSaveEvent = async (data: { name: string; date: string; maxPlayersPerTeam: number }) => {
+  const handleSaveEvent = async (data: { name: string; date: string; maxPlayersPerTeam: number; location?: string }) => {
     if (!event || !id) return;
 
     await updateEvent(id, data);
@@ -442,7 +442,8 @@ export default function EventDetailPage() {
           <div className="flex-1">
             <p className="page-subtitle">
               📅 {formatDate(event.date)}
-            </p>
+              {event.location && (<span className="ml-4">📍 {event.location}</span>)}
+            </p>            
           </div>
           <div className="flex gap-3">
             <button 
@@ -634,6 +635,7 @@ export default function EventDetailPage() {
           name: event.name,
           date: event.date,
           maxPlayersPerTeam: event.maxPlayersPerTeam,
+          location: event.location,
         }}
         minMaxPlayers={Math.max(...event.teams.map(team => (team.selectedPlayers || []).length), 1)}
       />

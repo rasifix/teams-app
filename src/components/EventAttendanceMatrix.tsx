@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Player, Event } from '../types';
 import { Card, CardBody, DateColumn } from './ui';
@@ -14,6 +14,7 @@ interface EventAttendanceMatrixProps {
 export default function EventAttendanceMatrix({ players, events }: EventAttendanceMatrixProps) {
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [minLevel, maxLevel] = levelRange;
 
@@ -80,6 +81,47 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
     return a.player.firstName.toLowerCase().localeCompare(b.player.firstName.toLowerCase());
   });
 
+  // Scroll to next upcoming event on mount
+  useEffect(() => {
+    if (events.length === 0 || players.length === 0) return;
+    if (!scrollContainerRef.current) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find the index of the next upcoming event
+    const nextEventIndex = events.findIndex(event => {
+      const eventDate = new Date(event.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate >= today;
+    });
+
+    // If we found an upcoming event, scroll to it
+    if (nextEventIndex > 0) {
+      // Use setTimeout to ensure DOM is rendered
+      setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        // Find the header cell for this event
+        const headers = container.querySelectorAll('th');
+        // +1 because first header is the "Player" column
+        const targetHeader = headers[nextEventIndex + 1];
+        
+        if (targetHeader) {
+          const containerRect = container.getBoundingClientRect();
+          const targetRect = targetHeader.getBoundingClientRect();
+          const scrollLeft = targetRect.left - containerRect.left + container.scrollLeft - 220; // 220px is the player column width
+          
+          container.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, [events, players]);
+
   if (events.length === 0 || players.length === 0) {
     return (
       <Card>
@@ -123,7 +165,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             <span>Not Invited</span>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" ref={scrollContainerRef}>
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="border-b-2 border-gray-300">

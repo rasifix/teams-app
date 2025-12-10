@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 
 interface ModalProps {
@@ -9,8 +10,38 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
 
+  const isPointerDownOnOverlay = useRef(false);
+
+  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    isPointerDownOnOverlay.current = event.target === event.currentTarget;
+  };
+
+  const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isPointerDownOnOverlay.current && event.target === event.currentTarget) {
+      onClose();
+    }
+    isPointerDownOnOverlay.current = false;
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    isPointerDownOnOverlay.current = event.target === event.currentTarget;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (isPointerDownOnOverlay.current && event.target === event.currentTarget) {
+      onClose();
+    }
+    isPointerDownOnOverlay.current = false;
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div
+      className="modal-overlay"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>

@@ -8,9 +8,9 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, children }: ModalProps) {
-  if (!isOpen) return null;
-
   const isPointerDownOnOverlay = useRef(false);
+
+  if (!isOpen) return null;
 
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     isPointerDownOnOverlay.current = event.target === event.currentTarget;

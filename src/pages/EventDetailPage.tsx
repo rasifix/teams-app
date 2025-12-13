@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from '../store';
-import type { Event, Team, Invitation } from '../types';
+import type { Event, Team, Invitation, InvitationStatus } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditTeamModal from '../components/EditTeamModal';
@@ -201,7 +201,7 @@ export default function EventDetailPage() {
     // Store will automatically update the event data
   };
 
-  const handleInvitationStatusChange = async (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => {
+  const handleInvitationStatusChange = async (invitationId: string, newStatus: InvitationStatus) => {
     if (!event || !id) return;
 
     const updatedInvitations = event.invitations.map(inv =>

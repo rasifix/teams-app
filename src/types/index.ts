@@ -24,10 +24,12 @@ export interface Team {
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
 }
 
+export type InvitationStatus = 'open' | 'accepted' | 'declined' | 'injured';
+
 export interface Invitation {
   id: string;
   playerId: string;
-  status: 'open' | 'accepted' | 'declined';
+  status: InvitationStatus;
 }
 
 export interface Event {
@@ -49,7 +51,7 @@ export interface PlayerEventHistoryItem {
   eventId: string;
   eventName: string;
   eventDate: string; // ISO date string
-  invitationStatus: 'open' | 'accepted' | 'declined';
+  invitationStatus: InvitationStatus;
   isSelected: boolean;
   teamName?: string;
 }

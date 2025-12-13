@@ -49,6 +49,9 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
         if (invitation.status === 'accepted') {
           return { status: 'accepted', event };
         }
+        if (invitation.status === 'injured') {
+          return { status: 'injured', event };
+        }
         if (invitation.status === 'declined') {
           return { status: 'declined', event };
         }
@@ -67,6 +70,8 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
         return { icon: '✓', color: 'text-gray-400', bg: 'bg-gray-50' };
       case 'declined':
         return { icon: '✗', color: 'text-red-600', bg: 'bg-red-50' };
+      case 'injured':
+        return { icon: '✚', color: 'text-purple-600', bg: 'bg-purple-50' };
       case 'open':
         return { icon: '?', color: 'text-yellow-600', bg: 'bg-yellow-50' };
       default:
@@ -159,6 +164,10 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
           <div className="flex items-center gap-1">
             <span className="text-red-600 font-bold">✗</span>
             <span>Declined</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-purple-600 font-bold">✚</span>
+            <span>Injured</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-gray-400 font-bold">-</span>

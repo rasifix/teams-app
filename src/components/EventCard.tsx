@@ -24,6 +24,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
   const selectedCount = event.teams.reduce((sum, team) => sum + (team.selectedPlayers?.length || 0), 0);
   const openCount = event.invitations.filter(inv => inv.status === 'open').length;
   const declinedCount = event.invitations.filter(inv => inv.status === 'declined').length;
+  const injuredCount = event.invitations.filter(inv => inv.status === 'injured').length;
 
   const handleClick = () => {
     onClick?.(event.id);
@@ -90,6 +91,11 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                   <div className="flex items-center gap-1" title="Players who have declined the invitation">
                     <span className="text-red-600 font-bold">✗</span>
                     <span className="text-gray-600">{declinedCount}</span>
+                  </div>
+                  {/* Injured */}
+                  <div className="flex items-center gap-1" title="Players marked as injured">
+                    <span className="text-purple-600 font-bold">✚</span>
+                    <span className="text-gray-600">{injuredCount}</span>
                   </div>
                 </div>
               </div>

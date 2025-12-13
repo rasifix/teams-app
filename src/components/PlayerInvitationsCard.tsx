@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getPlayerStats } from '../utils/playerStats';
-import type { Invitation, Event, Player } from '../types';
+import type { Invitation, Event, Player, InvitationStatus } from '../types';
 import Level from './Level';
 
 interface PlayerInvitationsCardProps {
@@ -9,12 +9,12 @@ interface PlayerInvitationsCardProps {
   players: Player[];
   events: Event[];
   onInviteClick: () => void;
-  onStatusChange: (invitationId: string, newStatus: 'open' | 'accepted' | 'declined') => void;
+  onStatusChange: (invitationId: string, newStatus: InvitationStatus) => void;
   onRemoveInvitation: (invitationId: string) => void;
   assignedPlayerIds?: string[];
 }
 
-type TabType = 'accepted' | 'declined' | 'open' | 'assigned';
+type TabType = 'accepted' | 'declined' | 'open' | 'injured' | 'assigned';
 
 export default function PlayerInvitationsCard({
   invitations,
@@ -84,6 +84,7 @@ export default function PlayerInvitationsCard({
   const acceptedCount = invitations.filter(inv => inv.status === 'accepted').filter(inv => !assignedPlayerIds.includes(inv.playerId)).length;
   const openCount = invitations.filter(inv => inv.status === 'open').length;
   const declinedCount = invitations.filter(inv => inv.status === 'declined').length;
+  const injuredCount = invitations.filter(inv => inv.status === 'injured').length;
   const assignedCount = assignedPlayerIds.length;
 
   // Get invitations for the current tab
@@ -149,6 +150,15 @@ export default function PlayerInvitationsCard({
           >
             Declined <span className="hidden lg:inline">({declinedCount})</span>
           </button>
+          <button
+            onClick={() => setActiveTab('injured')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'injured'
+                ? 'border-purple-500 text-purple-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            Injured <span className="hidden lg:inline">({injuredCount})</span>
+          </button>
         </nav>
       </div>
 
@@ -161,6 +171,7 @@ export default function PlayerInvitationsCard({
               activeTab === 'accepted' ? 'accepted' : 
               activeTab === 'declined' ? 'declined' : 
               activeTab === 'assigned' ? 'been assigned' : 
+              activeTab === 'injured' ? 'been marked as injured' :
               'open'} invitations.</p>
           ) : activeTab === 'accepted' ? (
             <p>No available players. All accepted players are already assigned to teams.</p>
@@ -237,15 +248,17 @@ export default function PlayerInvitationsCard({
                     <div className="flex items-center gap-2">
                       <select
                         value={invitation.status}
-                        onChange={(e) => onStatusChange(invitation.id, e.target.value as 'open' | 'accepted' | 'declined')}
+                        onChange={(e) => onStatusChange(invitation.id, e.target.value as InvitationStatus)}
                         className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${invitation.status === 'accepted' ? 'bg-green-100 text-green-800 border-green-300' :
                             invitation.status === 'declined' ? 'bg-red-100 text-red-800 border-red-300' :
+                            invitation.status === 'injured' ? 'bg-purple-100 text-purple-800 border-purple-300' :
                               'bg-yellow-100 text-yellow-800 border-yellow-300'
                           }`}
                       >
                         <option value="open">open</option>
                         <option value="accepted">accepted</option>
                         <option value="declined">declined</option>
+                        <option value="injured">injured</option>
                       </select>
                       {activeTab === 'open' && <button
                         onClick={(e) => {

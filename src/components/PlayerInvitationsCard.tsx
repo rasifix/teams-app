@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Invitation, Event, Player, InvitationStatus } from '../types';
 import Level from './Level';
+import LevelRangeSelector from './LevelRangeSelector';
 
 interface PlayerInvitationsCardProps {
   invitations: Invitation[];
@@ -28,6 +29,7 @@ export default function PlayerInvitationsCard({
 }: PlayerInvitationsCardProps) {
   const [activeTab, setActiveTab] = useState<TabType>('accepted');
   const [swipedInvitationId, setSwipedInvitationId] = useState<string | null>(null);
+  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
 
   const handleTouchStartInvitation = (invitationId: string, e: React.TouchEvent) => {
     const touch = e.touches[0];
@@ -94,8 +96,19 @@ export default function PlayerInvitationsCard({
 
   // Filter by availability only on accepted tab when toggle is enabled
   const filteredInvitations = activeTab === 'accepted'
-    ? tabInvitations.filter(inv => !assignedPlayerIds.includes(inv.playerId))
-    : tabInvitations;
+    ? tabInvitations.filter(inv => {
+        const player = players.find(p => p.id === inv.playerId);
+        return !assignedPlayerIds.includes(inv.playerId) && 
+               player && 
+               player.level >= levelRange[0] && 
+               player.level <= levelRange[1];
+      })
+    : tabInvitations.filter(inv => {
+        const player = players.find(p => p.id === inv.playerId);
+        return player && 
+               player.level >= levelRange[0] && 
+               player.level <= levelRange[1];
+      });
 
   return (
     <div className="bg-white lg:shadow shadow-none lg:rounded-lg rounded-none lg:p-6 p-4 lg:border border-0">
@@ -160,6 +173,17 @@ export default function PlayerInvitationsCard({
             Injured <span className="hidden lg:inline">({injuredCount})</span>
           </button>
         </nav>
+      </div>
+
+      {/* Level Range Selector - Desktop Only */}
+      <div className="hidden lg:block mb-4">
+        <LevelRangeSelector
+          minLevel={1}
+          maxLevel={5}
+          defaultRange={levelRange}
+          onChange={setLevelRange}
+          className="mt-0"
+        />
       </div>
 
       {filteredInvitations.length === 0 ? (

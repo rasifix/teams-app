@@ -13,7 +13,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const [location, setLocation] = useState('');
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
-  const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(7);
+  const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(6);
 
   if (!isOpen) return null;
 

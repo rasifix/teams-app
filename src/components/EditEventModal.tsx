@@ -35,8 +35,8 @@ export default function EditEventModal({
       setName(currentData.name);
       setDate(currentData.date);
       setLocation(currentData.location || '');
-      setMaxPlayersPerTeam(currentData.maxPlayersPerTeam);
-      setMinPlayersPerTeam(currentData.minPlayersPerTeam);
+      setMaxPlayersPerTeam(currentData.maxPlayersPerTeam || 9);
+      setMinPlayersPerTeam(currentData.minPlayersPerTeam || 6);
       setError(null);
     }
   }, [currentData, isOpen]);

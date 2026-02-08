@@ -74,3 +74,20 @@ export interface Trainer {
   firstName: string;
   lastName: string;
 }
+
+// Auto-selection algorithm types
+export interface PlayerWithStats extends Player {
+  selectedCount: number; // Number of times selected in previous events
+  invitedCount: number; // Total number of invitations received
+  acceptedCount: number; // Number of accepted invitations
+}
+
+export interface TeamForSelection {
+  id: string;
+  strength: number; // 1 (highest) to 3 (lowest)
+  maxPlayers: number;
+}
+
+export interface SelectionResult {
+  [playerId: string]: string; // Maps player ID to team ID
+}

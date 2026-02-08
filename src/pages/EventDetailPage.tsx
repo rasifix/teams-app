@@ -635,6 +635,7 @@ export default function EventDetailPage() {
           name: event.name,
           date: event.date,
           maxPlayersPerTeam: event.maxPlayersPerTeam,
+          minPlayersPerTeam: event.minPlayersPerTeam,
           location: event.location,
         }}
         minMaxPlayers={Math.max(...event.teams.map(team => (team.selectedPlayers || []).length), 1)}

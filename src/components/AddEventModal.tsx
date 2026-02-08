@@ -3,7 +3,7 @@ import { useState } from 'react';
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; location?: string }) => void;
+  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string }) => void;
 }
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
@@ -13,6 +13,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const [location, setLocation] = useState('');
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
+  const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(7);
 
   if (!isOpen) return null;
 
@@ -29,6 +30,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       startTime,
       numberOfTeams,
       maxPlayersPerTeam,
+      minPlayersPerTeam,
       location: location.trim() || undefined,
     });
 
@@ -38,7 +40,8 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setStartTime('');
     setLocation('');
     setNumberOfTeams(1);
-    setMaxPlayersPerTeam(11);
+    setMaxPlayersPerTeam(9);
+    setMinPlayersPerTeam(6);
     onClose();
   };
 
@@ -49,7 +52,8 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setStartTime('');
     setLocation('');
     setNumberOfTeams(1);
-    setMaxPlayersPerTeam(11);
+    setMaxPlayersPerTeam(9);
+    setMinPlayersPerTeam(6);
     onClose();
   };
 
@@ -145,6 +149,22 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                   max="20"
                   value={maxPlayersPerTeam}
                   onChange={(e) => setMaxPlayersPerTeam(parseInt(e.target.value) || 11)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="min-players" className="block text-sm font-medium text-gray-700 mb-1">
+                  Min Players per Team *
+                </label>
+                <input
+                  id="min-players"
+                  type="number"
+                  min="1"
+                  max={maxPlayersPerTeam}
+                  value={minPlayersPerTeam}
+                  onChange={(e) => setMinPlayersPerTeam(parseInt(e.target.value) || 7)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />

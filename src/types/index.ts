@@ -37,6 +37,7 @@ export interface Event {
   name: string;
   date: string; // ISO date string
   maxPlayersPerTeam: number; // Max players applies to all teams in this event
+  minPlayersPerTeam: number; // Minimum players required per team
   location?: string; // Optional event location
   teams: Team[]; // Teams are contained within the event
   invitations: Invitation[];

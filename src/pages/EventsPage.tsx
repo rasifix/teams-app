@@ -37,6 +37,7 @@ export default function EventsPage() {
     startTime: string; 
     numberOfTeams: number; 
     maxPlayersPerTeam: number;
+    minPlayersPerTeam: number;
     location?: string;
   }) => {
     // Create teams for the event
@@ -52,6 +53,7 @@ export default function EventsPage() {
       name: eventData.name,
       date: eventData.date,
       maxPlayersPerTeam: eventData.maxPlayersPerTeam,
+      minPlayersPerTeam: eventData.minPlayersPerTeam,
       location: eventData.location,
       teams,
       invitations: [],

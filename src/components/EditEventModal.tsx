@@ -5,11 +5,12 @@ import Button from './ui/Button';
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number; location?: string }) => void;
+  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string }) => void;
   currentData: {
     name: string;
     date: string;
     maxPlayersPerTeam: number;
+    minPlayersPerTeam: number;
     location?: string;
   };
   minMaxPlayers: number;
@@ -26,6 +27,7 @@ export default function EditEventModal({
   const [date, setDate] = useState(currentData.date);
   const [location, setLocation] = useState(currentData.location || '');
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(currentData.maxPlayersPerTeam);
+  const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(currentData.minPlayersPerTeam);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ export default function EditEventModal({
       setDate(currentData.date);
       setLocation(currentData.location || '');
       setMaxPlayersPerTeam(currentData.maxPlayersPerTeam);
+      setMinPlayersPerTeam(currentData.minPlayersPerTeam);
       setError(null);
     }
   }, [currentData, isOpen]);
@@ -62,10 +65,21 @@ export default function EditEventModal({
       return;
     }
 
+    if (minPlayersPerTeam < 1) {
+      setError('Min players must be at least 1');
+      return;
+    }
+
+    if (minPlayersPerTeam > maxPlayersPerTeam) {
+      setError('Min players cannot be greater than max players');
+      return;
+    }
+
     onSave({
       name: name.trim(),
       date,
       maxPlayersPerTeam,
+      minPlayersPerTeam,
       location: location.trim() || undefined,
     });
     onClose();
@@ -142,6 +156,22 @@ export default function EditEventModal({
                   Minimum: {minMaxPlayers} (current largest team size)
                 </p>
               )}
+            </div>
+
+            <div>
+              <label htmlFor="minPlayers" className="form-label">
+                Min Players per Team
+              </label>
+              <input
+                type="number"
+                id="minPlayers"
+                value={minPlayersPerTeam}
+                onChange={(e) => setMinPlayersPerTeam(parseInt(e.target.value) || 0)}
+                required
+                min={1}
+                max={maxPlayersPerTeam}
+                className="form-input"
+              />
             </div>
 
             {error && (

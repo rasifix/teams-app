@@ -9,7 +9,10 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, trainers = [], onClick }: EventCardProps) {
-  const hasSelections = event.teams.some(team => team.selectedPlayers?.length > 0);
+  // Check if all teams meet the minimum player requirement
+  const allTeamsMeetMinimum = event.teams.every(
+    team => (team.selectedPlayers?.length || 0) >= (event.minPlayersPerTeam || 0)
+  );
   
   // Get earliest start time and total teams count
   const earliestStartTime = event.teams.length > 0 
@@ -102,7 +105,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
             </div>
           </div>
           <div className="ml-4 hidden sm:block">
-            {hasSelections ? (
+            {allTeamsMeetMinimum ? (
               <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

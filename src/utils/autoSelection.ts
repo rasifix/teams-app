@@ -44,18 +44,6 @@ export function selectPlayers(
     };
   });
   
-  // Sort players by score (descending), then by random for tie-breaking
-  scoredPlayers.sort((a, b) => {
-    if (b.score !== a.score) {
-      return b.score - a.score;
-    }
-    return b.randomTieBreaker - a.randomTieBreaker;
-  });
-  
-  // Calculate total capacity and select top players
-  const totalCapacity = teams.reduce((sum, team) => sum + team.maxPlayers, 0);
-  const selectedPlayers = scoredPlayers.slice(0, totalCapacity);
-  
   // Sort teams by strength (1 = highest strength, assign best players first)
   const sortedTeams = [...teams].sort((a, b) => a.strength - b.strength);
   
@@ -74,8 +62,16 @@ export function selectPlayers(
     teamAssignments.set(team.id, []);
   });
   
-  // Track remaining players to assign
-  const remainingPlayers = [...selectedPlayers];
+  // Calculate total capacity
+  const totalCapacity = teams.reduce((sum, team) => sum + team.maxPlayers, 0);
+  
+  // Check if all teams have the same strength (backward compatibility)
+  const uniqueStrengths = new Set(teams.map(t => t.strength));
+  const useLevelPreferences = uniqueStrengths.size > 1;
+  
+  // Track remaining unassigned players and total slots
+  let remainingSlots = totalCapacity;
+  const assignedPlayerIds = new Set<string>();
   
   // Process each strength level (from highest to lowest)
   const strengthLevels = Array.from(teamsByStrength.keys()).sort((a, b) => a - b);
@@ -84,23 +80,60 @@ export function selectPlayers(
     const teamsInGroup = teamsByStrength.get(strength)!;
     const groupCapacity = teamsInGroup.reduce((sum, team) => sum + team.maxPlayers, 0);
     
-    if (remainingPlayers.length === 0) break;
+    if (remainingSlots === 0) break;
     
-    // Sort remaining players by level (highest first), then by score
-    remainingPlayers.sort((a, b) => {
-      if (b.level !== a.level) {
-        return b.level - a.level;
-      }
-      // If same level, use score as tie-breaker
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      // Finally use random tie-breaker
-      return b.randomTieBreaker - a.randomTieBreaker;
-    });
+    // Get unassigned players
+    const availablePlayers = scoredPlayers.filter(p => !assignedPlayerIds.has(p.id));
     
-    // Take the top players by level for this group
-    const playersForGroup = remainingPlayers.splice(0, Math.min(groupCapacity, remainingPlayers.length));
+    let sortedForGroup: ScoredPlayer[];
+    
+    if (useLevelPreferences) {
+      // Define preferred levels based on team strength
+      let preferredLevels: number[];
+      if (strength === 1) {
+        // Strength 1 teams prefer highest two levels (4, 5)
+        preferredLevels = [4, 5];
+      } else if (strength === 2) {
+        // Strength 2 teams prefer middle three levels (2, 3, 4)
+        preferredLevels = [2, 3, 4];
+      } else {
+          // Strength 3 teams prefer lowest levels (1, 2)
+          preferredLevels = [1, 2];
+      }
+      
+      // Split players into preferred and other groups
+      const preferredPlayers = availablePlayers.filter(p => preferredLevels.includes(p.level));
+      const otherPlayers = availablePlayers.filter(p => !preferredLevels.includes(p.level));
+      
+      // Sort both groups by score (descending), then by random tie-breaker
+      const sortByScore = (a: ScoredPlayer, b: ScoredPlayer) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return b.randomTieBreaker - a.randomTieBreaker;
+      };
+      
+      preferredPlayers.sort(sortByScore);
+      otherPlayers.sort(sortByScore);
+      
+      // Combine: preferred players first, then others
+      sortedForGroup = [...preferredPlayers, ...otherPlayers];
+    } else {
+      // No level preferences, just sort by score
+      sortedForGroup = [...availablePlayers].sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return b.randomTieBreaker - a.randomTieBreaker;
+      });
+    }
+    
+    // Take the top players for this group (limited by group capacity and remaining slots)
+    const playersForGroup = sortedForGroup.slice(0, Math.min(groupCapacity, remainingSlots, sortedForGroup.length));
+    
+    // Mark these players as assigned
+    playersForGroup.forEach(p => assignedPlayerIds.add(p.id));
+    remainingSlots -= playersForGroup.length;
     
     // Distribute players across teams in round-robin fashion for fair distribution
     let teamIdx = 0;

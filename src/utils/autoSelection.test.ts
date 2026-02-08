@@ -205,4 +205,92 @@ describe('Player Auto-Selection Algorithm', () => {
       expect(avgT1Level).toBeGreaterThan(avgT2Level);
     });
   });
+
+  describe('Scenario 6: Three teams with different strengths and level-based preferences', () => {
+    it('should assign players to teams based on strength preferences despite high selection rates', () => {
+      const players: PlayerWithStats[] = [
+        // Level 5 players with high selection count - should still go to strength 1 team
+        createPlayer('p1', 'Alice', 5, 5, 10, 10), // High selections, but level 5
+        createPlayer('p2', 'Bob', 5, 4, 10, 9),    // High selections, but level 5
+        
+        // Level 4 players with high selection count - should go to strength 1 team
+        createPlayer('p3', 'Carol', 4, 6, 10, 10), // Very high selections, but level 4
+        createPlayer('p4', 'Dave', 4, 5, 10, 9),   // High selections, but level 4
+        
+        // Level 3 players with low selection count - should go to strength 2 team
+        createPlayer('p5', 'Eve', 3, 0, 10, 10),   // Never selected, level 3
+        createPlayer('p6', 'Frank', 3, 1, 10, 9),  // Low selections, level 3
+        
+        // Level 2 players with low selection count - should go to strength 2 team
+        createPlayer('p7', 'Grace', 2, 0, 10, 10), // Never selected, level 2
+        createPlayer('p8', 'Henry', 2, 1, 10, 8),  // Low selections, level 2
+        
+        // Level 1 players with low selection count - should go to strength 3 team
+        createPlayer('p9', 'Ivy', 1, 0, 10, 10),   // Never selected, level 1
+        createPlayer('p10', 'Jack', 1, 1, 10, 9),  // Low selections, level 1
+        
+        // Level 1 player to fill strength 3 team
+        createPlayer('p11', 'Kate', 1, 1, 10, 9),  // Level 1, low selections
+        
+        // Extra players to exceed capacity
+        createPlayer('p12', 'Leo', 4, 7, 10, 8),   // Level 4, very high selections
+        createPlayer('p13', 'Mia', 3, 2, 10, 8),   // Level 3, low selections
+        createPlayer('p14', 'Noah', 2, 2, 10, 7),  // Level 2, low selections
+        createPlayer('p15', 'Olivia', 1, 3, 10, 8), // Level 1, high selections
+      ];
+
+      const teams: TeamForSelection[] = [
+        { id: 't1', strength: 1, maxPlayers: 4 }, // Should get levels 4-5
+        { id: 't2', strength: 2, maxPlayers: 4 }, // Should get levels 2-4
+        { id: 't3', strength: 3, maxPlayers: 4 }, // Should get level 1
+      ];
+
+      const result = selectPlayers(players, teams);
+
+      // Should select exactly 12 players (total capacity)
+      expect(Object.keys(result).length).toBe(12);
+      
+      // Count players per team
+      const t1Players = Object.values(result).filter(t => t === 't1').length;
+      const t2Players = Object.values(result).filter(t => t === 't2').length;
+      const t3Players = Object.values(result).filter(t => t === 't3').length;
+      
+      expect(t1Players).toBe(4);
+      expect(t2Players).toBe(4);
+      expect(t3Players).toBe(4);
+
+      // Team 1 (strength 1) should get level 4-5 players despite their high selection count
+      const t1PlayerIds = Object.keys(result).filter(id => result[id] === 't1');
+      const t1Levels = t1PlayerIds.map(id => players.find(p => p.id === id)!.level);
+      t1Levels.forEach(level => {
+        expect(level).toBeGreaterThanOrEqual(4);
+        expect(level).toBeLessThanOrEqual(5);
+      });
+
+      // Team 2 (strength 2) should get level 2-4 players
+      const t2PlayerIds = Object.keys(result).filter(id => result[id] === 't2');
+      const t2Levels = t2PlayerIds.map(id => players.find(p => p.id === id)!.level);
+      t2Levels.forEach(level => {
+        expect(level).toBeGreaterThanOrEqual(2);
+        expect(level).toBeLessThanOrEqual(4);
+      });
+
+      // Team 3 (strength 3) should get level 1 players
+      const t3PlayerIds = Object.keys(result).filter(id => result[id] === 't3');
+      const t3Levels = t3PlayerIds.map(id => players.find(p => p.id === id)!.level);
+      t3Levels.forEach(level => {
+        expect(level).toBeGreaterThanOrEqual(1);
+        expect(level).toBeLessThanOrEqual(2);
+      });
+
+      // Verify that high selection count level 4-5 players went to strength 1 team
+      // Players p1, p2 (level 5 with high selections) should be in t1
+      expect(result['p1']).toBe('t1');
+      expect(result['p2']).toBe('t1');
+      
+      // Players p3, p4 (level 4 with high selections) should be in t1
+      expect(result['p3']).toBe('t1');
+      expect(result['p4']).toBe('t1');
+    });
+  });
 });

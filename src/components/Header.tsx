@@ -27,7 +27,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-orange-600 text-white shadow-md">
+    <header className="relative bg-gradient-to-b from-orange-600/70 to-orange-600 backdrop-blur-md text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Title */}

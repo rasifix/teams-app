@@ -4,7 +4,7 @@
   "description": "Fair soccer team selection and management",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#D15E00",
   "theme_color": "#D15E00",
   "orientation": "portrait-primary",
   "icons": [

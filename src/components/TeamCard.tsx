@@ -193,20 +193,23 @@ export default function TeamCard({
                       const shirtNumber = shirtAssignment?.shirtNumber;
                       
                       return (
-                        <>
-                          {shirtNumber && shirtNumber > 0 && <span className="text-gray-800 text-xs mr-1 font-extrabold">{shirtNumber}</span>}
-                          {player.firstName} {player.lastName}
-                        </>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            {shirtNumber && shirtNumber > 0 && <span className="text-gray-800 text-xs mr-1 font-extrabold">{shirtNumber}</span>}
+                            <span className="text-sm">{player.firstName} {player.lastName}</span>
+                            <Level level={player.level} className="text-sm" />
+                            <span 
+                              className="text-xs text-gray-500 font-mono"
+                              title={`Accepted invitations: ${stats.acceptedCount}, Selected for teams: ${stats.selectedCount}`}
+                            >
+                              {stats.selectedCount}/{stats.acceptedCount}
+                            </span>
+                          </div>
+                        </div>
                       );
                     })()}
                   </span>
-                  <Level level={player.level} className="text-sm" />
-                  <span 
-                    className="text-xs text-gray-500 font-mono"
-                    title={`Accepted invitations: ${stats.acceptedCount}, Selected for teams: ${stats.selectedCount}`}
-                  >
-                    {stats.acceptedCount}/{stats.selectedCount}
-                  </span>
+                  
                   <button
                     onClick={() => onRemovePlayer(team.id, playerId)}
                     className="text-red-600 hover:text-red-800 text-xs"

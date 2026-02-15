@@ -264,7 +264,7 @@ export default function PlayerInvitationsCard({
                           </span>
                           {player && <Level level={player.level} className="text-sm" />}
                           <span className="text-xs text-gray-500 font-mono" title={`Accepted invitations: ${stats.acceptedCount}, Selected for teams: ${stats.selectedCount}`}>
-                            {stats.acceptedCount}/{stats.selectedCount}
+                            {stats.selectedCount}/{stats.acceptedCount}
                           </span>
                         </div>
                       </div>

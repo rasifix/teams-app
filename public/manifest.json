@@ -1,7 +1,7 @@
 {
-  "name": "my-team - Soccer Team Manager",
+  "name": "my-team - Fussball Team Manager",
   "short_name": "my-team",
-  "description": "Fair soccer team selection and management",
+  "description": "Fussball Team Manager für Poolorganisation",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#D15E00",

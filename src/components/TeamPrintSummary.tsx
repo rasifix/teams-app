@@ -191,11 +191,13 @@ export default function TeamPrintSummary({
             body {
               margin: 0 !important;
               padding: 0 !important;
+              background-color: white !important;
             }
             
             .print-content {
               padding: 0 !important;
               margin: 0 !important;
+              background-color: white !important;
             }
             
             /* Ensure 2-column layout on print */
@@ -207,10 +209,12 @@ export default function TeamPrintSummary({
             /* Hide everything except print content */
             body * {
               visibility: hidden;
+              background-color: white !important;
             }
             
             .print-content, .print-content * {
               visibility: visible;
+              background-color: white !important;
             }
             
             .print-content {

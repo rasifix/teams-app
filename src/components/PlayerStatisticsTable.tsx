@@ -163,11 +163,8 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                   >
                     {/* Desktop view */}
                     <td className="table-cell hidden md:table-cell">
-                      <div className="text-sm font-medium text-gray-900">
-                        {stat.player.firstName} {stat.player.lastName}
-                        <span className="text-xs text-muted m-2">{stat.player.birthYear}</span>
-                      </div>
-                      <div className="text-xs flex items-center gap-2">
+                      <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                        <span>{stat.player.firstName} {stat.player.lastName}</span>
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
                     </td>

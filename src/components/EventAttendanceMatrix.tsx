@@ -205,11 +205,8 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                   onClick={() => handlePlayerClick(player.id)}
                 >
                   <td className="sticky left-0 bg-white z-10 px-4 py-2 text-sm font-medium text-gray-900 border-r border-gray-200 max-h-[40px] min-w-[220px]">
-                    <div className="text-sm font-medium text-gray-900">
-                      {player.firstName} {player.lastName}
-                      <span className="text-xs text-muted m-2">{player.birthYear}</span>
-                    </div>
-                    <div className="text-xs flex items-center gap-2">
+                    <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <span>{player.firstName} {player.lastName}</span>
                       <Level level={player.level} className="text-xs" />
                     </div>
                   </td>

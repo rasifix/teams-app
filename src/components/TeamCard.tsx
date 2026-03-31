@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Team, Player, Trainer, ShirtSet, Event } from '../types';
 import Level from './Level';
@@ -42,6 +43,7 @@ export default function TeamCard({
   onDragOverTeam,
   onDragOverPlayer
 }: TeamCardProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const selectedPlayers = team.selectedPlayers || [];
   const hasCapacity = selectedPlayers.length < maxPlayersPerTeam;
   
@@ -96,7 +98,19 @@ export default function TeamCard({
       }}
     >
       <div className="flex justify-between items-start mb-2">
-        <div>
+        <div
+          className="hidden lg:flex items-center gap-1 cursor-pointer select-none"
+          onClick={() => setIsCollapsed(c => !c)}
+          title={isCollapsed ? 'Expand team' : 'Collapse team'}
+        >
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+            fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+        <div className="flex-1">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             {team.name} <Strength level={team.strength || 2} /> 
           </h3>
@@ -114,7 +128,7 @@ export default function TeamCard({
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <button 
             onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId)}
             className="text-blue-600 hover:text-blue-700 text-sm"
@@ -135,7 +149,7 @@ export default function TeamCard({
           </button>
         </div>
       </div>
-      {selectedPlayers.length > 0 && (
+      {selectedPlayers.length > 0 && !isCollapsed && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <h4 className="text-xs font-medium text-gray-500 mb-2">Players {selectedPlayers.length} / {maxPlayersPerTeam} <span className='text-yellow-500'>★</span> {averageLevel.toFixed(1)}</h4>
           <div className="space-y-1">

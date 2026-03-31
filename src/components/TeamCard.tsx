@@ -13,6 +13,7 @@ interface TeamCardProps {
   isDragOver: boolean;
   dragOverPlayerId: string | null;
   onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string, currentTrainerId?: string) => void;
+  onDeleteTeam: (teamId: string) => void;
   onAssignShirts: (team: Team) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
   onSwitchPlayers: (sourceTeamId: string, sourcePlayerId: string, targetTeamId: string, targetPlayerId: string) => void;
@@ -32,6 +33,7 @@ export default function TeamCard({
   isDragOver,
   dragOverPlayerId,
   onEditTeam,
+  onDeleteTeam,
   onAssignShirts,
   onRemovePlayer,
   onSwitchPlayers,
@@ -118,6 +120,12 @@ export default function TeamCard({
             className="text-blue-600 hover:text-blue-700 text-sm"
           >
             Edit
+          </button>
+          <button
+            onClick={() => onDeleteTeam(team.id)}
+            className="text-red-600 hover:text-red-700 text-sm"
+          >
+            Delete
           </button>
           <button 
             onClick={() => onAssignShirts(team)}

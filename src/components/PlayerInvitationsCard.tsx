@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Invitation, Event, Player, InvitationStatus } from '../types';
+import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 
@@ -15,7 +16,9 @@ interface PlayerInvitationsCardProps {
   assignedPlayerIds?: string[];
 }
 
-type TabType = 'accepted' | 'declined' | 'open' | 'injured' | 'assigned';
+type TabType = 'accepted' | 'open' | 'unavailable' | 'assigned';
+
+const unavailableStatuses: InvitationStatus[] = ['declined', 'injured', 'sick', 'unavailable'];
 
 export default function PlayerInvitationsCard({
   invitations,
@@ -84,15 +87,53 @@ export default function PlayerInvitationsCard({
   };
 
   const acceptedCount = invitations.filter(inv => inv.status === 'accepted').filter(inv => !assignedPlayerIds.includes(inv.playerId)).length;
-  const openCount = invitations.filter(inv => inv.status === 'open').length;
-  const declinedCount = invitations.filter(inv => inv.status === 'declined').length;
-  const injuredCount = invitations.filter(inv => inv.status === 'injured').length;
   const assignedCount = assignedPlayerIds.length;
+  const statusCounts = invitationStatusOrder.reduce<Record<InvitationStatus, number>>((counts, status) => {
+    counts[status] = invitations.filter(inv => inv.status === status).length;
+    return counts;
+  }, {
+    accepted: 0,
+    open: 0,
+    declined: 0,
+    injured: 0,
+    sick: 0,
+    unavailable: 0,
+  });
 
   // Get invitations for the current tab
-  const tabInvitations = activeTab === 'assigned' 
+  const tabInvitations = activeTab === 'assigned'
     ? invitations.filter(inv => assignedPlayerIds.includes(inv.playerId))
-    : invitations.filter(inv => inv.status === activeTab);
+    : activeTab === 'unavailable'
+      ? invitations.filter(inv => unavailableStatuses.includes(inv.status))
+      : invitations.filter(inv => inv.status === activeTab);
+
+  const invitationTabs: Array<{ status: TabType; label: string; count: number; activeClassName: string; className?: string }> = [
+    {
+      status: 'assigned',
+      label: 'Assigned',
+      count: assignedCount,
+      activeClassName: 'border-green-500 text-green-600',
+      className: 'lg:hidden',
+    },
+    {
+      status: 'accepted',
+      label: invitationStatusMeta.accepted.tabLabel,
+      count: acceptedCount,
+      activeClassName: invitationStatusMeta.accepted.tabActiveClassName,
+    },
+    {
+      status: 'open',
+      label: invitationStatusMeta.open.tabLabel,
+      count: statusCounts.open,
+      activeClassName: invitationStatusMeta.open.tabActiveClassName,
+    },
+    {
+      status: 'unavailable',
+      label: 'Unavailable',
+      count: unavailableStatuses.reduce((sum, status) => sum + statusCounts[status], 0),
+      activeClassName: invitationStatusMeta.unavailable.tabActiveClassName,
+    },
+  ];
 
   // Filter by availability only on accepted tab when toggle is enabled
   const filteredInvitations = activeTab === 'accepted'
@@ -127,51 +168,18 @@ export default function PlayerInvitationsCard({
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-4">
         <nav className="-mb-px flex space-x-4 lg:space-x-8 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('assigned')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap lg:hidden ${activeTab === 'assigned'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Assigned <span className="hidden lg:inline">({assignedCount})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('accepted')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'accepted'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Accepted <span className="hidden lg:inline">({acceptedCount})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('open')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'open'
-                ? 'border-yellow-500 text-yellow-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Open <span className="hidden lg:inline">({openCount})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('declined')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'declined'
-                ? 'border-red-500 text-red-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Declined <span className="hidden lg:inline">({declinedCount})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('injured')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'injured'
-                ? 'border-purple-500 text-purple-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-          >
-            Injured <span className="hidden lg:inline">({injuredCount})</span>
-          </button>
+          {invitationTabs.map((tab) => (
+            <button
+              key={tab.status}
+              onClick={() => setActiveTab(tab.status)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${tab.className || ''} ${activeTab === tab.status
+                  ? tab.activeClassName
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+            >
+              {tab.label} <span className="hidden lg:inline">({tab.count})</span>
+            </button>
+          ))}
         </nav>
       </div>
 
@@ -192,11 +200,12 @@ export default function PlayerInvitationsCard({
             <p>No invitations sent yet.</p>
           ) : tabInvitations.length === 0 ? (
             <p>No players have {
-              activeTab === 'accepted' ? 'accepted' : 
-              activeTab === 'declined' ? 'declined' : 
-              activeTab === 'assigned' ? 'been assigned' : 
-              activeTab === 'injured' ? 'been marked as injured' :
-              'open'} invitations.</p>
+              activeTab === 'assigned'
+                ? 'been assigned'
+                : activeTab === 'unavailable'
+                  ? 'been marked unavailable'
+                  : invitationStatusMeta[activeTab].emptyStateText
+            } invitations.</p>
           ) : activeTab === 'accepted' ? (
             <p>No available players. All accepted players are already assigned to teams.</p>
           ) : activeTab === 'assigned' ? (
@@ -273,16 +282,11 @@ export default function PlayerInvitationsCard({
                       <select
                         value={invitation.status}
                         onChange={(e) => onStatusChange(invitation.id, e.target.value as InvitationStatus)}
-                        className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${invitation.status === 'accepted' ? 'bg-green-100 text-green-800 border-green-300' :
-                            invitation.status === 'declined' ? 'bg-red-100 text-red-800 border-red-300' :
-                            invitation.status === 'injured' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                              'bg-yellow-100 text-yellow-800 border-yellow-300'
-                          }`}
+                        className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${invitationStatusMeta[invitation.status].selectClassName}`}
                       >
-                        <option value="open">open</option>
-                        <option value="accepted">accepted</option>
-                        <option value="declined">declined</option>
-                        <option value="injured">injured</option>
+                        {invitationStatusOrder.map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
                       </select>
                       {activeTab === 'open' && <button
                         onClick={(e) => {

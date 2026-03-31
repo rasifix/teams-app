@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { PlayerEventHistoryItem } from '../types';
+import { invitationStatusMeta } from '../utils/invitationStatus';
 import { Card, CardBody, CardTitle, DateColumn } from './ui';
 
 interface PlayerEventHistoryProps {
@@ -41,19 +42,9 @@ export default function PlayerEventHistory({
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               Selected
                             </span>
-                          ) : item.invitationStatus === 'accepted' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              Accepted
-                            </span>
-                          ) : item.invitationStatus === 'injured' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              Injured
-                            </span>
                           ) : (
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              item.invitationStatus === 'declined' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {item.invitationStatus === 'open' ? 'Open' : 'Declined'}
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${invitationStatusMeta[item.invitationStatus].badgeClassName}`}>
+                              {invitationStatusMeta[item.invitationStatus].label}
                             </span>
                           )}
                         </div>

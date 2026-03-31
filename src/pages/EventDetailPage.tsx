@@ -113,8 +113,20 @@ export default function EventDetailPage() {
   const handleDeleteTeam = async () => {
     if (!event || !id || !teamToDelete) return;
 
+    const teamBeingDeleted = event.teams.find(t => t.id === teamToDelete);
+    const affectedPlayerIds = new Set(teamBeingDeleted?.selectedPlayers || []);
+
     const updatedTeams = event.teams.filter(t => t.id !== teamToDelete);
-    await updateEvent(id, { teams: updatedTeams });
+    const updatedInvitations = event.invitations.map(invitation => {
+      if (!affectedPlayerIds.has(invitation.playerId)) {
+        return invitation;
+      }
+
+      // Deleted team players should return to the accepted pool.
+      return { ...invitation, status: 'accepted' as const };
+    });
+
+    await updateEvent(id, { teams: updatedTeams, invitations: updatedInvitations });
     setTeamToDelete(null);
     setSwipedTeamId(null);
   };
@@ -506,6 +518,7 @@ export default function EventDetailPage() {
                       isDragOver={isDragOver}
                       dragOverPlayerId={dragOverPlayerId}
                       onEditTeam={handleEditTeamName}
+                      onDeleteTeam={setTeamToDelete}
                       onAssignShirts={handleAssignShirts}
                       onRemovePlayer={handleRemovePlayerFromTeam}
                       onSwitchPlayers={handleSwitchPlayers}
@@ -655,7 +668,7 @@ export default function EventDetailPage() {
       <ConfirmDialog
         isOpen={!!teamToDelete}
         title="Delete Team"
-        message={`Are you sure you want to delete this team? All player assignments will be removed.`}
+        message={`Are you sure you want to delete "${event.teams.find(t => t.id === teamToDelete)?.name || 'this team'}"? Assigned players will be removed from the team and set back to accepted.`}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={handleDeleteTeam}

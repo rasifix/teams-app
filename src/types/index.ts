@@ -24,7 +24,7 @@ export interface Team {
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
 }
 
-export type InvitationStatus = 'open' | 'accepted' | 'declined' | 'injured';
+export type InvitationStatus = 'open' | 'accepted' | 'declined' | 'injured' | 'sick' | 'unavailable';
 
 export interface Invitation {
   id: string;

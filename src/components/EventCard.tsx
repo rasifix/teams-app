@@ -1,4 +1,5 @@
 import type { Event, Trainer } from '../types';
+import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import Strength from './Strength';
 import { DateColumn } from './ui';
 
@@ -23,11 +24,18 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
   const teamsCount = event.teams.length;
 
   // Calculate player counts
-  const acceptedCount = event.invitations.filter(inv => inv.status === 'accepted').length;
   const selectedCount = event.teams.reduce((sum, team) => sum + (team.selectedPlayers?.length || 0), 0);
-  const openCount = event.invitations.filter(inv => inv.status === 'open').length;
-  const declinedCount = event.invitations.filter(inv => inv.status === 'declined').length;
-  const injuredCount = event.invitations.filter(inv => inv.status === 'injured').length;
+  const statusCounts = invitationStatusOrder.reduce<Record<(typeof invitationStatusOrder)[number], number>>((counts, status) => {
+    counts[status] = event.invitations.filter(inv => inv.status === status).length;
+    return counts;
+  }, {
+    accepted: 0,
+    open: 0,
+    declined: 0,
+    injured: 0,
+    sick: 0,
+    unavailable: 0,
+  });
 
   const handleClick = () => {
     onClick?.(event.id);
@@ -75,30 +83,20 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                   );
                 })}
                 <div className="flex items-center gap-3 text-sm">
-                  {/* Accepted */}
-                  <div className="flex items-center gap-1" title="Players who have accepted the invitation">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span className="text-gray-600">{acceptedCount}</span>
-                  </div>
+                  {invitationStatusOrder.map((status) => (
+                    <div
+                      key={status}
+                      className="flex items-center gap-1"
+                      title={`Players marked as ${invitationStatusMeta[status].label.toLowerCase()}`}
+                    >
+                      <span className={`font-bold ${invitationStatusMeta[status].iconClassName}`}>{invitationStatusMeta[status].icon}</span>
+                      <span className="text-gray-600">{statusCounts[status]}</span>
+                    </div>
+                  ))}
                   {/* Selected */}
                   <div className="flex items-center gap-1" title="Players who have been assigned to teams">
                     <span className="text-green-600 font-bold">✓</span>
                     <span className="text-gray-600">{selectedCount}</span>
-                  </div>
-                  {/* Open */}
-                  <div className="flex items-center gap-1" title="Pending invitations awaiting response">
-                    <span className="text-yellow-600 font-bold">?</span>
-                    <span className="text-gray-600">{openCount}</span>
-                  </div>
-                  {/* Declined */}
-                  <div className="flex items-center gap-1" title="Players who have declined the invitation">
-                    <span className="text-red-600 font-bold">✗</span>
-                    <span className="text-gray-600">{declinedCount}</span>
-                  </div>
-                  {/* Injured */}
-                  <div className="flex items-center gap-1" title="Players marked as injured">
-                    <span className="text-purple-600 font-bold">✚</span>
-                    <span className="text-gray-600">{injuredCount}</span>
                   </div>
                 </div>
               </div>

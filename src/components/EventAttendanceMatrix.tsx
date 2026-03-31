@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Player, Event } from '../types';
+import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import { Card, CardBody, DateColumn } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
@@ -52,6 +53,12 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
         if (invitation.status === 'injured') {
           return { status: 'injured', event };
         }
+        if (invitation.status === 'sick') {
+          return { status: 'sick', event };
+        }
+        if (invitation.status === 'unavailable') {
+          return { status: 'unavailable', event };
+        }
         if (invitation.status === 'declined') {
           return { status: 'declined', event };
         }
@@ -67,13 +74,17 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       case 'selected':
         return { icon: '✓', color: 'text-green-600', bg: 'bg-green-50' };
       case 'accepted':
-        return { icon: '✓', color: 'text-gray-400', bg: 'bg-gray-50' };
+        return { icon: invitationStatusMeta.accepted.icon, color: 'text-gray-400', bg: invitationStatusMeta.accepted.iconBackgroundClassName };
       case 'declined':
-        return { icon: '✗', color: 'text-red-600', bg: 'bg-red-50' };
+        return { icon: invitationStatusMeta.declined.icon, color: invitationStatusMeta.declined.iconClassName, bg: invitationStatusMeta.declined.iconBackgroundClassName };
       case 'injured':
-        return { icon: '✚', color: 'text-purple-600', bg: 'bg-purple-50' };
+        return { icon: invitationStatusMeta.injured.icon, color: invitationStatusMeta.injured.iconClassName, bg: invitationStatusMeta.injured.iconBackgroundClassName };
+      case 'sick':
+        return { icon: invitationStatusMeta.sick.icon, color: invitationStatusMeta.sick.iconClassName, bg: invitationStatusMeta.sick.iconBackgroundClassName };
+      case 'unavailable':
+        return { icon: invitationStatusMeta.unavailable.icon, color: invitationStatusMeta.unavailable.iconClassName, bg: invitationStatusMeta.unavailable.iconBackgroundClassName };
       case 'open':
-        return { icon: '?', color: 'text-yellow-600', bg: 'bg-yellow-50' };
+        return { icon: invitationStatusMeta.open.icon, color: invitationStatusMeta.open.iconClassName, bg: invitationStatusMeta.open.iconBackgroundClassName };
       default:
         return { icon: '-', color: 'text-gray-400', bg: 'bg-gray-50' };
     }
@@ -153,22 +164,14 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             <span className="text-green-600 font-bold">✓</span>
             <span>Selected</span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-bold">✓</span>
-            <span>Accepted</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-yellow-600 font-bold">?</span>
-            <span>Open</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-red-600 font-bold">✗</span>
-            <span>Declined</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-purple-600 font-bold">✚</span>
-            <span>Injured</span>
-          </div>
+          {invitationStatusOrder.map((status) => (
+            <div key={status} className="flex items-center gap-1">
+              <span className={`${status === 'accepted' ? 'text-gray-400' : invitationStatusMeta[status].iconClassName} font-bold`}>
+                {invitationStatusMeta[status].icon}
+              </span>
+              <span>{invitationStatusMeta[status].label}</span>
+            </div>
+          ))}
           <div className="flex items-center gap-1">
             <span className="text-gray-400 font-bold">-</span>
             <span>Not Invited</span>

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from '../store';
 import type { Event, Team, Invitation, InvitationStatus } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
@@ -12,6 +12,8 @@ import TeamCard from '../components/TeamCard';
 import TeamPrintSummary from '../components/TeamPrintSummary';
 import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
+import { getStatisticsPeriod } from '../utils/localStorage';
+import { filterEventsByStatisticsPeriod, isValidStatisticsPeriod } from '../utils/statisticsPeriod';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +37,21 @@ export default function EventDetailPage() {
   const currentEventIndex = event ? sortedEvents.findIndex(e => e.id === event.id) : -1;
   const previousEvent = currentEventIndex > 0 ? sortedEvents[currentEventIndex - 1] : null;
   const nextEvent = currentEventIndex >= 0 && currentEventIndex < sortedEvents.length - 1 ? sortedEvents[currentEventIndex + 1] : null;
+
+  // Use the global statistics period for fairness counters during selection.
+  const storedStatisticsPeriod = getStatisticsPeriod();
+  const statisticsPeriod = isValidStatisticsPeriod(storedStatisticsPeriod) ? storedStatisticsPeriod : null;
+  const periodFilteredEvents = useMemo(
+    () => filterEventsByStatisticsPeriod(events, statisticsPeriod),
+    [events, statisticsPeriod?.startDate, statisticsPeriod?.endDate]
+  );
+  const eventsForSelectionStats = useMemo(() => {
+    if (!event) return periodFilteredEvents;
+    if (periodFilteredEvents.some((periodEvent) => periodEvent.id === event.id)) {
+      return periodFilteredEvents;
+    }
+    return [...periodFilteredEvents, event];
+  }, [event, periodFilteredEvents]);
   
   // Determine loading and error states
   const loading = isLoading;
@@ -513,7 +530,7 @@ export default function EventDetailPage() {
                       players={players}
                       trainers={trainers}
                       shirtSets={shirtSets}
-                      events={events}
+                      events={eventsForSelectionStats}
                       maxPlayersPerTeam={event.maxPlayersPerTeam}
                       isDragOver={isDragOver}
                       dragOverPlayerId={dragOverPlayerId}
@@ -601,7 +618,7 @@ export default function EventDetailPage() {
           invitations={event.invitations}
           currentEvent={event}
           players={players}
-          events={events}
+          events={eventsForSelectionStats}
           onInviteClick={() => setIsInviteModalOpen(true)}
           onStatusChange={handleInvitationStatusChange}
           onRemoveInvitation={handleRemoveInvitation}

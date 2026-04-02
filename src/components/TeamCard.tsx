@@ -115,6 +115,11 @@ export default function TeamCard({
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             {team.name} <Strength level={team.strength || 2} /> 
           </h3>
+          {isCollapsed && (
+            <p className="text-sm text-gray-600">
+              👥 {selectedPlayers.length}/{maxPlayersPerTeam}
+            </p>
+          )}
           <p className="text-sm text-gray-600">
             🕐 {team.startTime}
           </p>

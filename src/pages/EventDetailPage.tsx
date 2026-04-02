@@ -586,6 +586,11 @@ export default function EventDetailPage() {
                               👤 {trainer.firstName} {trainer.lastName}
                             </div>
                           )}
+                          {team.location && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              📍 {team.location}
+                            </div>
+                          )}
                         </div>
                         <svg className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />

@@ -18,6 +18,7 @@ export interface Team {
   name: string;
   strength: number; // 1 (highest) to 3 (lowest), default 2
   startTime: string; // HH:MM format - each team can have different start times
+  location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
   trainerId?: string; // Trainer ID assigned to this team
   shirtSetId?: string; // Shirt set ID assigned to this team

@@ -13,7 +13,7 @@ interface TeamCardProps {
   maxPlayersPerTeam: number;
   isDragOver: boolean;
   dragOverPlayerId: string | null;
-  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string, currentTrainerId?: string) => void;
+  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string, currentTrainerId?: string, currentLocation?: string) => void;
   onDeleteTeam: (teamId: string) => void;
   onAssignShirts: (team: Team) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
@@ -117,6 +117,11 @@ export default function TeamCard({
           <p className="text-sm text-gray-600">
             🕐 {team.startTime}
           </p>
+          {team.location && (
+            <p className="text-sm text-gray-600">
+              📍 {team.location}
+            </p>
+          )}
           {trainer && (
             <p className="text-sm text-blue-600">
               👤 {trainer.firstName} {trainer.lastName}
@@ -130,7 +135,7 @@ export default function TeamCard({
         </div>
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <button 
-            onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId)}
+            onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId, team.location)}
             className="text-blue-600 hover:text-blue-700 text-sm"
           >
             Edit

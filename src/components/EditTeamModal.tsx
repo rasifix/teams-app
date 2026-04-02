@@ -6,11 +6,12 @@ import { useTrainers } from '../hooks/useTrainers';
 interface EditTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, strength: number, startTime: string, trainerId?: string) => void;
+  onSave: (name: string, strength: number, startTime: string, trainerId?: string, location?: string) => void;
   currentName: string;
   currentStrength: number;
   currentStartTime: string;
   currentTrainerId?: string;
+  currentLocation?: string;
 }
 
 export default function EditTeamModal({ 
@@ -21,11 +22,13 @@ export default function EditTeamModal({
   currentStrength,
   currentStartTime,
   currentTrainerId,
+  currentLocation,
 }: EditTeamModalProps) {
   const [teamName, setTeamName] = useState(currentName);
   const [strength, setStrength] = useState(currentStrength);
   const [startTime, setStartTime] = useState(currentStartTime);
   const [trainerId, setTrainerId] = useState(currentTrainerId || '');
+  const [location, setLocation] = useState(currentLocation || '');
 
   const { trainers } = useTrainers();
 
@@ -34,12 +37,14 @@ export default function EditTeamModal({
     setStrength(currentStrength);
     setStartTime(currentStartTime);
     setTrainerId(currentTrainerId || '');
-  }, [currentName, currentStrength, currentStartTime, currentTrainerId, isOpen]);
+    setLocation(currentLocation || '');
+  }, [currentName, currentStrength, currentStartTime, currentTrainerId, currentLocation, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
-      onSave(teamName.trim(), strength, startTime, trainerId || undefined);
+      const normalizedLocation = location.trim();
+      onSave(teamName.trim(), strength, startTime, trainerId || undefined, normalizedLocation || undefined);
       onClose();
     }
   };
@@ -116,6 +121,20 @@ export default function EditTeamModal({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label htmlFor="location" className="form-label">
+                Team Location (optional)
+              </label>
+              <input
+                type="text"
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="form-input"
+                placeholder="e.g. Main Field A"
+              />
             </div>
           </div>
         </ModalBody>

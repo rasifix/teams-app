@@ -19,6 +19,7 @@ export interface Player {
   birthYear: number;
   birthDate?: string; // ISO date string
   level: number; // 1-5
+  preferredShirtNumber?: number;
 }
 
 export interface Team {

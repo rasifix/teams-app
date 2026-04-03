@@ -165,6 +165,11 @@ export default function PlayerDetailPage() {
             {new Date(player.birthDate).toLocaleDateString()}
           </span>
         )}
+        {player.preferredShirtNumber && (
+          <span className="text-blue-700 text-sm bg-blue-50 px-2 py-1 rounded">
+            Preferred #{player.preferredShirtNumber}
+          </span>
+        )}
         <Level level={player.level} />
       </div>
 

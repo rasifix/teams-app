@@ -16,7 +16,8 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
     firstName: '',
     lastName: '',
     birthDate: '',
-    level: 3
+    level: 3,
+    preferredShirtNumber: ''
   });
 
   const isEditMode = Boolean(editingPlayer);
@@ -28,14 +29,16 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
         firstName: editingPlayer.firstName,
         lastName: editingPlayer.lastName,
         birthDate: editingPlayer.birthDate || '',
-        level: editingPlayer.level
+        level: editingPlayer.level,
+        preferredShirtNumber: editingPlayer.preferredShirtNumber?.toString() || ''
       });
     } else {
       setFormData({
         firstName: '',
         lastName: '',
         birthDate: '',
-        level: 3
+        level: 3,
+        preferredShirtNumber: ''
       });
     }
   }, [editingPlayer]);
@@ -44,12 +47,14 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
     e.preventDefault();
     if (formData.firstName.trim() && formData.lastName.trim() && formData.birthDate) {
       const birthYear = new Date(formData.birthDate).getFullYear();
+      const parsedPreferredShirtNumber = parseInt(formData.preferredShirtNumber, 10);
       const playerData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         birthYear: birthYear,
         birthDate: formData.birthDate,
-        level: formData.level
+        level: formData.level,
+        preferredShirtNumber: Number.isNaN(parsedPreferredShirtNumber) ? undefined : parsedPreferredShirtNumber
       };
 
       if (isEditMode && editingPlayer && onUpdate) {
@@ -64,7 +69,8 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
             firstName: '',
             lastName: '',
             birthDate: '',
-            level: 3
+            level: 3,
+            preferredShirtNumber: ''
           });
         }
       }
@@ -72,12 +78,14 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'level' ? parseInt(value) : value
+      [name]: name === 'level' ? parseInt(value, 10) : value
     }));
-  };  return (
+  };
+
+  return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
         <ModalTitle>
@@ -152,6 +160,22 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 <option value={4}>4 - Advanced</option>
                 <option value={5}>5 - Expert</option>
               </select>
+            </div>
+
+            <div>
+              <label htmlFor="preferredShirtNumber" className="form-label">
+                Preferred Shirt Number (optional)
+              </label>
+              <input
+                type="number"
+                id="preferredShirtNumber"
+                name="preferredShirtNumber"
+                value={formData.preferredShirtNumber}
+                onChange={handleChange}
+                min={1}
+                className="form-input"
+                placeholder="e.g. 10"
+              />
             </div>
           </div>
         </ModalBody>

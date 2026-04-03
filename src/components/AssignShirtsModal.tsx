@@ -36,21 +36,60 @@ export default function AssignShirtsModal({
     if (selectedShirtSetId) {
       const shirtSet = shirtSets.find(s => s.id === selectedShirtSetId) || null;
       setSelectedShirtSet(shirtSet);
-      
-      // Initialize assignments - use existing assignments or empty for new players
+
+      if (!shirtSet) {
+        setPlayerShirtAssignments([]);
+        return;
+      }
+
+      const shirtNumbersInSet = new Set(shirtSet.shirts.map(shirt => shirt.number));
+      const playersById = new Map(players.map(player => [player.id, player]));
+      const keepExistingAssignments = selectedShirtSetId === currentShirtSetId;
+      const usedShirtNumbers = new Set<number>();
+
+      // Preserve valid current assignments only when re-opening the same shirt set.
       const initialAssignments = team.selectedPlayers.map(playerId => {
-        const existingAssignment = currentShirtAssignments?.find(a => a.playerId === playerId);
+        const existingAssignment = keepExistingAssignments
+          ? currentShirtAssignments?.find(a => a.playerId === playerId)
+          : undefined;
+
+        if (
+          existingAssignment &&
+          shirtNumbersInSet.has(existingAssignment.shirtNumber) &&
+          !usedShirtNumbers.has(existingAssignment.shirtNumber)
+        ) {
+          usedShirtNumbers.add(existingAssignment.shirtNumber);
+          return {
+            playerId,
+            shirtNumber: existingAssignment.shirtNumber
+          };
+        }
+
+        const preferredShirtNumber = playersById.get(playerId)?.preferredShirtNumber;
+        if (
+          preferredShirtNumber &&
+          shirtNumbersInSet.has(preferredShirtNumber) &&
+          !usedShirtNumbers.has(preferredShirtNumber)
+        ) {
+          usedShirtNumbers.add(preferredShirtNumber);
+          return {
+            playerId,
+            shirtNumber: preferredShirtNumber
+          };
+        }
+
         return {
           playerId,
-          shirtNumber: existingAssignment?.shirtNumber || 0
+          shirtNumber: 0
         };
       });
+
       setPlayerShirtAssignments(initialAssignments);
     } else {
       setSelectedShirtSet(null);
       setPlayerShirtAssignments([]);
     }
-  }, [selectedShirtSetId, team.selectedPlayers, currentShirtAssignments, shirtSets]);
+  }, [selectedShirtSetId, currentShirtSetId, team.selectedPlayers, currentShirtAssignments, shirtSets, players]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -20,6 +20,7 @@ import TeamPlayerSelectionPage from './pages/TeamPlayerSelectionPage';
 import StatisticsPage from './pages/StatisticsPage';
 import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
 import EventAttendancePage from './pages/EventAttendancePage';
+import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
 import GroupSelectionPage from './pages/GroupSelectionPage';
 
@@ -72,6 +73,7 @@ function App() {
                     <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>
                       <Route path="player-statistics" element={<PlayerStatisticsPage />} />
                       <Route path="event-attendance" element={<EventAttendancePage />} />
+                      <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
                     </Route>
                   </Routes>
                 </main>

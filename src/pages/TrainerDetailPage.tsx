@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { useEvents, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
-import type { Trainer } from '../types';
+import { useMemo, useState } from 'react';
+import { useEvents, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
+import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -15,6 +15,56 @@ interface TrainerEventHistoryItem {
   teamStrength: number;
 }
 
+interface GroupedTrainerEventHistory {
+  id: string;
+  title: string;
+  eventHistory: TrainerEventHistoryItem[];
+}
+
+const toComparableDate = (dateString: string): string | null => {
+  if (!dateString) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString;
+  }
+
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const isValidPeriod = (period: Period): boolean => period.startDate < period.endDate;
+
+const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
+  if (periods.length < 2) {
+    return true;
+  }
+
+  const sortedPeriods = [...periods].sort((left, right) => {
+    const startCompare = left.startDate.localeCompare(right.startDate);
+    if (startCompare !== 0) {
+      return startCompare;
+    }
+
+    return left.endDate.localeCompare(right.endDate);
+  });
+
+  for (let index = 1; index < sortedPeriods.length; index += 1) {
+    const previous = sortedPeriods[index - 1];
+    const current = sortedPeriods[index];
+
+    if (current.startDate < previous.endDate) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export default function TrainerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -22,6 +72,7 @@ export default function TrainerDetailPage() {
   // Use store hooks
   const { events } = useEvents();
   const { updateTrainer, deleteTrainer, getTrainerById } = useTrainers();
+  const groupPeriods = useGroupPeriods();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -82,6 +133,52 @@ export default function TrainerDetailPage() {
         teamStrength: team?.strength || 2
       };
     });
+
+  const groupedTrainerEventHistory = useMemo<GroupedTrainerEventHistory[] | null>(() => {
+    const validPeriods = groupPeriods.filter(isValidPeriod);
+
+    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
+      return null;
+    }
+
+    const groupedByPeriod: GroupedTrainerEventHistory[] = validPeriods.map((period) => ({
+      id: period.id,
+      title: period.name,
+      eventHistory: [],
+    }));
+
+    const outsidePeriods: TrainerEventHistoryItem[] = [];
+
+    trainerEventHistory.forEach((historyItem) => {
+      const eventDate = toComparableDate(historyItem.eventDate);
+      if (!eventDate) {
+        outsidePeriods.push(historyItem);
+        return;
+      }
+
+      const matchingIndex = validPeriods.findIndex((period) => (
+        eventDate >= period.startDate && eventDate < period.endDate
+      ));
+
+      if (matchingIndex >= 0) {
+        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
+      } else {
+        outsidePeriods.push(historyItem);
+      }
+    });
+
+    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
+
+    if (outsidePeriods.length > 0) {
+      nonEmptyGroups.push({
+        id: 'outside-periods',
+        title: 'Outside periods',
+        eventHistory: outsidePeriods,
+      });
+    }
+
+    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
+  }, [groupPeriods, trainerEventHistory]);
 
   const handleEditTrainer = () => {
     setIsEditModalOpen(true);
@@ -166,38 +263,45 @@ export default function TrainerDetailPage() {
               <p className="text-sm text-gray-600 mt-1 mb-4">
                 Events where {trainer.firstName} was assigned as a trainer
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-hidden">
-                {trainerEventHistory.map((item) => (
-                  <div
-                    key={item.eventId}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer min-w-0"
-                    onClick={() => navigate(`/events/${item.eventId}`)}
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Date column */}
-                      <DateColumn date={item.eventDate} />
-                      
-                      {/* Content and chevron */}
-                      <div className="flex justify-between items-center flex-1 min-w-0">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 truncate" title={item.eventName}>{item.eventName}</h3>
-                          <div className="flex items-center gap-4 mt-2">
-                            <span className="text-sm text-gray-700">
-                              👥 {item.teamName}
-                            </span>
-                            <Strength level={item.teamStrength} className="text-xs" />
+              {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: 'All events', eventHistory: trainerEventHistory }]).map((group) => (
+                <div key={group.id} className="mb-6 last:mb-0">
+                  {groupedTrainerEventHistory && (
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">{group.title}</h3>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-hidden">
+                    {group.eventHistory.map((item) => (
+                      <div
+                        key={item.eventId}
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer min-w-0"
+                        onClick={() => navigate(`/events/${item.eventId}`)}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* Date column */}
+                          <DateColumn date={item.eventDate} />
+
+                          {/* Content and chevron */}
+                          <div className="flex justify-between items-center flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 truncate" title={item.eventName}>{item.eventName}</h3>
+                              <div className="flex items-center gap-4 mt-2">
+                                <span className="text-sm text-gray-700">
+                                  👥 {item.teamName}
+                                </span>
+                                <Strength level={item.teamStrength} className="text-xs" />
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0 ml-2">
+                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                              </svg>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex-shrink-0 ml-2">
-                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                          </svg>
-                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </CardBody>
           </Card>
         </div>

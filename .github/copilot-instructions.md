@@ -6,6 +6,7 @@ This is a React + Vite + TypeScript application for managing fair soccer team se
 ## Instructions
 - launch the dev server always on the default port 5173
 - before launching the dev server, check whether it is already running
+- write commit messages with a short first line (max 72 characters); optionally add more details after an empty line with max 80 characters per line
 
 ## Domain Model
 - **Players**: firstName, lastName, birth year, level (1-5)
@@ -44,6 +45,7 @@ When implementing:
 5. Build responsive components with Tailwind CSS utility classes (mobile-first)
 6. Include fairness algorithms that track player participation history
 7. Ensure automatic data sorting at store level (players by name, events by date)
+8. Keep components small and focused; avoid bloated components, and keep add-on features (for example dialogs) in their own focused component
 
 ## State Management Architecture
 - **Zustand Store**: Central `useStore.ts` with devtools middleware

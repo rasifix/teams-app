@@ -1,12 +1,62 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { useEvents, usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
-import type { Player, PlayerEventHistoryItem } from '../types';
+import { useMemo, useState } from 'react';
+import { useEvents, usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
+import type { Period, Player, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
+
+interface GroupedPlayerEventHistory {
+  id: string;
+  title: string;
+  eventHistory: PlayerEventHistoryItem[];
+}
+
+const toComparableDate = (dateString: string): string | null => {
+  if (!dateString) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    return dateString;
+  }
+
+  const parsed = new Date(dateString);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const isValidPeriod = (period: Period): boolean => period.startDate < period.endDate;
+
+const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
+  if (periods.length < 2) {
+    return true;
+  }
+
+  const sortedPeriods = [...periods].sort((left, right) => {
+    const startCompare = left.startDate.localeCompare(right.startDate);
+    if (startCompare !== 0) {
+      return startCompare;
+    }
+
+    return left.endDate.localeCompare(right.endDate);
+  });
+
+  for (let index = 1; index < sortedPeriods.length; index += 1) {
+    const previous = sortedPeriods[index - 1];
+    const current = sortedPeriods[index];
+
+    if (current.startDate < previous.endDate) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 export default function PlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +65,7 @@ export default function PlayerDetailPage() {
   // Use store hooks
   const { events } = useEvents();
   const { updatePlayer, deletePlayer, getPlayerById } = usePlayers();
+  const groupPeriods = useGroupPeriods();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -84,6 +135,52 @@ export default function PlayerDetailPage() {
         teamName: team?.name
       };
     });
+
+  const groupedPlayerEventHistory = useMemo<GroupedPlayerEventHistory[] | null>(() => {
+    const validPeriods = groupPeriods.filter(isValidPeriod);
+
+    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
+      return null;
+    }
+
+    const groupedByPeriod: GroupedPlayerEventHistory[] = validPeriods.map((period) => ({
+      id: period.id,
+      title: period.name,
+      eventHistory: [],
+    }));
+
+    const outsidePeriods: PlayerEventHistoryItem[] = [];
+
+    playerEventHistory.forEach((historyItem) => {
+      const eventDate = toComparableDate(historyItem.eventDate);
+      if (!eventDate) {
+        outsidePeriods.push(historyItem);
+        return;
+      }
+
+      const matchingIndex = validPeriods.findIndex((period) => (
+        eventDate >= period.startDate && eventDate < period.endDate
+      ));
+
+      if (matchingIndex >= 0) {
+        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
+      } else {
+        outsidePeriods.push(historyItem);
+      }
+    });
+
+    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
+
+    if (outsidePeriods.length > 0) {
+      nonEmptyGroups.push({
+        id: 'outside-periods',
+        title: 'Outside periods',
+        eventHistory: outsidePeriods,
+      });
+    }
+
+    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
+  }, [groupPeriods, playerEventHistory]);
 
   // Filter future events where player was NOT invited
   const today = new Date();
@@ -176,6 +273,7 @@ export default function PlayerDetailPage() {
       <div>
         <PlayerEventHistory
           eventHistory={playerEventHistory}
+          groupedEventHistory={groupedPlayerEventHistory ?? undefined}
         />
       </div>
 

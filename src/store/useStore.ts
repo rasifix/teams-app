@@ -7,7 +7,7 @@ import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePla
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
-import { setSelectedGroupId, clearSelectedGroupId } from '../utils/localStorage';
+import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 
 // Helper function to sort players alphabetically by lastName + firstName
 const sortPlayers = (players: Player[]): Player[] => {
@@ -291,6 +291,7 @@ export const useStore = create<AppState>()(
       
       clearAuthenticatedData: () => {
         clearSelectedGroupId();
+        clearSelectedStatisticsPeriodId();
         set({
           group: null,
           groups: [],
@@ -353,18 +354,23 @@ export const useStore = create<AppState>()(
           }
         }
         
+        const sortedPeriods = sortPeriods(group.periods ?? []);
+        const savedPeriodId = getSelectedStatisticsPeriodId();
+        const isValidSavedPeriod = savedPeriodId && sortedPeriods.some((period) => period.id === savedPeriodId);
+        
         set({
           group: {
             ...group,
-            periods: sortPeriods(group.periods ?? []),
+            periods: sortedPeriods,
           },
-          selectedStatisticsPeriodId: null,
+          selectedStatisticsPeriodId: isValidSavedPeriod ? savedPeriodId : null,
         });
         setSelectedGroupId(groupId);
       },
 
       selectStatisticsPeriod: (periodId) => {
         set({ selectedStatisticsPeriodId: periodId });
+        setSelectedStatisticsPeriodId(periodId);
       },
       
       // Actions
@@ -708,15 +714,21 @@ export const useStore = create<AppState>()(
             periods: (currentGroup.periods ?? []).filter((period) => period.id !== periodId),
           };
 
+          const isDeletedPeriodSelected = get().selectedStatisticsPeriodId === periodId;
+
           set((state) => ({
             group: updatedGroup,
             groups: state.groups.map((group) => (
               group.id === currentGroup.id ? updatedGroup : group
             )),
-            selectedStatisticsPeriodId: state.selectedStatisticsPeriodId === periodId
+            selectedStatisticsPeriodId: isDeletedPeriodSelected
               ? null
               : state.selectedStatisticsPeriodId,
           }));
+
+          if (isDeletedPeriodSelected) {
+            clearSelectedStatisticsPeriodId();
+          }
 
           return true;
         } catch (error) {

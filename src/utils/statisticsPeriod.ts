@@ -1,6 +1,7 @@
 import type { Event } from '../types';
 
 export interface StatisticsPeriod {
+  name?: string;
   startDate: string;
   endDate: string;
 }
@@ -43,5 +44,6 @@ export function filterEventsByStatisticsPeriod(events: Event[], period: Statisti
 
 export function getStatisticsPeriodLabel(period: StatisticsPeriod | null): string {
   if (!period) return 'All events';
+  if (period.name) return period.name;
   return `${period.startDate} to ${period.endDate}`;
 }

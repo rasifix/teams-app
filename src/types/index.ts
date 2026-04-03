@@ -1,7 +1,15 @@
+export interface Period {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
 export interface Group {
   id: string;
   name: string;
   club?: string;
+  periods: Period[];
 }
 
 export interface Player {

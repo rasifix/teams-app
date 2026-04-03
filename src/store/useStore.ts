@@ -1,12 +1,12 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups, getGroup } from '../services/groupService';
+import { getGroups, getGroup, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
 import { setSelectedGroupId, clearSelectedGroupId } from '../utils/localStorage';
 
 // Helper function to sort players alphabetically by lastName + firstName
@@ -47,10 +47,29 @@ const sortShirtSets = (shirtSets: ShirtSet[]): ShirtSet[] => {
   });
 };
 
+const sortPeriods = (periods: Period[]): Period[] => {
+  return [...periods].sort((a, b) => {
+    const startDateCompare = a.startDate.localeCompare(b.startDate);
+    if (startDateCompare !== 0) {
+      return startDateCompare;
+    }
+
+    const endDateCompare = a.endDate.localeCompare(b.endDate);
+    if (endDateCompare !== 0) {
+      return endDateCompare;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
+};
+
+const EMPTY_PERIODS: Period[] = [];
+
 interface AppState {
   // Data
   group: Group | null;
   groups: Group[];
+  selectedStatisticsPeriodId: string | null;
   players: Player[];
   events: Event[];
   trainers: Trainer[];
@@ -82,6 +101,7 @@ interface AppState {
   // Actions
   loadGroups: () => Promise<void>;
   selectGroup: (groupId: string) => Promise<void>;
+  selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
   clearAuthenticatedData: () => void;
   setPlayers: (players: Player[]) => void;
@@ -111,6 +131,11 @@ interface AppState {
   addShirtToSet: (shirtSetId: string, shirtData: import('../types').Shirt) => Promise<import('../types').Shirt | null>;
   removeShirtFromSet: (shirtSetId: string, shirtNumber: number) => Promise<boolean>;
   updateShirt: (shirtSetId: string, updatedShirt: import('../types').Shirt) => Promise<boolean>;
+
+  // Group period mutations
+  addGroupPeriod: (periodData: Omit<Period, 'id'>) => Promise<Period | null>;
+  updateGroupPeriod: (periodId: string, periodData: Omit<Period, 'id'>) => Promise<boolean>;
+  deleteGroupPeriod: (periodId: string) => Promise<boolean>;
   
   // Selectors (computed values)
   getPlayerById: (id: string) => Player | undefined;
@@ -127,6 +152,7 @@ export const useStore = create<AppState>()(
       // Initial state
       group: null,
       groups: [],
+      selectedStatisticsPeriodId: null,
       players: [],
       events: [],
       trainers: [],
@@ -181,7 +207,7 @@ export const useStore = create<AppState>()(
           }
           
           const results = await Promise.allSettled([
-            Promise.resolve({ type: 'group' as const, data: currentGroup }),
+            getGroup(currentGroup.id).then((group) => ({ type: 'group' as const, data: group })),
             getAllMembers(currentGroup.id).then((members) => ({ type: 'members' as const, data: members })),
             getEvents(currentGroup.id).then((events: Event[]) => ({ type: 'events' as const, data: events })),
             getShirtSets(currentGroup.id).then((shirtSets: ShirtSet[]) => ({ type: 'shirtSets' as const, data: shirtSets })),
@@ -206,6 +232,7 @@ export const useStore = create<AppState>()(
             },
             group: state.group,
             groups: state.groups,
+            selectedStatisticsPeriodId: state.selectedStatisticsPeriodId,
             players: state.players,
             events: state.events,
             trainers: state.trainers,
@@ -216,7 +243,10 @@ export const useStore = create<AppState>()(
             if (result.status === 'fulfilled') {
               const { type, data } = result.value;
               if (type === 'group') {
-                newState.group = data as Group;
+                newState.group = {
+                  ...(data as Group),
+                  periods: sortPeriods((data as Group).periods ?? []),
+                };
               } else if (type === 'members') {
                 const membersData = data as { players: Player[], trainers: Trainer[] };
                 newState.players = sortPlayers(membersData.players);
@@ -245,6 +275,13 @@ export const useStore = create<AppState>()(
               }
             }
           });
+
+          if (
+            newState.selectedStatisticsPeriodId &&
+            !newState.group?.periods.some((period) => period.id === newState.selectedStatisticsPeriodId)
+          ) {
+            newState.selectedStatisticsPeriodId = null;
+          }
           
           set({ ...newState, isInitialized: true });
         };
@@ -257,6 +294,7 @@ export const useStore = create<AppState>()(
         set({
           group: null,
           groups: [],
+          selectedStatisticsPeriodId: null,
           players: [],
           events: [],
           trainers: [],
@@ -311,12 +349,22 @@ export const useStore = create<AppState>()(
           } catch (error) {
             console.error('Failed to fetch group:', error);
             // Fallback to minimal group object
-            group = { id: groupId, name: `Group ${groupId}` };
+            group = { id: groupId, name: `Group ${groupId}`, periods: [] };
           }
         }
         
-        set({ group });
+        set({
+          group: {
+            ...group,
+            periods: sortPeriods(group.periods ?? []),
+          },
+          selectedStatisticsPeriodId: null,
+        });
         setSelectedGroupId(groupId);
+      },
+
+      selectStatisticsPeriod: (periodId) => {
+        set({ selectedStatisticsPeriodId: periodId });
       },
       
       // Actions
@@ -593,6 +641,89 @@ export const useStore = create<AppState>()(
           return false;
         }
       },
+
+      addGroupPeriod: async (periodData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const newPeriod = await addGroupPeriodService(currentGroup.id, periodData);
+          const updatedGroup = {
+            ...currentGroup,
+            periods: sortPeriods([...(currentGroup.periods ?? []), newPeriod]),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return newPeriod;
+        } catch (error) {
+          console.error('Failed to add group period:', error);
+          return null;
+        }
+      },
+
+      updateGroupPeriod: async (periodId, periodData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedPeriod = await updateGroupPeriodService(currentGroup.id, periodId, periodData);
+          const updatedGroup = {
+            ...currentGroup,
+            periods: sortPeriods(
+              (currentGroup.periods ?? []).map((period) => (
+                period.id === periodId ? updatedPeriod : period
+              ))
+            ),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to update group period:', error);
+          return false;
+        }
+      },
+
+      deleteGroupPeriod: async (periodId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          await deleteGroupPeriodService(currentGroup.id, periodId);
+
+          const updatedGroup = {
+            ...currentGroup,
+            periods: (currentGroup.periods ?? []).filter((period) => period.id !== periodId),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+            selectedStatisticsPeriodId: state.selectedStatisticsPeriodId === periodId
+              ? null
+              : state.selectedStatisticsPeriodId,
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to delete group period:', error);
+          return false;
+        }
+      },
       
       // Selectors
       getPlayerById: (id) => get().players.find(p => p.id === id),
@@ -643,6 +774,16 @@ export const useAppInitialized = () => useStore((state) => state.isInitialized);
 export const useGroup = () => useStore((state) => state.group);
 
 export const useGroups = () => useStore((state) => state.groups);
+
+export const useGroupPeriods = () => useStore((state) => state.group?.periods ?? EMPTY_PERIODS);
+
+export const useSelectedStatisticsPeriod = () => useStore((state) => {
+  if (!state.selectedStatisticsPeriodId) return null;
+
+  return (state.group?.periods ?? EMPTY_PERIODS).find(
+    (period) => period.id === state.selectedStatisticsPeriodId
+  ) ?? null;
+});
 
 export const useGroupsLoading = () => useStore((state) => state.loading.groups);
 

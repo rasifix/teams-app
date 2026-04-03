@@ -8,7 +8,9 @@ export {
   useAppHasErrors,
   useAppInitialized,
   useGroup,
+  useGroupPeriods,
   useGroups,
+  useSelectedStatisticsPeriod,
   useGroupsLoading,
   useGroupsError
 } from './useStore';

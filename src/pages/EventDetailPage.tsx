@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
-import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from '../store';
+import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup, useSelectedStatisticsPeriod } from '../store';
 import type { Event, Team, Invitation, InvitationStatus } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
@@ -12,8 +12,7 @@ import TeamCard from '../components/TeamCard';
 import TeamPrintSummary from '../components/TeamPrintSummary';
 import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
-import { getStatisticsPeriod } from '../utils/localStorage';
-import { filterEventsByStatisticsPeriod, isValidStatisticsPeriod } from '../utils/statisticsPeriod';
+import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +24,7 @@ export default function EventDetailPage() {
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
   const group = useGroup();
+  const statisticsPeriod = useSelectedStatisticsPeriod();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -38,12 +38,9 @@ export default function EventDetailPage() {
   const previousEvent = currentEventIndex > 0 ? sortedEvents[currentEventIndex - 1] : null;
   const nextEvent = currentEventIndex >= 0 && currentEventIndex < sortedEvents.length - 1 ? sortedEvents[currentEventIndex + 1] : null;
 
-  // Use the global statistics period for fairness counters during selection.
-  const storedStatisticsPeriod = getStatisticsPeriod();
-  const statisticsPeriod = isValidStatisticsPeriod(storedStatisticsPeriod) ? storedStatisticsPeriod : null;
   const periodFilteredEvents = useMemo(
     () => filterEventsByStatisticsPeriod(events, statisticsPeriod),
-    [events, statisticsPeriod?.startDate, statisticsPeriod?.endDate]
+    [events, statisticsPeriod]
   );
   const eventsForSelectionStats = useMemo(() => {
     if (!event) return periodFilteredEvents;

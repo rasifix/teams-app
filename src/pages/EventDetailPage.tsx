@@ -212,13 +212,13 @@ export default function EventDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
-  const handleInvitePlayers = async (playerIds: string[]) => {
+  const handleInvitePlayers = async (playerIds: string[], status: InvitationStatus) => {
     if (!event || !id) return;
 
     const newInvitations: Invitation[] = playerIds.map(playerId => ({
       id: crypto.randomUUID(),
       playerId,
-      status: 'open',
+      status,
     }));
 
     const updatedInvitations = [...event.invitations, ...newInvitations];

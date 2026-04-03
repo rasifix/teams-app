@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import type { Player } from '../types';
+import type { Player, InvitationStatus } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 
 interface InvitePlayersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInvite: (playerIds: string[]) => void;
+  onInvite: (playerIds: string[], status: InvitationStatus) => void;
   alreadyInvitedPlayerIds: string[];
   players: Player[];
 }
@@ -20,11 +20,13 @@ export default function InvitePlayersModal({
 }: InvitePlayersModalProps) {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [invitationStatus, setInvitationStatus] = useState<InvitationStatus>('accepted');
 
   useEffect(() => {
     if (isOpen) {
       setSelectedPlayerIds(new Set());
       setLevelRange([1, 5]);
+      setInvitationStatus('accepted');
     }
   }, [isOpen]);
 
@@ -59,7 +61,7 @@ export default function InvitePlayersModal({
       return;
     }
 
-    onInvite(Array.from(selectedPlayerIds));
+    onInvite(Array.from(selectedPlayerIds), invitationStatus);
     setSelectedPlayerIds(new Set());
     onClose();
   };
@@ -100,6 +102,34 @@ export default function InvitePlayersModal({
               </div>
             ) : (
               <>
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-gray-900 mb-2">Default invitation status</p>
+                  <div className="flex gap-4">
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="invitationStatus"
+                        value="accepted"
+                        checked={invitationStatus === 'accepted'}
+                        onChange={() => setInvitationStatus('accepted')}
+                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                      />
+                      Accepted
+                    </label>
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="invitationStatus"
+                        value="open"
+                        checked={invitationStatus === 'open'}
+                        onChange={() => setInvitationStatus('open')}
+                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                      />
+                      Open
+                    </label>
+                  </div>
+                </div>
+
                 <div className="flex gap-2 mb-4">
                   <button
                     type="button"

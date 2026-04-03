@@ -6,6 +6,7 @@ import Strength from './Strength';
 
 interface TeamCardProps {
   team: Team;
+  eventLocation?: string;
   players: Player[];
   trainers: Trainer[];
   shirtSets: ShirtSet[];
@@ -26,6 +27,7 @@ interface TeamCardProps {
 
 export default function TeamCard({
   team,
+  eventLocation,
   players,
   trainers,
   shirtSets,
@@ -56,6 +58,7 @@ export default function TeamCard({
     : 0;
   const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
   const shirtSet = team.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
+  const displayLocation = team.location || eventLocation;
 
   return (
     <div 
@@ -120,12 +123,10 @@ export default function TeamCard({
           </p>
           <p className="text-sm text-gray-600">
             🕐 {team.startTime}
+            {displayLocation && (
+              <span className="ml-3">📍{displayLocation}</span>
+            )}
           </p>
-          {team.location && (
-            <p className="text-sm text-gray-600">
-              📍 {team.location}
-            </p>
-          )}
           {trainer && (
             <p className="text-sm text-blue-600">
               👤 {trainer.firstName} {trainer.lastName}

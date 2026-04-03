@@ -524,6 +524,7 @@ export default function EventDetailPage() {
                     <TeamCard
                       key={team.id}
                       team={team}
+                      eventLocation={event.location}
                       players={players}
                       trainers={trainers}
                       shirtSets={shirtSets}

@@ -32,6 +32,8 @@ interface TeamSelectionCell {
 
 interface TeamSelectionRow {
   player: Player;
+  selectedCount: number;
+  acceptedCount: number;
   cells: TeamSelectionCell[];
 }
 
@@ -80,6 +82,19 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
     ));
 
     return filteredPlayers.map<TeamSelectionRow>((player) => {
+      const selectedCount = events.reduce((count, event) => {
+        const isSelectedInEvent = event.teams.some((team) => (team.selectedPlayers || []).includes(player.id));
+        return isSelectedInEvent ? count + 1 : count;
+      }, 0);
+
+      const acceptedCount = events.reduce((count, event) => {
+        const hasAcceptedInvitation = event.invitations.some((invitation) => (
+          invitation.playerId === player.id && invitation.status === 'accepted'
+        ));
+
+        return hasAcceptedInvitation ? count + 1 : count;
+      }, 0);
+
       const cells = teamColumns.map<TeamSelectionCell>((teamColumn) => {
         const selectedEvents = events.flatMap((event) => (
           event.teams.flatMap((team, index) => {
@@ -108,7 +123,12 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         };
       });
 
-      return { player, cells };
+      return {
+        player,
+        selectedCount,
+        acceptedCount,
+        cells,
+      };
     });
   }, [events, maxLevel, minLevel, players, teamColumns]);
 
@@ -197,16 +217,19 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                   </tr>
                 </thead>
                 <tbody>
-                  {matrixRows.map(({ player, cells }) => (
+                  {matrixRows.map(({ player, selectedCount, acceptedCount, cells }) => (
                     <tr key={player.id} className="border-b border-gray-200 hover:bg-gray-50">
                       <td className="sticky left-0 z-10 min-w-[220px] border-r border-gray-200 bg-white px-4 py-2">
                         <button
                           type="button"
                           onClick={() => handlePlayerClick(player.id)}
-                          className="flex items-center gap-2 text-left text-sm font-medium text-gray-900 transition-opacity hover:opacity-70"
+                          className="flex w-full items-center gap-2 text-left text-sm font-medium text-gray-900 transition-opacity hover:opacity-70"
                         >
                           <span>{player.firstName} {player.lastName}</span>
                           <Level level={player.level} className="text-xs" />
+                          <span className="ml-auto text-xs font-semibold text-gray-600">
+                            {selectedCount} / {acceptedCount}
+                          </span>
                         </button>
                       </td>
                       {cells.map((cell, index) => (

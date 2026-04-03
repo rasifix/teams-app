@@ -1,7 +1,7 @@
 import type { Player, Trainer } from '../types';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Level from './Level';
+import PlayerCard from './PlayerCard';
 
 type Member = Player | Trainer;
 
@@ -91,56 +91,57 @@ export default function MembersList<T extends Member>({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-3 px-0" onClick={handleBackdropClick}>
       {members.map((member) => (
-        <div 
-          key={member.id}
-          className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
-        >
-          {/* Main card content */}
-          <div 
-            className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${
-              swipedMemberId === member.id ? '-translate-x-20' : 'translate-x-0'
-            } active:bg-gray-50`}
+        memberType === 'players' && isPlayer(member) ? (
+          <PlayerCard
+            key={member.id}
+            player={member}
+            isSwiped={swipedMemberId === member.id}
             onClick={(e) => handleMemberClick(member, e)}
             onTouchStart={(e) => handleTouchStart(member.id, e)}
+            onDelete={(e) => handleDeleteClick(member, e)}
+          />
+        ) : (
+          <div
+            key={member.id}
+            className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
           >
-            {/* Member info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <div className="truncate">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {member.firstName} {member.lastName}
-                    {isPlayer(member) && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        {member.birthDate ? new Date(member.birthDate).getFullYear() : member.birthYear}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                {/* Level for players, chevron for all */}
-                <div className="ml-2 flex-shrink-0 flex items-center gap-2">
-                  {isPlayer(member) && <Level level={member.level} className="text-xs" />}
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
+            <div
+              className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${
+                swipedMemberId === member.id ? '-translate-x-20' : 'translate-x-0'
+              } active:bg-gray-50`}
+              onClick={(e) => handleMemberClick(member, e)}
+              onTouchStart={(e) => handleTouchStart(member.id, e)}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div className="truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {member.firstName} {member.lastName}
+                    </p>
+                  </div>
+                  <div className="ml-2 flex-shrink-0 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Delete button that appears on swipe */}
-          <div 
-            className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
-              swipedMemberId === member.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <button
-              className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
-              onClick={(e) => handleDeleteClick(member, e)}
+            <div
+              className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
+                swipedMemberId === member.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
-              Delete
-            </button>
+              <button
+                className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
+                onClick={(e) => handleDeleteClick(member, e)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-        </div>
+        )
       ))}
     </div>
   );

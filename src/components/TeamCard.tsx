@@ -100,7 +100,7 @@ export default function TeamCard({
       <div className="flex justify-between items-start">
         <div className="flex items-center flex-1 min-w-0">
           <div
-            className="hidden lg:flex items-center gap-1 cursor-pointer select-none self-center"
+            className="hidden lg:flex w-5 ml-1 mr-2 items-center justify-center cursor-pointer select-none self-center"
             onClick={() => setIsCollapsed(c => !c)}
             title={isCollapsed ? 'Expand team' : 'Collapse team'}
           >
@@ -113,13 +113,11 @@ export default function TeamCard({
           </div>
           <div className="flex-1">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            {team.name} <Strength level={team.strength || 2} /> 
+            {team.name} <Strength level={team.strength || 2} className="text-xs" /> 
           </h3>
-          {isCollapsed && (
-            <p className="text-sm text-gray-600">
-              👥 {selectedPlayers.length}/{maxPlayersPerTeam}
-            </p>
-          )}
+          <p className="text-sm text-gray-600">
+            👥 {selectedPlayers.length}/{maxPlayersPerTeam} <span className="text-yellow-500">★</span> {averageLevel.toFixed(1)}
+          </p>
           <p className="text-sm text-gray-600">
             🕐 {team.startTime}
           </p>
@@ -140,7 +138,7 @@ export default function TeamCard({
           )}
           </div>
         </div>
-        <div className="flex gap-2 self-start" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2 self-start mr-1" onClick={(e) => e.stopPropagation()}>
           <button 
             onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId, team.location)}
             className="text-blue-600 hover:text-blue-700 text-sm"
@@ -164,8 +162,7 @@ export default function TeamCard({
       {selectedPlayers.length > 0 && !isCollapsed && (
         <>
         <div className="my-3 -mx-4 border-t border-gray-100" />
-        <div>
-          <h4 className="text-xs font-medium text-gray-500 mb-2">Players {selectedPlayers.length} / {maxPlayersPerTeam} <span className='text-yellow-500'>★</span> {averageLevel.toFixed(1)}</h4>
+        <div className="lg:pl-8">
           <div className="space-y-1">
             {selectedPlayers
               .map(playerId => ({ playerId, player: players.find(p => p.id === playerId) }))

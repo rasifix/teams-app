@@ -73,7 +73,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                   const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
                   return (
                     <p key={team.id} className="text-sm text-gray-600 flex items-center gap-1">
-                      🕐 {team.startTime} 👥 {team.name} <Strength level={team.strength} />
+                      🕐 {team.startTime} 👥 {team.name} <Strength level={team.strength} className="text-xs" />
                       {trainer && (
                         <span className="text-sm text-gray-600">
                           👤 {trainer.firstName} {trainer.lastName}

@@ -185,7 +185,7 @@ export default function TrainerDetailPage() {
                             <span className="text-sm text-gray-700">
                               👥 {item.teamName}
                             </span>
-                            <Strength level={item.teamStrength} />
+                            <Strength level={item.teamStrength} className="text-xs" />
                           </div>
                         </div>
                         <div className="flex-shrink-0 ml-2">

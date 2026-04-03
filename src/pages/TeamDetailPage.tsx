@@ -153,7 +153,7 @@ export default function TeamDetailPage() {
                 <span className="font-medium text-sm">Strength</span>
               </div>
               <div className="text-sm">
-                <Strength level={team.strength} />
+                <Strength level={team.strength} className="text-xs" />
               </div>
             </div>            
 

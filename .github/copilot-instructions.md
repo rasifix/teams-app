@@ -78,18 +78,3 @@ src/
 ├── utils/             # Player statistics, date formatting utilities
 └── config/            # API configuration and environment settings
 ```
-
-## Backend API Structure
-```
-teams-api/
-├── src/
-│   ├── controllers/   # Request handlers for each entity
-│   ├── routes/        # Express route definitions
-│   ├── database/      # MongoDB connection and configuration
-│   ├── types/         # TypeScript interfaces and MongoDB schemas
-│   └── utils/         # Helper utilities and migrations
-├── mongo-init/        # Database initialization scripts
-└── docs/              # API documentation and import guides
-```
-
-Start with store selectors and API services before building UI components. Always use the Zustand store for state management - never call services directly from components.

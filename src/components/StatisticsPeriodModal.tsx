@@ -92,7 +92,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
       return;
     }
 
-    resetPeriodForm();
+    handleClose();
   };
 
   const handleDeletePeriod = async () => {

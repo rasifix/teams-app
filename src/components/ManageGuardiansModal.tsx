@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Guardian, Trainer } from '../types';
 import { hasDuplicateGuardian } from '../utils/guardians';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
@@ -10,11 +10,13 @@ interface ManageGuardiansModalProps {
   guardians: Guardian[];
   trainers: Trainer[];
   onAssign: (guardian: Guardian) => Promise<boolean>;
+  editingGuardian?: Guardian | null;
+  onEdit?: (guardianId: string, guardianData: Pick<Guardian, 'firstName' | 'lastName' | 'email'>) => Promise<boolean>;
 }
 
 type Mode = 'existing' | 'documented';
 
-export default function ManageGuardiansModal({ isOpen, onClose, guardians, trainers, onAssign }: ManageGuardiansModalProps) {
+export default function ManageGuardiansModal({ isOpen, onClose, guardians, trainers, onAssign, editingGuardian = null, onEdit }: ManageGuardiansModalProps) {
   const [mode, setMode] = useState<Mode>('existing');
   const [selectedTrainerId, setSelectedTrainerId] = useState('');
   const [existingFirstName, setExistingFirstName] = useState('');
@@ -22,18 +24,45 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
   const [existingEmail, setExistingEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [documentedEmail, setDocumentedEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = Boolean(editingGuardian);
 
   const availableTrainers = useMemo(() => {
-    return trainers.filter((trainer) => !hasDuplicateGuardian(guardians, {
+    const nonCurrentGuardians = guardians.filter((guardian) => guardian.id !== editingGuardian?.id);
+    return trainers.filter((trainer) => !hasDuplicateGuardian(nonCurrentGuardians, {
       id: trainer.id,
       userId: trainer.id,
       firstName: trainer.firstName,
       lastName: trainer.lastName,
+      email: trainer.email,
       isDocumentedOnly: false,
     }));
-  }, [guardians, trainers]);
+  }, [guardians, trainers, editingGuardian?.id]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    if (editingGuardian) {
+      const nextMode: Mode = editingGuardian.email ? 'existing' : 'documented';
+      setMode(nextMode);
+      setSelectedTrainerId(editingGuardian.userId || '');
+      setExistingFirstName(editingGuardian.firstName || '');
+      setExistingLastName(editingGuardian.lastName || '');
+      setExistingEmail(editingGuardian.email || '');
+      setFirstName(editingGuardian.firstName || '');
+      setLastName(editingGuardian.lastName || '');
+      setDocumentedEmail(editingGuardian.email || '');
+      setError(null);
+      setIsSubmitting(false);
+      return;
+    }
+
+    reset();
+  }, [isOpen, editingGuardian]);
 
   const reset = () => {
     setMode('existing');
@@ -43,6 +72,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     setExistingEmail('');
     setFirstName('');
     setLastName('');
+    setDocumentedEmail('');
     setError(null);
     setIsSubmitting(false);
   };
@@ -72,7 +102,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     setError(null);
 
     if (mode === 'existing') {
-      if (!selectedTrainerId) {
+      if (!selectedTrainerId && !isEditMode) {
         setError('Please select an existing user to assign.');
         return;
       }
@@ -87,28 +117,29 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
         return;
       }
 
-      const trainer = trainers.find((entry) => entry.id === selectedTrainerId);
-      if (!trainer) {
-        setError('Selected user was not found.');
-        return;
-      }
-
       const guardian: Guardian = {
-        id: trainer.id,
-        userId: trainer.id,
+        id: selectedTrainerId || editingGuardian?.id || crypto.randomUUID(),
+        userId: selectedTrainerId || editingGuardian?.userId,
         firstName: existingFirstName.trim(),
         lastName: existingLastName.trim(),
         email: existingEmail.trim(),
         isDocumentedOnly: false,
       };
 
-      if (hasDuplicateGuardian(guardians, guardian)) {
+      const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
+      if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
         setError('This guardian is already assigned.');
         return;
       }
 
       setIsSubmitting(true);
-      const success = await onAssign(guardian);
+      const success = isEditMode && editingGuardian && onEdit
+        ? await onEdit(editingGuardian.id, {
+            firstName: guardian.firstName,
+            lastName: guardian.lastName,
+            email: guardian.email,
+          })
+        : await onAssign(guardian);
       if (success) {
         handleClose();
       } else {
@@ -126,16 +157,24 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
       id: crypto.randomUUID(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
+      email: documentedEmail.trim() || undefined,
       isDocumentedOnly: true,
     };
 
-    if (hasDuplicateGuardian(guardians, guardian)) {
+    const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
+    if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
       setError('A documented guardian with the same name is already assigned.');
       return;
     }
 
     setIsSubmitting(true);
-    const success = await onAssign(guardian);
+    const success = isEditMode && editingGuardian && onEdit
+      ? await onEdit(editingGuardian.id, {
+          firstName: guardian.firstName,
+          lastName: guardian.lastName,
+          email: guardian.email,
+        })
+      : await onAssign(guardian);
     if (success) {
       handleClose();
     } else {
@@ -146,7 +185,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalHeader>
-        <ModalTitle>Assign Guardian</ModalTitle>
+        <ModalTitle>{isEditMode ? 'Edit Guardian' : 'Assign Guardian'}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -189,6 +228,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                   value={selectedTrainerId}
                   onChange={(e) => handleSelectedTrainerChange(e.target.value)}
                   className="form-select"
+                  disabled={isEditMode}
                 >
                   <option value="">Select user</option>
                   {availableTrainers.map((trainer) => (
@@ -199,6 +239,9 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                 </select>
                 {availableTrainers.length === 0 && (
                   <p className="text-xs text-gray-500 mt-2">No available existing users to assign.</p>
+                )}
+                {isEditMode && (
+                  <p className="text-xs text-gray-500 mt-2">User selection is locked while editing. Update name/email fields directly.</p>
                 )}
                 <div className="mt-3 grid grid-cols-1 gap-3">
                   <div>
@@ -265,6 +308,17 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                     required
                   />
                 </div>
+                <div>
+                  <label htmlFor="guardian-documented-email" className="form-label">Email (optional)</label>
+                  <input
+                    id="guardian-documented-email"
+                    type="email"
+                    value={documentedEmail}
+                    onChange={(e) => setDocumentedEmail(e.target.value)}
+                    className="form-input"
+                    placeholder="guardian@example.com"
+                  />
+                </div>
                 <p className="text-xs text-gray-500">Documented-only guardians are contacts only and cannot log in.</p>
               </>
             )}
@@ -282,7 +336,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
             Cancel
           </Button>
           <Button type="submit" variant="primary" className="flex-1" disabled={isSubmitting}>
-            Assign
+            {isEditMode ? 'Save' : 'Assign'}
           </Button>
         </ModalFooter>
       </form>

@@ -67,7 +67,7 @@ export default function PlayerDetailPage() {
   
   // Use store hooks
   const { events } = useEvents();
-  const { updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer } = usePlayers();
+  const { updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const group = useGroup();
   const { user } = useAuth();
@@ -79,6 +79,7 @@ export default function PlayerDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
+  const [editingGuardian, setEditingGuardian] = useState<Guardian | null>(null);
   const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(null);
   const [guardianActionError, setGuardianActionError] = useState<string | null>(null);
 
@@ -251,6 +252,35 @@ export default function PlayerDetailPage() {
     return true;
   };
 
+  const handleEditGuardian = async (
+    guardianId: string,
+    guardianData: Pick<Guardian, 'firstName' | 'lastName' | 'email'>
+  ): Promise<boolean> => {
+    if (!editingGuardian) {
+      return false;
+    }
+
+    setGuardianActionError(null);
+    const success = await editGuardianForPlayer(
+      player.id,
+      guardianId,
+      guardianData,
+      {
+        firstName: editingGuardian.firstName,
+        lastName: editingGuardian.lastName,
+        email: editingGuardian.email,
+      }
+    );
+
+    if (!success) {
+      setGuardianActionError('Failed to edit guardian. Please try again.');
+      return false;
+    }
+
+    setEditingGuardian(null);
+    return true;
+  };
+
   const confirmRemoveGuardian = async () => {
     if (!guardianToRemove) {
       return;
@@ -365,12 +395,24 @@ export default function PlayerDetailPage() {
                       )}
                     </div>
                     {canManagePlayerGuardians && (
-                      <button
-                        onClick={() => setGuardianToRemove(guardian)}
-                        className="mt-3 text-red-600 hover:text-red-700 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
+                      <div className="mt-3 flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setGuardianActionError(null);
+                            setEditingGuardian(guardian);
+                            setIsGuardianModalOpen(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setGuardianToRemove(guardian)}
+                          className="text-red-600 hover:text-red-700 text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -441,10 +483,15 @@ export default function PlayerDetailPage() {
 
       <ManageGuardiansModal
         isOpen={isGuardianModalOpen}
-        onClose={() => setIsGuardianModalOpen(false)}
+        onClose={() => {
+          setIsGuardianModalOpen(false);
+          setEditingGuardian(null);
+        }}
         guardians={guardians}
         trainers={trainers}
         onAssign={handleAssignGuardian}
+        editingGuardian={editingGuardian}
+        onEdit={handleEditGuardian}
       />
 
       <ConfirmDialog

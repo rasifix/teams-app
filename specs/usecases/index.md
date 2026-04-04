@@ -16,7 +16,8 @@ be described in files grouped in subfolders per category.
 * UC-GR-002 - manage trainers
 * UC-GR-003 - manage players
 * UC-GR-004 - manage guardians
-* UC-GR-005 - manage shirt sets
+* UC-GR-005 - edit guardian
+* UC-GR-006 - manage shirt sets
 
 ## Event
 

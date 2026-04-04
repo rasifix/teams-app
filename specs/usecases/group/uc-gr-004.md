@@ -54,6 +54,7 @@ Required for assignment:
 Optional for assignment (if model supports):
 - relationship (for example mother, father, legal guardian)
 - contact preference metadata
+- email (optional for documented-only guardian contacts)
 
 Required for removal:
 - playerId

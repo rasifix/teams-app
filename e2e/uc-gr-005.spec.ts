@@ -4,8 +4,8 @@ const DEMO_MODE = (
   globalThis as { process?: { env?: Record<string, string | undefined> } }
 ).process?.env?.E2E_DEMO_MODE === '1';
 
-test.describe('UC-GR-004 - Manage Guardians', () => {
-  test('successfully assigns an existing user as guardian', async ({ page }) => {
+test.describe('UC-GR-005 - Edit Guardian', () => {
+  test('successfully edits an existing-user guardian', async ({ page }) => {
     const pause = async (ms = 700) => {
       if (DEMO_MODE) {
         await page.waitForTimeout(ms);
@@ -27,10 +27,19 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
       birthYear: 2014,
       birthDate: '2014-04-15',
       level: 3,
-      guardians: [] as Array<Record<string, unknown>>,
+      guardians: [
+        {
+          id: 'guardian-existing-1',
+          groupId,
+          firstName: 'Alex',
+          lastName: 'Guardian',
+          email: 'alex.guardian@example.com',
+        },
+      ],
     };
 
-    let guardianPostPayload: Record<string, unknown> | null = null;
+    const calls: string[] = [];
+    let addPayload: Record<string, unknown> | null = null;
 
     await page.addInitScript((selectedId) => {
       window.localStorage.setItem('token', 'e2e-token');
@@ -38,11 +47,7 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
     }, groupId);
 
     await page.route('**/health', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ status: 'ok' }),
-      });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok' }) });
     });
 
     await page.route('**/auth/me', async (route) => {
@@ -93,21 +98,28 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
         return;
       }
 
+      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians/guardian-existing-1` && method === 'DELETE') {
+        calls.push('DELETE');
+        player = { ...player, guardians: [] };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+        return;
+      }
+
       if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
-        guardianPostPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+        calls.push('POST');
+        addPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-1',
+              id: 'guardian-existing-2',
               groupId,
-              firstName: String(guardianPostPayload.firstName ?? ''),
-              lastName: String(guardianPostPayload.lastName ?? ''),
-              email: String(guardianPostPayload.email ?? ''),
+              firstName: String(addPayload.firstName ?? ''),
+              lastName: String(addPayload.lastName ?? ''),
+              email: String(addPayload.email ?? ''),
             },
           ],
         };
-
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
         return;
       }
@@ -122,31 +134,30 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
     await page.goto(`/players/${playerId}`);
     await pause(900);
 
-    await expect(page.getByText('Guardians (0)')).toBeVisible();
-    await page.getByRole('button', { name: 'Add Guardian' }).click();
+    await expect(page.getByText('Alex Guardian')).toBeVisible();
+    await page.getByRole('button', { name: 'Edit' }).nth(1).click();
 
-    await expect(page.getByRole('heading', { name: 'Assign Guardian' })).toBeVisible();
-    await page.locator('#guardian-existing').selectOption('trainer-1');
-    await page.getByLabel('First Name').fill('Alex');
-    await page.getByLabel('Last Name').fill('Guardian');
-    await page.getByLabel('Email').fill('alex.guardian@example.com');
+    await expect(page.getByRole('heading', { name: 'Edit Guardian' })).toBeVisible();
+    await page.getByLabel('First Name').fill('Alexa');
+    await page.getByLabel('Last Name').fill('Guardian-Senior');
+    await page.getByLabel('Email').fill('alexa.guardian@example.com');
 
-    await page.getByRole('button', { name: 'Assign' }).click();
+    await page.getByRole('button', { name: 'Save' }).click();
     await pause(700);
 
-    await expect(page.getByRole('heading', { name: 'Assign Guardian' })).not.toBeVisible();
-    await expect(page.getByText('Guardians (1)')).toBeVisible();
-    await expect(page.getByText('Alex Guardian')).toBeVisible();
-    await expect(page.getByText('alex.guardian@example.com')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Edit Guardian' })).not.toBeVisible();
+    await expect(page.getByText('Alexa Guardian-Senior')).toBeVisible();
+    await expect(page.getByText('alexa.guardian@example.com')).toBeVisible();
 
-    expect(guardianPostPayload).toEqual({
-      firstName: 'Alex',
-      lastName: 'Guardian',
-      email: 'alex.guardian@example.com',
+    expect(calls).toEqual(['DELETE', 'POST']);
+    expect(addPayload).toEqual({
+      firstName: 'Alexa',
+      lastName: 'Guardian-Senior',
+      email: 'alexa.guardian@example.com',
     });
   });
 
-  test('successfully assigns a documented-only guardian', async ({ page }) => {
+  test('successfully edits a documented-only guardian', async ({ page }) => {
     const pause = async (ms = 700) => {
       if (DEMO_MODE) {
         await page.waitForTimeout(ms);
@@ -165,10 +176,18 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
       birthYear: 2015,
       birthDate: '2015-07-21',
       level: 2,
-      guardians: [] as Array<Record<string, unknown>>,
+      guardians: [
+        {
+          id: 'guardian-doc-1',
+          groupId,
+          firstName: 'Pat',
+          lastName: 'Doe',
+        },
+      ],
     };
 
-    let guardianPostPayload: Record<string, unknown> | null = null;
+    const calls: string[] = [];
+    let addPayload: Record<string, unknown> | null = null;
 
     await page.addInitScript((selectedId) => {
       window.localStorage.setItem('token', 'e2e-token');
@@ -227,21 +246,27 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
         return;
       }
 
+      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians/guardian-doc-1` && method === 'DELETE') {
+        calls.push('DELETE');
+        player = { ...player, guardians: [] };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+        return;
+      }
+
       if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
-        guardianPostPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+        calls.push('POST');
+        addPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-2',
+              id: 'guardian-doc-2',
               groupId,
-              firstName: String(guardianPostPayload.firstName ?? ''),
-              lastName: String(guardianPostPayload.lastName ?? ''),
-              email: guardianPostPayload.email ? String(guardianPostPayload.email) : undefined,
+              firstName: String(addPayload.firstName ?? ''),
+              lastName: String(addPayload.lastName ?? ''),
             },
           ],
         };
-
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
         return;
       }
@@ -256,27 +281,24 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
     await page.goto(`/players/${playerId}`);
     await pause(900);
 
-    await expect(page.getByText('Guardians (0)')).toBeVisible();
-    await page.getByRole('button', { name: 'Add Guardian' }).click();
+    await expect(page.getByText('Pat Doe')).toBeVisible();
+    await page.getByRole('button', { name: 'Edit' }).nth(1).click();
 
-    await expect(page.getByRole('heading', { name: 'Assign Guardian' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Edit Guardian' })).toBeVisible();
     await page.getByRole('radio', { name: 'Documented only' }).check();
-    await page.getByLabel('First Name').fill('Pat');
-    await page.getByLabel('Last Name').fill('Doe');
-    await page.getByLabel('Email (optional)').fill('pat.doe@example.com');
+    await page.getByLabel('First Name').fill('Patricia');
+    await page.getByLabel('Last Name').fill('Doe-Smith');
 
-    await page.getByRole('button', { name: 'Assign' }).click();
+    await page.getByRole('button', { name: 'Save' }).click();
     await pause(700);
 
-    await expect(page.getByRole('heading', { name: 'Assign Guardian' })).not.toBeVisible();
-    await expect(page.getByText('Guardians (1)')).toBeVisible();
-    await expect(page.getByText('Pat Doe')).toBeVisible();
-    await expect(page.getByText('pat.doe@example.com')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Edit Guardian' })).not.toBeVisible();
+    await expect(page.getByText('Patricia Doe-Smith')).toBeVisible();
 
-    expect(guardianPostPayload).toEqual({
-      firstName: 'Pat',
-      lastName: 'Doe',
-      email: 'pat.doe@example.com',
+    expect(calls).toEqual(['DELETE', 'POST']);
+    expect(addPayload).toEqual({
+      firstName: 'Patricia',
+      lastName: 'Doe-Smith',
     });
   });
 });

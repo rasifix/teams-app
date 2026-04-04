@@ -120,6 +120,12 @@ interface AppState {
   deletePlayer: (id: string) => Promise<boolean>;
   addGuardianToPlayer: (playerId: string, guardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>) => Promise<boolean>;
   deleteGuardianFromPlayer: (playerId: string, guardianId: string) => Promise<boolean>;
+  editGuardianForPlayer: (
+    playerId: string,
+    guardianId: string,
+    guardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>,
+    previousGuardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>
+  ) => Promise<boolean>;
   
   // Event mutations
   addEvent: (eventData: Omit<Event, 'id'>) => Promise<boolean>;
@@ -490,6 +496,43 @@ export const useStore = create<AppState>()(
           return true;
         } catch (error) {
           console.error('Failed to delete guardian from player:', error);
+          return false;
+        }
+      },
+
+      editGuardianForPlayer: async (playerId, guardianId, guardianData, previousGuardianData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          await deleteGuardianFromPlayerService(currentGroup.id, playerId, guardianId);
+        } catch (error) {
+          console.error('Failed to delete guardian before edit:', error);
+          return false;
+        }
+
+        try {
+          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, guardianData);
+          const currentPlayers = get().players;
+          const updatedPlayers = currentPlayers.map((player) =>
+            player.id === playerId ? { ...player, ...updatedPlayer } : player
+          );
+          set({ players: sortPlayers(updatedPlayers) });
+          return true;
+        } catch (error) {
+          console.error('Failed to add edited guardian, attempting rollback:', error);
+
+          try {
+            const rollbackPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, previousGuardianData);
+            const currentPlayers = get().players;
+            const updatedPlayers = currentPlayers.map((player) =>
+              player.id === playerId ? { ...player, ...rollbackPlayer } : player
+            );
+            set({ players: sortPlayers(updatedPlayers) });
+          } catch (rollbackError) {
+            console.error('Failed to rollback guardian edit:', rollbackError);
+          }
+
           return false;
         }
       },

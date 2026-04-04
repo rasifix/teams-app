@@ -25,6 +25,7 @@ be described in files grouped in subfolders per category.
 * UC-EV-002 - invite players
 * UC-EV-003 - select players for teams
 * UC-EV-004 - change invitation status
+* UC-EV-005 - assign shirt set
 
 ## Statistics
 

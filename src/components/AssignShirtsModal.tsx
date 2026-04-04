@@ -8,6 +8,7 @@ interface AssignShirtsModalProps {
   onClose: () => void;
   onSave: (shirtSetId: string, playerShirtAssignments: Array<{ playerId: string; shirtNumber: number }>) => void;
   team: Team;
+  eventTeams: Team[];
   players: Player[];
   shirtSets: ShirtSet[];
   currentShirtSetId?: string;
@@ -19,6 +20,7 @@ export default function AssignShirtsModal({
   onClose,
   onSave,
   team,
+  eventTeams,
   players,
   shirtSets,
   currentShirtSetId,
@@ -27,6 +29,7 @@ export default function AssignShirtsModal({
   const [selectedShirtSetId, setSelectedShirtSetId] = useState<string>(currentShirtSetId || '');
   const [selectedShirtSet, setSelectedShirtSet] = useState<ShirtSet | null>(null);
   const [playerShirtAssignments, setPlayerShirtAssignments] = useState<Array<{ playerId: string; shirtNumber: number }>>([]);
+  const [usedShirtsInOtherTeams, setUsedShirtsInOtherTeams] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     setSelectedShirtSetId(currentShirtSetId || '');
@@ -37,8 +40,23 @@ export default function AssignShirtsModal({
       const shirtSet = shirtSets.find(s => s.id === selectedShirtSetId) || null;
       setSelectedShirtSet(shirtSet);
 
+      const usedInOtherTeams = new Set<number>();
+      eventTeams.forEach(eventTeam => {
+        if (eventTeam.id === team.id || eventTeam.shirtSetId !== selectedShirtSetId) {
+          return;
+        }
+
+        eventTeam.shirtAssignments?.forEach(assignment => {
+          if (assignment.shirtNumber > 0) {
+            usedInOtherTeams.add(assignment.shirtNumber);
+          }
+        });
+      });
+      setUsedShirtsInOtherTeams(usedInOtherTeams);
+
       if (!shirtSet) {
         setPlayerShirtAssignments([]);
+        setUsedShirtsInOtherTeams(new Set());
         return;
       }
 
@@ -56,7 +74,8 @@ export default function AssignShirtsModal({
         if (
           existingAssignment &&
           shirtNumbersInSet.has(existingAssignment.shirtNumber) &&
-          !usedShirtNumbers.has(existingAssignment.shirtNumber)
+          !usedShirtNumbers.has(existingAssignment.shirtNumber) &&
+          !usedInOtherTeams.has(existingAssignment.shirtNumber)
         ) {
           usedShirtNumbers.add(existingAssignment.shirtNumber);
           return {
@@ -69,7 +88,8 @@ export default function AssignShirtsModal({
         if (
           preferredShirtNumber &&
           shirtNumbersInSet.has(preferredShirtNumber) &&
-          !usedShirtNumbers.has(preferredShirtNumber)
+          !usedShirtNumbers.has(preferredShirtNumber) &&
+          !usedInOtherTeams.has(preferredShirtNumber)
         ) {
           usedShirtNumbers.add(preferredShirtNumber);
           return {
@@ -88,8 +108,9 @@ export default function AssignShirtsModal({
     } else {
       setSelectedShirtSet(null);
       setPlayerShirtAssignments([]);
+      setUsedShirtsInOtherTeams(new Set());
     }
-  }, [selectedShirtSetId, currentShirtSetId, team.selectedPlayers, currentShirtAssignments, shirtSets, players]);
+  }, [selectedShirtSetId, currentShirtSetId, team.id, team.selectedPlayers, currentShirtAssignments, shirtSets, players, eventTeams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +138,10 @@ export default function AssignShirtsModal({
     return playerShirtAssignments.some(assignment => 
       assignment.shirtNumber === shirtNumber && assignment.playerId !== currentPlayerId && assignment.shirtNumber > 0
     );
+  };
+
+  const isShirtUsedInOtherTeams = (shirtNumber: number) => {
+    return usedShirtsInOtherTeams.has(shirtNumber);
   };
 
   return (
@@ -174,7 +199,7 @@ export default function AssignShirtsModal({
                               <option 
                                 key={shirt.number} 
                                 value={shirt.number}
-                                disabled={isShirtAssigned(shirt.number, playerId)}
+                                disabled={isShirtAssigned(shirt.number, playerId) || isShirtUsedInOtherTeams(shirt.number)}
                               >
                                 #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? '(GK)' : ''}
                               </option>
@@ -185,6 +210,12 @@ export default function AssignShirtsModal({
                     );
                   })}
                 </div>
+
+                {usedShirtsInOtherTeams.size > 0 && (
+                  <p className="text-xs text-gray-600 mt-2">
+                    Shirts already used in other teams for this event are disabled.
+                  </p>
+                )}
 
                 {team.selectedPlayers.length === 0 && (
                   <p className="text-gray-500 text-center py-4">

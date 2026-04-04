@@ -172,6 +172,32 @@ export default function EventDetailPage() {
   const handleSaveShirtAssignments = async (shirtSetId: string, playerShirtAssignments: Array<{ playerId: string; shirtNumber: number }>) => {
     if (!event || !id || !assigningShirtsTeam) return;
 
+    const assignedNumbers = playerShirtAssignments.map(assignment => assignment.shirtNumber);
+    const uniqueAssignedNumbers = new Set(assignedNumbers);
+    if (uniqueAssignedNumbers.size !== assignedNumbers.length) {
+      alert('Each shirt number can only be assigned once per team.');
+      return;
+    }
+
+    const usedInOtherTeams = new Set<number>();
+    event.teams.forEach(team => {
+      if (team.id === assigningShirtsTeam.id || team.shirtSetId !== shirtSetId) {
+        return;
+      }
+
+      team.shirtAssignments?.forEach(assignment => {
+        if (assignment.shirtNumber > 0) {
+          usedInOtherTeams.add(assignment.shirtNumber);
+        }
+      });
+    });
+
+    const conflictingNumber = assignedNumbers.find(number => usedInOtherTeams.has(number));
+    if (conflictingNumber !== undefined) {
+      alert(`Shirt #${conflictingNumber} is already assigned in another team for this event.`);
+      return;
+    }
+
     // Update the team with the new shirt set and individual shirt assignments
     const updatedTeams = event.teams.map(team =>
       team.id === assigningShirtsTeam.id 
@@ -654,6 +680,7 @@ export default function EventDetailPage() {
           onClose={() => setIsAssignShirtsModalOpen(false)}
           onSave={handleSaveShirtAssignments}
           team={assigningShirtsTeam}
+          eventTeams={event.teams}
           players={players}
           shirtSets={shirtSets}
           currentShirtSetId={assigningShirtsTeam?.shirtSetId}

@@ -14,7 +14,8 @@ interface AddTrainerModalProps {
 export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, editingTrainer }: AddTrainerModalProps) {
   const [formData, setFormData] = useState({
     firstName: '',
-    lastName: ''
+    lastName: '',
+    email: ''
   });
 
   const isEditMode = Boolean(editingTrainer);
@@ -24,12 +25,14 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
     if (editingTrainer) {
       setFormData({
         firstName: editingTrainer.firstName,
-        lastName: editingTrainer.lastName
+        lastName: editingTrainer.lastName,
+        email: editingTrainer.email ?? ''
       });
     } else {
       setFormData({
         firstName: '',
-        lastName: ''
+        lastName: '',
+        email: ''
       });
     }
   }, [editingTrainer]);
@@ -37,17 +40,24 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.firstName.trim() && formData.lastName.trim()) {
+      const trainerPayload: Omit<Trainer, 'id'> = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        ...(formData.email.trim() ? { email: formData.email.trim() } : {}),
+      };
+
       if (isEditMode && editingTrainer && onUpdate) {
-        onUpdate(editingTrainer.id, formData);
+        onUpdate(editingTrainer.id, trainerPayload);
       } else {
-        onSave(formData);
+        onSave(trainerPayload);
       }
       
       // Reset form only if not editing
       if (!isEditMode) {
         setFormData({
           firstName: '',
-          lastName: ''
+          lastName: '',
+          email: ''
         });
       }
     }
@@ -101,6 +111,21 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 required
                 className="form-input"
                 placeholder="Enter last name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="form-label">
+                Email (optional)
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Enter email address"
               />
             </div>
           </div>

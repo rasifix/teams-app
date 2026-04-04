@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { Player, Trainer } from '../types';
+import type { Guardian, Player, Trainer } from '../types';
 
 export interface MembersResponse {
   players: Player[];
@@ -59,6 +59,27 @@ export async function getPlayerById(groupId: string, id: string): Promise<Player
     }
     throw error;
   }
+}
+
+export type CreateGuardianPayload = Pick<Guardian, 'firstName' | 'lastName' | 'email'>;
+
+export async function addGuardianToPlayer(groupId: string, playerId: string, guardianData: CreateGuardianPayload): Promise<Player> {
+  return apiClient.request<Player>(
+    apiClient.getGroupEndpoint(groupId, `/members/${playerId}/guardians`),
+    {
+      method: 'POST',
+      body: JSON.stringify(guardianData),
+    }
+  );
+}
+
+export async function deleteGuardianFromPlayer(groupId: string, playerId: string, guardianId: string): Promise<Player> {
+  return apiClient.request<Player>(
+    apiClient.getGroupEndpoint(groupId, `/members/${playerId}/guardians/${guardianId}`),
+    {
+      method: 'DELETE',
+    }
+  );
 }
 
 // Trainer-specific operations

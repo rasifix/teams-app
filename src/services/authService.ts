@@ -5,6 +5,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  roles?: string[];
+  groupRoles?: Record<string, string[]>;
 }
 
 export interface AuthResponse {

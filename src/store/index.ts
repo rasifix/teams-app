@@ -25,6 +25,8 @@ export const usePlayers = () => {
   const addPlayer = useStore((state) => state.addPlayer);
   const updatePlayer = useStore((state) => state.updatePlayer);
   const deletePlayer = useStore((state) => state.deletePlayer);
+  const addGuardianToPlayer = useStore((state) => state.addGuardianToPlayer);
+  const deleteGuardianFromPlayer = useStore((state) => state.deleteGuardianFromPlayer);
   
   return {
     players,
@@ -33,6 +35,8 @@ export const usePlayers = () => {
     addPlayer,
     updatePlayer,
     deletePlayer,
+    addGuardianToPlayer,
+    deleteGuardianFromPlayer,
   };
 };
 

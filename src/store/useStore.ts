@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
-import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
+import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addGuardianToPlayer as addGuardianToPlayerService, deleteGuardianFromPlayer as deleteGuardianFromPlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
@@ -118,6 +118,8 @@ interface AppState {
   addPlayer: (playerData: Omit<Player, 'id'>) => Promise<boolean>;
   updatePlayer: (id: string, playerData: Partial<Player>) => Promise<boolean>;
   deletePlayer: (id: string) => Promise<boolean>;
+  addGuardianToPlayer: (playerId: string, guardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>) => Promise<boolean>;
+  deleteGuardianFromPlayer: (playerId: string, guardianId: string) => Promise<boolean>;
   
   // Event mutations
   addEvent: (eventData: Omit<Event, 'id'>) => Promise<boolean>;
@@ -452,6 +454,42 @@ export const useStore = create<AppState>()(
           return true;
         } catch (error) {
           console.error('Failed to delete player:', error);
+          return false;
+        }
+      },
+
+      addGuardianToPlayer: async (playerId, guardianData) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, guardianData);
+          const currentPlayers = get().players;
+          const updatedPlayers = currentPlayers.map((player) =>
+            player.id === playerId ? { ...player, ...updatedPlayer } : player
+          );
+          set({ players: sortPlayers(updatedPlayers) });
+          return true;
+        } catch (error) {
+          console.error('Failed to add guardian to player:', error);
+          return false;
+        }
+      },
+
+      deleteGuardianFromPlayer: async (playerId, guardianId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedPlayer = await deleteGuardianFromPlayerService(currentGroup.id, playerId, guardianId);
+          const currentPlayers = get().players;
+          const updatedPlayers = currentPlayers.map((player) =>
+            player.id === playerId ? { ...player, ...updatedPlayer } : player
+          );
+          set({ players: sortPlayers(updatedPlayers) });
+          return true;
+        } catch (error) {
+          console.error('Failed to delete guardian from player:', error);
           return false;
         }
       },

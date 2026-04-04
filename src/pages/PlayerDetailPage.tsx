@@ -1,12 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
-import { useEvents, usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
-import type { Period, Player, PlayerEventHistoryItem } from '../types';
+import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup } from '../store';
+import type { Guardian, Period, Player, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
+import ManageGuardiansModal from '../components/ManageGuardiansModal';
+import { useAuth } from '../hooks/useAuth';
+import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
 
 interface GroupedPlayerEventHistory {
   id: string;
@@ -64,7 +67,10 @@ export default function PlayerDetailPage() {
   
   // Use store hooks
   const { events } = useEvents();
-  const { updatePlayer, deletePlayer, getPlayerById } = usePlayers();
+  const { updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer } = usePlayers();
+  const { trainers } = useTrainers();
+  const group = useGroup();
+  const { user } = useAuth();
   const groupPeriods = useGroupPeriods();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -72,6 +78,9 @@ export default function PlayerDetailPage() {
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isGuardianModalOpen, setIsGuardianModalOpen] = useState(false);
+  const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(null);
+  const [guardianActionError, setGuardianActionError] = useState<string | null>(null);
 
   // Get player from store
   const player = id ? getPlayerById(id) : null;
@@ -111,6 +120,10 @@ export default function PlayerDetailPage() {
       </div>
     );
   }
+
+  const guardians = player.guardians || [];
+  const canManagePlayerGuardians = canManageGuardians(user, group?.id);
+  const underageForGuardianAssignment = isPlayerUnderage(player);
 
   // Prepare player event history data
   const playerEventHistory: PlayerEventHistoryItem[] = events
@@ -224,6 +237,35 @@ export default function PlayerDetailPage() {
     setIsDeleteConfirmOpen(false);
   };
 
+  const handleAssignGuardian = async (guardian: Guardian): Promise<boolean> => {
+    setGuardianActionError(null);
+    const success = await addGuardianToPlayer(player.id, {
+      firstName: guardian.firstName,
+      lastName: guardian.lastName,
+      email: guardian.email,
+    });
+    if (!success) {
+      setGuardianActionError('Failed to assign guardian. Please try again.');
+      return false;
+    }
+    return true;
+  };
+
+  const confirmRemoveGuardian = async () => {
+    if (!guardianToRemove) {
+      return;
+    }
+
+    setGuardianActionError(null);
+    const success = await deleteGuardianFromPlayer(player.id, guardianToRemove.id);
+    if (!success) {
+      setGuardianActionError('Failed to remove guardian. Please try again.');
+      return;
+    }
+
+    setGuardianToRemove(null);
+  };
+
   return (
     <div className="page-container lg:px-4 px-0">
       {/* Sub Navigation */}
@@ -268,6 +310,74 @@ export default function PlayerDetailPage() {
           </span>
         )}
         <Level level={player.level} />
+      </div>
+
+      <div className="lg:mb-6">
+        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+          <CardBody className="lg:p-6 p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <CardTitle className="mb-0">Guardians ({guardians.length})</CardTitle>
+              <button
+                onClick={() => {
+                  setGuardianActionError(null);
+                  setIsGuardianModalOpen(true);
+                }}
+                className="btn-primary btn-sm"
+                disabled={!canManagePlayerGuardians || !underageForGuardianAssignment}
+                title={!canManagePlayerGuardians
+                  ? 'Only group managers can assign guardians.'
+                  : (!underageForGuardianAssignment ? 'Guardians can only be assigned to underage players.' : 'Assign guardian')}
+              >
+                Add Guardian
+              </button>
+            </div>
+
+            {!canManagePlayerGuardians && (
+              <div className="mb-3 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
+                Only group managers can assign or remove guardians.
+              </div>
+            )}
+
+            {!underageForGuardianAssignment && (
+              <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                Guardian assignment is available only for underage players.
+              </div>
+            )}
+
+            {guardianActionError && (
+              <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {guardianActionError}
+              </div>
+            )}
+
+            {guardians.length === 0 ? (
+              <p className="text-sm text-gray-500">No guardians assigned yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {guardians.map((guardian) => (
+                  <div key={guardian.id} className="border border-gray-200 rounded-lg p-3 bg-white">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {guardian.firstName} {guardian.lastName}
+                      </p>
+                      {guardian.email && (
+                        <p className="text-xs text-gray-500 mt-1">{guardian.email}</p>
+                      )}
+                    </div>
+                    {canManagePlayerGuardians && (
+                      <button
+                        onClick={() => setGuardianToRemove(guardian)}
+                        className="mt-3 text-red-600 hover:text-red-700 text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardBody>
+        </Card>
       </div>
 
       <div>
@@ -329,12 +439,31 @@ export default function PlayerDetailPage() {
         editingPlayer={player}
       />
 
+      <ManageGuardiansModal
+        isOpen={isGuardianModalOpen}
+        onClose={() => setIsGuardianModalOpen(false)}
+        guardians={guardians}
+        trainers={trainers}
+        onAssign={handleAssignGuardian}
+      />
+
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
         title="Delete Player"
         message={`Are you sure you want to delete ${player.firstName} ${player.lastName}? This action cannot be undone.`}
         onConfirm={confirmDeletePlayer}
         onCancel={cancelDeletePlayer}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(guardianToRemove)}
+        title="Remove Guardian"
+        message={`Are you sure you want to remove ${guardianToRemove?.firstName} ${guardianToRemove?.lastName} from this player?`}
+        confirmText="Remove"
+        cancelText="Cancel"
+        onConfirm={confirmRemoveGuardian}
+        onCancel={() => setGuardianToRemove(null)}
+        confirmButtonColor="red"
       />
     </div>
   );

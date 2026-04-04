@@ -29,6 +29,18 @@ export interface Player {
   birthDate?: string; // ISO date string
   level: number; // 1-5
   preferredShirtNumber?: number;
+  guardians?: Guardian[];
+}
+
+export interface Guardian {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  relationship?: string;
+  userId?: string;
+  isDocumentedOnly?: boolean;
 }
 
 export interface Team {
@@ -93,6 +105,7 @@ export interface Trainer {
   id: string;
   firstName: string;
   lastName: string;
+  email?: string;
 }
 
 // Auto-selection algorithm types

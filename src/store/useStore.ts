@@ -1,12 +1,12 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups, getGroup, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
+import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 
 // Helper function to sort players alphabetically by lastName + firstName
@@ -63,6 +63,10 @@ const sortPeriods = (periods: Period[]): Period[] => {
   });
 };
 
+const sortGroups = (groups: Group[]): Group[] => {
+  return [...groups].sort((a, b) => a.name.localeCompare(b.name));
+};
+
 const EMPTY_PERIODS: Period[] = [];
 
 interface AppState {
@@ -100,6 +104,7 @@ interface AppState {
   
   // Actions
   loadGroups: () => Promise<void>;
+  addGroup: (groupData: CreateGroupRequest) => Promise<Group | null>;
   selectGroup: (groupId: string) => Promise<void>;
   selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
@@ -325,13 +330,34 @@ export const useStore = create<AppState>()(
         
         try {
           const groups = await getGroups();
-          set({ groups, loading: { ...get().loading, groups: false } });
+          set({ groups: sortGroups(groups), loading: { ...get().loading, groups: false } });
         } catch (error) {
           console.error('Failed to load groups:', error);
           set({ 
             loading: { ...get().loading, groups: false }, 
             errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to load groups' }
           });
+        }
+      },
+
+      addGroup: async (groupData) => {
+        set({ loading: { ...get().loading, groups: true }, errors: { ...get().errors, groups: null } });
+
+        try {
+          const newGroup = await createGroupService(groupData);
+          const updatedGroups = sortGroups([...get().groups, newGroup]);
+          set({
+            groups: updatedGroups,
+            loading: { ...get().loading, groups: false },
+          });
+          return newGroup;
+        } catch (error) {
+          console.error('Failed to add group:', error);
+          set({
+            loading: { ...get().loading, groups: false },
+            errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to add group' },
+          });
+          return null;
         }
       },
       

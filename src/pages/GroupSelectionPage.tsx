@@ -1,13 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore, useGroups, useGroupsLoading, useGroupsError } from '../store/useStore';
+import AddGroupModal from '../components/AddGroupModal';
+import type { CreateGroupRequest } from '../types';
 
 export default function GroupSelectionPage() {
   const navigate = useNavigate();
-  const { loadGroups, selectGroup } = useStore();
+  const { loadGroups, addGroup, selectGroup, initializeApp } = useStore();
   const groups = useGroups();
   const loading = useGroupsLoading();
   const error = useGroupsError();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     loadGroups();
@@ -16,7 +21,25 @@ export default function GroupSelectionPage() {
 
   const handleGroupSelect = async (groupId: string) => {
     await selectGroup(groupId);
+    await initializeApp();
     navigate('/');
+  };
+
+  const handleCreateGroup = async (groupData: CreateGroupRequest) => {
+    setIsSubmitting(true);
+    setCreateError(null);
+    try {
+      const newGroup = await addGroup(groupData);
+      if (!newGroup) {
+        setCreateError(useStore.getState().errors.groups || 'Failed to create group. Please try again.');
+        return;
+      }
+
+      setIsAddModalOpen(false);
+      await handleGroupSelect(newGroup.id);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -30,7 +53,7 @@ export default function GroupSelectionPage() {
     );
   }
 
-  if (error) {
+  if (error && (!groups || groups.length === 0)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md">
@@ -59,6 +82,14 @@ export default function GroupSelectionPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Select Your Group</h1>
           <p className="text-gray-600">Choose the group you want to work with</p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setIsAddModalOpen(true)}
+          className="w-full mb-5 bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg text-sm font-medium"
+        >
+          Create New Group
+        </button>
 
         <div className="space-y-3">
           {groups?.map((group) => (
@@ -91,6 +122,17 @@ export default function GroupSelectionPage() {
           </div>
         )}
       </div>
+
+      <AddGroupModal
+        isOpen={isAddModalOpen}
+        isSubmitting={isSubmitting}
+        error={createError}
+        onClose={() => {
+          setCreateError(null);
+          setIsAddModalOpen(false);
+        }}
+        onSave={handleCreateGroup}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { Group, Period } from '../types';
+import type { CreateGroupRequest, Group, Period } from '../types';
 
 /**
  * Service layer for group data operations.
@@ -20,6 +20,15 @@ export async function getGroup(groupId: string): Promise<Group> {
 export async function getGroups(): Promise<Group[]> {
   const groups = await apiClient.request<Group[]>('/api/groups');
   return groups.map(normalizeGroup);
+}
+
+export async function createGroup(groupData: CreateGroupRequest): Promise<Group> {
+  const group = await apiClient.request<Group>('/api/groups', {
+    method: 'POST',
+    body: JSON.stringify(groupData),
+  });
+
+  return normalizeGroup(group);
 }
 
 interface GroupPeriodPayload {

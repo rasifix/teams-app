@@ -9,7 +9,16 @@ export interface Group {
   id: string;
   name: string;
   club?: string;
+  description?: string;
   periods: Period[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateGroupRequest {
+  name: string;
+  club?: string;
+  description?: string;
 }
 
 export interface Player {

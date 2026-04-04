@@ -1,8 +1,61 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AddGroupModal from '../components/AddGroupModal';
+import { useGroup, useGroups, useGroupsError, useGroupsLoading, useStore } from '../store/useStore';
+import type { CreateGroupRequest } from '../types';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
+  const { addGroup, selectGroup, initializeApp, loadGroups } = useStore();
+  const group = useGroup();
+  const groups = useGroups();
+  const groupsLoading = useGroupsLoading();
+  const groupsError = useGroupsError();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [switchingGroupId, setSwitchingGroupId] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadGroups();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  const handleCreateGroup = async (groupData: CreateGroupRequest) => {
+    setIsSubmitting(true);
+    setCreateError(null);
+
+    try {
+      const newGroup = await addGroup(groupData);
+      if (!newGroup) {
+        setCreateError(useStore.getState().errors.groups || 'Failed to create group. Please try again.');
+        return;
+      }
+
+      await selectGroup(newGroup.id);
+      await initializeApp();
+      setIsAddModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGroupSwitch = async (groupId: string) => {
+    if (group?.id === groupId || switchingGroupId) {
+      return;
+    }
+
+    setSwitchingGroupId(groupId);
+    try {
+      await selectGroup(groupId);
+      await initializeApp();
+    } finally {
+      setSwitchingGroupId(null);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -10,9 +63,62 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Welcome to My Teams
         </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          Fair soccer team selection made easy
-        </p>
+
+        {isAuthenticated && (
+          <div className="max-w-3xl mx-auto mb-12 text-left">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Groups</h2>
+
+            {groupsLoading && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 text-gray-600">
+                Loading groups...
+              </div>
+            )}
+
+            {!groupsLoading && groupsError && (
+              <div className="bg-red-50 rounded-lg border border-red-200 p-4 text-red-700">
+                Failed to load groups: {groupsError}
+              </div>
+            )}
+
+            {!groupsLoading && !groupsError && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {groups.map((groupItem) => {
+                  const isCurrentGroup = group?.id === groupItem.id;
+                  const isSwitching = switchingGroupId === groupItem.id;
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => handleGroupSwitch(groupItem.id)}
+                      disabled={isCurrentGroup || !!switchingGroupId}
+                      key={groupItem.id}
+                      className={`rounded-lg border p-4 bg-white text-left transition-colors ${
+                        isCurrentGroup
+                          ? 'border-orange-400 cursor-default'
+                          : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                      }`}
+                    >
+                      <p className="font-medium text-gray-900">{groupItem.name}</p>
+                      {groupItem.club && (
+                        <p className="text-sm text-gray-600 mt-1">Club: {groupItem.club}</p>
+                      )}
+                      {isSwitching && (
+                        <p className="text-xs text-gray-500 mt-2">Switching group...</p>
+                      )}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="rounded-lg border border-dashed border-orange-300 p-4 bg-orange-50 text-left hover:bg-orange-100 transition-colors"
+                >
+                  <p className="font-medium text-orange-800">Create a new group</p>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         
         {!isAuthenticated && (
           <div className="flex gap-4 justify-center mb-12">
@@ -108,6 +214,17 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      <AddGroupModal
+        isOpen={isAddModalOpen}
+        isSubmitting={isSubmitting}
+        error={createError}
+        onClose={() => {
+          setCreateError(null);
+          setIsAddModalOpen(false);
+        }}
+        onSave={handleCreateGroup}
+      />
     </div>
   );
 }

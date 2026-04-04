@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { getSelectedGroupId } from '../utils/localStorage';
 import { 
   useStore, 
   useAppInitialized, 
@@ -7,9 +8,31 @@ import {
   useAppHasErrors, 
   useAppErrors
 } from '../store/useStore';
+import type { Group } from '../types';
 
 interface AppInitializerProps {
   children: ReactNode;
+}
+
+function getNewestGroup(groups: Group[]): Group | null {
+  if (groups.length === 0) {
+    return null;
+  }
+
+  const withTimestamp = groups
+    .map((group) => ({
+      group,
+      timestamp: Date.parse(group.createdAt ?? group.updatedAt ?? ''),
+    }))
+    .filter((item) => !Number.isNaN(item.timestamp));
+
+  if (withTimestamp.length === 0) {
+    return groups[groups.length - 1];
+  }
+
+  return withTimestamp.reduce((latest, current) => (
+    current.timestamp > latest.timestamp ? current : latest
+  )).group;
 }
 
 export default function AppInitializer({ children }: AppInitializerProps) {
@@ -18,7 +41,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
-  const { selectGroup, initializeApp } = useStore();
+  const { selectGroup, initializeApp, loadGroups } = useStore();
   
   // Use ref to prevent duplicate initialization
   const initTriggered = useRef(false);
@@ -31,12 +54,36 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    // Auto-select group "1" and initialize app when authenticated
+    // Load groups, resolve selection, and initialize app when authenticated
     if (isAuthenticated && !isInitialized && !isLoading && !initTriggered.current) {
       initTriggered.current = true;
-      // Select the default group "1"
-      selectGroup("1").then(() => {
-        initializeApp();
+
+      const initializeWithGroupSelection = async () => {
+        await loadGroups();
+
+        const groups = useStore.getState().groups;
+        if (groups.length === 0) {
+          return;
+        }
+
+        const savedGroupId = getSelectedGroupId();
+        const savedGroupExists = !!savedGroupId && groups.some((group) => group.id === savedGroupId);
+
+        let groupToSelect: Group;
+        if (groups.length === 1) {
+          groupToSelect = groups[0];
+        } else if (savedGroupExists) {
+          groupToSelect = groups.find((group) => group.id === savedGroupId)!;
+        } else {
+          groupToSelect = getNewestGroup(groups) ?? groups[0];
+        }
+
+        await selectGroup(groupToSelect.id);
+        await initializeApp();
+      };
+
+      initializeWithGroupSelection().catch((error) => {
+        console.error('Failed to initialize app with group selection:', error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

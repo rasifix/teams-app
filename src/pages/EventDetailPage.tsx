@@ -13,6 +13,7 @@ import TeamPrintSummary from '../components/TeamPrintSummary';
 import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
+import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,6 +70,14 @@ export default function EventDetailPage() {
   const [swipedTeamId, setSwipedTeamId] = useState<string | null>(null);
   const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
   const [isSwipeGesture, setIsSwipeGesture] = useState(false);
+
+  const usedShirtNumbersBySetId = useMemo(() => {
+    if (!event || !assigningShirtsTeam) {
+      return {} as Record<string, number[]>;
+    }
+
+    return getUsedShirtNumbersBySetId(event.teams, assigningShirtsTeam.id);
+  }, [event, assigningShirtsTeam]);
 
   const handleAddTeam = async () => {
     if (!event || !id) return;
@@ -680,7 +689,7 @@ export default function EventDetailPage() {
           onClose={() => setIsAssignShirtsModalOpen(false)}
           onSave={handleSaveShirtAssignments}
           team={assigningShirtsTeam}
-          eventTeams={event.teams}
+          usedShirtNumbersBySetId={usedShirtNumbersBySetId}
           players={players}
           shirtSets={shirtSets}
           currentShirtSetId={assigningShirtsTeam?.shirtSetId}

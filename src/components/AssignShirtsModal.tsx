@@ -8,7 +8,7 @@ interface AssignShirtsModalProps {
   onClose: () => void;
   onSave: (shirtSetId: string, playerShirtAssignments: Array<{ playerId: string; shirtNumber: number }>) => void;
   team: Team;
-  eventTeams: Team[];
+  usedShirtNumbersBySetId: Record<string, number[]>;
   players: Player[];
   shirtSets: ShirtSet[];
   currentShirtSetId?: string;
@@ -20,7 +20,7 @@ export default function AssignShirtsModal({
   onClose,
   onSave,
   team,
-  eventTeams,
+  usedShirtNumbersBySetId,
   players,
   shirtSets,
   currentShirtSetId,
@@ -40,18 +40,7 @@ export default function AssignShirtsModal({
       const shirtSet = shirtSets.find(s => s.id === selectedShirtSetId) || null;
       setSelectedShirtSet(shirtSet);
 
-      const usedInOtherTeams = new Set<number>();
-      eventTeams.forEach(eventTeam => {
-        if (eventTeam.id === team.id || eventTeam.shirtSetId !== selectedShirtSetId) {
-          return;
-        }
-
-        eventTeam.shirtAssignments?.forEach(assignment => {
-          if (assignment.shirtNumber > 0) {
-            usedInOtherTeams.add(assignment.shirtNumber);
-          }
-        });
-      });
+      const usedInOtherTeams = new Set<number>(usedShirtNumbersBySetId[selectedShirtSetId] ?? []);
       setUsedShirtsInOtherTeams(usedInOtherTeams);
 
       if (!shirtSet) {
@@ -110,7 +99,7 @@ export default function AssignShirtsModal({
       setPlayerShirtAssignments([]);
       setUsedShirtsInOtherTeams(new Set());
     }
-  }, [selectedShirtSetId, currentShirtSetId, team.id, team.selectedPlayers, currentShirtAssignments, shirtSets, players, eventTeams]);
+  }, [selectedShirtSetId, currentShirtSetId, team.selectedPlayers, currentShirtAssignments, shirtSets, players, usedShirtNumbersBySetId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

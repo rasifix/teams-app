@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useEvents, usePlayers, useTrainers, useShirtSets } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
@@ -7,6 +7,7 @@ import Strength from '../components/Strength';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
+import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 
 export default function TeamDetailPage() {
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
@@ -28,6 +29,13 @@ export default function TeamDetailPage() {
   const trainer = team?.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = players.filter(p => team?.selectedPlayers?.includes(p.id));
+  const usedShirtNumbersBySetId = useMemo(() => {
+    if (!event || !team) {
+      return {} as Record<string, number[]>;
+    }
+
+    return getUsedShirtNumbersBySetId(event.teams, team.id);
+  }, [event, team]);
   
   const handleRemovePlayer = async () => {
     if (!event || !eventId || !team || !playerToRemove) return;
@@ -296,6 +304,7 @@ export default function TeamDetailPage() {
             onClose={() => setIsAssignShirtsModalOpen(false)}
             onSave={handleAssignShirts}
             team={team}
+            usedShirtNumbersBySetId={usedShirtNumbersBySetId}
             players={selectedPlayers}
             shirtSets={shirtSets}
             currentShirtSetId={team.shirtSetId}

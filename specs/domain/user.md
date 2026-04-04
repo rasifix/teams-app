@@ -21,7 +21,7 @@ matches. See [player](player.md) for details.
 ### Guardian
 
 A guardian is for example the father or mother of a player. He can answer
-in the name of his child.
+invitations in the name of his child.
 
 ### Coach
 

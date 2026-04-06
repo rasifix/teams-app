@@ -2,10 +2,10 @@ import { useOutletContext } from 'react-router-dom';
 import type { Player } from '../types';
 import PlayerStatisticsTable from '../components/PlayerStatisticsTable';
 import type { Event } from '../types';
-import { usePlayers } from '../hooks/usePlayers';
 
 interface StatisticsOutletContext {
   filteredEvents: Event[];
+  statisticsPlayers: Player[];
 }
 
 interface PlayerStats {
@@ -18,11 +18,10 @@ interface PlayerStats {
 }
 
 export default function PlayerStatisticsPage() {
-  const { filteredEvents } = useOutletContext<StatisticsOutletContext>();
-  const { players } = usePlayers();
+  const { filteredEvents, statisticsPlayers } = useOutletContext<StatisticsOutletContext>();
 
   // Calculate stats directly in render - no useEffect needed!
-  const playerStats: PlayerStats[] = players.map(player => {
+  const playerStats: PlayerStats[] = statisticsPlayers.map(player => {
     // Count invitations
     const invitedCount = filteredEvents.filter(event =>
       event.invitations.some(inv => inv.playerId === player.id)

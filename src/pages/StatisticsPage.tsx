@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEvents } from '../hooks/useEvents';
 import { usePlayers } from '../hooks/usePlayers';
-import type { Period, Player } from '../types';
+import type { Event, Period, Player } from '../types';
 import { SummaryCard, SummaryCardContent } from '../components/ui';
 import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
@@ -18,6 +18,12 @@ interface PlayerStats {
   selectionRate: number;
 }
 
+interface StatisticsOutletContext {
+  filteredEvents: Event[];
+  statisticsPeriod: Period | null;
+  statisticsPlayers: Player[];
+}
+
 export default function StatisticsPage() {
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
   const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
@@ -26,6 +32,10 @@ export default function StatisticsPage() {
   
   const { events } = useEvents();
   const { players } = usePlayers();
+  const statisticsPlayers = useMemo(
+    () => players.filter((player) => player.status !== 'trial'),
+    [players]
+  );
   const statisticsPeriod = useSelectedStatisticsPeriod();
   const filteredEvents = useMemo(
     () => filterEventsByStatisticsPeriod(events, statisticsPeriod),
@@ -33,7 +43,7 @@ export default function StatisticsPage() {
   );
 
   const playerStats = useMemo(() => {
-    const stats: PlayerStats[] = players.map(player => {
+    const stats: PlayerStats[] = statisticsPlayers.map(player => {
       // Count invitations
       const invitedCount = filteredEvents.filter(event =>
         event.invitations.some(inv => inv.playerId === player.id)
@@ -72,7 +82,7 @@ export default function StatisticsPage() {
     });
 
     return stats;
-  }, [players, filteredEvents]);
+  }, [statisticsPlayers, filteredEvents]);
 
   // Redirect to player-statistics if on base /statistics route
   useEffect(() => {
@@ -172,7 +182,11 @@ export default function StatisticsPage() {
       </div>
 
       {/* Nested Route Content */}
-      <Outlet context={{ filteredEvents, statisticsPeriod }} />
+      <Outlet context={{
+        filteredEvents,
+        statisticsPeriod,
+        statisticsPlayers,
+      } satisfies StatisticsOutletContext} />
 
       <StatisticsPeriodModal
         isOpen={isPeriodModalOpen}

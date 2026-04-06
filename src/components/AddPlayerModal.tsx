@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Player } from '../types';
+import type { Player, PlayerStatus } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
 
@@ -17,6 +17,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
     lastName: '',
     birthDate: '',
     level: 3,
+    status: 'active' as PlayerStatus,
     preferredShirtNumber: ''
   });
 
@@ -30,6 +31,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
         lastName: editingPlayer.lastName,
         birthDate: editingPlayer.birthDate || '',
         level: editingPlayer.level,
+        status: editingPlayer.status || 'active',
         preferredShirtNumber: editingPlayer.preferredShirtNumber?.toString() || ''
       });
     } else {
@@ -38,6 +40,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
         lastName: '',
         birthDate: '',
         level: 3,
+        status: 'active',
         preferredShirtNumber: ''
       });
     }
@@ -54,6 +57,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
         birthYear: birthYear,
         birthDate: formData.birthDate,
         level: formData.level,
+        status: formData.status,
         preferredShirtNumber: Number.isNaN(parsedPreferredShirtNumber) ? undefined : parsedPreferredShirtNumber
       };
 
@@ -70,6 +74,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
             lastName: '',
             birthDate: '',
             level: 3,
+            status: 'active',
             preferredShirtNumber: ''
           });
         }
@@ -159,6 +164,23 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 <option value={3}>3 - Intermediate</option>
                 <option value={4}>4 - Advanced</option>
                 <option value={5}>5 - Expert</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="status" className="form-label">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="form-select"
+              >
+                <option value="active">Active</option>
+                <option value="trial">Trial</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
 

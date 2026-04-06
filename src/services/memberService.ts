@@ -6,38 +6,54 @@ export interface MembersResponse {
   trainers: Trainer[];
 }
 
+const normalizePlayer = (player: Player): Player => ({
+  ...player,
+  status: player.status || 'active',
+});
+
 // Get all members (players and trainers) in one call
 export async function getAllMembers(groupId: string): Promise<MembersResponse> {
-  return apiClient.request<MembersResponse>(
+  const response = await apiClient.request<MembersResponse>(
     apiClient.getGroupEndpoint(groupId, '/members')
   );
+
+  return {
+    ...response,
+    players: response.players.map(normalizePlayer),
+  };
 }
 
 // Player-specific operations
 export async function getPlayers(groupId: string): Promise<Player[]> {
-  return apiClient.request<Player[]>(
+  const players = await apiClient.request<Player[]>(
     apiClient.getGroupEndpoint(groupId, '/members?role=player')
   );
+
+  return players.map(normalizePlayer);
 }
 
 export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>): Promise<Player> {
-  return apiClient.request<Player>(
+  const player = await apiClient.request<Player>(
     apiClient.getGroupEndpoint(groupId, '/members'),
     {
       method: 'POST',
       body: JSON.stringify({ ...playerData, role: 'player' })
     }
   );
+
+  return normalizePlayer(player);
 }
 
 export async function updatePlayer(groupId: string, id: string, playerData: Partial<Player>): Promise<Player> {
-  return apiClient.request<Player>(
+  const player = await apiClient.request<Player>(
     apiClient.getGroupEndpoint(groupId, `/members/${id}`),
     {
       method: 'PUT',
       body: JSON.stringify({ ...playerData, role: 'player' })
     }
   );
+
+  return normalizePlayer(player);
 }
 
 export async function deletePlayer(groupId: string, id: string): Promise<void> {
@@ -49,9 +65,11 @@ export async function deletePlayer(groupId: string, id: string): Promise<void> {
 
 export async function getPlayerById(groupId: string, id: string): Promise<Player | null> {
   try {
-    return await apiClient.request<Player>(
+    const player = await apiClient.request<Player>(
       apiClient.getGroupEndpoint(groupId, `/members/${id}`)
     );
+
+    return normalizePlayer(player);
   } catch (error) {
     // If player not found, return null
     if (error instanceof Error && error.message.includes('404')) {

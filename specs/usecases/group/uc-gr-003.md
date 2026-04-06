@@ -51,6 +51,7 @@ Required player fields:
 - lastName
 - birthDate
 - level (1..5)
+- status: active, trial, inactive
 
 Optional player fields:
 - preferredShirtNumber
@@ -65,7 +66,7 @@ Derived field:
 3. User can filter displayed players by one or more levels and optional year.
 4. User presses Add.
 5. System opens Add New Player modal.
-6. User enters valid player data and submits.
+6. User enters valid player data and submits (status must be either active or trial).
 7. System derives birthYear from birthDate and sends create request with role
    player.
 8. Store appends the created player and keeps list alphabetically sorted.

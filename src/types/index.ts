@@ -28,9 +28,12 @@ export interface Player {
   birthYear: number;
   birthDate?: string; // ISO date string
   level: number; // 1-5
+  status: PlayerStatus;
   preferredShirtNumber?: number;
   guardians?: Guardian[];
 }
+
+export type PlayerStatus = 'active' | 'trial' | 'inactive';
 
 export interface Guardian {
   id: string;

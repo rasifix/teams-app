@@ -1,19 +1,18 @@
 import { useOutletContext } from 'react-router-dom';
-import { usePlayers } from '../hooks/usePlayers';
-import type { Event } from '../types';
+import type { Event, Player } from '../types';
 import TeamSelectionMatrix from '../components/TeamSelectionMatrix';
 
 interface StatisticsOutletContext {
   filteredEvents: Event[];
+  statisticsPlayers: Player[];
 }
 
 export default function TeamSelectionStatisticsPage() {
-  const { filteredEvents } = useOutletContext<StatisticsOutletContext>();
-  const { players } = usePlayers();
+  const { filteredEvents, statisticsPlayers } = useOutletContext<StatisticsOutletContext>();
 
   return (
     <TeamSelectionMatrix
-      players={players}
+      players={statisticsPlayers}
       events={filteredEvents}
     />
   );

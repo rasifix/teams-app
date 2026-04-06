@@ -1,19 +1,18 @@
 import { useOutletContext } from 'react-router-dom';
-import { usePlayers } from '../hooks/usePlayers';
-import type { Event } from '../types';
+import type { Event, Player } from '../types';
 import EventAttendanceMatrix from '../components/EventAttendanceMatrix';
 
 interface StatisticsOutletContext {
   filteredEvents: Event[];
+  statisticsPlayers: Player[];
 }
 
 export default function EventAttendancePage() {
-  const { filteredEvents } = useOutletContext<StatisticsOutletContext>();
-  const { players } = usePlayers();
+  const { filteredEvents, statisticsPlayers } = useOutletContext<StatisticsOutletContext>();
 
   return (
     <EventAttendanceMatrix 
-      players={players} 
+      players={statisticsPlayers} 
       events={filteredEvents} 
     />
   );

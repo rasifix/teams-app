@@ -20,6 +20,13 @@ export default function PlayerCard({
   const birthYear = player.birthDate
     ? new Date(player.birthDate).getFullYear()
     : player.birthYear;
+  const playerStatus = player.status || 'active';
+  const statusBadgeClassName = playerStatus === 'active'
+    ? 'bg-green-50 text-green-700'
+    : playerStatus === 'trial'
+      ? 'bg-amber-50 text-amber-700'
+      : 'bg-gray-100 text-gray-700';
+  const statusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
 
   return (
     <div className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
@@ -39,6 +46,11 @@ export default function PlayerCard({
                 { player.preferredShirtNumber ? (
                     <span className="text-xs text-gray-500 ml-1">#{player.preferredShirtNumber}</span>
                 ) : null }
+              </p>
+              <p className="mt-1">
+                <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${statusBadgeClassName}`}>
+                  {statusLabel}
+                </span>
               </p>
             </div>
             <div className="ml-2 flex-shrink-0 flex items-center gap-2">

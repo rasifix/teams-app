@@ -125,6 +125,13 @@ export default function PlayerDetailPage() {
   const guardians = player.guardians || [];
   const canManagePlayerGuardians = canManageGuardians(user, group?.id);
   const underageForGuardianAssignment = isPlayerUnderage(player);
+  const playerStatus = player.status || 'active';
+  const playerStatusBadgeClassName = playerStatus === 'active'
+    ? 'bg-green-50 text-green-700'
+    : playerStatus === 'trial'
+      ? 'bg-amber-50 text-amber-700'
+      : 'bg-gray-100 text-gray-700';
+  const playerStatusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
 
   // Prepare player event history data
   const playerEventHistory: PlayerEventHistoryItem[] = events
@@ -329,6 +336,9 @@ export default function PlayerDetailPage() {
 
       {/* Player Info */}
       <div className="px-4 lg:px-0 mb-4 flex items-center gap-3">
+        <span className={`text-sm px-2 py-1 rounded ${playerStatusBadgeClassName}`}>
+          {playerStatusLabel}
+        </span>
         {player.birthDate && (
           <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">
             {new Date(player.birthDate).toLocaleDateString()}

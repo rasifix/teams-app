@@ -4,6 +4,7 @@ import type { Event, Player } from '../types';
 import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
+import Strength from './Strength';
 import { Card, CardBody, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 
 interface TeamSelectionMatrixProps {
@@ -11,9 +12,12 @@ interface TeamSelectionMatrixProps {
   events: Event[];
 }
 
-interface TeamColumn {
+type GroupByMode = 'strength' | 'teamName';
+
+interface MatrixColumn {
   key: string;
-  name: string;
+  label: string;
+  strength?: number;
 }
 
 interface SelectionEventDetail {
@@ -25,7 +29,7 @@ interface SelectionEventDetail {
 }
 
 interface TeamSelectionCell {
-  teamKey: string;
+  columnKey: string;
   count: number;
   events: SelectionEventDetail[];
 }
@@ -39,7 +43,8 @@ interface TeamSelectionRow {
 
 interface SelectedCell {
   player: Player;
-  teamName: string;
+  groupLabel: string;
+  mode: GroupByMode;
   events: SelectionEventDetail[];
 }
 
@@ -53,28 +58,47 @@ const getDisplayTeamName = (teamName: string, fallbackIndex: number) => {
 export default function TeamSelectionMatrix({ players, events }: TeamSelectionMatrixProps) {
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [groupByMode, setGroupByMode] = useState<GroupByMode>('strength');
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
 
   const [minLevel, maxLevel] = levelRange;
 
-  const teamColumns = useMemo(() => {
-    const columns = new Map<string, TeamColumn>();
+  const matrixColumns = useMemo(() => {
+    const columns = new Map<string, MatrixColumn>();
 
     events.forEach((event) => {
       event.teams.forEach((team, index) => {
+        if (groupByMode === 'strength') {
+          const key = `strength-${team.strength}`;
+
+          if (!columns.has(key)) {
+            columns.set(key, {
+              key,
+              label: `Strength ${team.strength}`,
+              strength: team.strength,
+            });
+          }
+
+          return;
+        }
+
         const displayName = getDisplayTeamName(team.name, index);
         const key = getTeamColumnKey(displayName);
 
         if (!columns.has(key)) {
-          columns.set(key, { key, name: displayName });
+          columns.set(key, { key, label: displayName });
         }
       });
     });
 
-    return Array.from(columns.values()).sort((left, right) =>
-      left.name.localeCompare(right.name, undefined, { numeric: true, sensitivity: 'base' })
-    );
-  }, [events]);
+    return Array.from(columns.values()).sort((left, right) => {
+      if (groupByMode === 'strength') {
+        return (left.strength ?? Number.MAX_SAFE_INTEGER) - (right.strength ?? Number.MAX_SAFE_INTEGER);
+      }
+
+      return left.label.localeCompare(right.label, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [events, groupByMode]);
 
   const matrixRows = useMemo(() => {
     const filteredPlayers = players.filter((player) => (
@@ -95,14 +119,16 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         return hasAcceptedInvitation ? count + 1 : count;
       }, 0);
 
-      const cells = teamColumns.map<TeamSelectionCell>((teamColumn) => {
+      const cells = matrixColumns.map<TeamSelectionCell>((matrixColumn) => {
         const selectedEvents = events.flatMap((event) => (
           event.teams.flatMap((team, index) => {
             const displayName = getDisplayTeamName(team.name, index);
-            const isMatchingTeam = getTeamColumnKey(displayName) === teamColumn.key;
+            const isMatchingGroup = groupByMode === 'strength'
+              ? team.strength === matrixColumn.strength
+              : getTeamColumnKey(displayName) === matrixColumn.key;
             const isSelectedForTeam = (team.selectedPlayers || []).includes(player.id);
 
-            if (!isMatchingTeam || !isSelectedForTeam) {
+            if (!isMatchingGroup || !isSelectedForTeam) {
               return [];
             }
 
@@ -117,7 +143,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         ));
 
         return {
-          teamKey: teamColumn.key,
+          columnKey: matrixColumn.key,
           count: selectedEvents.length,
           events: selectedEvents,
         };
@@ -130,16 +156,21 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         cells,
       };
     });
-  }, [events, maxLevel, minLevel, players, teamColumns]);
+  }, [events, groupByMode, matrixColumns, maxLevel, minLevel, players]);
 
   const handlePlayerClick = (playerId: string) => {
     navigate(`/players/${playerId}`);
   };
 
-  const handleCellClick = (player: Player, teamName: string, selectionEvents: SelectionEventDetail[]) => {
+  const handleCellClick = (
+    player: Player,
+    groupLabel: string,
+    selectionEvents: SelectionEventDetail[]
+  ) => {
     setSelectedCell({
       player,
-      teamName,
+      groupLabel,
+      mode: groupByMode,
       events: selectionEvents,
     });
   };
@@ -161,7 +192,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
     );
   }
 
-  if (teamColumns.length === 0) {
+  if (matrixColumns.length === 0) {
     return (
       <Card>
         <CardBody>
@@ -169,6 +200,35 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-700">
+            <span className="font-medium">Group by</span>
+            <div className="inline-flex rounded-md border border-gray-200 bg-white p-1">
+              <button
+                type="button"
+                onClick={() => setGroupByMode('strength')}
+                className={`rounded px-3 py-1 text-sm transition-colors ${
+                  groupByMode === 'strength'
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-pressed={groupByMode === 'strength'}
+              >
+                Strength
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupByMode('teamName')}
+                className={`rounded px-3 py-1 text-sm transition-colors ${
+                  groupByMode === 'teamName'
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-pressed={groupByMode === 'teamName'}
+              >
+                Team name
+              </button>
+            </div>
+          </div>
           <div className="empty-state">
             <p>No teams exist in the selected period.</p>
           </div>
@@ -186,10 +246,40 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             onChange={setLevelRange}
           />
 
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-700">
+            <span className="font-medium">Group by</span>
+            <div className="inline-flex rounded-md border border-gray-200 bg-white p-1">
+              <button
+                type="button"
+                onClick={() => setGroupByMode('strength')}
+                className={`rounded px-3 py-1 text-sm transition-colors ${
+                  groupByMode === 'strength'
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-pressed={groupByMode === 'strength'}
+              >
+                Strength
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupByMode('teamName')}
+                className={`rounded px-3 py-1 text-sm transition-colors ${
+                  groupByMode === 'teamName'
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                aria-pressed={groupByMode === 'teamName'}
+              >
+                Team name
+              </button>
+            </div>
+          </div>
+
           <div className="mt-4 mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
             <span>{matrixRows.length} players</span>
             <span aria-hidden="true">•</span>
-            <span>{teamColumns.length} teams</span>
+            <span>{matrixColumns.length} {groupByMode === 'strength' ? 'strength groups' : 'teams'}</span>
             <span aria-hidden="true">•</span>
             <span>Click a count to see the events</span>
           </div>
@@ -206,12 +296,19 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                     <th className="sticky left-0 z-10 min-w-[220px] border-r-2 border-gray-300 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-900">
                       Player
                     </th>
-                    {teamColumns.map((teamColumn) => (
+                    {matrixColumns.map((matrixColumn) => (
                       <th
-                        key={teamColumn.key}
+                        key={matrixColumn.key}
                         className="min-w-[88px] px-3 py-3 text-center text-sm font-semibold text-gray-900"
                       >
-                        <span className="block truncate" title={teamColumn.name}>{teamColumn.name}</span>
+                        {groupByMode === 'strength' && matrixColumn.strength !== undefined ? (
+                          <span className="inline-flex items-center justify-center" title={matrixColumn.label}>
+                            <Strength level={matrixColumn.strength} />
+                            <span className="sr-only">{matrixColumn.label}</span>
+                          </span>
+                        ) : (
+                          <span className="block truncate" title={matrixColumn.label}>{matrixColumn.label}</span>
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -233,16 +330,16 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                         </button>
                       </td>
                       {cells.map((cell, index) => (
-                        <td key={`${cell.teamKey}-${index}`} className="px-3 py-2 text-center">
+                        <td key={`${cell.columnKey}-${index}`} className="px-3 py-2 text-center">
                           <button
                             type="button"
-                            onClick={() => handleCellClick(player, teamColumns[index].name, cell.events)}
+                            onClick={() => handleCellClick(player, matrixColumns[index].label, cell.events)}
                             className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition-colors ${
                               cell.count > 0
                                 ? 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                                 : 'border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100'
                             }`}
-                            aria-label={`${player.firstName} ${player.lastName}, ${teamColumns[index].name}, ${cell.count} selections`}
+                            aria-label={`${player.firstName} ${player.lastName}, ${matrixColumns[index].label}, ${cell.count} selections`}
                           >
                             {cell.count}
                           </button>
@@ -260,7 +357,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       <Modal isOpen={selectedCell !== null} onClose={() => setSelectedCell(null)}>
         <ModalHeader>
           <ModalTitle>
-            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.teamName}` : 'Selection details'}
+            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.groupLabel}` : 'Selection details'}
           </ModalTitle>
         </ModalHeader>
         <ModalBody className="space-y-4">
@@ -286,7 +383,11 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-600">This player has not been selected for this team in the current statistics period.</p>
+            <p className="text-sm text-gray-600">
+              {selectedCell?.mode === 'strength'
+                ? 'This player has not been selected for this strength group in the current statistics period.'
+                : 'This player has not been selected for this team in the current statistics period.'}
+            </p>
           )}
         </ModalBody>
         <ModalFooter>

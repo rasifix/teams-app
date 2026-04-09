@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
@@ -13,13 +15,17 @@ export default function ConfirmDialog({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   confirmButtonColor = 'red'
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
+
+  const resolvedConfirmText = confirmText ?? t('common.actions.confirm');
+  const resolvedCancelText = cancelText ?? t('common.actions.cancel');
 
   const confirmButtonStyles = {
     red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
@@ -67,14 +73,14 @@ export default function ConfirmDialog({
               onClick={onCancel}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
-              {cancelText}
+              {resolvedCancelText}
             </button>
             <button
               type="button"
               onClick={onConfirm}
               className={`px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${confirmButtonStyles[confirmButtonColor]}`}
             >
-              {confirmText}
+              {resolvedConfirmText}
             </button>
           </div>
         </div>

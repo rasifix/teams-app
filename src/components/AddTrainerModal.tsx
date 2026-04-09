@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Trainer } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
@@ -12,6 +13,7 @@ interface AddTrainerModalProps {
 }
 
 export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, editingTrainer }: AddTrainerModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -75,7 +77,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
         <ModalTitle>
-          {isEditMode ? 'Edit Trainer' : 'Add New Trainer'}
+          {isEditMode ? t('trainerModal.editTitle') : t('trainerModal.addTitle')}
         </ModalTitle>
       </ModalHeader>
 
@@ -84,7 +86,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
           <div className="space-y-4">
             <div>
               <label htmlFor="firstName" className="form-label">
-                First Name
+                {t('auth.firstName')}
               </label>
               <input
                 type="text"
@@ -94,13 +96,13 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 onChange={handleChange}
                 required
                 className="form-input"
-                placeholder="Enter first name"
+                placeholder={t('trainerModal.placeholders.firstName')}
               />
             </div>
 
             <div>
               <label htmlFor="lastName" className="form-label">
-                Last Name
+                {t('auth.lastName')}
               </label>
               <input
                 type="text"
@@ -110,13 +112,13 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 onChange={handleChange}
                 required
                 className="form-input"
-                placeholder="Enter last name"
+                placeholder={t('trainerModal.placeholders.lastName')}
               />
             </div>
 
             <div>
               <label htmlFor="email" className="form-label">
-                Email (optional)
+                {t('trainerModal.fields.emailOptional')}
               </label>
               <input
                 type="email"
@@ -125,7 +127,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 value={formData.email}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Enter email address"
+                placeholder={t('trainerModal.placeholders.email')}
               />
             </div>
           </div>
@@ -138,14 +140,14 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
             onClick={onClose}
             className="flex-1"
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             className="flex-1"
           >
-            {isEditMode ? 'Update Trainer' : 'Add Trainer'}
+            {isEditMode ? t('trainerModal.updateAction') : t('trainerModal.addAction')}
           </Button>
         </ModalFooter>
       </form>

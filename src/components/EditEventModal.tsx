@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
 
@@ -23,6 +24,7 @@ export default function EditEventModal({
   currentData,
   minMaxPlayers
 }: EditEventModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(currentData.name);
   const [date, setDate] = useState(currentData.date);
   const [location, setLocation] = useState(currentData.location || '');
@@ -46,32 +48,32 @@ export default function EditEventModal({
     setError(null);
 
     if (!name.trim()) {
-      setError('Event name is required');
+      setError(t('editEventModal.errors.eventNameRequired'));
       return;
     }
 
     if (!date) {
-      setError('Date is required');
+      setError(t('editEventModal.errors.dateRequired'));
       return;
     }
 
     if (maxPlayersPerTeam < minMaxPlayers) {
-      setError(`Max players cannot be less than ${minMaxPlayers} (current largest team size)`);
+      setError(t('editEventModal.errors.maxPlayersTooLow', { minMaxPlayers }));
       return;
     }
 
     if (maxPlayersPerTeam < 1) {
-      setError('Max players must be at least 1');
+      setError(t('editEventModal.errors.maxPlayersMinOne'));
       return;
     }
 
     if (minPlayersPerTeam < 1) {
-      setError('Min players must be at least 1');
+      setError(t('editEventModal.errors.minPlayersMinOne'));
       return;
     }
 
     if (minPlayersPerTeam > maxPlayersPerTeam) {
-      setError('Min players cannot be greater than max players');
+      setError(t('editEventModal.errors.minGreaterThanMax'));
       return;
     }
 
@@ -88,7 +90,7 @@ export default function EditEventModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>Edit Event</ModalTitle>
+        <ModalTitle>{t('editEventModal.title')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -96,7 +98,7 @@ export default function EditEventModal({
           <div className="space-y-4">
             <div>
               <label htmlFor="eventName" className="form-label">
-                Event Name
+                {t('eventModal.fields.eventName')}
               </label>
               <input
                 type="text"
@@ -105,14 +107,14 @@ export default function EditEventModal({
                 onChange={(e) => setName(e.target.value)}
                 required
                 className="form-input"
-                placeholder="Enter event name"
+                placeholder={t('eventModal.placeholders.eventNameSimple')}
                 autoFocus
               />
             </div>
 
             <div>
               <label htmlFor="eventDate" className="form-label">
-                Date
+                {t('eventModal.fields.date')}
               </label>
               <input
                 type="date"
@@ -126,7 +128,7 @@ export default function EditEventModal({
 
             <div>
               <label htmlFor="eventLocation" className="form-label">
-                Location
+                {t('eventModal.fields.location')}
               </label>
               <input
                 type="text"
@@ -134,13 +136,13 @@ export default function EditEventModal({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="form-input"
-                placeholder="e.g., Main Field, Sportplatz Seebach"
+                placeholder={t('eventModal.placeholders.location')}
               />
             </div>
 
             <div>
               <label htmlFor="maxPlayers" className="form-label">
-                Max Players per Team
+                {t('eventModal.fields.maxPlayersPerTeam')}
               </label>
               <input
                 type="number"
@@ -153,14 +155,14 @@ export default function EditEventModal({
               />
               {minMaxPlayers > 1 && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Minimum: {minMaxPlayers} (current largest team size)
+                  {t('editEventModal.minHint', { minMaxPlayers })}
                 </p>
               )}
             </div>
 
             <div>
               <label htmlFor="minPlayers" className="form-label">
-                Min Players per Team
+                {t('eventModal.fields.minPlayersPerTeam')}
               </label>
               <input
                 type="number"
@@ -189,14 +191,14 @@ export default function EditEventModal({
             onClick={onClose}
             className="flex-1"
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             className="flex-1"
           >
-            Save
+            {t('common.actions.save')}
           </Button>
         </ModalFooter>
       </form>

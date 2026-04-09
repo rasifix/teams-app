@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Player } from '../types';
 import Level from './Level';
 import { Card, CardBody } from './ui';
@@ -22,6 +23,7 @@ type SortField = 'name' | 'invited' | 'accepted' | 'selected' | 'acceptanceRate'
 type SortDirection = 'asc' | 'desc';
 
 export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsTableProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   const [sortField, setSortField] = useState<SortField>('name');
@@ -109,7 +111,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
         
         {filteredPlayerStats.length === 0 ? (
           <div className="empty-state">
-            <p>No player data available yet. Add players and events to see statistics.</p>
+            <p>{t('statistics.playerTable.emptyState')}</p>
           </div>
         ) : (
           <div className="table-container">
@@ -120,37 +122,37 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('name')}
                   >
-                    Player{getSortIndicator('name')}
+                    {t('domain.player')}{getSortIndicator('name')}
                   </th>
                   <th 
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('invited')}
                   >
-                    Invited{getSortIndicator('invited')}
+                    {t('statistics.playerTable.invited')}{getSortIndicator('invited')}
                   </th>
                   <th 
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('accepted')}
                   >
-                    Accepted{getSortIndicator('accepted')}
+                    {t('statistics.playerTable.accepted')}{getSortIndicator('accepted')}
                   </th>
                   <th 
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('selected')}
                   >
-                    Selected{getSortIndicator('selected')}
+                    {t('statistics.playerTable.selected')}{getSortIndicator('selected')}
                   </th>
                   <th 
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('acceptanceRate')}
                   >
-                    Acceptance Rate{getSortIndicator('acceptanceRate')}
+                    {t('statistics.playerTable.acceptanceRate')}{getSortIndicator('acceptanceRate')}
                   </th>
                   <th 
                     className="table-header-cell cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('selectionRate')}
                   >
-                    Selection Rate{getSortIndicator('selectionRate')}
+                    {t('statistics.playerTable.selectionRate')}{getSortIndicator('selectionRate')}
                   </th>
                 </tr>
               </thead>
@@ -194,15 +196,15 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="text-center">
                           <div className="font-semibold text-gray-900">{stat.invitedCount}</div>
-                          <div className="text-muted">Invited</div>
+                          <div className="text-muted">{t('statistics.playerTable.invited')}</div>
                         </div>
                         <div className="text-center">
                           <div className="font-semibold text-gray-900">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
-                          <div className="text-muted">Accepted</div>
+                          <div className="text-muted">{t('statistics.playerTable.accepted')}</div>
                         </div>
                         <div className="text-center">
                           <div className="font-semibold text-green-600">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
-                          <div className="text-muted">Selected</div>
+                          <div className="text-muted">{t('statistics.playerTable.selected')}</div>
                         </div>
                       </div>
                     </td>

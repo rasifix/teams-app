@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { PlayerEventHistoryItem } from '../types';
 import { invitationStatusMeta } from '../utils/invitationStatus';
 import { Card, CardBody, CardTitle, DateColumn } from './ui';
@@ -18,6 +19,7 @@ export default function PlayerEventHistory({
   eventHistory,
   groupedEventHistory,
 }: PlayerEventHistoryProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const renderEventCards = (items: PlayerEventHistoryItem[]) => (
@@ -37,11 +39,11 @@ export default function PlayerEventHistory({
                 <div className="mt-2">
                   {item.isSelected ? (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Selected
+                      {t('statistics.playerTable.selected')}
                     </span>
                   ) : (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${invitationStatusMeta[item.invitationStatus].badgeClassName}`}>
-                      {invitationStatusMeta[item.invitationStatus].label}
+                      {t(`invitationStatus.${item.invitationStatus}`)}
                     </span>
                   )}
                 </div>
@@ -62,10 +64,10 @@ export default function PlayerEventHistory({
   return (
     <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
       <CardBody className="lg:p-6 p-4">
-        <CardTitle>Events</CardTitle>
+        <CardTitle>{t('domain.events')}</CardTitle>
         {eventHistory.length === 0 ? (
           <div className="empty-state">
-            <p>No event invitations yet.</p>
+            <p>{t('players.eventHistory.empty')}</p>
           </div>
         ) : (
           <div className="mt-4">

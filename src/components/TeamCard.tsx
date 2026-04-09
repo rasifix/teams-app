@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Team, Player, Trainer, ShirtSet, Event } from '../types';
 import Level from './Level';
@@ -45,6 +46,7 @@ export default function TeamCard({
   onDragOverTeam,
   onDragOverPlayer
 }: TeamCardProps) {
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const selectedPlayers = team.selectedPlayers || [];
   const hasCapacity = selectedPlayers.length < maxPlayersPerTeam;
@@ -105,7 +107,7 @@ export default function TeamCard({
           <div
             className="hidden lg:flex w-5 ml-1 mr-2 items-center justify-center cursor-pointer select-none self-center"
             onClick={() => setIsCollapsed(c => !c)}
-            title={isCollapsed ? 'Expand team' : 'Collapse team'}
+            title={isCollapsed ? t('teamCard.expand') : t('teamCard.collapse')}
           >
             <svg
               className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -144,19 +146,19 @@ export default function TeamCard({
             onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId, team.location)}
             className="text-blue-600 hover:text-blue-700 text-sm"
           >
-            Edit
+            {t('common.actions.edit')}
           </button>
           <button
             onClick={() => onDeleteTeam(team.id)}
             className="text-red-600 hover:text-red-700 text-sm"
           >
-            Delete
+            {t('common.actions.delete')}
           </button>
           <button 
             onClick={() => onAssignShirts(team)}
             className="text-green-600 hover:text-green-700 text-sm"
           >
-            👕 Shirts
+            👕 {t('nav.shirts')}
           </button>
         </div>
       </div>
@@ -234,7 +236,7 @@ export default function TeamCard({
                             <Level level={player.level} className="text-sm" />
                             <span 
                               className="text-xs text-gray-500 font-mono"
-                              title={`Accepted invitations: ${stats.acceptedCount}, Selected for teams: ${stats.selectedCount}`}
+                              title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}
                             >
                               {stats.selectedCount}/{stats.acceptedCount}
                             </span>
@@ -247,7 +249,7 @@ export default function TeamCard({
                   <button
                     onClick={() => onRemovePlayer(team.id, playerId)}
                     className="text-red-600 hover:text-red-800 text-xs"
-                    title="Remove player"
+                    title={t('teamCard.removePlayer')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -256,17 +258,17 @@ export default function TeamCard({
                 </div>
               ) : (
                 <div key={playerId} className="text-sm text-gray-400 italic flex justify-between items-center gap-2">
-                  <span className="flex-1">Unknown player</span>
+                  <span className="flex-1">{t('teamCard.unknownPlayer')}</span>
                   <span 
                     className="text-xs text-gray-400 font-mono"
-                    title={`Accepted invitations: 0, Selected for teams: 0`}
+                    title={t('teamCard.statsTooltip', { accepted: 0, selected: 0 })}
                   >
                     0/0
                   </span>
                   <button
                     onClick={() => onRemovePlayer(team.id, playerId)}
                     className="text-red-600 hover:text-red-800 text-xs"
-                    title="Remove player"
+                    title={t('teamCard.removePlayer')}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />

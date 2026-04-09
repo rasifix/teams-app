@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { Player, Event } from '../types';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import { Card, CardBody, DateColumn } from './ui';
@@ -13,6 +14,7 @@ interface EventAttendanceMatrixProps {
 }
 
 export default function EventAttendanceMatrix({ players, events }: EventAttendanceMatrixProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -143,7 +145,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       <Card>
         <CardBody>
           <div className="empty-state">
-            <p>No data available. Add players and events to see the attendance matrix.</p>
+            <p>{t('statistics.eventAttendance.emptyState')}</p>
           </div>
         </CardBody>
       </Card>
@@ -162,19 +164,19 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
         <div className="mt-4 text-xs text-gray-600 mb-4 flex flex-wrap gap-4">
           <div className="flex items-center gap-1">
             <span className="text-green-600 font-bold">✓</span>
-            <span>Selected</span>
+            <span>{t('statistics.playerTable.selected')}</span>
           </div>
           {invitationStatusOrder.map((status) => (
             <div key={status} className="flex items-center gap-1">
               <span className={`${status === 'accepted' ? 'text-gray-400' : invitationStatusMeta[status].iconClassName} font-bold`}>
                 {invitationStatusMeta[status].icon}
               </span>
-              <span>{invitationStatusMeta[status].label}</span>
+              <span>{t(`invitationStatus.${status}`)}</span>
             </div>
           ))}
           <div className="flex items-center gap-1">
             <span className="text-gray-400 font-bold">-</span>
-            <span>Not Invited</span>
+            <span>{t('invitationStatus.notInvited')}</span>
           </div>
         </div>
         <div className="overflow-x-auto" ref={scrollContainerRef}>
@@ -182,7 +184,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
             <thead>
               <tr className="border-b-2 border-gray-300">
                 <th className="sticky left-0 bg-white z-10 px-4 py-3 text-left text-sm font-semibold text-gray-900 border-r-2 border-gray-300 min-w-[220px]">
-                  Player
+                  {t('domain.player')}
                 </th>
                 {events.map(event => (
                   <th 
@@ -219,7 +221,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                       <td 
                         key={index}
                         className="px-3 py-2 text-center max-h-[40px]"
-                        title={`${event.name} - ${formatDate(event.date)}\nStatus: ${status.replace('-', ' ')}`}
+                        title={`${event.name} - ${formatDate(event.date)}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
                       >
                         <div className={`inline-flex items-center justify-center w-7 h-7 rounded ${statusInfo.bg}`}>
                           <span className={`text-base font-bold ${statusInfo.color}`}>

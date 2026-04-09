@@ -1,5 +1,6 @@
 import type { Player, Trainer } from '../types';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PlayerCard from './PlayerCard';
 
@@ -22,13 +23,18 @@ export default function MembersList<T extends Member>({
   memberType,
   emptyMessage 
 }: MembersListProps<T>) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [swipedMemberId, setSwipedMemberId] = useState<string | null>(null);
 
   if (members.length === 0) {
+    const defaultEmptyMessage = memberType === 'players'
+      ? t('members.list.emptyPlayers')
+      : t('members.list.emptyTrainers');
+
     return (
       <div className="text-gray-500 text-center py-8">
-        <p>{emptyMessage || `No ${memberType} added yet. Click "Add ${memberType.slice(0, -1).replace('s', '')}" to get started.`}</p>
+        <p>{emptyMessage || defaultEmptyMessage}</p>
       </div>
     );
   }
@@ -137,7 +143,7 @@ export default function MembersList<T extends Member>({
                 className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
                 onClick={(e) => handleDeleteClick(member, e)}
               >
-                Delete
+                {t('common.actions.delete')}
               </button>
             </div>
           </div>

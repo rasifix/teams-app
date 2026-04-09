@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ApiStatusProps {
   className?: string;
 }
 
 export function ApiStatus({ className = '' }: ApiStatusProps) {
+  const { t } = useTranslation();
   const [isOnline, setIsOnline] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
 
@@ -42,17 +44,17 @@ export function ApiStatus({ className = '' }: ApiStatusProps) {
       {isChecking ? (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded-lg text-sm flex items-center space-x-2">
           <div className="animate-spin h-4 w-4 border-2 border-yellow-600 rounded-full border-t-transparent"></div>
-          <span>Checking connection...</span>
+          <span>{t('common.states.checkingConnection')}</span>
         </div>
       ) : (
         <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg text-sm flex items-center space-x-2">
           <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-          <span>Server disconnected</span>
+          <span>{t('common.states.serverDisconnected')}</span>
           <button
             onClick={checkApiHealth}
             className="ml-2 text-red-800 hover:text-red-900 underline"
           >
-            Retry
+            {t('common.actions.retry')}
           </button>
         </div>
       )}

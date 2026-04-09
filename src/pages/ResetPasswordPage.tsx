@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '../services/authService';
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
@@ -28,7 +30,7 @@ export default function ResetPasswordPage() {
       setSuccess(response.message);
       setEmail('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to request password reset');
+      setError(err instanceof Error ? err.message : t('resetPassword.errors.requestFailed'));
     } finally {
       setLoading(false);
     }
@@ -40,12 +42,12 @@ export default function ResetPasswordPage() {
     setSuccess('');
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('resetPassword.errors.passwordsDoNotMatch'));
       return;
     }
 
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('resetPassword.errors.passwordTooShort'));
       return;
     }
 
@@ -58,7 +60,7 @@ export default function ResetPasswordPage() {
         navigate('/login');
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      setError(err instanceof Error ? err.message : t('resetPassword.errors.resetFailed'));
     } finally {
       setLoading(false);
     }
@@ -69,12 +71,12 @@ export default function ResetPasswordPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900">
-            {isResetForm ? 'Reset your password' : 'Forgot your password?'}
+            {isResetForm ? t('resetPassword.resetTitle') : t('resetPassword.requestTitle')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {isResetForm
-              ? 'Enter your new password below'
-              : "Enter your email address and we'll send you a reset link"}
+              ? t('resetPassword.resetDescription')
+              : t('resetPassword.requestDescription')}
           </p>
         </div>
 
@@ -86,7 +88,7 @@ export default function ResetPasswordPage() {
             {!isResetForm ? (
               <div>
                 <label htmlFor="email" className="sr-only">
-                  Email address
+                  {t('auth.emailAddress')}
                 </label>
                 <input
                   id="email"
@@ -97,14 +99,14 @@ export default function ResetPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
+                  placeholder={t('auth.emailAddress')}
                 />
               </div>
             ) : (
               <>
                 <div>
                   <label htmlFor="newPassword" className="sr-only">
-                    New password
+                    {t('resetPassword.newPassword')}
                   </label>
                   <input
                     id="newPassword"
@@ -115,12 +117,12 @@ export default function ResetPasswordPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                    placeholder="New password"
+                    placeholder={t('resetPassword.newPassword')}
                   />
                 </div>
                 <div>
                   <label htmlFor="confirmPassword" className="sr-only">
-                    Confirm password
+                    {t('resetPassword.confirmPassword')}
                   </label>
                   <input
                     id="confirmPassword"
@@ -131,7 +133,7 @@ export default function ResetPasswordPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                    placeholder="Confirm password"
+                    placeholder={t('resetPassword.confirmPassword')}
                   />
                 </div>
               </>
@@ -204,19 +206,19 @@ export default function ResetPasswordPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Processing...
+                  {t('common.states.processing')}
                 </span>
               ) : isResetForm ? (
-                'Reset password'
+                t('resetPassword.resetAction')
               ) : (
-                'Send reset link'
+                t('resetPassword.sendLinkAction')
               )}
             </button>
           </div>
 
           <div className="text-center">
             <Link to="/login" className="font-medium text-sm text-orange-600 hover:text-orange-500">
-              Back to sign in
+              {t('resetPassword.backToSignIn')}
             </Link>
           </div>
         </form>

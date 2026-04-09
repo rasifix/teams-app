@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEvents } from '../hooks/useEvents';
 import { useTrainers } from '../store/useStore';
 import EventsList from '../components/EventsList';
@@ -9,6 +10,7 @@ import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
 
 export default function EventsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { events, loading, error, addEvent } = useEvents();
   const trainers = useTrainers();
@@ -43,7 +45,7 @@ export default function EventsPage() {
     // Create teams for the event
     const teams: Team[] = Array.from({ length: eventData.numberOfTeams }, (_, index) => ({
       id: crypto.randomUUID(),
-      name: `Team ${index + 1}`,
+      name: `${t('domain.team')} ${index + 1}`,
       strength: 2, // Default strength
       startTime: eventData.startTime, // All teams get the same start time initially
       selectedPlayers: [], // Players will be assigned during selection
@@ -74,7 +76,7 @@ export default function EventsPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading events...</p>
+          <p>{t('events.loading')}</p>
         </div>
       </div>
     );
@@ -93,13 +95,13 @@ export default function EventsPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
-              <CardTitle>Future Events ({futureEvents.length})</CardTitle>
+              <CardTitle>{t('events.futureTitle', { count: futureEvents.length })}</CardTitle>
               <Button 
                 variant="primary"
                 size="sm"
                 onClick={() => setIsModalOpen(true)}
               >
-                Add
+                {t('common.actions.add')}
               </Button>
             </div>
             
@@ -115,7 +117,7 @@ export default function EventsPage() {
         {pastEvents.length > 0 && (
           <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
             <CardBody className="lg:p-6 p-4">
-              <CardTitle>Past Events ({pastEvents.length})</CardTitle>
+              <CardTitle>{t('events.pastTitle', { count: pastEvents.length })}</CardTitle>
               
               <EventsList 
                 events={pastEvents} 

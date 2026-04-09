@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CreateGroupRequest } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
@@ -18,6 +19,7 @@ export default function AddGroupModal({
   onClose,
   onSave,
 }: AddGroupModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateGroupRequest>({
     name: '',
     description: '',
@@ -54,7 +56,7 @@ export default function AddGroupModal({
 
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
-      setNameError('Group name is required.');
+      setNameError(t('groupModal.errors.nameRequired'));
       return;
     }
 
@@ -70,7 +72,7 @@ export default function AddGroupModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>Create New Group</ModalTitle>
+        <ModalTitle>{t('groupModal.title')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -78,7 +80,7 @@ export default function AddGroupModal({
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="form-label">
-                Group Name
+                {t('groupModal.fields.groupName')}
               </label>
               <input
                 type="text"
@@ -88,7 +90,7 @@ export default function AddGroupModal({
                 onChange={handleChange}
                 required
                 className="form-input"
-                placeholder="Enter group name"
+                placeholder={t('groupModal.placeholders.groupName')}
               />
               {nameError && (
                 <p className="mt-1 text-sm text-red-600">{nameError}</p>
@@ -97,7 +99,7 @@ export default function AddGroupModal({
 
             <div>
               <label htmlFor="club" className="form-label">
-                Club (optional)
+                {t('groupModal.fields.clubOptional')}
               </label>
               <input
                 type="text"
@@ -106,13 +108,13 @@ export default function AddGroupModal({
                 value={formData.club ?? ''}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="Enter club"
+                placeholder={t('groupModal.placeholders.club')}
               />
             </div>
 
             <div>
               <label htmlFor="description" className="form-label">
-                Description (optional)
+                {t('groupModal.fields.descriptionOptional')}
               </label>
               <textarea
                 id="description"
@@ -120,7 +122,7 @@ export default function AddGroupModal({
                 value={formData.description ?? ''}
                 onChange={handleChange}
                 className="form-input min-h-24"
-                placeholder="Add a short description"
+                placeholder={t('groupModal.placeholders.description')}
               />
             </div>
 
@@ -140,7 +142,7 @@ export default function AddGroupModal({
             className="flex-1"
             disabled={isSubmitting}
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
@@ -148,7 +150,7 @@ export default function AddGroupModal({
             className="flex-1"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Create Group'}
+            {isSubmitting ? t('groupModal.creating') : t('groupModal.createAction')}
           </Button>
         </ModalFooter>
       </form>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { Event, Player } from '../types';
 import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
@@ -50,12 +51,13 @@ interface SelectedCell {
 
 const getTeamColumnKey = (teamName: string) => teamName.trim().toLocaleLowerCase();
 
-const getDisplayTeamName = (teamName: string, fallbackIndex: number) => {
+const getDisplayTeamName = (teamName: string, fallbackIndex: number, fallbackLabel: string) => {
   const trimmedName = teamName.trim();
-  return trimmedName || `Team ${fallbackIndex + 1}`;
+  return trimmedName || `${fallbackLabel} ${fallbackIndex + 1}`;
 };
 
 export default function TeamSelectionMatrix({ players, events }: TeamSelectionMatrixProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   const [groupByMode, setGroupByMode] = useState<GroupByMode>('strength');
@@ -74,7 +76,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           if (!columns.has(key)) {
             columns.set(key, {
               key,
-              label: `Strength ${team.strength}`,
+              label: t('statistics.teamSelections.strengthLabel', { level: team.strength }),
               strength: team.strength,
             });
           }
@@ -82,7 +84,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           return;
         }
 
-        const displayName = getDisplayTeamName(team.name, index);
+        const displayName = getDisplayTeamName(team.name, index, t('domain.team'));
         const key = getTeamColumnKey(displayName);
 
         if (!columns.has(key)) {
@@ -98,7 +100,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
       return left.label.localeCompare(right.label, undefined, { numeric: true, sensitivity: 'base' });
     });
-  }, [events, groupByMode]);
+  }, [events, groupByMode, t]);
 
   const matrixRows = useMemo(() => {
     const filteredPlayers = players.filter((player) => (
@@ -122,7 +124,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       const cells = matrixColumns.map<TeamSelectionCell>((matrixColumn) => {
         const selectedEvents = events.flatMap((event) => (
           event.teams.flatMap((team, index) => {
-            const displayName = getDisplayTeamName(team.name, index);
+            const displayName = getDisplayTeamName(team.name, index, t('domain.team'));
             const isMatchingGroup = groupByMode === 'strength'
               ? team.strength === matrixColumn.strength
               : getTeamColumnKey(displayName) === matrixColumn.key;
@@ -156,7 +158,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         cells,
       };
     });
-  }, [events, groupByMode, matrixColumns, maxLevel, minLevel, players]);
+  }, [events, groupByMode, matrixColumns, maxLevel, minLevel, players, t]);
 
   const handlePlayerClick = (playerId: string) => {
     navigate(`/players/${playerId}`);
@@ -185,7 +187,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       <Card>
         <CardBody>
           <div className="empty-state">
-            <p>No data available. Add players and events to see team selection statistics.</p>
+            <p>{t('statistics.teamSelections.noData')}</p>
           </div>
         </CardBody>
       </Card>
@@ -201,7 +203,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             onChange={setLevelRange}
           />
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-700">
-            <span className="font-medium">Group by</span>
+            <span className="font-medium">{t('statistics.teamSelections.groupBy')}</span>
             <div className="inline-flex rounded-md border border-gray-200 bg-white p-1">
               <button
                 type="button"
@@ -213,7 +215,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 }`}
                 aria-pressed={groupByMode === 'strength'}
               >
-                Strength
+                {t('statistics.teamSelections.groupByStrength')}
               </button>
               <button
                 type="button"
@@ -225,12 +227,12 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 }`}
                 aria-pressed={groupByMode === 'teamName'}
               >
-                Team name
+                {t('statistics.teamSelections.groupByTeamName')}
               </button>
             </div>
           </div>
           <div className="empty-state">
-            <p>No teams exist in the selected period.</p>
+            <p>{t('statistics.teamSelections.noTeamsInPeriod')}</p>
           </div>
         </CardBody>
       </Card>
@@ -247,7 +249,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           />
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-gray-700">
-            <span className="font-medium">Group by</span>
+            <span className="font-medium">{t('statistics.teamSelections.groupBy')}</span>
             <div className="inline-flex rounded-md border border-gray-200 bg-white p-1">
               <button
                 type="button"
@@ -259,7 +261,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 }`}
                 aria-pressed={groupByMode === 'strength'}
               >
-                Strength
+                {t('statistics.teamSelections.groupByStrength')}
               </button>
               <button
                 type="button"
@@ -271,22 +273,26 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 }`}
                 aria-pressed={groupByMode === 'teamName'}
               >
-                Team name
+                {t('statistics.teamSelections.groupByTeamName')}
               </button>
             </div>
           </div>
 
           <div className="mt-4 mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-600">
-            <span>{matrixRows.length} players</span>
+            <span>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</span>
             <span aria-hidden="true">•</span>
-            <span>{matrixColumns.length} {groupByMode === 'strength' ? 'strength groups' : 'teams'}</span>
+            <span>
+              {groupByMode === 'strength'
+                ? t('statistics.teamSelections.strengthGroupsCount', { count: matrixColumns.length })
+                : t('statistics.teamSelections.teamsCount', { count: matrixColumns.length })}
+            </span>
             <span aria-hidden="true">•</span>
-            <span>Click a count to see the events</span>
+            <span>{t('statistics.teamSelections.clickCountHint')}</span>
           </div>
 
           {matrixRows.length === 0 ? (
             <div className="empty-state">
-              <p>No players match the selected level range.</p>
+              <p>{t('statistics.teamSelections.noPlayersInLevelRange')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -294,7 +300,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 <thead>
                   <tr className="border-b-2 border-gray-300">
                     <th className="sticky left-0 z-10 min-w-[220px] border-r-2 border-gray-300 bg-white px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                      Player
+                      {t('domain.player')}
                     </th>
                     {matrixColumns.map((matrixColumn) => (
                       <th
@@ -339,7 +345,11 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                                 ? 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                                 : 'border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100'
                             }`}
-                            aria-label={`${player.firstName} ${player.lastName}, ${matrixColumns[index].label}, ${cell.count} selections`}
+                            aria-label={t('statistics.teamSelections.cellAriaLabel', {
+                              player: `${player.firstName} ${player.lastName}`,
+                              group: matrixColumns[index].label,
+                              count: cell.count,
+                            })}
                           >
                             {cell.count}
                           </button>
@@ -357,7 +367,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       <Modal isOpen={selectedCell !== null} onClose={() => setSelectedCell(null)}>
         <ModalHeader>
           <ModalTitle>
-            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.groupLabel}` : 'Selection details'}
+            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.groupLabel}` : t('statistics.teamSelections.selectionDetails')}
           </ModalTitle>
         </ModalHeader>
         <ModalBody className="space-y-4">
@@ -377,7 +387,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                     onClick={() => handleOpenTeam(selectionEvent.eventId, selectionEvent.teamId)}
                     className="btn-secondary whitespace-nowrap"
                   >
-                    Open team
+                    {t('statistics.teamSelections.openTeam')}
                   </button>
                 </div>
               ))}
@@ -385,14 +395,14 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           ) : (
             <p className="text-sm text-gray-600">
               {selectedCell?.mode === 'strength'
-                ? 'This player has not been selected for this strength group in the current statistics period.'
-                : 'This player has not been selected for this team in the current statistics period.'}
+                ? t('statistics.teamSelections.noSelectionStrength')
+                : t('statistics.teamSelections.noSelectionTeam')}
             </p>
           )}
         </ModalBody>
         <ModalFooter>
           <button type="button" onClick={() => setSelectedCell(null)} className="btn-secondary">
-            Close
+            {t('common.actions.close')}
           </button>
         </ModalFooter>
       </Modal>

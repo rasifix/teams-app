@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Player, InvitationStatus } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
@@ -18,6 +19,7 @@ export default function InvitePlayersModal({
   alreadyInvitedPlayerIds,
   players
 }: InvitePlayersModalProps) {
+  const { t } = useTranslation();
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   const [invitationStatus, setInvitationStatus] = useState<InvitationStatus>('accepted');
@@ -79,9 +81,9 @@ export default function InvitePlayersModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Invite Players</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('invitePlayers.title')}</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Select players to invite to this event
+            {t('invitePlayers.subtitle')}
           </p>
         </div>
         
@@ -97,13 +99,13 @@ export default function InvitePlayersModal({
                 </div>
             {availablePlayers.length === 0 ? (
               <div className="text-gray-500 text-center py-8">
-                <p>No players available to invite.</p>
-                <p className="text-sm mt-2">All players have already been invited or no players exist.</p>
+                <p>{t('invitePlayers.noPlayers')}</p>
+                <p className="text-sm mt-2">{t('invitePlayers.noPlayersDetail')}</p>
               </div>
             ) : (
               <>
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900 mb-2">Default invitation status</p>
+                  <p className="text-sm font-medium text-gray-900 mb-2">{t('invitePlayers.defaultStatus')}</p>
                   <div className="flex gap-4">
                     <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                       <input
@@ -114,7 +116,7 @@ export default function InvitePlayersModal({
                         onChange={() => setInvitationStatus('accepted')}
                         className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
                       />
-                      Accepted
+                      {t('invitationStatus.accepted')}
                     </label>
                     <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                       <input
@@ -125,7 +127,7 @@ export default function InvitePlayersModal({
                         onChange={() => setInvitationStatus('open')}
                         className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
                       />
-                      Open
+                      {t('invitationStatus.open')}
                     </label>
                   </div>
                 </div>
@@ -136,17 +138,17 @@ export default function InvitePlayersModal({
                     onClick={handleSelectAll}
                     className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
-                    Select All
+                    {t('invitePlayers.selectAll')}
                   </button>
                   <button
                     type="button"
                     onClick={handleDeselectAll}
                     className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
-                    Deselect All
+                    {t('invitePlayers.deselectAll')}
                   </button>
                   <span className="ml-auto text-sm text-gray-600">
-                    {selectedPlayerIds.size} selected
+                    {t('invitePlayers.selectedCount', { count: selectedPlayerIds.size })}
                   </span>
                 </div>
 
@@ -188,14 +190,14 @@ export default function InvitePlayersModal({
               onClick={handleClose}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
             >
-              Cancel
+              {t('common.actions.cancel')}
             </button>
             <button
               type="submit"
               disabled={selectedPlayerIds.size === 0}
               className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              Invite {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
+              {t('invitePlayers.inviteAction')} {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
             </button>
           </div>
         </form>

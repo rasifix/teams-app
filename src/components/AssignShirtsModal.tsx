@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Team, ShirtSet, Player } from '../types';
 import { Modal, ModalBody, ModalFooter, ModalHeader } from './ui/Modal';
 import Button from './ui/Button';
@@ -26,6 +27,7 @@ export default function AssignShirtsModal({
   currentShirtSetId,
   currentShirtAssignments,
 }: AssignShirtsModalProps) {
+  const { t } = useTranslation();
   const [selectedShirtSetId, setSelectedShirtSetId] = useState<string>(currentShirtSetId || '');
   const [selectedShirtSet, setSelectedShirtSet] = useState<ShirtSet | null>(null);
   const [playerShirtAssignments, setPlayerShirtAssignments] = useState<Array<{ playerId: string; shirtNumber: number }>>([]);
@@ -105,7 +107,7 @@ export default function AssignShirtsModal({
     e.preventDefault();
     
     if (!selectedShirtSetId) {
-      alert('Please select a shirt set');
+      alert(t('assignShirts.errors.selectSetRequired'));
       return;
     }
 
@@ -137,14 +139,14 @@ export default function AssignShirtsModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <h2 className="text-xl font-semibold">Assign Shirts to Team</h2>
+          <h2 className="text-xl font-semibold">{t('assignShirts.title')}</h2>
         </ModalHeader>
 
         <ModalBody>
           <div className="space-y-6">
             <div>
               <label htmlFor="shirtSet" className="form-label">
-                Shirt Set
+                {t('domain.shirtSets')}
               </label>
               <select
                 id="shirtSet"
@@ -152,7 +154,7 @@ export default function AssignShirtsModal({
                 onChange={(e) => setSelectedShirtSetId(e.target.value)}
                 className="form-input text-sm"
               >
-                <option value="">Select a shirt set...</option>
+                <option value="">{t('assignShirts.selectSetPlaceholder')}</option>
                 {shirtSets.map(shirtSet => (
                   <option key={shirtSet.id} value={shirtSet.id}>
                     {shirtSet.sponsor}
@@ -181,7 +183,7 @@ export default function AssignShirtsModal({
                             onChange={(e) => handleShirtAssignment(playerId, parseInt(e.target.value) || 0)}
                             className="form-input w-full text-sm py-1"
                           >
-                            <option value={0}>No shirt</option>
+                            <option value={0}>{t('assignShirts.noShirt')}</option>
                             {selectedShirtSet.shirts
                               .sort((a, b) => a.number - b.number)
                               .map(shirt => (
@@ -190,7 +192,7 @@ export default function AssignShirtsModal({
                                 value={shirt.number}
                                 disabled={isShirtAssigned(shirt.number, playerId) || isShirtUsedInOtherTeams(shirt.number)}
                               >
-                                #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? '(GK)' : ''}
+                                #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? `(${t('shirts.goalkeeperShort')})` : ''}
                               </option>
                             ))}
                           </select>
@@ -202,13 +204,13 @@ export default function AssignShirtsModal({
 
                 {usedShirtsInOtherTeams.size > 0 && (
                   <p className="text-xs text-gray-600 mt-2">
-                    Shirts already used in other teams for this event are disabled.
+                    {t('assignShirts.usedInOtherTeamsHint')}
                   </p>
                 )}
 
                 {team.selectedPlayers.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
-                    No players assigned to this team yet.
+                    {t('assignShirts.noPlayersInTeam')}
                   </p>
                 )}
               </div>
@@ -223,14 +225,14 @@ export default function AssignShirtsModal({
             onClick={onClose}
             className="flex-1"
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             className="flex-1"
           >
-            Assign Shirts
+            {t('assignShirts.assignAction')}
           </Button>
         </ModalFooter>
       </form>

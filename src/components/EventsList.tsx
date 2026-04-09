@@ -1,4 +1,5 @@
 import type { Event, Trainer } from '../types';
+import { useTranslation } from 'react-i18next';
 import EventCard from './EventCard';
 
 interface EventsListProps {
@@ -8,10 +9,12 @@ interface EventsListProps {
 }
 
 export default function EventsList({ events, trainers = [], onEventClick }: EventsListProps) {
+  const { t } = useTranslation();
+
   if (events.length === 0) {
     return (
       <div className="text-gray-500 text-center py-8">
-        <p>No events created yet. Click "Create Event" to get started.</p>
+        <p>{t('events.list.emptyState')}</p>
       </div>
     );
   }

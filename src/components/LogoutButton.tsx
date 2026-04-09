@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 
 export default function LogoutButton() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -14,7 +16,7 @@ export default function LogoutButton() {
     <button
       onClick={handleLogout}
       className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors flex items-center gap-2"
-      title="Logout"
+      title={t('auth.logout')}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

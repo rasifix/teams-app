@@ -15,8 +15,11 @@
     "test:e2e:video": "E2E_DEMO_MODE=1 playwright test -c playwright.video.config.ts e2e/uc-gr-001.spec.ts"
   },
   "dependencies": {
+    "i18next": "^26.0.4",
+    "i18next-http-backend": "^3.0.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-i18next": "^17.0.2",
     "react-router-dom": "^7.9.5",
     "zustand": "^5.0.8"
   },

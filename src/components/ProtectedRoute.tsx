@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -6,6 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { t } = useTranslation();
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
@@ -14,7 +16,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('common.states.loading')}</h2>
         </div>
       </div>
     );

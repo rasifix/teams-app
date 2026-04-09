@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ShirtSet, Shirt } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
@@ -9,6 +10,7 @@ interface AddShirtSetModalProps {
 }
 
 export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     sponsor: '',
     color: '#000000', // Default color
@@ -82,14 +84,14 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
     <Modal isOpen={true} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>Add New Shirt Set</ModalTitle>
+          <ModalTitle>{t('shirtSetModal.addTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <div className="space-y-3">
             <div>
               <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
-                Sponsor Name *
+                {t('shirtSetModal.fields.sponsorRequired')}
               </label>
               <input
                 id="sponsor"
@@ -98,14 +100,14 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                 required
                 value={formData.sponsor}
                 onChange={handleInputChange}
-                placeholder="Enter sponsor name"
+                placeholder={t('shirtSetModal.placeholders.sponsor')}
                 className="input-field w-full"
               />
             </div>
 
             <div>
               <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
-                Color *
+                {t('shirtSetModal.fields.colorRequired')}
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -122,7 +124,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   value={formData.color}
                   onChange={handleInputChange}
                   name="color"
-                  placeholder="#000000"
+                  placeholder={t('shirtSetModal.placeholders.color')}
                   className="input-field flex-1"
                 />
               </div>
@@ -140,7 +142,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
                 <label htmlFor="createShirts" className="ml-2 text-sm font-medium text-gray-700">
-                  Create shirts automatically
+                  {t('shirtSetModal.fields.createAutomatically')}
                 </label>
               </div>
 
@@ -149,7 +151,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label htmlFor="startNumber" className="block text-xs font-medium text-gray-700 mb-1">
-                        Start #
+                        {t('shirtSetModal.fields.startNumber')}
                       </label>
                       <input
                         id="startNumber"
@@ -164,7 +166,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                     </div>
                     <div>
                       <label htmlFor="endNumber" className="block text-xs font-medium text-gray-700 mb-1">
-                        End #
+                        {t('shirtSetModal.fields.endNumber')}
                       </label>
                       <input
                         id="endNumber"
@@ -179,7 +181,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                     </div>
                     <div>
                       <label htmlFor="size" className="block text-xs font-medium text-gray-700 mb-1">
-                        Size
+                        {t('shirtSetModal.fields.size')}
                       </label>
                       <select
                         id="size"
@@ -212,14 +214,14 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                       />
                       <label htmlFor="includeGoalkeeper" className="ml-2 text-sm text-gray-700">
-                        Include GK
+                        {t('shirtSetModal.fields.includeGoalkeeper')}
                       </label>
                     </div>
                     
                     {shirtOptions.includeGoalkeeper && (
                       <div className="flex items-center gap-2">
                         <label htmlFor="goalkeeperNumber" className="text-xs text-gray-700">
-                          GK #:
+                          {t('shirtSetModal.fields.goalkeeperNumber')}
                         </label>
                         <input
                           id="goalkeeperNumber"
@@ -236,12 +238,12 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   </div>
 
                   <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                    Will create {
+                    {t('shirtSetModal.preview.prefix')} {
                       Math.max(0, shirtOptions.endNumber - shirtOptions.startNumber + 1 - 
                         (shirtOptions.includeGoalkeeper && 
                          shirtOptions.goalkeeperNumber >= shirtOptions.startNumber && 
                          shirtOptions.goalkeeperNumber <= shirtOptions.endNumber ? 1 : 0))
-                    } regular{shirtOptions.includeGoalkeeper ? ' + 1 GK' : ''} shirt{(Math.max(0, shirtOptions.endNumber - shirtOptions.startNumber + 1) + (shirtOptions.includeGoalkeeper ? 1 : 0)) !== 1 ? 's' : ''} (size {shirtOptions.size})
+                    } {t('shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('shirtSetModal.preview.size', { size: shirtOptions.size })})
                   </div>
                 </div>
               )}
@@ -252,10 +254,10 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
         <ModalFooter>
           <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
-              Create Shirt Set
+              {t('shirtSetModal.createAction')}
             </Button>
           </div>
         </ModalFooter>

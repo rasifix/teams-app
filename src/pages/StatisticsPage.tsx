@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEvents } from '../hooks/useEvents';
 import { usePlayers } from '../hooks/usePlayers';
 import type { Event, Period, Player } from '../types';
@@ -25,6 +26,7 @@ interface StatisticsOutletContext {
 }
 
 export default function StatisticsPage() {
+  const { t } = useTranslation();
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
   const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
   const location = useLocation();
@@ -119,7 +121,7 @@ export default function StatisticsPage() {
     <div className="page-container">
       <div className="page-header">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="page-title">Statistics</h1>
+          <h1 className="page-title">{t('statistics.title')}</h1>
           <StatisticsPeriodSelector
             onAddPeriod={handleAddPeriod}
             onEditPeriod={handleEditPeriod}
@@ -129,25 +131,25 @@ export default function StatisticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <SummaryCard>
-          <SummaryCardContent label="Total Players" value={totalPlayers} />
+          <SummaryCardContent label={t('statistics.summary.totalPlayers')} value={totalPlayers} />
         </SummaryCard>
         
         <SummaryCard>
-          <SummaryCardContent label="Total Events" value={totalEvents} />
+          <SummaryCardContent label={t('statistics.summary.totalEvents')} value={totalEvents} />
         </SummaryCard>
         
         <SummaryCard>
-          <SummaryCardContent label="Avg Acceptances per Player" value={avgAcceptances.toFixed(1)} />
+          <SummaryCardContent label={t('statistics.summary.avgAcceptancesPerPlayer')} value={avgAcceptances.toFixed(1)} />
         </SummaryCard>
         
         <SummaryCard>
-          <SummaryCardContent label="Avg Selections per Player" value={avgSelections.toFixed(1)} />
+          <SummaryCardContent label={t('statistics.summary.avgSelectionsPerPlayer')} value={avgSelections.toFixed(1)} />
         </SummaryCard>
       </div>
 
       {/* Tab Bar */}
       <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-8" aria-label="Tabs">
+        <nav className="flex gap-8" aria-label={t('common.tabs')}>
           <NavLink
             to="/statistics/player-statistics"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -156,7 +158,7 @@ export default function StatisticsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Player Statistics
+            {t('statistics.tabs.playerStatistics')}
           </NavLink>
           <NavLink
             to="/statistics/event-attendance"
@@ -166,7 +168,7 @@ export default function StatisticsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Event Attendance
+            {t('statistics.tabs.eventAttendance')}
           </NavLink>
           <NavLink
             to="/statistics/team-selections"
@@ -176,7 +178,7 @@ export default function StatisticsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Team Selections
+            {t('statistics.tabs.teamSelections')}
           </NavLink>
         </nav>
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Invitation, Event, Player, InvitationStatus } from '../types';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
@@ -30,6 +31,7 @@ export default function PlayerInvitationsCard({
   onRemoveInvitation,
   assignedPlayerIds = [],
 }: PlayerInvitationsCardProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('accepted');
   const [swipedInvitationId, setSwipedInvitationId] = useState<string | null>(null);
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
@@ -110,26 +112,26 @@ export default function PlayerInvitationsCard({
   const invitationTabs: Array<{ status: TabType; label: string; count: number; activeClassName: string; className?: string }> = [
     {
       status: 'assigned',
-      label: 'Assigned',
+      label: t('playerInvitations.tabs.assigned'),
       count: assignedCount,
       activeClassName: 'border-green-500 text-green-600',
       className: 'lg:hidden',
     },
     {
       status: 'accepted',
-      label: invitationStatusMeta.accepted.tabLabel,
+      label: t('invitationStatus.accepted'),
       count: acceptedCount,
       activeClassName: invitationStatusMeta.accepted.tabActiveClassName,
     },
     {
       status: 'open',
-      label: invitationStatusMeta.open.tabLabel,
+      label: t('invitationStatus.open'),
       count: statusCounts.open,
       activeClassName: invitationStatusMeta.open.tabActiveClassName,
     },
     {
       status: 'unavailable',
-      label: 'Unavailable',
+      label: t('playerInvitations.tabs.unavailable'),
       count: unavailableStatuses.reduce((sum, status) => sum + statusCounts[status], 0),
       activeClassName: invitationStatusMeta.unavailable.tabActiveClassName,
     },
@@ -154,13 +156,13 @@ export default function PlayerInvitationsCard({
   return (
     <div className="bg-white lg:shadow shadow-none lg:rounded-lg rounded-none lg:p-6 p-4 lg:border border-0">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Players</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
         <div className="flex items-center gap-3">
           <button
             onClick={onInviteClick}
             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
           >
-            Invite
+            {t('playerInvitations.invite')}
           </button>
         </div>
       </div>
@@ -197,21 +199,21 @@ export default function PlayerInvitationsCard({
       {filteredInvitations.length === 0 ? (
         <div className="text-gray-500 text-center py-4">
           {invitations.length === 0 ? (
-            <p>No invitations sent yet.</p>
+            <p>{t('playerInvitations.empty.noneSent')}</p>
           ) : tabInvitations.length === 0 ? (
             <p>No players have {
               activeTab === 'assigned'
-                ? 'been assigned'
+                ? t('playerInvitations.empty.beenAssigned')
                 : activeTab === 'unavailable'
-                  ? 'been marked unavailable'
-                  : invitationStatusMeta[activeTab].emptyStateText
+                  ? t('playerInvitations.empty.beenMarkedUnavailable')
+                  : t(`playerInvitations.empty.status.${activeTab}`)
             } invitations.</p>
           ) : activeTab === 'accepted' ? (
-            <p>No available players. All accepted players are already assigned to teams.</p>
+            <p>{t('playerInvitations.empty.noAvailableAccepted')}</p>
           ) : activeTab === 'assigned' ? (
-            <p>No players assigned to teams yet.</p>
+            <p>{t('playerInvitations.empty.noAssignedToTeams')}</p>
           ) : (
-            <p>No players in this category.</p>
+            <p>{t('playerInvitations.empty.noPlayersInCategory')}</p>
           )}
         </div>
       ) : (
@@ -272,7 +274,7 @@ export default function PlayerInvitationsCard({
                             {player ? `${player.firstName} ${player.lastName}` : `Player ID: ${invitation.playerId}`}
                           </span>
                           {player && <Level level={player.level} className="text-sm" />}
-                          <span className="text-xs text-gray-500 font-mono" title={`Accepted invitations: ${stats.acceptedCount}, Selected for teams: ${stats.selectedCount}`}>
+                          <span className="text-xs text-gray-500 font-mono" title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}>
                             {stats.selectedCount}/{stats.acceptedCount}
                           </span>
                         </div>
@@ -285,7 +287,7 @@ export default function PlayerInvitationsCard({
                         className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${invitationStatusMeta[invitation.status].selectClassName}`}
                       >
                         {invitationStatusOrder.map((status) => (
-                          <option key={status} value={status}>{status}</option>
+                          <option key={status} value={status}>{t(`invitationStatus.${status}`)}</option>
                         ))}
                       </select>
                       {activeTab === 'open' && <button
@@ -299,7 +301,7 @@ export default function PlayerInvitationsCard({
                             ? 'text-gray-300 cursor-not-allowed'
                             : 'text-red-500 hover:text-red-700 hover:bg-red-50'
                           }`}
-                        title={isAssigned ? "Cannot remove assigned player" : "Remove invitation"}
+                        title={isAssigned ? t('playerInvitations.cannotRemoveAssigned') : t('playerInvitations.removeInvitation')}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -324,7 +326,7 @@ export default function PlayerInvitationsCard({
                           setSwipedInvitationId(null);
                         }}
                       >
-                        Remove
+                        {t('playerInvitations.remove')}
                       </button>
                     </div>
                   )}

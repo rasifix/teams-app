@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
 import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
@@ -66,6 +67,7 @@ const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
 };
 
 export default function TrainerDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -85,15 +87,15 @@ export default function TrainerDetailPage() {
 
   // Determine loading and error states
   const loading = isLoading;
-  const error = !id ? 'No trainer ID provided' :
-    (!trainer && !loading) ? 'Trainer not found' :
-      errors.trainers || (hasErrors ? 'Failed to load data' : null);
+  const error = !id ? t('trainerDetail.errors.noTrainerId') :
+    (!trainer && !loading) ? t('trainerDetail.errors.notFound') :
+      errors.trainers || (hasErrors ? t('trainerDetail.errors.failedToLoadData') : null);
 
   if (loading) {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading trainer...</p>
+          <p>{t('trainerDetail.loading')}</p>
         </div>
       </div>
     );
@@ -103,7 +105,7 @@ export default function TrainerDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Error: {error}</p>
+          <p>{t('common.errors.errorWithMessage', { message: error })}</p>
         </div>
       </div>
     );
@@ -113,7 +115,7 @@ export default function TrainerDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Trainer not found.</p>
+          <p>{t('trainerDetail.notFound')}</p>
         </div>
       </div>
     );
@@ -129,7 +131,7 @@ export default function TrainerDetailPage() {
         eventId: event.id,
         eventName: event.name,
         eventDate: event.date,
-        teamName: team?.name || 'Unknown Team',
+        teamName: team?.name || t('team.unknownTeam'),
         teamStrength: team?.strength || 2
       };
     });
@@ -172,7 +174,7 @@ export default function TrainerDetailPage() {
     if (outsidePeriods.length > 0) {
       nonEmptyGroups.push({
         id: 'outside-periods',
-        title: 'Outside periods',
+        title: t('statistics.period.outsidePeriods'),
         eventHistory: outsidePeriods,
       });
     }
@@ -229,7 +231,7 @@ export default function TrainerDetailPage() {
             onClick={() => navigate('/members/trainers')}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            ← Back
+            ← {t('common.actions.back')}
           </button>
           <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{trainer.firstName} {trainer.lastName}</span>
           <div className="flex gap-3">
@@ -237,13 +239,13 @@ export default function TrainerDetailPage() {
               onClick={handleEditTrainer}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              Edit
+                {t('common.actions.edit')}
             </button>
             <button
               onClick={handleDeleteTrainer}
               className="text-red-600 hover:text-red-700 text-sm font-medium"
             >
-              Delete
+                {t('common.actions.delete')}
             </button>
           </div>
         </div>
@@ -251,7 +253,7 @@ export default function TrainerDetailPage() {
 
       {/* Trainer Badge */}
       <div className="px-4 lg:px-0 mb-4">
-        <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">Trainer</span>
+        <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">{t('domain.trainers')}</span>
       </div>
 
       {/* Training History */}
@@ -259,11 +261,11 @@ export default function TrainerDetailPage() {
         <div>
           <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
             <CardBody className="lg:p-6 p-4">
-              <CardTitle>Events</CardTitle>
+              <CardTitle>{t('domain.events')}</CardTitle>
               <p className="text-sm text-gray-600 mt-1 mb-4">
-                Events where {trainer.firstName} was assigned as a trainer
+                {t('trainerDetail.eventsAssignedDescription', { firstName: trainer.firstName })}
               </p>
-              {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: 'All events', eventHistory: trainerEventHistory }]).map((group) => (
+              {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
                 <div key={group.id} className="mb-6 last:mb-0">
                   {groupedTrainerEventHistory && (
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">{group.title}</h3>
@@ -311,9 +313,9 @@ export default function TrainerDetailPage() {
         <div>
           <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
             <CardBody className="lg:p-6 p-4">
-              <CardTitle>Training History</CardTitle>
+              <CardTitle>{t('trainerDetail.trainingHistory')}</CardTitle>
               <p className="text-gray-500 text-center py-8">
-                {trainer.firstName} hasn't been assigned to any teams yet.
+                {t('trainerDetail.noAssignmentsYet', { firstName: trainer.firstName })}
               </p>
             </CardBody>
           </Card>
@@ -330,10 +332,10 @@ export default function TrainerDetailPage() {
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title="Delete Trainer"
-        message={`Are you sure you want to delete ${trainer.firstName} ${trainer.lastName}? This action cannot be undone.`}
-        confirmText="Delete Trainer"
-        cancelText="Cancel"
+        title={t('members.deleteTrainerTitle')}
+        message={t('members.deleteTrainerMessage', { firstName: trainer.firstName, lastName: trainer.lastName })}
+        confirmText={t('members.deleteTrainerConfirm')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}
       />

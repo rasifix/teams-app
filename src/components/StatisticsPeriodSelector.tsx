@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
 import { useGroupPeriods, useSelectedStatisticsPeriod, useStore } from '../store';
 import { getStatisticsPeriodLabel } from '../utils/statisticsPeriod';
@@ -9,6 +10,7 @@ interface StatisticsPeriodSelectorProps {
 }
 
 export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: StatisticsPeriodSelectorProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const periods = useGroupPeriods();
@@ -39,7 +41,7 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
         aria-haspopup="menu"
         aria-expanded={isOpen}
       >
-        <span>Period: {getStatisticsPeriodLabel(selectedPeriod)}</span>
+        <span>{t('statistics.period.selectorLabel', { period: getStatisticsPeriodLabel(selectedPeriod) })}</span>
         <svg className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
@@ -49,7 +51,7 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
         <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="p-2">
             <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
-              Select period
+              {t('statistics.period.selectPeriod')}
             </p>
 
             <button
@@ -65,8 +67,8 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
               }`}
             >
               <div>
-                <div className="font-medium">All events</div>
-                <div className="text-xs text-gray-500">Use every event in the group.</div>
+                <div className="font-medium">{t('statistics.period.allEvents')}</div>
+                <div className="text-xs text-gray-500">{t('statistics.period.allEventsDescription')}</div>
               </div>
             </button>
 
@@ -91,7 +93,7 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
                     <div className={`font-medium ${selectedPeriod?.id === period.id ? 'text-orange-700' : 'text-gray-900'}`}>
                       {period.name}
                     </div>
-                    <div className="text-xs text-gray-500">{period.startDate} to {period.endDate}</div>
+                    <div className="text-xs text-gray-500">{t('statistics.period.rangeLabel', { startDate: period.startDate, endDate: period.endDate })}</div>
                   </button>
                   <button
                     type="button"
@@ -101,13 +103,13 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
                     }}
                     className="shrink-0 rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:border-gray-300 hover:bg-white hover:text-gray-900"
                   >
-                    Edit
+                    {t('common.actions.edit')}
                   </button>
                 </div>
               ))}
 
               {periods.length === 0 && (
-                <p className="px-3 py-2 text-sm text-gray-500">No group periods yet.</p>
+                <p className="px-3 py-2 text-sm text-gray-500">{t('statistics.period.noGroupPeriods')}</p>
               )}
             </div>
 
@@ -122,7 +124,7 @@ export default function StatisticsPeriodSelector({ onAddPeriod, onEditPeriod }: 
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
             >
               <span className="text-base leading-none">+</span>
-              <span>Add new period</span>
+              <span>{t('statistics.period.addNewPeriod')}</span>
             </button>
           </div>
         </div>

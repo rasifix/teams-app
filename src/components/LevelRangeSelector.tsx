@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface LevelRangeSelectorProps {
   minLevel?: number;
@@ -17,6 +18,7 @@ export default function LevelRangeSelector({
   className = '',
   disabled = false,
 }: LevelRangeSelectorProps) {
+  const { t } = useTranslation();
   const [levelRange, setLevelRange] = useState<[number, number]>(defaultRange);
 
   const handleMinLevelChange = (newMin: number) => {
@@ -33,11 +35,11 @@ export default function LevelRangeSelector({
 
   const getLevelLabel = (level: number) => {
     switch (level) {
-      case 1: return '1 - Beginner';
-      case 2: return '2 - Learning';
-      case 3: return '3 - Intermediate';
-      case 4: return '4 - Advanced';
-      case 5: return '5 - Expert';
+      case 1: return t('levels.1');
+      case 2: return t('levels.2');
+      case 3: return t('levels.3');
+      case 4: return t('levels.4');
+      case 5: return t('levels.5');
       default: return `${level}`;
     }
   };
@@ -56,10 +58,10 @@ export default function LevelRangeSelector({
 
   return (
     <div className={`mt-4 mb-4 flex flex-wrap items-center gap-4 ${className}`}>
-      <span className="text-sm font-medium text-gray-700">Filter by Player Level:</span>
+      <span className="text-sm font-medium text-gray-700">{t('filters.playerLevel')}</span>
       
       <div className="flex items-center gap-2">
-        <label htmlFor="minLevel" className="text-sm text-gray-600">From:</label>
+        <label htmlFor="minLevel" className="text-sm text-gray-600">{t('filters.from')}</label>
         <select
           id="minLevel"
           value={levelRange[0]}
@@ -72,7 +74,7 @@ export default function LevelRangeSelector({
       </div>
 
       <div className="flex items-center gap-2">
-        <label htmlFor="maxLevel" className="text-sm text-gray-600">To:</label>
+        <label htmlFor="maxLevel" className="text-sm text-gray-600">{t('filters.to')}</label>
         <select
           id="maxLevel"
           value={levelRange[1]}

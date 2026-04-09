@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import ConfirmDialog from './ConfirmDialog';
@@ -11,6 +12,7 @@ interface StatisticsPeriodModalProps {
 }
 
 export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = null }: StatisticsPeriodModalProps) {
+  const { t } = useTranslation();
   const [periodNameInput, setPeriodNameInput] = useState('');
   const [startDateInput, setStartDateInput] = useState('');
   const [endDateInput, setEndDateInput] = useState('');
@@ -54,17 +56,17 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     const isEditing = editingPeriodId !== null;
 
     if (!periodNameInput.trim()) {
-      setPeriodError('Please provide a name for the period.');
+      setPeriodError(t('statistics.period.errors.nameRequired'));
       return;
     }
 
     if (!startDateInput || !endDateInput) {
-      setPeriodError('Please set both start and end date, or clear both.');
+      setPeriodError(t('statistics.period.errors.startEndRequired'));
       return;
     }
 
     if (startDateInput > endDateInput) {
-      setPeriodError('Start date must be before or equal to end date.');
+      setPeriodError(t('statistics.period.errors.invalidDateRange'));
       return;
     }
 
@@ -83,7 +85,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     setIsSavingPeriod(false);
 
     if (!wasSaved) {
-      setPeriodError('Failed to save period. Please try again.');
+      setPeriodError(t('statistics.period.errors.saveFailed'));
       return;
     }
 
@@ -100,7 +102,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
 
     const wasDeleted = await deleteGroupPeriod(deletingPeriod.id);
     if (!wasDeleted) {
-      setPeriodError('Failed to delete period. Please try again.');
+      setPeriodError(t('statistics.period.errors.deleteFailed'));
       return;
     }
 
@@ -115,29 +117,29 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     <>
       <Modal isOpen={isOpen} onClose={handleClose}>
         <ModalHeader>
-          <ModalTitle>{editingPeriodId ? 'Edit Period' : 'Add Period'}</ModalTitle>
+          <ModalTitle>{editingPeriodId ? t('statistics.period.editPeriod') : t('statistics.period.addPeriod')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <p className="text-sm text-gray-600 mb-4">
             {editingPeriodId
-              ? `Update the selected period for ${group?.name ?? 'this group'}.`
-              : `Create a new period for ${group?.name ?? 'this group'}.`}
+              ? t('statistics.period.editDescription', { group: group?.name ?? t('statistics.period.thisGroup') })
+              : t('statistics.period.addDescription', { group: group?.name ?? t('statistics.period.thisGroup') })}
           </p>
           <div className="rounded-lg border border-gray-200 p-4 space-y-4">
             <div>
-              <label htmlFor="stats-period-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label htmlFor="stats-period-name" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.name')}</label>
               <input
                 id="stats-period-name"
                 type="text"
                 value={periodNameInput}
                 onChange={(e) => setPeriodNameInput(e.target.value)}
-                placeholder="Spring 2026"
+                placeholder={t('statistics.period.placeholders.name')}
                 className="w-full p-2 border border-gray-300 rounded-md"
               />
             </div>
 
             <div>
-              <label htmlFor="stats-period-start" className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+              <label htmlFor="stats-period-start" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.startDate')}</label>
               <input
                 id="stats-period-start"
                 type="date"
@@ -148,7 +150,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
             </div>
 
             <div>
-              <label htmlFor="stats-period-end" className="block text-sm font-medium text-gray-700 mb-1">End date</label>
+              <label htmlFor="stats-period-end" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.endDate')}</label>
               <input
                 id="stats-period-end"
                 type="date"
@@ -163,23 +165,23 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
           </div>
         </ModalBody>
         <ModalFooter>
-          <button onClick={handleClose} className="btn-secondary">Cancel</button>
+          <button onClick={handleClose} className="btn-secondary">{t('common.actions.cancel')}</button>
           {editingPeriodId && (
             <button onClick={() => setDeletingPeriod(periodToEdit)} className="btn-secondary text-red-600">
-              Delete
+              {t('common.actions.delete')}
             </button>
           )}
           <button onClick={handleSavePeriod} className="btn-primary" disabled={isSavingPeriod}>
-            {editingPeriodId ? 'Update period' : 'Add period'}
+            {editingPeriodId ? t('statistics.period.updatePeriod') : t('statistics.period.addPeriod')}
           </button>
         </ModalFooter>
       </Modal>
 
       <ConfirmDialog
         isOpen={deletingPeriod !== null}
-        title="Delete Period"
-        message={deletingPeriod ? `Delete period \"${deletingPeriod.name}\"?` : ''}
-        confirmText="Delete"
+        title={t('statistics.period.deleteTitle')}
+        message={deletingPeriod ? t('statistics.period.deleteMessage', { period: deletingPeriod.name }) : ''}
+        confirmText={t('common.actions.delete')}
         onConfirm={handleDeletePeriod}
         onCancel={() => setDeletingPeriod(null)}
         confirmButtonColor="red"

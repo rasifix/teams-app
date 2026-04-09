@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useTrainers, useShirtSets, useAppLoading, useAppHasErrors, useAppErrors, useGroup, useSelectedStatisticsPeriod } from '../store';
 import type { Event, Team, Invitation, InvitationStatus } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
@@ -16,6 +17,7 @@ import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 
 export default function EventDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -53,9 +55,9 @@ export default function EventDetailPage() {
   
   // Determine loading and error states
   const loading = isLoading;
-  const error = !id ? 'No event ID provided' : 
-               (!event && !loading) ? 'Event not found' :
-               errors.events || (hasErrors ? 'Failed to load data' : null);
+  const error = !id ? t('eventDetail.errors.noEventId') : 
+               (!event && !loading) ? t('eventDetail.errors.notFound') :
+               errors.events || (hasErrors ? t('eventDetail.errors.failedToLoadData') : null);
   
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
@@ -84,7 +86,7 @@ export default function EventDetailPage() {
 
     const newTeam = {
       id: crypto.randomUUID(),
-      name: `Team ${event.teams.length + 1}`,
+      name: `${t('domain.team')} ${event.teams.length + 1}`,
       strength: 2,
       startTime: '10:00', // Default start time
       selectedPlayers: [],
@@ -184,7 +186,7 @@ export default function EventDetailPage() {
     const assignedNumbers = playerShirtAssignments.map(assignment => assignment.shirtNumber);
     const uniqueAssignedNumbers = new Set(assignedNumbers);
     if (uniqueAssignedNumbers.size !== assignedNumbers.length) {
-      alert('Each shirt number can only be assigned once per team.');
+      alert(t('eventDetail.errors.shirtNumberUniquePerTeam'));
       return;
     }
 
@@ -203,7 +205,7 @@ export default function EventDetailPage() {
 
     const conflictingNumber = assignedNumbers.find(number => usedInOtherTeams.has(number));
     if (conflictingNumber !== undefined) {
-      alert(`Shirt #${conflictingNumber} is already assigned in another team for this event.`);
+      alert(t('eventDetail.errors.shirtNumberUsedInOtherTeam', { number: conflictingNumber }));
       return;
     }
 
@@ -425,7 +427,7 @@ export default function EventDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading event...</p>
+          <p>{t('eventDetail.loading')}</p>
         </div>
       </div>
     );
@@ -440,7 +442,7 @@ export default function EventDetailPage() {
             onClick={() => window.location.reload()}
             className="mt-4 btn-primary btn-sm"
           >
-            Retry
+            {t('common.actions.retry')}
           </button>
         </div>
       </div>
@@ -451,7 +453,7 @@ export default function EventDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Event not found.</p>
+          <p>{t('eventDetail.notFound')}</p>
         </div>
       </div>
     );
@@ -468,13 +470,13 @@ export default function EventDetailPage() {
                 onClick={() => navigate(`/events/${previousEvent.id}`)}
                 className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
               >
-                <span className="block sm:hidden">← Prev</span>
+                <span className="block sm:hidden">← {t('eventDetail.previousShort')}</span>
                 <span className="hidden sm:block">← {previousEvent.name}</span>
               </button>
             ) : (
               <div className="text-gray-400">
-                <span className="block sm:hidden">← Prev</span>
-                <span className="hidden sm:block">← No previous event</span>
+                <span className="block sm:hidden">← {t('eventDetail.previousShort')}</span>
+                <span className="hidden sm:block">← {t('eventDetail.noPreviousEvent')}</span>
               </div>
             )}
           </div>
@@ -487,13 +489,13 @@ export default function EventDetailPage() {
                 onClick={() => navigate(`/events/${nextEvent.id}`)}
                 className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
               >
-                <span className="block sm:hidden">Next →</span>
+                <span className="block sm:hidden">{t('eventDetail.nextShort')} →</span>
                 <span className="hidden sm:block">{nextEvent.name} →</span>
               </button>
             ) : (
               <div className="text-gray-400">
-                <span className="block sm:hidden">Next →</span>
-                <span className="hidden sm:block">No next event →</span>
+                <span className="block sm:hidden">{t('eventDetail.nextShort')} →</span>
+                <span className="hidden sm:block">{t('eventDetail.noNextEvent')} →</span>
               </div>
             )}
           </div>
@@ -511,13 +513,13 @@ export default function EventDetailPage() {
               onClick={() => setIsEditEventModalOpen(true)}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              Edit
+              {t('common.actions.edit')}
             </button>
             <button 
               onClick={handleDeleteEvent}
               className="text-red-600 hover:text-red-700 text-sm font-medium"
             >
-              Delete
+              {t('common.actions.delete')}
             </button>
           </div>
         </div>
@@ -527,26 +529,26 @@ export default function EventDetailPage() {
         {/* Teams Section */}
         <div className="card card-body lg:p-6 p-4 lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="card-title">Teams</h2>
+            <h2 className="card-title">{t('eventDetail.teamsTitle')}</h2>
             <div className="flex gap-2">
               <button 
                 onClick={() => setIsPrintSummaryOpen(true)}
                 className="btn-secondary btn-sm hidden sm:block"
                 disabled={event.teams.length === 0}
               >
-                Print Teams
+                {t('eventDetail.printTeams')}
               </button>
               <button 
                 onClick={handleAddTeam}
                 className="btn-primary btn-sm"
               >
-                Add
+                {t('common.actions.add')}
               </button>
             </div>
           </div>
           {event.teams.length === 0 ? (
             <div className="empty-state">
-              <p>No teams configured yet.</p>
+              <p>{t('eventDetail.noTeamsConfigured')}</p>
             </div>
           ) : (
             <>
@@ -640,7 +642,7 @@ export default function EventDetailPage() {
                           className="flex items-center justify-center w-full h-full text-white font-medium text-sm"
                           onClick={() => setTeamToDelete(team.id)}
                         >
-                          Delete
+                          {t('common.actions.delete')}
                         </button>
                       </div>
                     </div>
@@ -713,10 +715,10 @@ export default function EventDetailPage() {
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title="Delete Event"
-        message={`Are you sure you want to delete "${event.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('eventDetail.deleteEventTitle')}
+        message={t('eventDetail.deleteEventMessage', { name: event.name })}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeleteEvent}
         onCancel={cancelDeleteEvent}
         confirmButtonColor="red"
@@ -724,10 +726,12 @@ export default function EventDetailPage() {
 
       <ConfirmDialog
         isOpen={!!teamToDelete}
-        title="Delete Team"
-        message={`Are you sure you want to delete "${event.teams.find(t => t.id === teamToDelete)?.name || 'this team'}"? Assigned players will be removed from the team and set back to accepted.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title={t('eventDetail.deleteTeamTitle')}
+        message={t('eventDetail.deleteTeamMessage', {
+          teamName: event.teams.find(t => t.id === teamToDelete)?.name || t('eventDetail.thisTeam'),
+        })}
+        confirmText={t('common.actions.delete')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={handleDeleteTeam}
         onCancel={() => setTeamToDelete(null)}
         confirmButtonColor="red"

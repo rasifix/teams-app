@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Guardian, Trainer } from '../types';
 import { hasDuplicateGuardian } from '../utils/guardians';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
@@ -17,6 +18,7 @@ interface ManageGuardiansModalProps {
 type Mode = 'existing' | 'documented';
 
 export default function ManageGuardiansModal({ isOpen, onClose, guardians, trainers, onAssign, editingGuardian = null, onEdit }: ManageGuardiansModalProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('existing');
   const [selectedTrainerId, setSelectedTrainerId] = useState('');
   const [existingFirstName, setExistingFirstName] = useState('');
@@ -103,17 +105,17 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
     if (mode === 'existing') {
       if (!selectedTrainerId && !isEditMode) {
-        setError('Please select an existing user to assign.');
+        setError(t('guardians.errors.selectExistingUser'));
         return;
       }
 
       if (!existingFirstName.trim() || !existingLastName.trim()) {
-        setError('First name and last name are required for existing-user guardian assignment.');
+        setError(t('guardians.errors.existingNameRequired'));
         return;
       }
 
       if (!existingEmail.trim()) {
-        setError('Email is required for existing-user guardian assignment.');
+        setError(t('guardians.errors.existingEmailRequired'));
         return;
       }
 
@@ -128,7 +130,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
       const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
       if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-        setError('This guardian is already assigned.');
+        setError(t('guardians.errors.alreadyAssigned'));
         return;
       }
 
@@ -149,7 +151,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     }
 
     if (!firstName.trim() || !lastName.trim()) {
-      setError('First name and last name are required for documented guardians.');
+      setError(t('guardians.errors.documentedNameRequired'));
       return;
     }
 
@@ -163,7 +165,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
     const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
     if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-      setError('A documented guardian with the same name is already assigned.');
+      setError(t('guardians.errors.documentedDuplicate'));
       return;
     }
 
@@ -185,7 +187,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalHeader>
-        <ModalTitle>{isEditMode ? 'Edit Guardian' : 'Assign Guardian'}</ModalTitle>
+        <ModalTitle>{isEditMode ? t('guardians.editTitle') : t('guardians.assignTitle')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -203,7 +205,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                     setError(null);
                   }}
                 />
-                Existing user
+                {t('guardians.existingUser')}
               </label>
               <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                 <input
@@ -216,13 +218,13 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                     setError(null);
                   }}
                 />
-                Documented only
+                {t('guardians.documentedOnly')}
               </label>
             </div>
 
             {mode === 'existing' ? (
               <div>
-                <label htmlFor="guardian-existing" className="form-label">Existing user</label>
+                <label htmlFor="guardian-existing" className="form-label">{t('guardians.existingUser')}</label>
                 <select
                   id="guardian-existing"
                   value={selectedTrainerId}
@@ -230,7 +232,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                   className="form-select"
                   disabled={isEditMode}
                 >
-                  <option value="">Select user</option>
+                  <option value="">{t('guardians.selectUser')}</option>
                   {availableTrainers.map((trainer) => (
                     <option key={trainer.id} value={trainer.id}>
                       {trainer.firstName} {trainer.lastName}
@@ -238,45 +240,45 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                   ))}
                 </select>
                 {availableTrainers.length === 0 && (
-                  <p className="text-xs text-gray-500 mt-2">No available existing users to assign.</p>
+                  <p className="text-xs text-gray-500 mt-2">{t('guardians.noAvailableUsers')}</p>
                 )}
                 {isEditMode && (
-                  <p className="text-xs text-gray-500 mt-2">User selection is locked while editing. Update name/email fields directly.</p>
+                  <p className="text-xs text-gray-500 mt-2">{t('guardians.selectionLocked')}</p>
                 )}
                 <div className="mt-3 grid grid-cols-1 gap-3">
                   <div>
-                    <label htmlFor="guardian-existing-first-name" className="form-label">First Name</label>
+                    <label htmlFor="guardian-existing-first-name" className="form-label">{t('auth.firstName')}</label>
                     <input
                       id="guardian-existing-first-name"
                       type="text"
                       value={existingFirstName}
                       onChange={(e) => setExistingFirstName(e.target.value)}
                       className="form-input"
-                      placeholder="First name"
+                      placeholder={t('auth.firstName')}
                       required={mode === 'existing'}
                     />
                   </div>
                   <div>
-                    <label htmlFor="guardian-existing-last-name" className="form-label">Last Name</label>
+                    <label htmlFor="guardian-existing-last-name" className="form-label">{t('auth.lastName')}</label>
                     <input
                       id="guardian-existing-last-name"
                       type="text"
                       value={existingLastName}
                       onChange={(e) => setExistingLastName(e.target.value)}
                       className="form-input"
-                      placeholder="Last name"
+                      placeholder={t('auth.lastName')}
                       required={mode === 'existing'}
                     />
                   </div>
                   <div>
-                    <label htmlFor="guardian-existing-email" className="form-label">Email</label>
+                    <label htmlFor="guardian-existing-email" className="form-label">{t('auth.emailAddress')}</label>
                     <input
                       id="guardian-existing-email"
                       type="email"
                       value={existingEmail}
                       onChange={(e) => setExistingEmail(e.target.value)}
                       className="form-input"
-                      placeholder="Email"
+                      placeholder={t('auth.emailAddress')}
                       required={mode === 'existing'}
                     />
                   </div>
@@ -285,41 +287,41 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
             ) : (
               <>
                 <div>
-                  <label htmlFor="guardian-first-name" className="form-label">First Name</label>
+                  <label htmlFor="guardian-first-name" className="form-label">{t('auth.firstName')}</label>
                   <input
                     id="guardian-first-name"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     className="form-input"
-                    placeholder="Enter first name"
+                    placeholder={t('guardians.placeholderFirstName')}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="guardian-last-name" className="form-label">Last Name</label>
+                  <label htmlFor="guardian-last-name" className="form-label">{t('auth.lastName')}</label>
                   <input
                     id="guardian-last-name"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     className="form-input"
-                    placeholder="Enter last name"
+                    placeholder={t('guardians.placeholderLastName')}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="guardian-documented-email" className="form-label">Email (optional)</label>
+                  <label htmlFor="guardian-documented-email" className="form-label">{t('guardians.emailOptional')}</label>
                   <input
                     id="guardian-documented-email"
                     type="email"
                     value={documentedEmail}
                     onChange={(e) => setDocumentedEmail(e.target.value)}
                     className="form-input"
-                    placeholder="guardian@example.com"
+                    placeholder={t('guardians.placeholderEmail')}
                   />
                 </div>
-                <p className="text-xs text-gray-500">Documented-only guardians are contacts only and cannot log in.</p>
+                <p className="text-xs text-gray-500">{t('guardians.documentedHint')}</p>
               </>
             )}
 
@@ -333,10 +335,10 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button type="submit" variant="primary" className="flex-1" disabled={isSubmitting}>
-            {isEditMode ? 'Save' : 'Assign'}
+            {isEditMode ? t('common.actions.save') : t('guardians.assignAction')}
           </Button>
         </ModalFooter>
       </form>

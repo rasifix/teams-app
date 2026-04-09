@@ -1,4 +1,5 @@
 import type { Event, Trainer } from '../types';
+import { useTranslation } from 'react-i18next';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import Strength from './Strength';
 import { DateColumn } from './ui';
@@ -10,6 +11,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, trainers = [], onClick }: EventCardProps) {
+  const { t } = useTranslation();
   // Check if all teams meet the minimum player requirement
   const allTeamsMeetMinimum = event.teams.every(
     team => (team.selectedPlayers?.length || 0) >= (event.minPlayersPerTeam || 0)
@@ -63,7 +65,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                   </p>
                 )}
                 <p className="text-sm text-gray-600">
-                  👥 {teamsCount} {teamsCount === 1 ? 'team' : 'teams'}
+                  👥 {t('events.teamCount', { count: teamsCount })}
                 </p>
               </div>
               
@@ -87,14 +89,14 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
                     <div
                       key={status}
                       className="flex items-center gap-1"
-                      title={`Players marked as ${invitationStatusMeta[status].label.toLowerCase()}`}
+                      title={t('events.playersMarkedAs', { status: t(`invitationStatus.${status}`).toLowerCase() })}
                     >
                       <span className={`font-bold ${invitationStatusMeta[status].iconClassName}`}>{invitationStatusMeta[status].icon}</span>
                       <span className="text-gray-600">{statusCounts[status]}</span>
                     </div>
                   ))}
                   {/* Selected */}
-                  <div className="flex items-center gap-1" title="Players who have been assigned to teams">
+                  <div className="flex items-center gap-1" title={t('events.playersAssignedToTeams')}>
                     <span className="text-green-600 font-bold">✓</span>
                     <span className="text-gray-600">{selectedCount}</span>
                   </div>
@@ -111,7 +113,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
               </div>
             ) : (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Pending
+                {t('common.states.pending')}
               </span>
             )}
           </div>

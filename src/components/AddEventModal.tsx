@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface AddEventModalProps {
 }
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -61,13 +63,13 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Create New Event</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('eventModal.addTitle')}</h2>
           
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="event-name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Event Name *
+                  {t('eventModal.fields.eventNameRequired')}
                 </label>
                 <input
                   id="event-name"
@@ -75,14 +77,14 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Saturday Morning Game"
+                  placeholder={t('eventModal.placeholders.eventName')}
                   required
                 />
               </div>
 
               <div>
                 <label htmlFor="event-date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date *
+                  {t('eventModal.fields.dateRequired')}
                 </label>
                 <input
                   id="event-date"
@@ -96,7 +98,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
               <div>
                 <label htmlFor="event-time" className="block text-sm font-medium text-gray-700 mb-1">
-                  Start Time *
+                  {t('eventModal.fields.startTimeRequired')}
                 </label>
                 <input
                   id="event-time"
@@ -110,7 +112,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
               <div>
                 <label htmlFor="event-location" className="block text-sm font-medium text-gray-700 mb-1">
-                  Location
+                  {t('eventModal.fields.location')}
                 </label>
                 <input
                   id="event-location"
@@ -118,13 +120,13 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="e.g., Main Field, Sportplatz Seebach"
+                  placeholder={t('eventModal.placeholders.location')}
                 />
               </div>
 
               <div>
                 <label htmlFor="num-teams" className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Teams *
+                  {t('eventModal.fields.numberOfTeamsRequired')}
                 </label>
                 <input
                   id="num-teams"
@@ -140,7 +142,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
               <div>
                 <label htmlFor="max-players" className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Players per Team *
+                  {t('eventModal.fields.maxPlayersPerTeamRequired')}
                 </label>
                 <input
                   id="max-players"
@@ -156,7 +158,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
               <div>
                 <label htmlFor="min-players" className="block text-sm font-medium text-gray-700 mb-1">
-                  Min Players per Team *
+                  {t('eventModal.fields.minPlayersPerTeamRequired')}
                 </label>
                 <input
                   id="min-players"
@@ -177,13 +179,13 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                 onClick={handleClose}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
               >
-                Cancel
+                {t('common.actions.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
               >
-                Create Event
+                {t('eventModal.createAction')}
               </button>
             </div>
           </form>

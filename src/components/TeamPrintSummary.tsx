@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/dateFormatter';
 import type { Event, Team, Player, Trainer, ShirtSet } from '../types';
 
@@ -24,6 +25,7 @@ export default function TeamPrintSummary({
   isOpen, 
   onClose 
 }: TeamPrintSummaryProps) {
+  const { t } = useTranslation();
   const [format, setFormat] = useState<PrintFormat>('selection');
   
   if (!isOpen) return null;
@@ -51,26 +53,26 @@ export default function TeamPrintSummary({
       <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold text-gray-900">Team Summary - Print Preview</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t('teamPrint.title')}</h2>
             <div className="flex gap-2">
               <button
                 onClick={handlePrint}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                Print
+                {t('teamPrint.print')}
               </button>
               <button
                 onClick={onClose}
                 className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
               >
-                Close
+                {t('common.actions.close')}
               </button>
             </div>
           </div>
           
           {/* Format Toggle */}
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Format:</span>
+            <span className="text-sm font-medium text-gray-700">{t('teamPrint.formatLabel')}</span>
             <div className="flex gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -81,7 +83,7 @@ export default function TeamPrintSummary({
                   onChange={() => setFormat('selection')}
                   className="text-blue-600"
                 />
-                <span className="text-sm">Selection</span>
+                <span className="text-sm">{t('teamPrint.selectionFormat')}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -92,7 +94,7 @@ export default function TeamPrintSummary({
                   onChange={() => setFormat('organizer')}
                   className="text-blue-600"
                 />
-                <span className="text-sm">Organizer</span>
+                <span className="text-sm">{t('teamPrint.organizerFormat')}</span>
               </label>
             </div>
           </div>
@@ -135,7 +137,7 @@ export default function TeamPrintSummary({
                   {/* Players List */}
                   <div>
                     {playersData.length === 0 ? (
-                      <p className="text-gray-500 italic text-sm">No players selected for this team yet.</p>
+                      <p className="text-gray-500 italic text-sm">{t('teamPrint.noPlayers')}</p>
                     ) : (
                       <div className="space-y-2">
                         {playersData.map((player) => {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { getSelectedGroupId } from '../utils/localStorage';
 import { 
@@ -36,6 +37,7 @@ function getNewestGroup(groups: Group[]): Group | null {
 }
 
 export default function AppInitializer({ children }: AppInitializerProps) {
+  const { t } = useTranslation();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
@@ -95,7 +97,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('common.states.loading')}</h2>
         </div>
       </div>
     );
@@ -111,8 +113,8 @@ export default function AppInitializer({ children }: AppInitializerProps) {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Application</h2>
-          <p className="text-gray-600">Fetching players, events, trainers, and equipment...</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('appInitializer.loadingApplication')}</h2>
+          <p className="text-gray-600">{t('appInitializer.fetchingData')}</p>
         </div>
       </div>
     );
@@ -127,18 +129,18 @@ export default function AppInitializer({ children }: AppInitializerProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Application</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('appInitializer.failedToLoadApplication')}</h2>
           <div className="text-left text-sm text-gray-600 mb-4">
-            {errors.players && <p>• Players: {errors.players}</p>}
-            {errors.events && <p>• Events: {errors.events}</p>}
-            {errors.trainers && <p>• Trainers: {errors.trainers}</p>}
-            {errors.shirtSets && <p>• Shirt Sets: {errors.shirtSets}</p>}
+            {errors.players && <p>• {t('domain.players')}: {errors.players}</p>}
+            {errors.events && <p>• {t('domain.events')}: {errors.events}</p>}
+            {errors.trainers && <p>• {t('domain.trainers')}: {errors.trainers}</p>}
+            {errors.shirtSets && <p>• {t('domain.shirtSets')}: {errors.shirtSets}</p>}
           </div>
           <button
             onClick={() => initializeApp()}
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
-            Retry
+            {t('common.actions.retry')}
           </button>
         </div>
       </div>

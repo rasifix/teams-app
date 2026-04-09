@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useShirtSets } from "../hooks/useShirtSets";
 import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
@@ -11,6 +12,7 @@ import ShirtSetCard from "../components/ShirtSetCard";
 import type { ShirtSet, Shirt } from "../types";
 
 export default function ShirtSetsPage() {
+  const { t } = useTranslation();
   const {
     shirtSets,
     loading,
@@ -91,7 +93,7 @@ export default function ShirtSetsPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading shirts...</p>
+          <p>{t('shirts.loading')}</p>
         </div>
       </div>
     );
@@ -109,20 +111,20 @@ export default function ShirtSetsPage() {
         <CardBody>
           <div className="flex justify-between items-center mb-4">
             <CardTitle>
-              Shirts ({shirtSets.length})
+              {t('shirts.titleWithCount', { count: shirtSets.length })}
             </CardTitle>
             <Button
               variant="primary"
               size="sm"
               onClick={() => setIsAddModalOpen(true)}
             >
-              Add
+              {t('common.actions.add')}
             </Button>
           </div>
 
           {shirtSets.length === 0 ? (
             <div className="empty-state">
-              <p>No shirts yet. Create your first shirt set to get started!</p>
+              <p>{t('shirts.emptyState')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -174,9 +176,9 @@ export default function ShirtSetsPage() {
       {deletingShirtSet && (
         <ConfirmDialog
           isOpen={true}
-          title="Delete Shirt Set"
-          message={`Are you sure you want to delete the shirt set "${deletingShirtSet.sponsor} - ${deletingShirtSet.color}"? This action cannot be undone.`}
-          confirmText="Delete"
+          title={t('shirts.deleteSetTitle')}
+          message={t('shirts.deleteSetMessage', { sponsor: deletingShirtSet.sponsor, color: deletingShirtSet.color })}
+          confirmText={t('common.actions.delete')}
           onConfirm={handleDeleteShirtSet}
           onCancel={() => setDeletingShirtSet(null)}
         />
@@ -186,9 +188,9 @@ export default function ShirtSetsPage() {
       {deletingShirt && (
         <ConfirmDialog
           isOpen={true}
-          title="Remove Shirt"
-          message={`Are you sure you want to remove shirt #${deletingShirt.shirtNumber} from this set? This action cannot be undone.`}
-          confirmText="Remove"
+          title={t('shirts.removeShirtTitle')}
+          message={t('shirts.removeShirtMessage', { number: deletingShirt.shirtNumber })}
+          confirmText={t('shirts.removeShirtAction')}
           onConfirm={confirmRemoveShirt}
           onCancel={() => setDeletingShirt(null)}
         />

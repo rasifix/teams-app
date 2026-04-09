@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup } from '../store';
 import type { Guardian, Period, Player, PlayerEventHistoryItem } from '../types';
 import Level from '../components/Level';
@@ -62,6 +63,7 @@ const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
 };
 
 export default function PlayerDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -88,15 +90,15 @@ export default function PlayerDetailPage() {
   
   // Determine loading and error states
   const loading = isLoading;
-  const error = !id ? 'No player ID provided' : 
-               (!player && !loading) ? 'Player not found' :
-               errors.players || (hasErrors ? 'Failed to load data' : null);
+  const error = !id ? t('playerDetail.errors.noPlayerId') : 
+               (!player && !loading) ? t('playerDetail.errors.notFound') :
+               errors.players || (hasErrors ? t('playerDetail.errors.failedToLoadData') : null);
 
   if (loading) {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading player...</p>
+          <p>{t('playerDetail.loading')}</p>
         </div>
       </div>
     );
@@ -106,7 +108,7 @@ export default function PlayerDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Error: {error}</p>
+          <p>{t('common.errors.errorWithMessage', { message: error })}</p>
         </div>
       </div>
     );
@@ -116,7 +118,7 @@ export default function PlayerDetailPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Player not found.</p>
+          <p>{t('playerDetail.notFound')}</p>
         </div>
       </div>
     );
@@ -195,7 +197,7 @@ export default function PlayerDetailPage() {
     if (outsidePeriods.length > 0) {
       nonEmptyGroups.push({
         id: 'outside-periods',
-        title: 'Outside periods',
+        title: t('statistics.period.outsidePeriods'),
         eventHistory: outsidePeriods,
       });
     }
@@ -253,7 +255,7 @@ export default function PlayerDetailPage() {
       email: guardian.email,
     });
     if (!success) {
-      setGuardianActionError('Failed to assign guardian. Please try again.');
+      setGuardianActionError(t('playerDetail.guardians.assignFailed'));
       return false;
     }
     return true;
@@ -280,7 +282,7 @@ export default function PlayerDetailPage() {
     );
 
     if (!success) {
-      setGuardianActionError('Failed to edit guardian. Please try again.');
+      setGuardianActionError(t('playerDetail.guardians.editFailed'));
       return false;
     }
 
@@ -296,7 +298,7 @@ export default function PlayerDetailPage() {
     setGuardianActionError(null);
     const success = await deleteGuardianFromPlayer(player.id, guardianToRemove.id);
     if (!success) {
-      setGuardianActionError('Failed to remove guardian. Please try again.');
+      setGuardianActionError(t('playerDetail.guardians.removeFailed'));
       return;
     }
 
@@ -312,7 +314,7 @@ export default function PlayerDetailPage() {
             onClick={() => navigate('/members')}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            ← Back
+            ← {t('common.actions.back')}
           </button>
           <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">
             {player.firstName} {player.lastName}
@@ -322,13 +324,13 @@ export default function PlayerDetailPage() {
               onClick={handleEditPlayer}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
-              Edit
+              {t('common.actions.edit')}
             </button>
             <button 
               onClick={handleDeletePlayer}
               className="text-red-600 hover:text-red-700 text-sm font-medium"
             >
-              Delete
+              {t('common.actions.delete')}
             </button>
           </div>
         </div>
@@ -346,7 +348,7 @@ export default function PlayerDetailPage() {
         )}
         {player.preferredShirtNumber && (
           <span className="text-blue-700 text-sm bg-blue-50 px-2 py-1 rounded">
-            Preferred #{player.preferredShirtNumber}
+            {t('playerDetail.preferredShirtNumber', { number: player.preferredShirtNumber })}
           </span>
         )}
         <Level level={player.level} />
@@ -356,7 +358,7 @@ export default function PlayerDetailPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex items-center justify-between gap-3 mb-4">
-              <CardTitle className="mb-0">Guardians ({guardians.length})</CardTitle>
+              <CardTitle className="mb-0">{t('playerDetail.guardians.title', { count: guardians.length })}</CardTitle>
               <button
                 onClick={() => {
                   setGuardianActionError(null);
@@ -365,22 +367,22 @@ export default function PlayerDetailPage() {
                 className="btn-primary btn-sm"
                 disabled={!canManagePlayerGuardians || !underageForGuardianAssignment}
                 title={!canManagePlayerGuardians
-                  ? 'Only group managers can assign guardians.'
-                  : (!underageForGuardianAssignment ? 'Guardians can only be assigned to underage players.' : 'Assign guardian')}
+                  ? t('playerDetail.guardians.onlyManagers')
+                  : (!underageForGuardianAssignment ? t('playerDetail.guardians.onlyUnderage') : t('playerDetail.guardians.assignAction'))}
               >
-                Add Guardian
+                {t('playerDetail.guardians.addAction')}
               </button>
             </div>
 
             {!canManagePlayerGuardians && (
               <div className="mb-3 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
-                Only group managers can assign or remove guardians.
+                {t('playerDetail.guardians.onlyManagersManage')}
               </div>
             )}
 
             {!underageForGuardianAssignment && (
               <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
-                Guardian assignment is available only for underage players.
+                {t('playerDetail.guardians.onlyUnderage')}
               </div>
             )}
 
@@ -391,7 +393,7 @@ export default function PlayerDetailPage() {
             )}
 
             {guardians.length === 0 ? (
-              <p className="text-sm text-gray-500">No guardians assigned yet.</p>
+              <p className="text-sm text-gray-500">{t('playerDetail.guardians.empty')}</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {guardians.map((guardian) => (
@@ -414,13 +416,13 @@ export default function PlayerDetailPage() {
                           }}
                           className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                         >
-                          Edit
+                          {t('common.actions.edit')}
                         </button>
                         <button
                           onClick={() => setGuardianToRemove(guardian)}
                           className="text-red-600 hover:text-red-700 text-sm font-medium"
                         >
-                          Remove
+                          {t('playerDetail.guardians.removeAction')}
                         </button>
                       </div>
                     )}
@@ -444,7 +446,7 @@ export default function PlayerDetailPage() {
         <div className="lg:mt-6">
           <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
             <CardBody className="lg:p-6 p-4">
-              <CardTitle>Events without Invitation</CardTitle>
+              <CardTitle>{t('playerDetail.eventsWithoutInvitation')}</CardTitle>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 overflow-hidden">
                 {futureEventsWithoutInvitation.map((event) => (
                   <div 
@@ -462,7 +464,7 @@ export default function PlayerDetailPage() {
                           <h3 className="font-semibold text-gray-900 truncate" title={event.name}>{event.name}</h3>
                           <div className="mt-2">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                              Not Invited
+                              {t('invitationStatus.notInvited')}
                             </span>
                           </div>
                         </div>
@@ -506,18 +508,21 @@ export default function PlayerDetailPage() {
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title="Delete Player"
-        message={`Are you sure you want to delete ${player.firstName} ${player.lastName}? This action cannot be undone.`}
+        title={t('members.deletePlayerTitle')}
+        message={t('members.deletePlayerMessage', { firstName: player.firstName, lastName: player.lastName })}
         onConfirm={confirmDeletePlayer}
         onCancel={cancelDeletePlayer}
       />
 
       <ConfirmDialog
         isOpen={Boolean(guardianToRemove)}
-        title="Remove Guardian"
-        message={`Are you sure you want to remove ${guardianToRemove?.firstName} ${guardianToRemove?.lastName} from this player?`}
-        confirmText="Remove"
-        cancelText="Cancel"
+        title={t('playerDetail.guardians.removeTitle')}
+        message={t('playerDetail.guardians.removeMessage', {
+          firstName: guardianToRemove?.firstName,
+          lastName: guardianToRemove?.lastName,
+        })}
+        confirmText={t('playerDetail.guardians.removeAction')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={confirmRemoveGuardian}
         onCancel={() => setGuardianToRemove(null)}
         confirmButtonColor="red"

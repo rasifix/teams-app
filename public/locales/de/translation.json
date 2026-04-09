@@ -1,0 +1,552 @@
+{
+  "app": {
+    "name": "Mein Team"
+  },
+  "common": {
+    "language": "Sprache",
+    "tabs": "Tabs",
+    "openMainMenu": "Hauptmenu öffnen",
+    "actions": {
+      "retry": "Erneut versuchen",
+      "confirm": "Bestätigen",
+      "cancel": "Abbrechen",
+      "close": "Schliessen",
+      "back": "Zurück",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "add": "Hinzufügen",
+      "selectAll": "Alle auswählen",
+      "deselectAll": "Auswahl aufheben",
+      "clear": "Zurücksetzen",
+      "save": "Speichern"
+    },
+    "errors": {
+      "errorWithMessage": "Fehler: {{message}}"
+    },
+    "states": {
+      "loading": "Laden...",
+      "checkingConnection": "Verbindung wird geprüft...",
+      "serverDisconnected": "Serververbindung getrennt",
+      "pending": "Ausstehend",
+      "processing": "Wird verarbeitet..."
+    },
+    "labels": {
+      "status": "Status",
+      "name": "Name",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum"
+    }
+  },
+  "domain": {
+    "player": "Spieler",
+    "players": "Spieler",
+    "events": "Termine",
+    "trainers": "Trainer",
+    "shirtSets": "Trikotsätze",
+    "team": "Team"
+  },
+  "filters": {
+    "playerLevel": "Nach Spielerlevel filtern:",
+    "from": "Von:",
+    "to": "Bis:"
+  },
+  "events": {
+    "loading": "Termine werden geladen...",
+    "futureTitle": "Kommende Termine ({{count}})",
+    "pastTitle": "Vergangene Termine ({{count}})",
+    "list": {
+      "emptyState": "Noch keine Termine erstellt. Klicke auf \"Termin erstellen\", um zu starten."
+    },
+    "teamCount_one": "{{count}} Team",
+    "teamCount_other": "{{count}} Teams",
+    "playersMarkedAs": "Spieler mit Status {{status}}",
+    "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden"
+  },
+  "players": {
+    "eventHistory": {
+      "empty": "Noch keine Termineinladungen."
+    }
+  },
+  "shirts": {
+    "goalkeeperShort": "TW",
+    "editShirt": "Trikot bearbeiten",
+    "removeShirt": "Trikot entfernen",
+    "editSet": "Satz bearbeiten",
+    "deleteSet": "Satz löschen",
+    "shirtCount_one": "{{count}} Trikot",
+    "shirtCount_other": "{{count}} Trikots",
+    "loading": "Trikots werden geladen...",
+    "titleWithCount": "Trikots ({{count}})",
+    "emptyState": "Noch keine Trikots vorhanden. Erstelle deinen ersten Trikotsatz.",
+    "deleteSetTitle": "Trikotsatz löschen",
+    "deleteSetMessage": "Möchtest du den Trikotsatz \"{{sponsor}} - {{color}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "removeShirtTitle": "Trikot entfernen",
+    "removeShirtMessage": "Möchtest du Trikot #{{number}} wirklich aus diesem Satz entfernen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "removeShirtAction": "Entfernen"
+  },
+  "shirtModal": {
+    "addTitle": "Neues Trikot hinzufügen",
+    "editTitle": "Trikot bearbeiten",
+    "addAction": "Trikot hinzufügen",
+    "saveChanges": "Änderungen speichern",
+    "existingNumbers": "Bestehende Nummern in diesem Satz:",
+    "otherNumbers": "Andere Nummern in diesem Satz:",
+    "fields": {
+      "numberRequired": "Trikotnummer *",
+      "sizeRequired": "Grösse *",
+      "isGoalkeeper": "Dies ist ein Torwarttrikot"
+    },
+    "placeholders": {
+      "number": "Trikotnummer eingeben (1-99)"
+    },
+    "size": {
+      "kids": "Kinder",
+      "extraSmall": "Sehr klein",
+      "small": "Klein",
+      "medium": "Mittel",
+      "large": "Gross",
+      "extraLarge": "Sehr gross"
+    },
+    "errors": {
+      "invalidNumber": "Bitte gib eine gültige Nummer zwischen 1 und 99 ein",
+      "numberExists": "Trikot #{{number}} existiert bereits in diesem Satz"
+    }
+  },
+  "shirtSetModal": {
+    "addTitle": "Neuen Trikotsatz hinzufügen",
+    "editTitle": "Trikotsatz bearbeiten",
+    "createAction": "Trikotsatz erstellen",
+    "colorHint": "Wähle eine Farbe oder gib einen Hex-Code ein",
+    "fields": {
+      "sponsorRequired": "Sponsorname *",
+      "colorRequired": "Farbe *",
+      "createAutomatically": "Trikots automatisch erstellen",
+      "startNumber": "Start #",
+      "endNumber": "Ende #",
+      "size": "Grösse",
+      "includeGoalkeeper": "TW einschliessen",
+      "goalkeeperNumber": "TW #:"
+    },
+    "placeholders": {
+      "sponsor": "Sponsorname eingeben",
+      "color": "#000000"
+    },
+    "preview": {
+      "prefix": "Es werden erstellt:",
+      "regularShirts": "normale Trikots",
+      "plusGoalkeeper": "+ 1 TW",
+      "size": "Grösse {{size}}"
+    }
+  },
+  "teamModal": {
+    "editTitle": "Team bearbeiten",
+    "noTrainerAssigned": "Kein Trainer zugewiesen",
+    "fields": {
+      "teamName": "Teamname",
+      "strength": "Stärke",
+      "startTime": "Startzeit",
+      "locationOptional": "Team-Standort (optional)"
+    },
+    "placeholders": {
+      "teamName": "Teamname eingeben",
+      "location": "z.B. Hauptfeld A"
+    },
+    "strength": {
+      "highest": "1 - Höchste 🔥🔥🔥",
+      "medium": "2 - Mittel 🔥🔥",
+      "lowest": "3 - Niedrigste 🔥"
+    }
+  },
+  "assignShirts": {
+    "title": "Trikots dem Team zuweisen",
+    "assignAction": "Trikots zuweisen",
+    "selectSetPlaceholder": "Trikotsatz auswählen...",
+    "noShirt": "Kein Trikot",
+    "usedInOtherTeamsHint": "Trikots, die in anderen Teams dieses Termines bereits verwendet werden, sind deaktiviert.",
+    "noPlayersInTeam": "Diesem Team sind noch keine Spieler zugewiesen.",
+    "errors": {
+      "selectSetRequired": "Bitte wähle einen Trikotsatz aus"
+    }
+  },
+  "groups": {
+    "title": "Gruppen",
+    "loading": "Gruppen werden geladen...",
+    "createNew": "Neue Gruppe erstellen",
+    "clubLabel": "Verein: {{club}}",
+    "switching": "Gruppe wird gewechselt...",
+    "selectTitle": "Gruppe auswählen",
+    "selectDescription": "Wähle die Gruppe, mit der du arbeiten möchtest",
+    "idLabel": "ID: {{id}}",
+    "noneAvailable": "Keine Gruppen verfügbar",
+    "errors": {
+      "createFailed": "Gruppe konnte nicht erstellt werden. Bitte versuche es erneut.",
+      "loadFailedWithReason": "Gruppen konnten nicht geladen werden: {{error}}",
+      "failedToLoadTitle": "Gruppen konnten nicht geladen werden"
+    }
+  },
+  "groupModal": {
+    "title": "Neue Gruppe erstellen",
+    "createAction": "Gruppe erstellen",
+    "creating": "Wird erstellt...",
+    "fields": {
+      "groupName": "Gruppenname",
+      "clubOptional": "Verein (optional)",
+      "descriptionOptional": "Beschreibung (optional)"
+    },
+    "placeholders": {
+      "groupName": "Gruppenname eingeben",
+      "club": "Verein eingeben",
+      "description": "Kurze Beschreibung hinzufügen"
+    },
+    "errors": {
+      "nameRequired": "Gruppenname ist erforderlich."
+    }
+  },
+  "playerModal": {
+    "addTitle": "Neuen Spieler hinzufügen",
+    "editTitle": "Spieler bearbeiten",
+    "addAction": "Spieler hinzufügen",
+    "updateAction": "Spieler aktualisieren",
+    "fields": {
+      "birthDate": "Geburtsdatum",
+      "level": "Level (1-5)",
+      "preferredShirtNumberOptional": "Bevorzugte Trikotnummer (optional)"
+    },
+    "placeholders": {
+      "firstName": "Vorname eingeben",
+      "lastName": "Nachname eingeben",
+      "preferredShirtNumber": "z.B. 10"
+    },
+    "status": {
+      "active": "Aktiv",
+      "trial": "Probe",
+      "inactive": "Inaktiv"
+    }
+  },
+  "trainerModal": {
+    "addTitle": "Neuen Trainer hinzufügen",
+    "editTitle": "Trainer bearbeiten",
+    "addAction": "Trainer hinzufügen",
+    "updateAction": "Trainer aktualisieren",
+    "fields": {
+      "emailOptional": "E-Mail (optional)"
+    },
+    "placeholders": {
+      "firstName": "Vorname eingeben",
+      "lastName": "Nachname eingeben",
+      "email": "E-Mail-Adresse eingeben"
+    }
+  },
+  "eventModal": {
+    "addTitle": "Neues Termin erstellen",
+    "createAction": "Termin erstellen",
+    "fields": {
+      "eventName": "Terminname",
+      "eventNameRequired": "Terminname *",
+      "date": "Datum",
+      "dateRequired": "Datum *",
+      "startTimeRequired": "Startzeit *",
+      "location": "Ort",
+      "numberOfTeamsRequired": "Anzahl Teams *",
+      "maxPlayersPerTeam": "Max. Spieler pro Team",
+      "maxPlayersPerTeamRequired": "Max. Spieler pro Team *",
+      "minPlayersPerTeam": "Min. Spieler pro Team",
+      "minPlayersPerTeamRequired": "Min. Spieler pro Team *"
+    },
+    "placeholders": {
+      "eventName": "z.B. Samstagmorgen-Spiel",
+      "eventNameSimple": "Terminname eingeben",
+      "location": "z.B. Hauptfeld, Sportplatz Seebach"
+    }
+  },
+  "editEventModal": {
+    "title": "Termin bearbeiten",
+    "minHint": "Minimum: {{minMaxPlayers}} (aktuell grösste Teamgrösse)",
+    "errors": {
+      "eventNameRequired": "Terminname ist erforderlich",
+      "dateRequired": "Datum ist erforderlich",
+      "maxPlayersTooLow": "Max. Spieler darf nicht kleiner als {{minMaxPlayers}} sein (aktuell grösste Teamgrösse)",
+      "maxPlayersMinOne": "Max. Spieler muss mindestens 1 sein",
+      "minPlayersMinOne": "Min. Spieler muss mindestens 1 sein",
+      "minGreaterThanMax": "Min. Spieler darf nicht grösser als Max. Spieler sein"
+    }
+  },
+  "home": {
+    "title": "Willkommen bei My Teams",
+    "cards": {
+      "membersTitle": "Mitglieder verwalten",
+      "membersDescription": "Füge Spieler und Trainer hinzu, setze Leistungsstufen und verwalte den Kader",
+      "eventsTitle": "Termine erstellen",
+      "eventsDescription": "Plane Spiele, erstelle Teams und verwalte Auswahlen",
+      "statisticsTitle": "Statistiken ansehen",
+      "statisticsDescription": "Verfolge Teilnahmen und sorge für faire Spielerauswahl"
+    }
+  },
+  "members": {
+    "list": {
+      "emptyPlayers": "Noch keine Spieler hinzugefügt. Klicke auf \"Spieler hinzufügen\", um zu starten.",
+      "emptyTrainers": "Noch keine Trainer hinzugefügt. Klicke auf \"Trainer hinzufügen\", um zu starten."
+    },
+    "loading": "Mitglieder werden geladen...",
+    "allPlayersTitle": "Alle Spieler ({{count}})",
+    "allPlayersFilteredTitle": "Alle Spieler ({{filteredCount}} von {{totalCount}})",
+    "allTrainersTitle": "Alle Trainer ({{count}})",
+    "levelFilter": "Level:",
+    "yearFilter": "Jahr:",
+    "deletePlayerTitle": "Spieler löschen",
+    "deletePlayerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deletePlayerConfirm": "Spieler löschen",
+    "deleteTrainerTitle": "Trainer löschen",
+    "deleteTrainerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteTrainerConfirm": "Trainer löschen"
+  },
+  "levels": {
+    "1": "1 - Anfänger",
+    "2": "2 - Lernend",
+    "3": "3 - Fortgeschritten",
+    "4": "4 - Sehr fortgeschritten",
+    "5": "5 - Experte",
+    "title": "Level {{level}}"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "signInToAccount": "Melde dich bei deinem Konto an",
+    "createAccount": "Erstelle dein Konto",
+    "noAccountPrompt": "Noch kein Konto? ",
+    "hasAccountPrompt": "Du hast bereits ein Konto? ",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "emailAddress": "E-Mail-Adresse",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "errors": {
+      "authenticationFailed": "Authentifizierung fehlgeschlagen"
+    }
+  },
+  "resetPassword": {
+    "requestTitle": "Passwort vergessen?",
+    "resetTitle": "Setze dein Passwort zurück",
+    "requestDescription": "Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen",
+    "resetDescription": "Gib unten dein neues Passwort ein",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "sendLinkAction": "Link senden",
+    "resetAction": "Passwort zurücksetzen",
+    "backToSignIn": "Zurück zur Anmeldung",
+    "errors": {
+      "requestFailed": "Anfrage zum Zurücksetzen des Passworts fehlgeschlagen",
+      "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+      "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+      "resetFailed": "Passwort konnte nicht zurückgesetzt werden"
+    }
+  },
+  "appInitializer": {
+    "loadingApplication": "Anwendung wird geladen",
+    "fetchingData": "Spieler, Termine, Trainer und Ausrüstung werden geladen...",
+    "failedToLoadApplication": "Anwendung konnte nicht geladen werden"
+  },
+  "errorBoundary": {
+    "title": "Etwas ist schiefgelaufen",
+    "message": "Die Anwendung hat einen unerwarteten Fehler festgestellt. Möglicherweise besteht ein Problem mit der Serververbindung.",
+    "showDetails": "Fehlerdetails anzeigen",
+    "reloadPage": "Seite neu laden"
+  },
+  "invitationStatus": {
+    "accepted": "Zugesagt",
+    "open": "Offen",
+    "declined": "Abgesagt",
+    "injured": "Verletzt",
+    "sick": "Krank",
+    "unavailable": "Abwesend",
+    "notInvited": "Nicht eingeladen"
+  },
+  "nav": {
+    "members": "Mitglieder",
+    "events": "Termine",
+    "shirts": "Trikots",
+    "statistics": "Statistiken"
+  },
+  "statistics": {
+    "title": "Statistiken",
+    "summary": {
+      "totalPlayers": "Anzahl Spieler",
+      "totalEvents": "Anzahl Termine",
+      "avgAcceptancesPerPlayer": "Durchschnitt Zusagen pro Spieler",
+      "avgSelectionsPerPlayer": "Durchschnitt Auswahlen pro Spieler"
+    },
+    "playerTable": {
+      "emptyState": "Noch keine Spielerdaten verfügbar. Füge Spieler und Termine hinzu, um Statistiken zu sehen.",
+      "invited": "Eingeladen",
+      "accepted": "Zugesagt",
+      "selected": "Ausgewählt",
+      "acceptanceRate": "Zusagequote",
+      "selectionRate": "Auswahlquote"
+    },
+    "eventAttendance": {
+      "emptyState": "Keine Daten verfügbar. Füge Spieler und Termine hinzu, um die Teilnahmematrix zu sehen."
+    },
+    "teamSelections": {
+      "strengthLabel": "Stärke {{level}}",
+      "noData": "Keine Daten verfügbar. Füge Spieler und Termine hinzu, um Teamauswahl-Statistiken zu sehen.",
+      "groupBy": "Gruppieren nach",
+      "groupByStrength": "Stärke",
+      "groupByTeamName": "Teamname",
+      "noTeamsInPeriod": "Im gewählten Zeitraum gibt es keine Teams.",
+      "playersCount": "{{count}} Spieler",
+      "strengthGroupsCount": "{{count}} Stärkegruppen",
+      "teamsCount": "{{count}} Teams",
+      "clickCountHint": "Klicke auf eine Zahl, um die Termine zu sehen",
+      "noPlayersInLevelRange": "Keine Spieler entsprechen dem gewählten Levelbereich.",
+      "cellAriaLabel": "{{player}}, {{group}}, {{count}} Auswahlen",
+      "selectionDetails": "Auswahldetails",
+      "openTeam": "Team öffnen",
+      "noSelectionStrength": "Dieser Spieler wurde im aktuellen Statistikzeitraum nicht für diese Stärkegruppe ausgewählt.",
+      "noSelectionTeam": "Dieser Spieler wurde im aktuellen Statistikzeitraum nicht für dieses Team ausgewählt."
+    },
+    "period": {
+      "selectorLabel": "Zeitraum: {{period}}",
+      "selectPeriod": "Zeitraum wählen",
+      "allEvents": "Alle Termine",
+      "allEventsDescription": "Alle Termine der Gruppe verwenden.",
+      "rangeLabel": "{{startDate}} bis {{endDate}}",
+      "outsidePeriods": "Außerhalb der Zeiträume",
+      "noGroupPeriods": "Noch keine Gruppenzeiträume.",
+      "addNewPeriod": "Neuen Zeitraum hinzufügen",
+      "addPeriod": "Zeitraum hinzufügen",
+      "editPeriod": "Zeitraum bearbeiten",
+      "updatePeriod": "Zeitraum aktualisieren",
+      "thisGroup": "dieser Gruppe",
+      "addDescription": "Erstelle einen neuen Zeitraum für {{group}}.",
+      "editDescription": "Aktualisiere den ausgewählten Zeitraum für {{group}}.",
+      "deleteTitle": "Zeitraum löschen",
+      "deleteMessage": "Zeitraum \"{{period}}\" löschen?",
+      "placeholders": {
+        "name": "Frühling 2026"
+      },
+      "errors": {
+        "nameRequired": "Bitte gib einen Namen für den Zeitraum ein.",
+        "startEndRequired": "Bitte setze Start- und Enddatum oder entferne beide.",
+        "invalidDateRange": "Das Startdatum muss vor oder gleich dem Enddatum liegen.",
+        "saveFailed": "Zeitraum konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        "deleteFailed": "Zeitraum konnte nicht gelöscht werden. Bitte versuche es erneut."
+      }
+    },
+    "tabs": {
+      "playerStatistics": "Spielerstatistiken",
+      "eventAttendance": "Event-Teilnahme",
+      "teamSelections": "Teamauswahlen"
+    }
+  },
+  "guardians": {
+    "assignTitle": "Erziehungsberechtigte Person zuweisen",
+    "editTitle": "Erziehungsberechtigte Person bearbeiten",
+    "existingUser": "Bestehender Benutzer",
+    "documentedOnly": "Nur dokumentiert",
+    "selectUser": "Benutzer auswählen",
+    "noAvailableUsers": "Keine verfügbaren bestehenden Benutzer zum Zuweisen.",
+    "selectionLocked": "Die Benutzerauswahl ist während der Bearbeitung gesperrt. Aktualisiere Name- und E-Mail-Felder direkt.",
+    "placeholderFirstName": "Vorname eingeben",
+    "placeholderLastName": "Nachname eingeben",
+    "emailOptional": "E-Mail (optional)",
+    "placeholderEmail": "guardian@example.com",
+    "documentedHint": "Nur dokumentierte Erziehungsberechtigte sind reine Kontakte und können sich nicht anmelden.",
+    "assignAction": "Zuweisen",
+    "errors": {
+      "selectExistingUser": "Bitte wähle einen bestehenden Benutzer aus.",
+      "existingNameRequired": "Vor- und Nachname sind für die Zuweisung eines bestehenden Benutzers erforderlich.",
+      "existingEmailRequired": "E-Mail ist für die Zuweisung eines bestehenden Benutzers erforderlich.",
+      "alreadyAssigned": "Diese erziehungsberechtigte Person ist bereits zugewiesen.",
+      "documentedNameRequired": "Vor- und Nachname sind für dokumentierte Erziehungsberechtigte erforderlich.",
+      "documentedDuplicate": "Eine dokumentierte erziehungsberechtigte Person mit demselben Namen ist bereits zugewiesen."
+    }
+  },
+  "playerDetail": {
+    "loading": "Spieler wird geladen...",
+    "notFound": "Spieler nicht gefunden.",
+    "errors": {
+      "noPlayerId": "Keine Spieler-ID angegeben",
+      "notFound": "Spieler nicht gefunden",
+      "failedToLoadData": "Daten konnten nicht geladen werden"
+    },
+    "preferredShirtNumber": "Bevorzugt #{{number}}",
+    "eventsWithoutInvitation": "Termine ohne Einladung",
+    "guardians": {
+      "title": "Erziehungsberechtigte ({{count}})",
+      "addAction": "Erziehungsberechtigte hinzufügen",
+      "assignAction": "Erziehungsberechtigte zuweisen",
+      "removeAction": "Entfernen",
+      "removeTitle": "Erziehungsberechtigte entfernen",
+      "removeMessage": "Möchtest du {{firstName}} {{lastName}} von diesem Spieler entfernen?",
+      "empty": "Noch keine Erziehungsberechtigten zugewiesen.",
+      "onlyManagers": "Nur Gruppenmanager können Erziehungsberechtigte zuweisen.",
+      "onlyManagersManage": "Nur Gruppenmanager können Erziehungsberechtigte zuweisen oder entfernen.",
+      "onlyUnderage": "Die Zuweisung von Erziehungsberechtigten ist nur für minderjährige Spieler möglich.",
+      "assignFailed": "Erziehungsberechtigte konnten nicht zugewiesen werden. Bitte versuche es erneut.",
+      "editFailed": "Erziehungsberechtigte konnten nicht bearbeitet werden. Bitte versuche es erneut.",
+      "removeFailed": "Erziehungsberechtigte konnten nicht entfernt werden. Bitte versuche es erneut."
+    }
+  },
+  "trainerDetail": {
+    "loading": "Trainer wird geladen...",
+    "notFound": "Trainer nicht gefunden.",
+    "trainingHistory": "Trainerhistorie",
+    "eventsAssignedDescription": "Termine, bei denen {{firstName}} als Trainer zugewiesen war",
+    "noAssignmentsYet": "{{firstName}} wurde noch keinem Team zugewiesen.",
+    "errors": {
+      "noTrainerId": "Keine Trainer-ID angegeben",
+      "notFound": "Trainer nicht gefunden",
+      "failedToLoadData": "Daten konnten nicht geladen werden"
+    }
+  },
+  "team": {
+    "unknownTeam": "Unbekanntes Team"
+  },
+  "eventDetail": {
+    "loading": "Termin wird geladen...",
+    "notFound": "Termin nicht gefunden.",
+    "previousShort": "Vorh.",
+    "nextShort": "Näch.",
+    "noPreviousEvent": "Kein vorheriges Termin",
+    "noNextEvent": "Kein nächstes Termin",
+    "teamsTitle": "Teams",
+    "printTeams": "Teams drucken",
+    "noTeamsConfigured": "Noch keine Teams konfiguriert.",
+    "deleteEventTitle": "Termin löschen",
+    "deleteEventMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteTeamTitle": "Team löschen",
+    "deleteTeamMessage": "Möchtest du \"{{teamName}}\" wirklich löschen? Zugewiesene Spieler werden aus dem Team entfernt und wieder auf zugesagt gesetzt.",
+    "thisTeam": "dieses Team",
+    "errors": {
+      "noEventId": "Keine Termin-ID angegeben",
+      "notFound": "Termin nicht gefunden",
+      "failedToLoadData": "Daten konnten nicht geladen werden",
+      "shirtNumberUniquePerTeam": "Jede Trikotnummer darf pro Team nur einmal vergeben werden.",
+      "shirtNumberUsedInOtherTeam": "Trikot #{{number}} ist in einem anderen Team dieses Termines bereits vergeben."
+    }
+  },
+  "teamDetail": {
+    "teamNotFound": "Team nicht gefunden",
+    "trainerLabel": "Trainer",
+    "shirtSetLabel": "Trikotsatz",
+    "noShirtSetAssigned": "Kein Trikotsatz zugewiesen",
+    "noPlayersSelected": "Noch keine Spieler ausgewählt",
+    "removeAction": "Entfernen",
+    "removePlayerTitle": "Spieler entfernen",
+    "removePlayerMessage": "Möchtest du {{firstName}} {{lastName}} aus diesem Team entfernen?"
+  },
+  "teamPlayerSelection": {
+    "teamNotFound": "Team nicht gefunden",
+    "addPlayersToTeam": "Spieler zu {{team}} hinzufügen",
+    "slotsSummary": "{{current}}/{{max}} Plätze belegt • {{remaining}} frei",
+    "selectedCount": "{{count}} ausgewählt",
+    "noPlayersInRange": "Keine verfügbaren Spieler in diesem Levelbereich",
+    "selectedPlayersSummary": "{{count}} Spieler ausgewählt",
+    "tooManySelected": "Zu viele ausgewählt (max. {{max}})",
+    "addPlayersAction_one": "{{count}} Spieler hinzufügen",
+    "addPlayersAction_other": "{{count}} Spieler hinzufügen"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Shirt } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
@@ -12,6 +13,7 @@ interface EditShirtModalProps {
 }
 
 export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existingNumbers }: EditShirtModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     number: shirt.number.toString(),
     size: shirt.size as '128' | '140' | '152' | '164' | 'XS' | 'S' | 'M' | 'L' | 'XL',
@@ -28,9 +30,9 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
     const numberValue = parseInt(formData.number);
     
     if (!formData.number || isNaN(numberValue) || numberValue < 1 || numberValue > 99) {
-      newErrors.number = 'Please enter a valid number between 1 and 99';
+      newErrors.number = t('shirtModal.errors.invalidNumber');
     } else if (numberValue !== shirt.number && existingNumbers.includes(numberValue)) {
-      newErrors.number = `Shirt #${numberValue} already exists in this set`;
+      newErrors.number = t('shirtModal.errors.numberExists', { number: numberValue });
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -77,14 +79,14 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>Edit Shirt</ModalTitle>
+          <ModalTitle>{t('shirtModal.editTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <div className="space-y-4">
             <div>
               <label htmlFor="number" className="block text-sm font-medium text-gray-700 mb-1">
-                Shirt Number *
+                {t('shirtModal.fields.numberRequired')}
               </label>
               <input
                 id="number"
@@ -95,7 +97,7 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 required
                 value={formData.number}
                 onChange={handleInputChange}
-                placeholder="Enter shirt number (1-99)"
+                placeholder={t('shirtModal.placeholders.number')}
                 className={`input-field w-full ${errors.number ? 'border-red-500' : ''}`}
               />
               {errors.number && (
@@ -105,7 +107,7 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
 
             <div>
               <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
-                Size *
+                {t('shirtModal.fields.sizeRequired')}
               </label>
               <select
                 id="size"
@@ -115,15 +117,15 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 onChange={handleInputChange}
                 className="input-field w-full"
               >
-                <option value="128">128 - Kids</option>
-                <option value="140">140 - Kids</option>
-                <option value="152">152 - Kids</option>
-                <option value="164">164 - Kids</option>
-                <option value="XS">XS - Extra Small</option>
-                <option value="S">S - Small</option>
-                <option value="M">M - Medium</option>
-                <option value="L">L - Large</option>
-                <option value="XL">XL - Extra Large</option>
+                <option value="128">128 - {t('shirtModal.size.kids')}</option>
+                <option value="140">140 - {t('shirtModal.size.kids')}</option>
+                <option value="152">152 - {t('shirtModal.size.kids')}</option>
+                <option value="164">164 - {t('shirtModal.size.kids')}</option>
+                <option value="XS">XS - {t('shirtModal.size.extraSmall')}</option>
+                <option value="S">S - {t('shirtModal.size.small')}</option>
+                <option value="M">M - {t('shirtModal.size.medium')}</option>
+                <option value="L">L - {t('shirtModal.size.large')}</option>
+                <option value="XL">XL - {t('shirtModal.size.extraLarge')}</option>
               </select>
             </div>
 
@@ -137,14 +139,14 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
               />
               <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-gray-700">
-                This is a goalkeeper shirt
+                {t('shirtModal.fields.isGoalkeeper')}
               </label>
             </div>
 
             {existingNumbers.length > 1 && (
               <div className="bg-blue-50 border border-blue-200 rounded p-3">
                 <p className="text-sm text-blue-700">
-                  <strong>Other numbers in this set:</strong> {existingNumbers.filter(num => num !== shirt.number).sort((a, b) => a - b).join(', ')}
+                  <strong>{t('shirtModal.otherNumbers')}</strong> {existingNumbers.filter(num => num !== shirt.number).sort((a, b) => a - b).join(', ')}
                 </p>
               </div>
             )}
@@ -154,14 +156,14 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
         <ModalFooter>
           <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {t('common.actions.cancel')}
             </Button>
             <Button 
               type="submit" 
               variant="primary"
               disabled={!isFormValid()}
             >
-              Save Changes
+              {t('shirtModal.saveChanges')}
             </Button>
           </div>
         </ModalFooter>

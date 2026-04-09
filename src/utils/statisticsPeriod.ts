@@ -1,4 +1,5 @@
 import type { Event } from '../types';
+import i18n from '../i18n/config';
 
 export interface StatisticsPeriod {
   name?: string;
@@ -43,7 +44,10 @@ export function filterEventsByStatisticsPeriod(events: Event[], period: Statisti
 }
 
 export function getStatisticsPeriodLabel(period: StatisticsPeriod | null): string {
-  if (!period) return 'All events';
+  if (!period) return i18n.t('statistics.period.allEvents');
   if (period.name) return period.name;
-  return `${period.startDate} to ${period.endDate}`;
+  return i18n.t('statistics.period.rangeLabel', {
+    startDate: period.startDate,
+    endDate: period.endDate,
+  });
 }

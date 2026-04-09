@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore, useGroups, useGroupsLoading, useGroupsError } from '../store/useStore';
 import AddGroupModal from '../components/AddGroupModal';
 import type { CreateGroupRequest } from '../types';
 
 export default function GroupSelectionPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { loadGroups, addGroup, selectGroup, initializeApp } = useStore();
   const groups = useGroups();
@@ -31,7 +33,7 @@ export default function GroupSelectionPage() {
     try {
       const newGroup = await addGroup(groupData);
       if (!newGroup) {
-        setCreateError(useStore.getState().errors.groups || 'Failed to create group. Please try again.');
+        setCreateError(useStore.getState().errors.groups || t('groups.errors.createFailed'));
         return;
       }
 
@@ -47,7 +49,7 @@ export default function GroupSelectionPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading Groups...</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('groups.loading')}</h2>
         </div>
       </div>
     );
@@ -62,13 +64,13 @@ export default function GroupSelectionPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Failed to Load Groups</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('groups.errors.failedToLoadTitle')}</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
-            Retry
+            {t('common.actions.retry')}
           </button>
         </div>
       </div>
@@ -79,8 +81,8 @@ export default function GroupSelectionPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Select Your Group</h1>
-          <p className="text-gray-600">Choose the group you want to work with</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('groups.selectTitle')}</h1>
+          <p className="text-gray-600">{t('groups.selectDescription')}</p>
         </div>
 
         <button
@@ -88,7 +90,7 @@ export default function GroupSelectionPage() {
           onClick={() => setIsAddModalOpen(true)}
           className="w-full mb-5 bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg text-sm font-medium"
         >
-          Create New Group
+          {t('groups.createNew')}
         </button>
 
         <div className="space-y-3">
@@ -101,7 +103,7 @@ export default function GroupSelectionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium text-gray-900">{group.name}</h3>
-                  <p className="text-sm text-gray-500">ID: {group.id}</p>
+                  <p className="text-sm text-gray-500">{t('groups.idLabel', { id: group.id })}</p>
                 </div>
                 <svg
                   className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors"
@@ -118,7 +120,7 @@ export default function GroupSelectionPage() {
 
         {(!groups || groups.length === 0) && (
           <div className="text-center text-gray-500 mt-8">
-            <p>No groups available</p>
+            <p>{t('groups.noneAvailable')}</p>
           </div>
         )}
       </div>

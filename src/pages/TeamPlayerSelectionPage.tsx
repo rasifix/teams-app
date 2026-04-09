@@ -1,11 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers } from '../store';
 import { Button } from '../components/ui';
 import Level from '../components/Level';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 
 export default function TeamPlayerSelectionPage() {
+  const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
@@ -73,7 +75,7 @@ export default function TeamPlayerSelectionPage() {
   if (!event || !team) {
     return (
       <div className="page-container">
-        <div className="empty-state">Team not found</div>
+        <div className="empty-state">{t('teamPlayerSelection.teamNotFound')}</div>
       </div>
     );
   }
@@ -89,12 +91,16 @@ export default function TeamPlayerSelectionPage() {
           onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
           className="text-blue-600 hover:text-blue-700 mb-2 text-sm font-medium"
         >
-          ← Cancel
+          ← {t('common.actions.cancel')}
         </button>
         
-        <h1 className="page-title">Add Players to {team.name}</h1>
+        <h1 className="page-title">{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</h1>
         <p className="text-sm text-gray-600 mt-1">
-          {currentPlayerCount}/{event.maxPlayersPerTeam} slots filled • {remainingSlots} remaining
+          {t('teamPlayerSelection.slotsSummary', {
+            current: currentPlayerCount,
+            max: event.maxPlayersPerTeam,
+            remaining: remainingSlots,
+          })}
         </p>
       </div>
       
@@ -116,17 +122,17 @@ export default function TeamPlayerSelectionPage() {
             onClick={handleSelectAll}
             className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
           >
-            Select All
+            {t('common.actions.selectAll')}
           </button>
           <button
             type="button"
             onClick={handleDeselectAll}
             className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
           >
-            Deselect All
+            {t('common.actions.deselectAll')}
           </button>
           <span className="ml-auto text-sm text-gray-600">
-            {selectedPlayerIds.length} selected
+            {t('teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
           </span>
         </div>
       )}
@@ -135,7 +141,7 @@ export default function TeamPlayerSelectionPage() {
       <div className="space-y-2">
         {availablePlayers.length === 0 ? (
           <div className="empty-state">
-            No available players in this level range
+            {t('teamPlayerSelection.noPlayersInRange')}
           </div>
         ) : (
           availablePlayers.map(player => {
@@ -183,10 +189,10 @@ export default function TeamPlayerSelectionPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10">
         <div className="max-w-screen-lg mx-auto flex items-center justify-between gap-4">
           <div className="text-sm">
-            <span className="font-medium">{selectedPlayerIds.length}</span> player(s) selected
+            {t('teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
             {!canAddMore && selectedPlayerIds.length > 0 && (
               <div className="text-red-600 text-xs mt-1">
-                Too many selected (max {remainingSlots})
+                {t('teamPlayerSelection.tooManySelected', { max: remainingSlots })}
               </div>
             )}
           </div>
@@ -194,7 +200,7 @@ export default function TeamPlayerSelectionPage() {
             onClick={handleSave}
             disabled={selectedPlayerIds.length === 0 || !canAddMore}
           >
-            Add {selectedPlayerIds.length} Player{selectedPlayerIds.length !== 1 ? 's' : ''}
+            {t('teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })}
           </Button>
         </div>
       </div>

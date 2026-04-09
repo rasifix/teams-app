@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ShirtSet } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
@@ -10,6 +11,7 @@ interface EditShirtSetModalProps {
 }
 
 export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditShirtSetModalProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     sponsor: '',
     color: '#000000'
@@ -41,14 +43,14 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
     <Modal isOpen={true} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>Edit Shirt Set</ModalTitle>
+          <ModalTitle>{t('shirtSetModal.editTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <div className="space-y-4">
             <div>
               <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
-                Sponsor Name *
+                {t('shirtSetModal.fields.sponsorRequired')}
               </label>
               <input
                 id="sponsor"
@@ -57,14 +59,14 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                 required
                 value={formData.sponsor}
                 onChange={handleInputChange}
-                placeholder="Enter sponsor name"
+                placeholder={t('shirtSetModal.placeholders.sponsor')}
                 className="input-field w-full"
               />
             </div>
 
             <div>
               <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
-                Color *
+                {t('shirtSetModal.fields.colorRequired')}
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -81,12 +83,12 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                   value={formData.color}
                   onChange={handleInputChange}
                   name="color"
-                  placeholder="#000000"
+                  placeholder={t('shirtSetModal.placeholders.color')}
                   className="input-field flex-1"
                 />
               </div>
               <p className="text-sm text-gray-500 mt-1">
-                Choose a color or enter a hex code
+                {t('shirtSetModal.colorHint')}
               </p>
             </div>
           </div>
@@ -95,10 +97,10 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
         <ModalFooter>
           <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
+              {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
-              Save Changes
+              {t('shirtModal.saveChanges')}
             </Button>
           </div>
         </ModalFooter>

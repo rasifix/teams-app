@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
 import { useTrainers } from '../hooks/useTrainers';
@@ -24,6 +25,7 @@ export default function EditTeamModal({
   currentTrainerId,
   currentLocation,
 }: EditTeamModalProps) {
+  const { t } = useTranslation();
   const [teamName, setTeamName] = useState(currentName);
   const [strength, setStrength] = useState(currentStrength);
   const [startTime, setStartTime] = useState(currentStartTime);
@@ -52,7 +54,7 @@ export default function EditTeamModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>Edit Team</ModalTitle>
+        <ModalTitle>{t('teamModal.editTitle')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -60,7 +62,7 @@ export default function EditTeamModal({
           <div className="space-y-4">
             <div>
               <label htmlFor="teamName" className="form-label">
-                Team Name
+                {t('teamModal.fields.teamName')}
               </label>
               <input
                 type="text"
@@ -69,14 +71,14 @@ export default function EditTeamModal({
                 onChange={(e) => setTeamName(e.target.value)}
                 required
                 className="form-input"
-                placeholder="Enter team name"
+                placeholder={t('teamModal.placeholders.teamName')}
                 autoFocus
               />
             </div>
 
             <div>
               <label htmlFor="strength" className="form-label">
-                Strength
+                {t('teamModal.fields.strength')}
               </label>
               <select
                 id="strength"
@@ -84,15 +86,15 @@ export default function EditTeamModal({
                 onChange={(e) => setStrength(parseInt(e.target.value))}
                 className="form-input"
               >
-                <option value={1}>1 - Highest 🔥🔥🔥</option>
-                <option value={2}>2 - Medium 🔥🔥</option>
-                <option value={3}>3 - Lowest 🔥</option>
+                <option value={1}>{t('teamModal.strength.highest')}</option>
+                <option value={2}>{t('teamModal.strength.medium')}</option>
+                <option value={3}>{t('teamModal.strength.lowest')}</option>
               </select>
             </div>
 
             <div>
               <label htmlFor="startTime" className="form-label">
-                Start Time
+                {t('teamModal.fields.startTime')}
               </label>
               <input
                 type="time"
@@ -106,7 +108,7 @@ export default function EditTeamModal({
 
             <div>
               <label htmlFor="trainer" className="form-label">
-                Trainer
+                {t('domain.trainers')}
               </label>
               <select
                 id="trainer"
@@ -114,7 +116,7 @@ export default function EditTeamModal({
                 onChange={(e) => setTrainerId(e.target.value)}
                 className="form-input"
               >
-                <option value="">No trainer assigned</option>
+                <option value="">{t('teamModal.noTrainerAssigned')}</option>
                 {trainers.map(trainer => (
                   <option key={trainer.id} value={trainer.id}>
                     {trainer.firstName} {trainer.lastName}
@@ -125,7 +127,7 @@ export default function EditTeamModal({
 
             <div>
               <label htmlFor="location" className="form-label">
-                Team Location (optional)
+                {t('teamModal.fields.locationOptional')}
               </label>
               <input
                 type="text"
@@ -133,7 +135,7 @@ export default function EditTeamModal({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="form-input"
-                placeholder="e.g. Main Field A"
+                placeholder={t('teamModal.placeholders.location')}
               />
             </div>
           </div>
@@ -146,14 +148,14 @@ export default function EditTeamModal({
             onClick={onClose}
             className="flex-1"
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             className="flex-1"
           >
-            Save
+            {t('common.actions.save')}
           </Button>
         </ModalFooter>
       </form>

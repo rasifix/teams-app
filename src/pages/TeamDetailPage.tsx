@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useTrainers, useShirtSets } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
@@ -10,6 +11,7 @@ import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 
 export default function TeamDetailPage() {
+  const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
@@ -111,7 +113,7 @@ export default function TeamDetailPage() {
   if (!event || !team) {
     return (
       <div className="page-container">
-        <div className="empty-state">Team not found</div>
+        <div className="empty-state">{t('teamDetail.teamNotFound')}</div>
       </div>
     );
   }
@@ -127,14 +129,14 @@ export default function TeamDetailPage() {
             onClick={() => navigate(`/events/${eventId}`)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            ← Back
+            ← {t('common.actions.back')}
           </button>
           <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{team.name}</span>
           <button
             onClick={() => setIsEditTeamModalOpen(true)}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
-            Edit
+            {t('common.actions.edit')}
           </button>
         </div>
       </div>
@@ -148,7 +150,7 @@ export default function TeamDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span>🕐</span>
-                <span className="font-medium text-sm">Start Time</span>
+                <span className="font-medium text-sm">{t('teamModal.fields.startTime')}</span>
               </div>
               <div className="text-sm">
                 {team.startTime}
@@ -158,7 +160,7 @@ export default function TeamDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span>💪</span>
-                <span className="font-medium text-sm">Strength</span>
+                <span className="font-medium text-sm">{t('teamModal.fields.strength')}</span>
               </div>
               <div className="text-sm">
                 <Strength level={team.strength} className="text-xs" />
@@ -168,14 +170,14 @@ export default function TeamDetailPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span>👤</span>
-                <span className="font-medium text-sm">Trainer</span>
+                <span className="font-medium text-sm">{t('teamDetail.trainerLabel')}</span>
               </div>
               {trainer ? (
                 <div className="text-sm">
                   {trainer.firstName} {trainer.lastName}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">No trainer assigned</div>
+                <div className="text-sm text-gray-500">{t('teamModal.noTrainerAssigned')}</div>
               )}
             </div>
             
@@ -185,14 +187,14 @@ export default function TeamDetailPage() {
             >
               <div className="flex items-center gap-2">
                 <span>👕</span>
-                <span className="font-medium text-sm">Shirt Set</span>
+                <span className="font-medium text-sm">{t('teamDetail.shirtSetLabel')}</span>
               </div>
               {shirtSet ? (
                 <div className="text-sm">
                   {shirtSet.sponsor}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">No shirt set assigned</div>
+                <div className="text-sm text-gray-500">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
             </div>
           </CardBody>
@@ -210,12 +212,12 @@ export default function TeamDetailPage() {
                 disabled={selectedPlayers.length >= event.maxPlayersPerTeam}
                 className='btn-sm'
               >
-                Add
+                {t('common.actions.add')}
               </Button>
             </div>
             
             {selectedPlayers.length === 0 ? (
-              <div className="empty-state text-sm">No players selected yet</div>
+              <div className="empty-state text-sm">{t('teamDetail.noPlayersSelected')}</div>
             ) : (
               <div className="space-y-2">
                 {selectedPlayers.map(player => {
@@ -265,7 +267,7 @@ export default function TeamDetailPage() {
                           className="flex items-center justify-center w-full h-full text-white font-medium text-sm"
                           onClick={() => setPlayerToRemove(player.id)}
                         >
-                          Remove
+                          {t('teamDetail.removeAction')}
                         </button>
                       </div>
                     </div>
@@ -279,10 +281,13 @@ export default function TeamDetailPage() {
       
       <ConfirmDialog
         isOpen={!!playerToRemove}
-        title="Remove Player"
-        message={`Are you sure you want to remove ${playerToRemoveData?.firstName} ${playerToRemoveData?.lastName} from this team?`}
-        confirmText="Remove"
-        cancelText="Cancel"
+        title={t('teamDetail.removePlayerTitle')}
+        message={t('teamDetail.removePlayerMessage', {
+          firstName: playerToRemoveData?.firstName,
+          lastName: playerToRemoveData?.lastName,
+        })}
+        confirmText={t('teamDetail.removeAction')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={handleRemovePlayer}
         onCancel={() => setPlayerToRemove(null)}
       />

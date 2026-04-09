@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
 import MembersList from "../components/MembersList";
@@ -10,6 +11,7 @@ import Button from "../components/ui/Button";
 import type { Player, Trainer } from "../types";
 
 export default function MembersPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   
   // Store hooks
@@ -140,7 +142,7 @@ export default function MembersPage() {
     return (
       <div className="page-container">
         <div className="empty-state">
-          <p>Loading members...</p>
+          <p>{t('members.loading')}</p>
         </div>
       </div>
     );
@@ -156,7 +158,7 @@ export default function MembersPage() {
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-6 px-4 lg:px-0">
-        <nav className="flex gap-8" aria-label="Tabs">
+        <nav className="flex gap-8" aria-label={t('common.tabs')}>
           <NavLink
             to="/members/players"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -165,7 +167,7 @@ export default function MembersPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Players ({players.length})
+            {t('domain.players')} ({players.length})
           </NavLink>
           <NavLink
             to="/members/trainers"
@@ -175,7 +177,7 @@ export default function MembersPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Trainers ({trainers.length})
+            {t('domain.trainers')} ({trainers.length})
           </NavLink>
         </nav>
       </div>
@@ -185,13 +187,17 @@ export default function MembersPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
-              <CardTitle className="mb-0">All Players ({filteredPlayers.length}{selectedLevels.length > 0 || selectedYear !== null ? ` of ${players.length}` : ''})</CardTitle>
+              <CardTitle className="mb-0">
+                {selectedLevels.length > 0 || selectedYear !== null
+                  ? t('members.allPlayersFilteredTitle', { filteredCount: filteredPlayers.length, totalCount: players.length })
+                  : t('members.allPlayersTitle', { count: filteredPlayers.length })}
+              </CardTitle>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => setIsPlayerModalOpen(true)}
               >
-                Add
+                {t('common.actions.add')}
               </Button>
             </div>
 
@@ -199,7 +205,7 @@ export default function MembersPage() {
             <div className="mb-4 flex flex-wrap items-center gap-4">
               {/* Level Filter */}
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Level:</span>
+                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.levelFilter')}</span>
                 <div className="flex gap-1.5">
                   {[1, 2, 3, 4, 5].map(level => (
                     <button
@@ -228,7 +234,7 @@ export default function MembersPage() {
                         : 'text-transparent opacity-0 pointer-events-none'
                     }`}
                   >
-                    Clear
+                    {t('common.actions.clear')}
                   </button>
                 </div>
               </div>
@@ -236,7 +242,7 @@ export default function MembersPage() {
               {/* Year Filter */}
               {availableYears.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Year:</span>
+                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.yearFilter')}</span>
                   <div className="flex gap-1.5">
                     {availableYears.map(year => (
                       <button
@@ -261,7 +267,7 @@ export default function MembersPage() {
                           : 'text-transparent opacity-0 pointer-events-none'
                       }`}
                     >
-                      Clear
+                      {t('common.actions.clear')}
                     </button>
                   </div>
                 </div>
@@ -282,13 +288,13 @@ export default function MembersPage() {
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
-              <CardTitle className="mb-0">All Trainers ({trainers.length})</CardTitle>
+              <CardTitle className="mb-0">{t('members.allTrainersTitle', { count: trainers.length })}</CardTitle>
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => setIsTrainerModalOpen(true)}
               >
-                Add
+                {t('common.actions.add')}
               </Button>
             </div>
 
@@ -322,10 +328,13 @@ export default function MembersPage() {
       {/* Delete Player Confirmation */}
       <ConfirmDialog
         isOpen={Boolean(deletingPlayer)}
-        title="Delete Player"
-        message={`Are you sure you want to delete ${deletingPlayer?.firstName} ${deletingPlayer?.lastName}? This action cannot be undone.`}
-        confirmText="Delete Player"
-        cancelText="Cancel"
+        title={t('members.deletePlayerTitle')}
+        message={t('members.deletePlayerMessage', {
+          firstName: deletingPlayer?.firstName ?? '',
+          lastName: deletingPlayer?.lastName ?? '',
+        })}
+        confirmText={t('members.deletePlayerConfirm')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeletePlayer}
         onCancel={cancelDeletePlayer}
       />
@@ -333,10 +342,13 @@ export default function MembersPage() {
       {/* Delete Trainer Confirmation */}
       <ConfirmDialog
         isOpen={Boolean(deletingTrainer)}
-        title="Delete Trainer"
-        message={`Are you sure you want to delete ${deletingTrainer?.firstName} ${deletingTrainer?.lastName}? This action cannot be undone.`}
-        confirmText="Delete Trainer"
-        cancelText="Cancel"
+        title={t('members.deleteTrainerTitle')}
+        message={t('members.deleteTrainerMessage', {
+          firstName: deletingTrainer?.firstName ?? '',
+          lastName: deletingTrainer?.lastName ?? '',
+        })}
+        confirmText={t('members.deleteTrainerConfirm')}
+        cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}
       />

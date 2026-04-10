@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEvents, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
+import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
 import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
@@ -14,7 +14,7 @@ interface TrainerEventHistoryItem {
   eventDate: string;
   startTime?: string;
   location?: string;
-  teamName: string;
+  teamName?: string;
   teamStrength: number;
 }
 
@@ -68,38 +68,13 @@ const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
   return true;
 };
 
-const getEventStartTime = (event: { teams: Array<{ startTime: string }> }): string | undefined => {
-  const startTimes = event.teams
-    .map((team) => team.startTime?.trim())
-    .filter((startTime): startTime is string => Boolean(startTime));
-
-  if (startTimes.length === 0) {
-    return undefined;
-  }
-
-  return startTimes.sort()[0];
-};
-
-const getLocation = (teamLocation?: string, eventLocation?: string): string | undefined => {
-  if (teamLocation?.trim()) {
-    return teamLocation.trim();
-  }
-
-  if (eventLocation?.trim()) {
-    return eventLocation.trim();
-  }
-
-  return undefined;
-};
-
 export default function TrainerDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   // Use store hooks
-  const { events } = useEvents();
-  const { updateTrainer, deleteTrainer, getTrainerById } = useTrainers();
+  const { updateTrainer, deleteTrainer, getTrainerById, getTrainerEventHistory } = useTrainers();
   const groupPeriods = useGroupPeriods();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -147,22 +122,8 @@ export default function TrainerDetailPage() {
     );
   }
 
-  // Prepare trainer event history data - events where this trainer was assigned to teams
-  const trainerEventHistory: TrainerEventHistoryItem[] = events
-    .filter(event => event.teams.some(team => team.trainerId === trainer.id))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Reverse chronological order (newest first)
-    .map(event => {
-      const team = event.teams.find(team => team.trainerId === trainer.id);
-      return {
-        eventId: event.id,
-        eventName: event.name,
-        eventDate: event.date,
-        startTime: team?.startTime || getEventStartTime(event),
-        location: getLocation(team?.location, event.location),
-        teamName: team?.name || t('team.unknownTeam'),
-        teamStrength: team?.strength || 2
-      };
-    });
+  // Prepare trainer event history data using the store selector
+  const trainerEventHistory: TrainerEventHistoryItem[] = getTrainerEventHistory(trainer.id);
 
   const groupedTrainerEventHistory = useMemo<GroupedTrainerEventHistory[] | null>(() => {
     const validPeriods = groupPeriods.filter(isValidPeriod);
@@ -323,7 +284,7 @@ export default function TrainerDetailPage() {
                               </div>
                               <div className="flex items-center gap-4 mt-2">
                                 <span className="text-sm text-gray-700">
-                                  👥 {item.teamName}
+                                  👥 {item.teamName || t('team.unknownTeam')}
                                 </span>
                                 <Strength level={item.teamStrength} className="text-xs" />
                               </div>

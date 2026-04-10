@@ -156,6 +156,15 @@ interface AppState {
   getTrainerById: (id: string) => Trainer | undefined;
   getShirtSetById: (id: string) => ShirtSet | undefined;
   getPlayerStats: (playerId: string, excludeEventId?: string) => ReturnType<typeof getPlayerStats>;
+  getTrainerEventHistory: (trainerId: string) => Array<{
+    eventId: string;
+    eventName: string;
+    eventDate: string;
+    startTime?: string;
+    location?: string;
+    teamName?: string;
+    teamStrength: number;
+  }>;
   getTeamAverageLevel: (team: Team) => number;
 }
 
@@ -855,6 +864,48 @@ export const useStore = create<AppState>()(
           ? get().events.filter(e => e.id !== excludeEventId)
           : get().events;
         return getPlayerStats(playerId, events);
+      },
+
+      getTrainerEventHistory: (trainerId) => {
+        const getEventStartTime = (event: Event): string | undefined => {
+          const startTimes = event.teams
+            .map((team) => team.startTime?.trim())
+            .filter((startTime): startTime is string => Boolean(startTime));
+
+          if (startTimes.length === 0) {
+            return undefined;
+          }
+
+          return startTimes.sort()[0];
+        };
+
+        const getLocation = (teamLocation?: string, eventLocation?: string): string | undefined => {
+          if (teamLocation?.trim()) {
+            return teamLocation.trim();
+          }
+
+          if (eventLocation?.trim()) {
+            return eventLocation.trim();
+          }
+
+          return undefined;
+        };
+
+        return get().events
+          .filter((event) => event.teams.some((team) => team.trainerId === trainerId))
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .map((event) => {
+            const team = event.teams.find((entry) => entry.trainerId === trainerId);
+            return {
+              eventId: event.id,
+              eventName: event.name,
+              eventDate: event.date,
+              startTime: team?.startTime || getEventStartTime(event),
+              location: getLocation(team?.location, event.location),
+              teamName: team?.name,
+              teamStrength: team?.strength || 2,
+            };
+          });
       },
       
       getTeamAverageLevel: (team) => {

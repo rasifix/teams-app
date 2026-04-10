@@ -63,6 +63,7 @@ export const useEvents = () => {
 export const useTrainers = () => {
   const trainers = useStore((state) => state.trainers);
   const getTrainerById = useStore((state) => state.getTrainerById);
+  const getTrainerEventHistory = useStore((state) => state.getTrainerEventHistory);
   const addTrainer = useStore((state) => state.addTrainer);
   const updateTrainer = useStore((state) => state.updateTrainer);
   const deleteTrainer = useStore((state) => state.deleteTrainer);
@@ -70,6 +71,7 @@ export const useTrainers = () => {
   return {
     trainers,
     getTrainerById,
+    getTrainerEventHistory,
     addTrainer,
     updateTrainer,
     deleteTrainer,

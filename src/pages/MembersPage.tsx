@@ -1,18 +1,23 @@
-import { useState, useMemo } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
-import MembersList from "../components/MembersList";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
-import { Card, CardBody, CardTitle } from "../components/ui";
-import Button from "../components/ui/Button";
 import type { Player, Trainer } from "../types";
+
+export interface MembersOutletContext {
+  players: Player[];
+  trainers: Trainer[];
+  openAddPlayerModal: () => void;
+  openAddTrainerModal: () => void;
+  requestDeletePlayer: (player: Player) => void;
+  requestDeleteTrainer: (trainer: Trainer) => void;
+}
 
 export default function MembersPage() {
   const { t } = useTranslation();
-  const location = useLocation();
   
   // Store hooks
   const { players, addPlayer: addPlayerToStore, deletePlayer } = usePlayers();
@@ -27,55 +32,9 @@ export default function MembersPage() {
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
   
-  // Filter states for players
-  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [showTrialPlayers, setShowTrialPlayers] = useState(false);
-  
-  // Edit states - removed editingTrainer since we navigate to detail page
-  
   // Delete confirmation states
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
   const [deletingTrainer, setDeletingTrainer] = useState<Trainer | null>(null);
-
-  // Determine active tab based on URL
-  const isPlayersTab = location.pathname === '/members' || location.pathname === '/members/players';
-  const isTrainersTab = location.pathname === '/members/trainers';
-
-  // Get available birth years from players
-  const availableYears = useMemo(() => {
-    const years = new Set<number>();
-    players.forEach(player => {
-      const year = player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear;
-      years.add(year);
-    });
-    return Array.from(years).sort((a, b) => b - a); // Sort descending (newest first)
-  }, [players]);
-
-  // Filter players based on selected filters
-  const filteredPlayers = useMemo(() => {
-    return players.filter(player => {
-      // Level filter
-      if (selectedLevels.length > 0 && !selectedLevels.includes(player.level)) {
-        return false;
-      }
-      
-      // Year filter
-      if (selectedYear !== null) {
-        const year = player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear;
-        if (year !== selectedYear) {
-          return false;
-        }
-      }
-
-      // Trial status filter
-      if (!showTrialPlayers && player.status === 'trial') {
-        return false;
-      }
-      
-      return true;
-    });
-  }, [players, selectedLevels, selectedYear, showTrialPlayers]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {
@@ -144,6 +103,15 @@ export default function MembersPage() {
     setIsTrainerModalOpen(false);
   };
 
+  const outletContext: MembersOutletContext = {
+    players,
+    trainers,
+    openAddPlayerModal: () => setIsPlayerModalOpen(true),
+    openAddTrainerModal: () => setIsTrainerModalOpen(true),
+    requestDeletePlayer: handleDeletePlayer,
+    requestDeleteTrainer: handleDeleteTrainer,
+  };
+
   if (isLoading) {
     return (
       <div className="page-container">
@@ -168,7 +136,7 @@ export default function MembersPage() {
           <NavLink
             to="/members/players"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              isActive || isPlayersTab
+              isActive
                 ? 'border-orange-600 text-orange-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
@@ -178,7 +146,7 @@ export default function MembersPage() {
           <NavLink
             to="/members/trainers"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              isActive || isTrainersTab
+              isActive
                 ? 'border-orange-600 text-orange-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
@@ -188,144 +156,7 @@ export default function MembersPage() {
         </nav>
       </div>
 
-      {/* Players Tab Content */}
-      {(isPlayersTab) && (
-        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4">
-            <div className="flex justify-between items-center mb-4">
-              <CardTitle className="mb-0">
-                {selectedLevels.length > 0 || selectedYear !== null || !showTrialPlayers
-                  ? t('members.allPlayersFilteredTitle', { filteredCount: filteredPlayers.length, totalCount: players.length })
-                  : t('members.allPlayersTitle', { count: filteredPlayers.length })}
-              </CardTitle>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setIsPlayerModalOpen(true)}
-              >
-                {t('common.actions.add')}
-              </Button>
-            </div>
-
-            {/* Filters */}
-            <div className="mb-4 flex flex-wrap items-center gap-4">
-              {/* Level Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.levelFilter')}</span>
-                <div className="flex gap-1.5">
-                  {[1, 2, 3, 4, 5].map(level => (
-                    <button
-                      key={level}
-                      onClick={() => {
-                        setSelectedLevels(prev => 
-                          prev.includes(level) 
-                            ? prev.filter(l => l !== level)
-                            : [...prev, level]
-                        );
-                      }}
-                      className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
-                        selectedLevels.includes(level)
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setSelectedLevels([])}
-                    className={`px-2 py-1 text-xs font-medium underline transition-opacity ${
-                      selectedLevels.length > 0
-                        ? 'text-gray-600 hover:text-gray-800 opacity-100'
-                        : 'text-transparent opacity-0 pointer-events-none'
-                    }`}
-                  >
-                    {t('common.actions.clear')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Year Filter */}
-              {availableYears.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.yearFilter')}</span>
-                  <div className="flex gap-1.5">
-                    {availableYears.map(year => (
-                      <button
-                        key={year}
-                        onClick={() => {
-                          setSelectedYear(selectedYear === year ? null : year);
-                        }}
-                        className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
-                          selectedYear === year
-                            ? 'bg-orange-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                      >
-                        {year}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => setSelectedYear(null)}
-                      className={`px-2 py-1 text-xs font-medium underline transition-opacity ${
-                        selectedYear !== null
-                          ? 'text-gray-600 hover:text-gray-800 opacity-100'
-                          : 'text-transparent opacity-0 pointer-events-none'
-                      }`}
-                    >
-                      {t('common.actions.clear')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.trialFilter')}</span>
-                <button
-                  onClick={() => setShowTrialPlayers((prev) => !prev)}
-                  className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
-                    showTrialPlayers
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {showTrialPlayers ? t('members.hideTrialPlayers') : t('members.showTrialPlayers')}
-                </button>
-              </div>
-            </div>
-
-            <MembersList
-              members={filteredPlayers}
-              onDelete={handleDeletePlayer}
-              memberType="players"
-            />
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Trainers Tab Content */}
-      {isTrainersTab && (
-        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4">
-            <div className="flex justify-between items-center mb-4">
-              <CardTitle className="mb-0">{t('members.allTrainersTitle', { count: trainers.length })}</CardTitle>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setIsTrainerModalOpen(true)}
-              >
-                {t('common.actions.add')}
-              </Button>
-            </div>
-
-            <MembersList
-              members={trainers}
-              onDelete={handleDeleteTrainer}
-              memberType="trainers"
-            />
-          </CardBody>
-        </Card>
-      )}
+      <Outlet context={outletContext} />
 
       {/* Player Modal */}
       <AddPlayerModal

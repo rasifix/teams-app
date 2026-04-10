@@ -11,6 +11,8 @@ import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import HomePage from './pages/HomePage';
 import MembersPage from './pages/MembersPage';
+import MembersPlayersPage from './pages/MembersPlayersPage';
+import MembersTrainersPage from './pages/MembersTrainersPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import TrainerDetailPage from './pages/TrainerDetailPage';
 import EventsPage from './pages/EventsPage';
@@ -58,9 +60,11 @@ function App() {
                     {/* Protected routes */}
                     <Route path="/groups" element={<ProtectedRoute><GroupSelectionPage /></ProtectedRoute>} />
                     {/* Members routes */}
-                    <Route path="/members" element={<Navigate to="/members/players" replace />} />
-                    <Route path="/members/players" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
-                    <Route path="/members/trainers" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
+                    <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>}>
+                      <Route index element={<Navigate to="players" replace />} />
+                      <Route path="players" element={<MembersPlayersPage />} />
+                      <Route path="trainers" element={<MembersTrainersPage />} />
+                    </Route>
                     {/* Player detail still needs its own route */}
                     <Route path="/players/:id" element={<ProtectedRoute><PlayerDetailPage /></ProtectedRoute>} />
                     {/* Trainer detail route */}

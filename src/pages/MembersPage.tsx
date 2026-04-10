@@ -30,7 +30,7 @@ export default function MembersPage() {
   // Filter states for players
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [showTrialPlayers, setShowTrialPlayers] = useState(true);
+  const [showTrialPlayers, setShowTrialPlayers] = useState(false);
   
   // Edit states - removed editingTrainer since we navigate to detail page
   

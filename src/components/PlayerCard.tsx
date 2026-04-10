@@ -23,16 +23,31 @@ export default function PlayerCard({
     ? new Date(player.birthDate).getFullYear()
     : player.birthYear;
   const playerStatus = player.status || 'active';
-  const statusBadgeClassName = playerStatus === 'active'
-    ? 'bg-green-50 text-green-700'
-    : playerStatus === 'trial'
-      ? 'bg-amber-50 text-amber-700'
-      : 'bg-gray-100 text-gray-700';
-  const statusLabel = t(`playerModal.status.${playerStatus}`);
-  const showStatusBadge = playerStatus !== 'active';
+  const isInactive = playerStatus === 'inactive';
+  const isTrial = playerStatus === 'trial';
+  const cardStatusClassName = isInactive
+    ? 'bg-gray-50 border-gray-200'
+    : isTrial
+      ? 'bg-orange-50 border-orange-700'
+      : 'bg-white border-gray-200';
+  const nameClassName = isInactive
+    ? 'text-gray-500'
+    : isTrial
+      ? 'text-orange-900'
+      : 'text-gray-900';
+  const detailTextClassName = isInactive
+    ? 'text-gray-500'
+    : isTrial
+      ? 'text-orange-800'
+      : 'text-gray-500';
+  const arrowIconClassName = isInactive
+    ? 'text-gray-400'
+    : isTrial
+      ? 'text-orange-700'
+      : 'text-gray-400';
 
   return (
-    <div className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+    <div className={`member-card relative overflow-hidden border rounded-lg hover:shadow-md transition-shadow ${cardStatusClassName}`}>
       <div
         className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${isSwiped ? '-translate-x-20' : 'translate-x-0'
           } active:bg-gray-50`}
@@ -42,22 +57,17 @@ export default function PlayerCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="truncate">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className={`text-sm font-medium truncate ${nameClassName}`}>
                 {player.firstName} {player.lastName}
-                <span className="text-xs text-gray-500 ml-1">{birthYear}</span>
+                <span className={`text-xs ml-1 ${detailTextClassName}`}>{birthYear}</span>
                 {player.preferredShirtNumber ? (
-                  <span className="text-xs text-gray-500 ml-1">#{player.preferredShirtNumber}</span>
+                  <span className={`text-xs ml-1 ${detailTextClassName}`}>#{player.preferredShirtNumber}</span>
                 ) : null}
-                {showStatusBadge && (
-                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${statusBadgeClassName}`}>
-                    {statusLabel}
-                  </span>
-                )}
               </p>
             </div>
             <div className="ml-2 flex-shrink-0 flex items-center gap-2">
               <Level level={player.level} className="text-xs" />
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${arrowIconClassName}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
@@ -73,7 +83,7 @@ export default function PlayerCard({
           className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
           onClick={onDelete}
         >
-          Delete
+          {t('common.actions.delete')}
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup } from '../store';
-import type { Guardian, Period, Player, PlayerEventHistoryItem } from '../types';
+import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
@@ -11,56 +11,11 @@ import PlayerEventHistory from '../components/PlayerEventHistory';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
-
-interface GroupedPlayerEventHistory {
-  id: string;
-  title: string;
-  eventHistory: PlayerEventHistoryItem[];
-}
-
-const toComparableDate = (dateString: string): string | null => {
-  if (!dateString) return null;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    return dateString;
-  }
-
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return null;
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
-  const day = String(parsed.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const isValidPeriod = (period: Period): boolean => period.startDate < period.endDate;
-
-const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
-  if (periods.length < 2) {
-    return true;
-  }
-
-  const sortedPeriods = [...periods].sort((left, right) => {
-    const startCompare = left.startDate.localeCompare(right.startDate);
-    if (startCompare !== 0) {
-      return startCompare;
-    }
-
-    return left.endDate.localeCompare(right.endDate);
-  });
-
-  for (let index = 1; index < sortedPeriods.length; index += 1) {
-    const previous = sortedPeriods[index - 1];
-    const current = sortedPeriods[index];
-
-    if (current.startDate < previous.endDate) {
-      return false;
-    }
-  }
-
-  return true;
-};
+import {
+  selectFutureEventsWithoutInvitation,
+  selectGroupedPlayerEventHistory,
+  selectPlayerEventHistory,
+} from '../store/selectors/playerDetailSelectors';
 
 export default function PlayerDetailPage() {
   const { t } = useTranslation();
@@ -135,88 +90,20 @@ export default function PlayerDetailPage() {
       : 'bg-gray-100 text-gray-700';
   const playerStatusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
 
-  // Prepare player event history data
-  const playerEventHistory: PlayerEventHistoryItem[] = events
-    .filter(event => event.invitations.some(inv => inv.playerId === player.id))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Chronological order (oldest first)
-    .map(event => {
-      const invitation = event.invitations.find(inv => inv.playerId === player.id);
-      const invitationStatus = invitation?.status || 'open';
-      const isSelected = event.teams.some(team => 
-        (team.selectedPlayers || []).includes(player.id)
-      );
-      const team = event.teams.find(team => 
-        (team.selectedPlayers || []).includes(player.id)
-      );
+  const playerEventHistory = useMemo(
+    () => selectPlayerEventHistory(events, player.id),
+    [events, player.id]
+  );
 
-      return {
-        eventId: event.id,
-        eventName: event.name,
-        eventDate: event.date,
-        invitationStatus,
-        isSelected,
-        teamName: team?.name
-      };
-    });
+  const groupedPlayerEventHistory = useMemo(
+    () => selectGroupedPlayerEventHistory(groupPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
+    [groupPeriods, playerEventHistory, t]
+  );
 
-  const groupedPlayerEventHistory = useMemo<GroupedPlayerEventHistory[] | null>(() => {
-    const validPeriods = groupPeriods.filter(isValidPeriod);
-
-    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
-      return null;
-    }
-
-    const groupedByPeriod: GroupedPlayerEventHistory[] = validPeriods.map((period) => ({
-      id: period.id,
-      title: period.name,
-      eventHistory: [],
-    }));
-
-    const outsidePeriods: PlayerEventHistoryItem[] = [];
-
-    playerEventHistory.forEach((historyItem) => {
-      const eventDate = toComparableDate(historyItem.eventDate);
-      if (!eventDate) {
-        outsidePeriods.push(historyItem);
-        return;
-      }
-
-      const matchingIndex = validPeriods.findIndex((period) => (
-        eventDate >= period.startDate && eventDate < period.endDate
-      ));
-
-      if (matchingIndex >= 0) {
-        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
-      } else {
-        outsidePeriods.push(historyItem);
-      }
-    });
-
-    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
-
-    if (outsidePeriods.length > 0) {
-      nonEmptyGroups.push({
-        id: 'outside-periods',
-        title: t('statistics.period.outsidePeriods'),
-        eventHistory: outsidePeriods,
-      });
-    }
-
-    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
-  }, [groupPeriods, playerEventHistory]);
-
-  // Filter future events where player was NOT invited
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const futureEventsWithoutInvitation = events
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      eventDate.setHours(0, 0, 0, 0);
-      const isFuture = eventDate >= today;
-      const isNotInvited = !event.invitations.some(inv => inv.playerId === player.id);
-      return isFuture && isNotInvited;
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Soonest first
+  const futureEventsWithoutInvitation = useMemo(
+    () => selectFutureEventsWithoutInvitation(events, player.id),
+    [events, player.id]
+  );
 
   const handleEditPlayer = () => {
     setIsEditModalOpen(true);

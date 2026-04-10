@@ -72,3 +72,8 @@ In Event "Saturday Training - 2026-04-11", Team "A" contains 8 selected
 Players, has Trainer "Alex Meyer", Shirt Set "Blue Sponsor Kit", strength
 level 2, and start time 10:00. This Team record becomes part of the Event's
 final participation history and future fairness calculations.
+
+## Related Reference
+
+- Team lead assignment plan (trainer or guardian):
+  [../team-guardian-assignment-plan.md](../team-guardian-assignment-plan.md)

@@ -14,7 +14,7 @@ interface MembersListProps<T extends Member> {
 }
 
 function isPlayer(member: Member): member is Player {
-  return 'level' in member && 'birthYear' in member;
+  return 'level' in member && 'birthDate' in member;
 }
 
 export default function MembersList<T extends Member>({ 

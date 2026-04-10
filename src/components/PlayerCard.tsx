@@ -19,9 +19,7 @@ export default function PlayerCard({
   onDelete,
 }: PlayerCardProps) {
   const { t } = useTranslation();
-  const birthYear = player.birthDate
-    ? new Date(player.birthDate).getFullYear()
-    : player.birthYear;
+  const birthYear = new Date(player.birthDate!).getFullYear();
   const playerStatus = player.status || 'active';
   const isInactive = playerStatus === 'inactive';
   const isTrial = playerStatus === 'trial';
@@ -60,9 +58,6 @@ export default function PlayerCard({
               <p className={`text-sm font-medium truncate ${nameClassName}`}>
                 {player.firstName} {player.lastName}
                 <span className={`text-xs ml-1 ${detailTextClassName}`}>{birthYear}</span>
-                {player.preferredShirtNumber ? (
-                  <span className={`text-xs ml-1 ${detailTextClassName}`}>#{player.preferredShirtNumber}</span>
-                ) : null}
               </p>
             </div>
             <div className="ml-2 flex-shrink-0 flex items-center gap-2">

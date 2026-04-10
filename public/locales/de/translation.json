@@ -219,7 +219,7 @@
     },
     "status": {
       "active": "Aktiv",
-      "trial": "Probe",
+      "trial": "Schnupperli",
       "inactive": "Inaktiv"
     }
   },
@@ -293,6 +293,9 @@
     "allTrainersTitle": "Alle Trainer ({{count}})",
     "levelFilter": "Level:",
     "yearFilter": "Jahr:",
+    "trialFilter": "Probetraining:",
+    "showTrialPlayers": "Anzeigen",
+    "hideTrialPlayers": "Ausblenden",
     "deletePlayerTitle": "Spieler löschen",
     "deletePlayerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deletePlayerConfirm": "Spieler löschen",
@@ -476,7 +479,7 @@
     "eventsWithoutInvitation": "Termine ohne Einladung",
     "guardians": {
       "title": "Erziehungsberechtigte ({{count}})",
-      "addAction": "Erziehungsberechtigte hinzufügen",
+      "addAction": "Hinzufügen",
       "assignAction": "Erziehungsberechtigte zuweisen",
       "removeAction": "Entfernen",
       "removeTitle": "Erziehungsberechtigte entfernen",

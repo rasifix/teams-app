@@ -30,6 +30,7 @@ export default function MembersPage() {
   // Filter states for players
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [showTrialPlayers, setShowTrialPlayers] = useState(true);
   
   // Edit states - removed editingTrainer since we navigate to detail page
   
@@ -66,10 +67,15 @@ export default function MembersPage() {
           return false;
         }
       }
+
+      // Trial status filter
+      if (!showTrialPlayers && player.status === 'trial') {
+        return false;
+      }
       
       return true;
     });
-  }, [players, selectedLevels, selectedYear]);
+  }, [players, selectedLevels, selectedYear, showTrialPlayers]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {
@@ -188,7 +194,7 @@ export default function MembersPage() {
           <CardBody className="lg:p-6 p-4">
             <div className="flex justify-between items-center mb-4">
               <CardTitle className="mb-0">
-                {selectedLevels.length > 0 || selectedYear !== null
+                {selectedLevels.length > 0 || selectedYear !== null || !showTrialPlayers
                   ? t('members.allPlayersFilteredTitle', { filteredCount: filteredPlayers.length, totalCount: players.length })
                   : t('members.allPlayersTitle', { count: filteredPlayers.length })}
               </CardTitle>
@@ -272,6 +278,20 @@ export default function MembersPage() {
                   </div>
                 </div>
               )}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t('members.trialFilter')}</span>
+                <button
+                  onClick={() => setShowTrialPlayers((prev) => !prev)}
+                  className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
+                    showTrialPlayers
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {showTrialPlayers ? t('members.hideTrialPlayers') : t('members.showTrialPlayers')}
+                </button>
+              </div>
             </div>
 
             <MembersList

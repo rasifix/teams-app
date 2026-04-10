@@ -1,4 +1,5 @@
 import type { MouseEvent, TouchEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Player } from '../types';
 import Level from './Level';
 
@@ -17,6 +18,7 @@ export default function PlayerCard({
   onTouchStart,
   onDelete,
 }: PlayerCardProps) {
+  const { t } = useTranslation();
   const birthYear = player.birthDate
     ? new Date(player.birthDate).getFullYear()
     : player.birthYear;
@@ -26,14 +28,14 @@ export default function PlayerCard({
     : playerStatus === 'trial'
       ? 'bg-amber-50 text-amber-700'
       : 'bg-gray-100 text-gray-700';
-  const statusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
+  const statusLabel = t(`playerModal.status.${playerStatus}`);
+  const showStatusBadge = playerStatus !== 'active';
 
   return (
     <div className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
       <div
-        className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${
-          isSwiped ? '-translate-x-20' : 'translate-x-0'
-        } active:bg-gray-50`}
+        className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${isSwiped ? '-translate-x-20' : 'translate-x-0'
+          } active:bg-gray-50`}
         onClick={onClick}
         onTouchStart={onTouchStart}
       >
@@ -43,14 +45,14 @@ export default function PlayerCard({
               <p className="text-sm font-medium text-gray-900 truncate">
                 {player.firstName} {player.lastName}
                 <span className="text-xs text-gray-500 ml-1">{birthYear}</span>
-                { player.preferredShirtNumber ? (
-                    <span className="text-xs text-gray-500 ml-1">#{player.preferredShirtNumber}</span>
-                ) : null }
-              </p>
-              <p className="mt-1">
-                <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${statusBadgeClassName}`}>
-                  {statusLabel}
-                </span>
+                {player.preferredShirtNumber ? (
+                  <span className="text-xs text-gray-500 ml-1">#{player.preferredShirtNumber}</span>
+                ) : null}
+                {showStatusBadge && (
+                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${statusBadgeClassName}`}>
+                    {statusLabel}
+                  </span>
+                )}
               </p>
             </div>
             <div className="ml-2 flex-shrink-0 flex items-center gap-2">
@@ -64,9 +66,8 @@ export default function PlayerCard({
       </div>
 
       <div
-        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
-          isSwiped ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${isSwiped ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
       >
         <button
           className="delete-button flex items-center justify-center w-full h-full text-white font-medium"

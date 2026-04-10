@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ImportMembersModal from "../components/ImportMembersModal";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
 import type { Player, Trainer } from "../types";
 
@@ -12,6 +13,7 @@ export interface MembersOutletContext {
   trainers: Trainer[];
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
+  openImportModal: () => void;
   requestDeletePlayer: (player: Player) => void;
   requestDeleteTrainer: (trainer: Trainer) => void;
 }
@@ -31,6 +33,7 @@ export default function MembersPage() {
   // Modal states
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   // Delete confirmation states
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
@@ -108,6 +111,7 @@ export default function MembersPage() {
     trainers,
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
+    openImportModal: () => setIsImportModalOpen(true),
     requestDeletePlayer: handleDeletePlayer,
     requestDeleteTrainer: handleDeleteTrainer,
   };
@@ -174,6 +178,11 @@ export default function MembersPage() {
         onSave={handleAddTrainer}
         onUpdate={() => {}}
         editingTrainer={null}
+      />
+
+      <ImportMembersModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
 
       {/* Delete Player Confirmation */}

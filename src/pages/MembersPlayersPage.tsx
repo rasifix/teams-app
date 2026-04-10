@@ -8,7 +8,7 @@ import type { MembersOutletContext } from "./MembersPage";
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
-  const { players, openAddPlayerModal, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const { players, openAddPlayerModal, openImportModal, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -56,9 +56,14 @@ export default function MembersPlayersPage() {
                 })
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
           </CardTitle>
-          <Button variant="primary" size="sm" onClick={openAddPlayerModal}>
-            {t("common.actions.add")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={openImportModal}>
+              {t("membersImport.openAction")}
+            </Button>
+            <Button variant="primary" size="sm" onClick={openAddPlayerModal}>
+              {t("common.actions.add")}
+            </Button>
+          </div>
         </div>
 
         <div className="mb-4 flex flex-wrap items-center gap-4">

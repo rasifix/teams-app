@@ -303,6 +303,60 @@
     "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
     "deleteTrainerConfirm": "Delete Trainer"
   },
+  "membersImport": {
+    "openAction": "Import",
+    "title": "Import Players and Guardians",
+    "description": "Upload a Spond members CSV, review the detected changes, exclude rows if needed, and apply add-only updates.",
+    "dropZone": "Drop CSV file here",
+    "fileTypeHint": "Spond export (.csv, semicolon separated)",
+    "selectFile": "Select file",
+    "fileLoaded": "Loaded: {{fileName}}",
+    "completedTitle": "Import finished",
+    "newImport": "Start new import",
+    "includeAll": "Include all",
+    "excludeAll": "Exclude all",
+    "apply": "Apply import",
+    "applying": "Applying...",
+    "summary": {
+      "totalRows": "Rows: {{count}}",
+      "actionableRows": "Actionable: {{count}}",
+      "newPlayers": "New players: {{count}}",
+      "guardiansToAdd": "Guardians to add: {{count}}",
+      "birthDateFills": "Birth dates to fill: {{count}}"
+    },
+    "progress": {
+      "label": "Import in progress",
+      "count": "{{completed}} / {{total}}"
+    },
+    "row": {
+      "newPlayer": "New player",
+      "existingPlayer": "Existing player",
+      "unresolved": "Unresolved row",
+      "birthDateFill": "Fill missing birth date",
+      "birthDateAdded": "Birth date to add: {{date}}",
+      "guardiansAdded": "Guardians to add: {{count}}",
+      "guardianNames": "Guardians: {{names}}"
+    },
+    "errors": {
+      "empty-file": "The selected file is empty.",
+      "missing-required-header-child-name": "The CSV is missing the required child name column."
+    },
+    "issues": {
+      "missing-player-name": "Player name is incomplete.",
+      "player-name-incomplete": "Player name is incomplete.",
+      "invalid-birth-date": "Birth date could not be parsed.",
+      "guardian-name-incomplete": "At least one guardian entry is incomplete and was skipped.",
+      "ambiguous-player-match": "Multiple existing players match this row.",
+      "missing-birth-date-for-new-player": "Cannot create a new player without birth date."
+    },
+    "result": {
+      "processedRows": "Processed rows: {{count}}",
+      "addedPlayers": "Added players: {{count}}",
+      "addedGuardians": "Added guardians: {{count}}",
+      "filledBirthDates": "Filled birth dates: {{count}}",
+      "failedRows": "Failed rows: {{count}}"
+    }
+  },
   "levels": {
     "1": "1 - Beginner",
     "2": "2 - Learning",

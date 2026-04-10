@@ -303,6 +303,60 @@
     "deleteTrainerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTrainerConfirm": "Trainer löschen"
   },
+  "membersImport": {
+    "openAction": "Import",
+    "title": "Spieler und Erziehungsberechtigte importieren",
+    "description": "Lade eine Spond-Mitglieder-CSV hoch, prüfe die erkannten Änderungen, schliesse bei Bedarf Zeilen aus und wende nur additive Änderungen an.",
+    "dropZone": "CSV-Datei hier ablegen",
+    "fileTypeHint": "Spond-Export (.csv, durch Semikolon getrennt)",
+    "selectFile": "Datei auswählen",
+    "fileLoaded": "Geladen: {{fileName}}",
+    "completedTitle": "Import abgeschlossen",
+    "newImport": "Neuen Import starten",
+    "includeAll": "Alle einschliessen",
+    "excludeAll": "Alle ausschliessen",
+    "apply": "Import anwenden",
+    "applying": "Wird angewendet...",
+    "summary": {
+      "totalRows": "Zeilen: {{count}}",
+      "actionableRows": "Anwendbar: {{count}}",
+      "newPlayers": "Neue Spieler: {{count}}",
+      "guardiansToAdd": "Erziehungsberechtigte zum Hinzufügen: {{count}}",
+      "birthDateFills": "Geburtsdaten zu ergänzen: {{count}}"
+    },
+    "progress": {
+      "label": "Import läuft",
+      "count": "{{completed}} / {{total}}"
+    },
+    "row": {
+      "newPlayer": "Neuer Spieler",
+      "existingPlayer": "Bestehender Spieler",
+      "unresolved": "Nicht auflösbare Zeile",
+      "birthDateFill": "Fehlendes Geburtsdatum ergänzen",
+      "birthDateAdded": "Geburtsdatum zum Hinzufügen: {{date}}",
+      "guardiansAdded": "Erziehungsberechtigte hinzufügen: {{count}}",
+      "guardianNames": "Erziehungsberechtigte: {{names}}"
+    },
+    "errors": {
+      "empty-file": "Die gewählte Datei ist leer.",
+      "missing-required-header-child-name": "In der CSV fehlt die erforderliche Spalte für den Kindnamen."
+    },
+    "issues": {
+      "missing-player-name": "Der Spielername ist unvollständig.",
+      "player-name-incomplete": "Der Spielername ist unvollständig.",
+      "invalid-birth-date": "Das Geburtsdatum konnte nicht gelesen werden.",
+      "guardian-name-incomplete": "Mindestens ein Eintrag für Erziehungsberechtigte ist unvollständig und wurde übersprungen.",
+      "ambiguous-player-match": "Mehrere bestehende Spieler passen zu dieser Zeile.",
+      "missing-birth-date-for-new-player": "Neuer Spieler kann ohne Geburtsdatum nicht erstellt werden."
+    },
+    "result": {
+      "processedRows": "Verarbeitete Zeilen: {{count}}",
+      "addedPlayers": "Hinzugefügte Spieler: {{count}}",
+      "addedGuardians": "Hinzugefügte Erziehungsberechtigte: {{count}}",
+      "filledBirthDates": "Ergänzte Geburtsdaten: {{count}}",
+      "failedRows": "Fehlgeschlagene Zeilen: {{count}}"
+    }
+  },
   "levels": {
     "1": "1 - Anfänger",
     "2": "2 - Lernend",
@@ -435,9 +489,9 @@
       "emptyState": "Noch keine Spielerdaten verfügbar. Füge Spieler und Termine hinzu, um Statistiken zu sehen.",
       "invited": "Eingeladen",
       "accepted": "Zugesagt",
-      "selected": "Ausgewählt",
+      "selected": "Selektiert",
       "acceptanceRate": "Zusagequote",
-      "selectionRate": "Auswahlquote"
+      "selectionRate": "Selektionsquote"
     },
     "eventAttendance": {
       "emptyState": "Keine Daten verfügbar. Füge Spieler und Termine hinzu, um die Teilnahmematrix zu sehen."

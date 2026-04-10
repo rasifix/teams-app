@@ -12,6 +12,8 @@ interface TrainerEventHistoryItem {
   eventId: string;
   eventName: string;
   eventDate: string;
+  startTime?: string;
+  location?: string;
   teamName: string;
   teamStrength: number;
 }
@@ -64,6 +66,30 @@ const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
   }
 
   return true;
+};
+
+const getEventStartTime = (event: { teams: Array<{ startTime: string }> }): string | undefined => {
+  const startTimes = event.teams
+    .map((team) => team.startTime?.trim())
+    .filter((startTime): startTime is string => Boolean(startTime));
+
+  if (startTimes.length === 0) {
+    return undefined;
+  }
+
+  return startTimes.sort()[0];
+};
+
+const getLocation = (teamLocation?: string, eventLocation?: string): string | undefined => {
+  if (teamLocation?.trim()) {
+    return teamLocation.trim();
+  }
+
+  if (eventLocation?.trim()) {
+    return eventLocation.trim();
+  }
+
+  return undefined;
 };
 
 export default function TrainerDetailPage() {
@@ -131,6 +157,8 @@ export default function TrainerDetailPage() {
         eventId: event.id,
         eventName: event.name,
         eventDate: event.date,
+        startTime: team?.startTime || getEventStartTime(event),
+        location: getLocation(team?.location, event.location),
         teamName: team?.name || t('team.unknownTeam'),
         teamStrength: team?.strength || 2
       };
@@ -285,6 +313,14 @@ export default function TrainerDetailPage() {
                           <div className="flex justify-between items-center flex-1 min-w-0">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-gray-900 truncate" title={item.eventName}>{item.eventName}</h3>
+                              <div className="flex items-center gap-4 mt-2">
+                                {item.startTime && (
+                                  <span className="text-sm text-gray-700">🕐 {item.startTime}</span>
+                                )}
+                                {item.location && (
+                                  <span className="text-sm text-gray-700">📍 {item.location}</span>
+                                )}
+                              </div>
                               <div className="flex items-center gap-4 mt-2">
                                 <span className="text-sm text-gray-700">
                                   👥 {item.teamName}

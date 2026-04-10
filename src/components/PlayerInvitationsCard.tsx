@@ -201,13 +201,13 @@ export default function PlayerInvitationsCard({
           {invitations.length === 0 ? (
             <p>{t('playerInvitations.empty.noneSent')}</p>
           ) : tabInvitations.length === 0 ? (
-            <p>No players have {
-              activeTab === 'assigned'
+            <p>{t('playerInvitations.empty.noneWithStatus', {
+              status: activeTab === 'assigned'
                 ? t('playerInvitations.empty.beenAssigned')
                 : activeTab === 'unavailable'
                   ? t('playerInvitations.empty.beenMarkedUnavailable')
-                  : t(`playerInvitations.empty.status.${activeTab}`)
-            } invitations.</p>
+                  : t(`playerInvitations.empty.status.${activeTab}`),
+            })}</p>
           ) : activeTab === 'accepted' ? (
             <p>{t('playerInvitations.empty.noAvailableAccepted')}</p>
           ) : activeTab === 'assigned' ? (
@@ -271,7 +271,7 @@ export default function PlayerInvitationsCard({
                             </svg>
                           )}
                           <span className="text-sm text-gray-900">
-                            {player ? `${player.firstName} ${player.lastName}` : `Player ID: ${invitation.playerId}`}
+                            {player ? `${player.firstName} ${player.lastName}` : t('playerInvitations.playerIdFallback', { id: invitation.playerId })}
                           </span>
                           {player && <Level level={player.level} className="text-sm" />}
                           <span className="text-xs text-gray-500 font-mono" title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}>

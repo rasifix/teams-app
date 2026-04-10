@@ -367,6 +367,56 @@
     "unavailable": "Unavailable",
     "notInvited": "Not Invited"
   },
+  "playerInvitations": {
+    "invite": "Invite",
+    "remove": "Remove",
+    "removeInvitation": "Remove invitation",
+    "cannotRemoveAssigned": "Cannot remove invitation for assigned players",
+    "playerIdFallback": "Player ID: {{id}}",
+    "tabs": {
+      "assigned": "Assigned",
+      "unavailable": "Unavailable"
+    },
+    "empty": {
+      "noneSent": "No invitations sent yet.",
+      "noneWithStatus": "No players have {{status}} invitations.",
+      "beenAssigned": "been assigned",
+      "beenMarkedUnavailable": "been marked unavailable",
+      "noAvailableAccepted": "No accepted players in the selected level range.",
+      "noAssignedToTeams": "No players are assigned to teams yet.",
+      "noPlayersInCategory": "No players in this category.",
+      "status": {
+        "accepted": "accepted",
+        "open": "open"
+      }
+    }
+  },
+  "teamCard": {
+    "expand": "Expand details",
+    "collapse": "Collapse details",
+    "statsTooltip": "{{accepted}} accepted, {{selected}} selected",
+    "removePlayer": "Remove player",
+    "unknownPlayer": "Unknown player"
+  },
+  "invitePlayers": {
+    "title": "Invite Players",
+    "subtitle": "Select players to invite to this event",
+    "noPlayers": "No players available",
+    "noPlayersDetail": "Add players in Members first.",
+    "defaultStatus": "Default status",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "selectedCount": "{{count}} selected",
+    "inviteAction": "Invite players"
+  },
+  "teamPrint": {
+    "title": "Team Summary",
+    "print": "Print",
+    "formatLabel": "Print format",
+    "selectionFormat": "Selection list",
+    "organizerFormat": "Organizer sheet",
+    "noPlayers": "No players selected"
+  },
   "nav": {
     "members": "Members",
     "events": "Events",

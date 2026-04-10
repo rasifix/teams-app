@@ -367,6 +367,56 @@
     "unavailable": "Abwesend",
     "notInvited": "Nicht eingeladen"
   },
+  "playerInvitations": {
+    "invite": "Einladen",
+    "remove": "Entfernen",
+    "removeInvitation": "Einladung entfernen",
+    "cannotRemoveAssigned": "Einladung für zugewiesene Spieler kann nicht entfernt werden",
+    "playerIdFallback": "Spieler-ID: {{id}}",
+    "tabs": {
+      "assigned": "Zugewiesen",
+      "unavailable": "Nicht verfügbar"
+    },
+    "empty": {
+      "noneSent": "Noch keine Einladungen versendet.",
+      "noneWithStatus": "Keine Spieler haben Einladungen mit dem Status {{status}}.",
+      "beenAssigned": "zugewiesen",
+      "beenMarkedUnavailable": "als nicht verfügbar markiert",
+      "noAvailableAccepted": "Keine zugesagten Spieler im gewählten Levelbereich.",
+      "noAssignedToTeams": "Noch keine Spieler wurden Teams zugewiesen.",
+      "noPlayersInCategory": "Keine Spieler in dieser Kategorie.",
+      "status": {
+        "accepted": "zugesagte",
+        "open": "offene"
+      }
+    }
+  },
+  "teamCard": {
+    "expand": "Details anzeigen",
+    "collapse": "Details ausblenden",
+    "statsTooltip": "{{accepted}} zugesagt, {{selected}} ausgewählt",
+    "removePlayer": "Spieler entfernen",
+    "unknownPlayer": "Unbekannter Spieler"
+  },
+  "invitePlayers": {
+    "title": "Spieler einladen",
+    "subtitle": "Wähle Spieler aus, die zu diesem Termin eingeladen werden sollen",
+    "noPlayers": "Keine Spieler verfügbar",
+    "noPlayersDetail": "Füge zuerst Spieler unter Mitglieder hinzu.",
+    "defaultStatus": "Standardstatus",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "selectedCount": "{{count}} ausgewählt",
+    "inviteAction": "Spieler einladen"
+  },
+  "teamPrint": {
+    "title": "Teamübersicht",
+    "print": "Drucken",
+    "formatLabel": "Druckformat",
+    "selectionFormat": "Auswahlliste",
+    "organizerFormat": "Organisatorenblatt",
+    "noPlayers": "Keine Spieler ausgewählt"
+  },
   "nav": {
     "members": "Mitglieder",
     "events": "Termine",

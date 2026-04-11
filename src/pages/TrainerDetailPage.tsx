@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods } from '../store';
+import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useAppInitialized } from '../store';
 import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
@@ -76,6 +76,7 @@ export default function TrainerDetailPage() {
   // Use store hooks
   const { updateTrainer, deleteTrainer, getTrainerById, getTrainerEventHistory } = useTrainers();
   const groupPeriods = useGroupPeriods();
+  const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -92,6 +93,12 @@ export default function TrainerDetailPage() {
     (!trainer && !loading) ? t('trainerDetail.errors.notFound') :
       errors.trainers || (hasErrors ? t('trainerDetail.errors.failedToLoadData') : null);
 
+  useEffect(() => {
+    if (isInitialized && !loading && id && !trainer) {
+      navigate('/members/trainers', { replace: true });
+    }
+  }, [isInitialized, loading, id, trainer, navigate]);
+
   if (loading) {
     return (
       <div className="page-container">
@@ -103,6 +110,10 @@ export default function TrainerDetailPage() {
   }
 
   if (error) {
+    if (isInitialized && id && !trainer && !loading) {
+      return null;
+    }
+
     return (
       <div className="page-container">
         <div className="empty-state">
@@ -193,7 +204,7 @@ export default function TrainerDetailPage() {
         const success = await deleteTrainer(id);
         setIsDeleteConfirmOpen(false); // Close dialog first
         if (success) {
-          navigate('/members');
+          navigate('/members/trainers', { replace: true });
         } else {
           // Show error feedback if needed
           console.error('Failed to delete trainer');

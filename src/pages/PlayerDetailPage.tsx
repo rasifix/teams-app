@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup } from '../store';
+import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
@@ -27,6 +27,7 @@ export default function PlayerDetailPage() {
   const { updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const group = useGroup();
+  const isInitialized = useAppInitialized();
   const { user } = useAuth();
   const groupPeriods = useGroupPeriods();
   const isLoading = useAppLoading();
@@ -49,6 +50,12 @@ export default function PlayerDetailPage() {
                (!player && !loading) ? t('playerDetail.errors.notFound') :
                errors.players || (hasErrors ? t('playerDetail.errors.failedToLoadData') : null);
 
+  useEffect(() => {
+    if (isInitialized && !loading && id && !player) {
+      navigate('/members/players', { replace: true });
+    }
+  }, [isInitialized, loading, id, player, navigate]);
+
   if (loading) {
     return (
       <div className="page-container">
@@ -60,6 +67,10 @@ export default function PlayerDetailPage() {
   }
 
   if (error) {
+    if (isInitialized && id && !player && !loading) {
+      return null;
+    }
+
     return (
       <div className="page-container">
         <div className="empty-state">
@@ -125,7 +136,7 @@ export default function PlayerDetailPage() {
     if (id) {
       const success = await deletePlayer(id);
       if (success) {
-        navigate('/players');
+        navigate('/members/players', { replace: true });
       }
     }
   };

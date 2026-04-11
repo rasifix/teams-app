@@ -1,14 +1,15 @@
-import type { Event, Trainer } from '../types';
+import type { Event } from '../types';
 import { useTranslation } from 'react-i18next';
 import EventCard from './EventCard';
+import type { TeamTrainerAssignee } from '../store/selectors/teamTrainerSelectors';
 
 interface EventsListProps {
   events: Event[];
-  trainers?: Trainer[];
+  trainerAssignees?: Map<string, TeamTrainerAssignee>;
   onEventClick?: (eventId: string) => void;
 }
 
-export default function EventsList({ events, trainers = [], onEventClick }: EventsListProps) {
+export default function EventsList({ events, trainerAssignees, onEventClick }: EventsListProps) {
   const { t } = useTranslation();
 
   if (events.length === 0) {
@@ -29,7 +30,7 @@ export default function EventsList({ events, trainers = [], onEventClick }: Even
         <EventCard
           key={event.id}
           event={event}
-          trainers={trainers}
+          trainerAssignees={trainerAssignees}
           onClick={handleEventClick}
         />
       ))}

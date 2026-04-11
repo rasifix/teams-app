@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Trainer } from '../../types';
-import { selectTeamTrainerAssigneeById, selectTeamTrainerOptions } from './teamTrainerSelectors';
+import { selectTeamTrainerAssigneeById, selectTeamTrainerAssigneeMap, selectTeamTrainerOptions } from './teamTrainerSelectors';
 
 function trainer(overrides: Partial<Trainer>): Trainer {
   return {
@@ -95,5 +95,48 @@ describe('team trainer selectors', () => {
     expect(trainerAssignee).toMatchObject({ id: 't-1', source: 'trainer' });
     expect(guardianAssignee).toMatchObject({ id: 'g-1', source: 'guardian' });
     expect(missingAssignee).toBeNull();
+  });
+
+  describe('selectTeamTrainerAssigneeMap', () => {
+    it('returns a map with trainers and guardians', () => {
+      const trainers = [trainer({ id: 't-1', firstName: 'Alex', lastName: 'Coach' })];
+      const players = [
+        player({ guardians: [{ id: 'g-1', firstName: 'Lia', lastName: 'Parent' }] }),
+      ];
+
+      const map = selectTeamTrainerAssigneeMap(trainers, players);
+
+      expect(map.get('t-1')).toMatchObject({ id: 't-1', source: 'trainer' });
+      expect(map.get('g-1')).toMatchObject({ id: 'g-1', source: 'guardian' });
+      expect(map.get('missing')).toBeUndefined();
+    });
+
+    it('trainers take precedence over guardians with the same id', () => {
+      const trainers = [trainer({ id: 'shared', firstName: 'Sam', lastName: 'Trainer' })];
+      const players = [
+        player({ guardians: [{ id: 'shared', firstName: 'Should', lastName: 'BeIgnored' }] }),
+      ];
+
+      const map = selectTeamTrainerAssigneeMap(trainers, players);
+
+      expect(map.get('shared')).toMatchObject({ source: 'trainer', firstName: 'Sam' });
+    });
+
+    it('deduplicates guardians appearing across multiple players', () => {
+      const trainers: Trainer[] = [];
+      const players = [
+        player({ id: 'p-1', guardians: [{ id: 'g-1', firstName: 'Robin', lastName: 'G' }] }),
+        player({ id: 'p-2', guardians: [{ id: 'g-1', firstName: 'Robin', lastName: 'G' }] }),
+      ];
+
+      const map = selectTeamTrainerAssigneeMap(trainers, players);
+
+      expect(map.size).toBe(1);
+    });
+
+    it('returns empty map when no trainers or players', () => {
+      const map = selectTeamTrainerAssigneeMap([], []);
+      expect(map.size).toBe(0);
+    });
   });
 });

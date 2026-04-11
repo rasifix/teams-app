@@ -1,16 +1,17 @@
-import type { Event, Trainer } from '../types';
+import type { Event } from '../types';
 import { useTranslation } from 'react-i18next';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import Strength from './Strength';
 import { DateColumn } from './ui';
+import type { TeamTrainerAssignee } from '../store/selectors/teamTrainerSelectors';
 
 interface EventCardProps {
   event: Event;
-  trainers?: Trainer[];
+  trainerAssignees?: Map<string, TeamTrainerAssignee>;
   onClick?: (eventId: string) => void;
 }
 
-export default function EventCard({ event, trainers = [], onClick }: EventCardProps) {
+export default function EventCard({ event, trainerAssignees, onClick }: EventCardProps) {
   const { t } = useTranslation();
   // Check if all teams meet the minimum player requirement
   const allTeamsMeetMinimum = event.teams.every(
@@ -72,7 +73,7 @@ export default function EventCard({ event, trainers = [], onClick }: EventCardPr
               {/* Desktop view - detailed */}
               <div className="hidden sm:block space-y-1">
                 {event.teams.map((team) => {
-                  const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
+                  const trainer = team.trainerId ? trainerAssignees?.get(team.trainerId) : undefined;
                   return (
                     <p key={team.id} className="text-sm text-gray-600 flex items-center gap-1">
                       🕐 {team.startTime} 👥 {team.name} <Strength level={team.strength} className="text-xs" />

@@ -1,19 +1,25 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvents } from '../hooks/useEvents';
-import { useTrainers } from '../store/useStore';
+import { useStore, useTrainers } from '../store/useStore';
 import EventsList from '../components/EventsList';
 import AddEventModal from '../components/AddEventModal';
 import type { Team } from '../types';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
+import { selectTeamTrainerAssigneeMap } from '../store/selectors/teamTrainerSelectors';
 
 export default function EventsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { events, loading, error, addEvent } = useEvents();
+  const players = useStore((state) => state.players);
   const trainers = useTrainers();
+  const trainerAssignees = useMemo(
+    () => selectTeamTrainerAssigneeMap(trainers, players),
+    [trainers, players]
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Get current date for comparison
@@ -107,7 +113,7 @@ export default function EventsPage() {
             
             <EventsList 
               events={futureEvents} 
-              trainers={trainers}
+              trainerAssignees={trainerAssignees}
               onEventClick={handleEventClick}
             />
           </CardBody>
@@ -121,7 +127,7 @@ export default function EventsPage() {
               
               <EventsList 
                 events={pastEvents} 
-                trainers={trainers}
+                trainerAssignees={trainerAssignees}
                 onEventClick={handleEventClick}
               />
             </CardBody>

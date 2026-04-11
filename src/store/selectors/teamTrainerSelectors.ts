@@ -57,6 +57,24 @@ export function selectTeamTrainerOptions(trainers: Trainer[], players: Player[])
   return Array.from(assigneesById.values()).sort(compareByName);
 }
 
+export function selectTeamTrainerAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamTrainerAssignee> {
+  const map = new Map<string, TeamTrainerAssignee>();
+
+  for (const t of trainers) {
+    map.set(t.id, { id: t.id, firstName: t.firstName, lastName: t.lastName, source: 'trainer' });
+  }
+
+  for (const player of players) {
+    for (const guardian of player.guardians || []) {
+      if (!map.has(guardian.id)) {
+        map.set(guardian.id, createGuardianAssignee(guardian));
+      }
+    }
+  }
+
+  return map;
+}
+
 export function selectTeamTrainerAssigneeById(
   trainerId: string | undefined,
   trainers: Trainer[],

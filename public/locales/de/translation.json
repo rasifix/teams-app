@@ -325,7 +325,12 @@
     "deletePlayerConfirm": "Spieler löschen",
     "deleteTrainerTitle": "Trainer löschen",
     "deleteTrainerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteTrainerConfirm": "Trainer löschen"
+    "deleteTrainerConfirm": "Trainer löschen",
+    "errors": {
+      "playerHasUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden.",
+      "deletePlayerFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "deleteTrainerFailed": "Trainer konnte nicht entfernt werden. Bitte versuche es erneut."
+    }
   },
   "membersImport": {
     "openAction": "Import",
@@ -601,7 +606,9 @@
     "errors": {
       "noPlayerId": "Keine Spieler-ID angegeben",
       "notFound": "Spieler nicht gefunden",
-      "failedToLoadData": "Daten konnten nicht geladen werden"
+      "failedToLoadData": "Daten konnten nicht geladen werden",
+      "deleteFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden."
     },
     "preferredShirtNumber": "Bevorzugt #{{number}}",
     "eventsWithoutInvitation": "Termine ohne Einladung",
@@ -630,7 +637,8 @@
     "errors": {
       "noTrainerId": "Keine Trainer-ID angegeben",
       "notFound": "Trainer nicht gefunden",
-      "failedToLoadData": "Daten konnten nicht geladen werden"
+      "failedToLoadData": "Daten konnten nicht geladen werden",
+      "deleteFailed": "Trainer konnte nicht entfernt werden. Bitte versuche es erneut."
     }
   },
   "team": {

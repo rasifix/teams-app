@@ -3,7 +3,18 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
-import { getAllMembers, getMemberById as getMemberByIdService, addMember as addMemberService, updateMember as updateMemberService, deleteMember as deleteMemberService, addGuardianToPlayer as addGuardianToPlayerService, deleteGuardianFromPlayer as deleteGuardianFromPlayerService } from '../services/memberService';
+import {
+  getAllMembers,
+  getMemberById as getMemberByIdService,
+  addMember as addMemberService,
+  updateMember as updateMemberService,
+  deleteMember as deleteMemberService,
+  revokeMemberRole as revokeMemberRoleService,
+  addGuardianToPlayer as addGuardianToPlayerService,
+  deleteGuardianFromPlayer as deleteGuardianFromPlayerService,
+  MEMBER_ROLE_PLAYER,
+  MEMBER_ROLE_TRAINER,
+} from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
@@ -85,6 +96,13 @@ function dedupeGuardians(guardians: import('../types').Guardian[]): import('../t
 
 function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: string): boolean {
   return guardian.id === guardianId || guardian.userId === guardianId;
+}
+
+const PLAYER_DELETE_ROLE_CONSTRAINT = 'PLAYER_DELETE_ROLE_CONSTRAINT';
+export const PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE = PLAYER_DELETE_ROLE_CONSTRAINT;
+
+function getUniqueRoles(roles: GroupRole[] | undefined): GroupRole[] {
+  return Array.from(new Set(roles || []));
 }
 
 interface AppState {
@@ -490,13 +508,29 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
+          const member = await getMemberByIdService(currentGroup.id, id);
+          if (!member) {
+            return false;
+          }
+
+          const roles = getUniqueRoles(member.roles);
+          const canDeletePlayer = roles.length === 1 && roles[0] === MEMBER_ROLE_PLAYER;
+          if (!canDeletePlayer) {
+            throw new Error(PLAYER_DELETE_ROLE_CONSTRAINT);
+          }
+
           await deleteMemberService(currentGroup.id, id);
-          const currentPlayers = get().players;
-          const filteredPlayers = currentPlayers.filter(player => player.id !== id);
-          set({ players: sortPlayers(filteredPlayers) });
+          const refreshedMembers = await getAllMembers(currentGroup.id);
+          set({
+            players: sortPlayers(refreshedMembers.players),
+            trainers: sortTrainers(refreshedMembers.trainers),
+          });
           return true;
         } catch (error) {
           console.error('Failed to delete player:', error);
+          if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT) {
+            throw error;
+          }
           return false;
         }
       },
@@ -571,6 +605,19 @@ export const useStore = create<AppState>()(
                 }
               : player
           );
+
+          const guardianMember = await getMemberByIdService(currentGroup.id, guardianId);
+          const guardianRoles = getUniqueRoles(guardianMember?.roles);
+          if (guardianMember && guardianRoles.length === 0) {
+            await deleteMemberService(currentGroup.id, guardianId);
+            const refreshedMembers = await getAllMembers(currentGroup.id);
+            set({
+              players: sortPlayers(refreshedMembers.players),
+              trainers: sortTrainers(refreshedMembers.trainers),
+            });
+            return true;
+          }
+
           set({ players: sortPlayers(updatedPlayers) });
           return true;
         } catch (error) {
@@ -710,10 +757,28 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          await deleteMemberService(currentGroup.id, id);
-          const currentTrainers = get().trainers;
-          const filteredTrainers = currentTrainers.filter(trainer => trainer.id !== id);
-          set({ trainers: sortTrainers(filteredTrainers) });
+          const member = await getMemberByIdService(currentGroup.id, id);
+          if (!member) {
+            return false;
+          }
+
+          const roles = getUniqueRoles(member.roles);
+          const hasTrainerRole = roles.includes(MEMBER_ROLE_TRAINER);
+          if (!hasTrainerRole) {
+            return false;
+          }
+
+          if (roles.length === 1) {
+            await deleteMemberService(currentGroup.id, id);
+          } else {
+            await revokeMemberRoleService(currentGroup.id, id, MEMBER_ROLE_TRAINER);
+          }
+
+          const refreshedMembers = await getAllMembers(currentGroup.id);
+          set({
+            players: sortPlayers(refreshedMembers.players),
+            trainers: sortTrainers(refreshedMembers.trainers),
+          });
           return true;
         } catch (error) {
           console.error('Failed to delete trainer:', error);

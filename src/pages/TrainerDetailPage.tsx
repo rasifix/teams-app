@@ -83,6 +83,7 @@ export default function TrainerDetailPage() {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteActionError, setDeleteActionError] = useState<string | null>(null);
 
   // Get trainer from store
   const trainer = id ? getTrainerById(id) : null;
@@ -195,6 +196,7 @@ export default function TrainerDetailPage() {
   };
 
   const handleDeleteTrainer = () => {
+    setDeleteActionError(null);
     setIsDeleteConfirmOpen(true);
   };
 
@@ -206,12 +208,12 @@ export default function TrainerDetailPage() {
         if (success) {
           navigate('/members/trainers', { replace: true });
         } else {
-          // Show error feedback if needed
-          console.error('Failed to delete trainer');
+          setDeleteActionError(t('trainerDetail.errors.deleteFailed'));
         }
       } catch (error) {
         setIsDeleteConfirmOpen(false); // Close dialog even on error
         console.error('Error deleting trainer:', error);
+        setDeleteActionError(t('trainerDetail.errors.deleteFailed'));
       }
     } else {
       setIsDeleteConfirmOpen(false); // Close dialog if no ID
@@ -252,6 +254,12 @@ export default function TrainerDetailPage() {
       </div>
 
       {/* Trainer Badge */}
+      {deleteActionError && (
+        <div className="mx-4 mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 lg:mx-0">
+          {deleteActionError}
+        </div>
+      )}
+
       <div className="px-4 lg:px-0 mb-4">
         <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">{t('domain.trainers')}</span>
       </div>

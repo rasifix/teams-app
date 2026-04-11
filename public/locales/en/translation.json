@@ -325,7 +325,12 @@
     "deletePlayerConfirm": "Delete Player",
     "deleteTrainerTitle": "Delete Trainer",
     "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
-    "deleteTrainerConfirm": "Delete Trainer"
+    "deleteTrainerConfirm": "Delete Trainer",
+    "errors": {
+      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
+      "deletePlayerFailed": "Failed to delete player. Please try again.",
+      "deleteTrainerFailed": "Failed to remove trainer. Please try again."
+    }
   },
   "membersImport": {
     "openAction": "Import",
@@ -601,7 +606,9 @@
     "errors": {
       "noPlayerId": "No player ID provided",
       "notFound": "Player not found",
-      "failedToLoadData": "Failed to load data"
+      "failedToLoadData": "Failed to load data",
+      "deleteFailed": "Failed to delete player. Please try again.",
+      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted."
     },
     "preferredShirtNumber": "Preferred #{{number}}",
     "eventsWithoutInvitation": "Events without Invitation",
@@ -630,7 +637,8 @@
     "errors": {
       "noTrainerId": "No trainer ID provided",
       "notFound": "Trainer not found",
-      "failedToLoadData": "Failed to load data"
+      "failedToLoadData": "Failed to load data",
+      "deleteFailed": "Failed to remove trainer. Please try again."
     }
   },
   "team": {

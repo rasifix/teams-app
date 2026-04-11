@@ -11,6 +11,7 @@ import PlayerEventHistory from '../components/PlayerEventHistory';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
+import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from '../store/useStore';
 import {
   selectFutureEventsWithoutInvitation,
   selectGroupedPlayerEventHistory,
@@ -40,6 +41,7 @@ export default function PlayerDetailPage() {
   const [editingGuardian, setEditingGuardian] = useState<Guardian | null>(null);
   const [guardianToRemove, setGuardianToRemove] = useState<Guardian | null>(null);
   const [guardianActionError, setGuardianActionError] = useState<string | null>(null);
+  const [deleteActionError, setDeleteActionError] = useState<string | null>(null);
 
   // Get player from store
   const player = id ? getPlayerById(id) : null;
@@ -129,14 +131,26 @@ export default function PlayerDetailPage() {
   };
 
   const handleDeletePlayer = () => {
+    setDeleteActionError(null);
     setIsDeleteConfirmOpen(true);
   };
 
   const confirmDeletePlayer = async () => {
     if (id) {
-      const success = await deletePlayer(id);
-      if (success) {
-        navigate('/members/players', { replace: true });
+      try {
+        const success = await deletePlayer(id);
+        if (success) {
+          navigate('/members/players', { replace: true });
+          return;
+        }
+
+        setDeleteActionError(t('playerDetail.errors.deleteFailed'));
+      } catch (error) {
+        if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
+          setDeleteActionError(t('playerDetail.errors.deleteUnexpectedRoles'));
+        } else {
+          setDeleteActionError(t('playerDetail.errors.deleteFailed'));
+        }
       }
     }
   };
@@ -242,6 +256,12 @@ export default function PlayerDetailPage() {
       </div>
 
       {/* Player Info */}
+      {deleteActionError && (
+        <div className="mx-4 mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 lg:mx-0">
+          {deleteActionError}
+        </div>
+      )}
+
       <div className="px-4 lg:px-0 mb-4 flex items-center gap-3">
         <span className={`text-sm px-2 py-1 rounded ${playerStatusBadgeClassName}`}>
           {playerStatusLabel}

@@ -7,6 +7,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import ImportMembersModal from "../components/ImportMembersModal";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
+import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from "../store/useStore";
 import type { Guardian, Player, Trainer } from "../types";
 
 export interface MembersOutletContext {
@@ -40,6 +41,7 @@ export default function MembersPage() {
   // Delete confirmation states
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
   const [deletingTrainer, setDeletingTrainer] = useState<Trainer | null>(null);
+  const [deleteActionError, setDeleteActionError] = useState<string | null>(null);
 
   const guardians = useMemo(
     () => selectMemberGuardians(players).map((row) => row.guardian),
@@ -55,6 +57,7 @@ export default function MembersPage() {
   };
 
   const handleDeletePlayer = (player: Player) => {
+    setDeleteActionError(null);
     setDeletingPlayer(player);
   };
 
@@ -64,11 +67,16 @@ export default function MembersPage() {
         const success = await deletePlayer(deletingPlayer.id);
         setDeletingPlayer(null); // Always close dialog
         if (!success) {
-          console.error('Failed to delete player');
+          setDeleteActionError(t('members.errors.deletePlayerFailed'));
         }
       } catch (error) {
         setDeletingPlayer(null); // Close dialog even on error
         console.error('Error deleting player:', error);
+        if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
+          setDeleteActionError(t('members.errors.playerHasUnexpectedRoles'));
+        } else {
+          setDeleteActionError(t('members.errors.deletePlayerFailed'));
+        }
       }
     }
   };
@@ -86,6 +94,7 @@ export default function MembersPage() {
   };
 
   const handleDeleteTrainer = (trainer: Trainer) => {
+    setDeleteActionError(null);
     setDeletingTrainer(trainer);
   };
 
@@ -95,10 +104,11 @@ export default function MembersPage() {
         const success = await deleteTrainer(deletingTrainer.id);
         
         if (!success) {
-          console.error('Failed to delete trainer');
+          setDeleteActionError(t('members.errors.deleteTrainerFailed'));
         }
       } catch (error) {
         console.error('Error deleting trainer:', error);
+        setDeleteActionError(t('members.errors.deleteTrainerFailed'));
       } finally {
         setDeletingTrainer(null); // Always close dialog in finally block
       }
@@ -139,6 +149,12 @@ export default function MembersPage() {
       {hasErrors && (errors.players || errors.trainers) && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
           {errors.players || errors.trainers}
+        </div>
+      )}
+
+      {deleteActionError && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
+          {deleteActionError}
         </div>
       )}
 

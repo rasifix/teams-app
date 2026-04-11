@@ -1,6 +1,11 @@
 import { apiClient } from './apiClient';
 import type { Guardian, GroupRole, Player, Trainer } from '../types';
 
+export const MEMBER_ROLE_PLAYER = 'player' as const;
+export const MEMBER_ROLE_TRAINER = 'trainer' as const;
+export const MEMBER_ROLE_GUARDIAN = 'guardian' as const;
+export const REVOCABLE_MEMBER_ROLES: ReadonlyArray<Exclude<GroupRole, 'player'>> = ['admin', 'trainer', 'guardian'];
+
 export interface MembersResponse {
   players: Player[];
   trainers: Trainer[];
@@ -73,6 +78,17 @@ export async function getMemberById(groupId: string, id: string): Promise<Player
 export async function deleteMember(groupId: string, id: string): Promise<void> {
   return apiClient.request<void>(
     apiClient.getGroupEndpoint(groupId, `/members/${id}`),
+    { method: 'DELETE' }
+  );
+}
+
+export async function revokeMemberRole(
+  groupId: string,
+  id: string,
+  role: Exclude<GroupRole, 'player'>
+): Promise<Player | Trainer> {
+  return apiClient.request<Player | Trainer>(
+    apiClient.getGroupEndpoint(groupId, `/members/${id}/roles/${role}`),
     { method: 'DELETE' }
   );
 }

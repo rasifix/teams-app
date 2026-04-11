@@ -172,6 +172,7 @@ interface AppState {
   addTrainer: (trainerData: Omit<Trainer, 'id'>) => Promise<boolean>;
   updateTrainer: (id: string, trainerData: Partial<Trainer>) => Promise<boolean>;
   deleteTrainer: (id: string) => Promise<boolean>;
+  assignTrainerRole: (id: string) => Promise<boolean>;
   mergeGuardianIntoTrainer: (guardianId: string, trainerId: string) => Promise<boolean>;
   
   // Shirt set mutations
@@ -768,7 +769,11 @@ export const useStore = create<AppState>()(
             return false;
           }
 
-          if (roles.length === 1) {
+          const isAssignedAsGuardian = get().players.some((player) =>
+            (player.guardians || []).some((guardian) => isMatchingGuardian(guardian, id))
+          );
+
+          if (roles.length === 1 && !isAssignedAsGuardian) {
             await deleteMemberService(currentGroup.id, id);
           } else {
             await revokeMemberRoleService(currentGroup.id, id, MEMBER_ROLE_TRAINER);
@@ -782,6 +787,38 @@ export const useStore = create<AppState>()(
           return true;
         } catch (error) {
           console.error('Failed to delete trainer:', error);
+          return false;
+        }
+      },
+
+      assignTrainerRole: async (id) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const member = await getMemberByIdService(currentGroup.id, id);
+          if (!member) {
+            return false;
+          }
+
+          const roles = getUniqueRoles(member.roles);
+          if (roles.includes(MEMBER_ROLE_TRAINER)) {
+            return true;
+          }
+
+          await updateMemberService(currentGroup.id, id, {
+            ...member,
+            roles: Array.from(new Set<GroupRole>([...roles, MEMBER_ROLE_TRAINER])),
+          });
+
+          const refreshedMembers = await getAllMembers(currentGroup.id);
+          set({
+            players: sortPlayers(refreshedMembers.players),
+            trainers: sortTrainers(refreshedMembers.trainers),
+          });
+          return true;
+        } catch (error) {
+          console.error('Failed to assign trainer role:', error);
           return false;
         }
       },

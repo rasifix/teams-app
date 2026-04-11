@@ -303,7 +303,11 @@
     "guardians": {
       "playerPrefix": "Player:",
       "noEmail": "No email",
-      "openPlayerAction": "Open player"
+      "openPlayerAction": "Open player",
+      "assignTrainerRole": "Make trainer",
+      "assigningTrainerRole": "Assigning...",
+      "alreadyTrainerRole": "Trainer",
+      "assignTrainerRoleFailed": "Failed to assign trainer role. Please try again."
     },
     "duplicates": {
       "openAction": "Resolve duplicates ({{count}})",

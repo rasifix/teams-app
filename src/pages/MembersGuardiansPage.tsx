@@ -12,11 +12,12 @@ import type { MembersOutletContext } from './MembersPage';
 export default function MembersGuardiansPage() {
   const { t } = useTranslation();
   const { players } = useOutletContext<MembersOutletContext>();
-  const { trainers } = useTrainers();
+  const { trainers, assignTrainerRole } = useTrainers();
   const { editGuardianForPlayer } = usePlayers();
 
   const [editingRow, setEditingRow] = useState<MemberGuardianRow | null>(null);
   const [guardianActionError, setGuardianActionError] = useState<string | null>(null);
+  const [promotingGuardianId, setPromotingGuardianId] = useState<string | null>(null);
 
   const guardians = useMemo(() => selectMemberGuardians(players), [players]);
 
@@ -58,6 +59,31 @@ export default function MembersGuardiansPage() {
     return true;
   };
 
+  const handleAssignTrainerRole = async (row: MemberGuardianRow) => {
+    const guardianMemberId = row.guardian.userId || row.guardian.id;
+    setGuardianActionError(null);
+
+    if (!guardianMemberId) {
+      setGuardianActionError(t('members.guardians.assignTrainerRoleFailed'));
+      return;
+    }
+
+    const alreadyTrainer = trainers.some((trainer) => trainer.id === guardianMemberId);
+    if (alreadyTrainer) {
+      return;
+    }
+
+    try {
+      setPromotingGuardianId(guardianMemberId);
+      const success = await assignTrainerRole(guardianMemberId);
+      if (!success) {
+        setGuardianActionError(t('members.guardians.assignTrainerRoleFailed'));
+      }
+    } finally {
+      setPromotingGuardianId(null);
+    }
+  };
+
   return (
     <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
       <CardBody className="lg:p-6 p-4">
@@ -77,7 +103,12 @@ export default function MembersGuardiansPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-3 px-0">
-            {guardians.map((row) => (
+            {guardians.map((row) => {
+              const guardianMemberId = row.guardian.userId || row.guardian.id;
+              const alreadyTrainer = trainers.some((trainer) => trainer.id === guardianMemberId);
+              const isPromoting = promotingGuardianId === guardianMemberId;
+
+              return (
               <div
                 key={`${row.playerId}:${row.guardian.id}`}
                 className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow p-3"
@@ -105,9 +136,24 @@ export default function MembersGuardiansPage() {
                   <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
                     {t('common.actions.edit')}
                   </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      void handleAssignTrainerRole(row);
+                    }}
+                    disabled={alreadyTrainer || isPromoting}
+                  >
+                    {alreadyTrainer
+                      ? t('members.guardians.alreadyTrainerRole')
+                      : (isPromoting
+                        ? t('members.guardians.assigningTrainerRole')
+                        : t('members.guardians.assignTrainerRole'))}
+                  </Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardBody>

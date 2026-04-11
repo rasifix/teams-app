@@ -88,6 +88,62 @@ export default function TrainerDetailPage() {
   // Get trainer from store
   const trainer = id ? getTrainerById(id) : null;
 
+  // Keep hooks unconditionally ordered across renders.
+  const trainerEventHistory: TrainerEventHistoryItem[] = useMemo(
+    () => (trainer ? getTrainerEventHistory(trainer.id) : []),
+    [getTrainerEventHistory, trainer]
+  );
+
+  const groupedTrainerEventHistory = useMemo<GroupedTrainerEventHistory[] | null>(() => {
+    if (!trainer) {
+      return null;
+    }
+
+    const validPeriods = groupPeriods.filter(isValidPeriod);
+
+    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
+      return null;
+    }
+
+    const groupedByPeriod: GroupedTrainerEventHistory[] = validPeriods.map((period) => ({
+      id: period.id,
+      title: period.name,
+      eventHistory: [],
+    }));
+
+    const outsidePeriods: TrainerEventHistoryItem[] = [];
+
+    trainerEventHistory.forEach((historyItem) => {
+      const eventDate = toComparableDate(historyItem.eventDate);
+      if (!eventDate) {
+        outsidePeriods.push(historyItem);
+        return;
+      }
+
+      const matchingIndex = validPeriods.findIndex((period) => (
+        eventDate >= period.startDate && eventDate < period.endDate
+      ));
+
+      if (matchingIndex >= 0) {
+        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
+      } else {
+        outsidePeriods.push(historyItem);
+      }
+    });
+
+    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
+
+    if (outsidePeriods.length > 0) {
+      nonEmptyGroups.push({
+        id: 'outside-periods',
+        title: t('statistics.period.outsidePeriods'),
+        eventHistory: outsidePeriods,
+      });
+    }
+
+    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
+  }, [groupPeriods, t, trainer, trainerEventHistory]);
+
   // Determine loading and error states
   const loading = isLoading;
   const error = !id ? t('trainerDetail.errors.noTrainerId') :
@@ -133,55 +189,6 @@ export default function TrainerDetailPage() {
       </div>
     );
   }
-
-  // Prepare trainer event history data using the store selector
-  const trainerEventHistory: TrainerEventHistoryItem[] = getTrainerEventHistory(trainer.id);
-
-  const groupedTrainerEventHistory = useMemo<GroupedTrainerEventHistory[] | null>(() => {
-    const validPeriods = groupPeriods.filter(isValidPeriod);
-
-    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
-      return null;
-    }
-
-    const groupedByPeriod: GroupedTrainerEventHistory[] = validPeriods.map((period) => ({
-      id: period.id,
-      title: period.name,
-      eventHistory: [],
-    }));
-
-    const outsidePeriods: TrainerEventHistoryItem[] = [];
-
-    trainerEventHistory.forEach((historyItem) => {
-      const eventDate = toComparableDate(historyItem.eventDate);
-      if (!eventDate) {
-        outsidePeriods.push(historyItem);
-        return;
-      }
-
-      const matchingIndex = validPeriods.findIndex((period) => (
-        eventDate >= period.startDate && eventDate < period.endDate
-      ));
-
-      if (matchingIndex >= 0) {
-        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
-      } else {
-        outsidePeriods.push(historyItem);
-      }
-    });
-
-    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
-
-    if (outsidePeriods.length > 0) {
-      nonEmptyGroups.push({
-        id: 'outside-periods',
-        title: t('statistics.period.outsidePeriods'),
-        eventHistory: outsidePeriods,
-      });
-    }
-
-    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
-  }, [groupPeriods, trainerEventHistory]);
 
   const handleEditTrainer = () => {
     setIsEditModalOpen(true);

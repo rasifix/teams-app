@@ -303,7 +303,11 @@
     "guardians": {
       "playerPrefix": "Spieler:",
       "noEmail": "Keine E-Mail",
-      "openPlayerAction": "Spieler öffnen"
+      "openPlayerAction": "Spieler öffnen",
+      "assignTrainerRole": "Zum Trainer machen",
+      "assigningTrainerRole": "Wird zugewiesen...",
+      "alreadyTrainerRole": "Trainer",
+      "assignTrainerRoleFailed": "Trainerrolle konnte nicht zugewiesen werden. Bitte versuche es erneut."
     },
     "duplicates": {
       "openAction": "Duplikate bereinigen ({{count}})",

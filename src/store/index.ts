@@ -67,6 +67,7 @@ export const useTrainers = () => {
   const addTrainer = useStore((state) => state.addTrainer);
   const updateTrainer = useStore((state) => state.updateTrainer);
   const deleteTrainer = useStore((state) => state.deleteTrainer);
+  const mergeGuardianIntoTrainer = useStore((state) => state.mergeGuardianIntoTrainer);
   
   return {
     trainers,
@@ -75,6 +76,7 @@ export const useTrainers = () => {
     addTrainer,
     updateTrainer,
     deleteTrainer,
+    mergeGuardianIntoTrainer,
   };
 };
 

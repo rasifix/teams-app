@@ -187,11 +187,16 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
 
       if (!rowFailed && playerId) {
         for (const guardian of row.guardiansToAdd) {
-          const guardianAdded = await addGuardianToPlayer(playerId, {
-            firstName: guardian.firstName,
-            lastName: guardian.lastName,
-            email: guardian.email,
-          });
+          const guardianAdded = await addGuardianToPlayer(
+            playerId,
+            guardian.trainerId
+              ? { guardianId: guardian.trainerId }
+              : {
+                  firstName: guardian.firstName,
+                  lastName: guardian.lastName,
+                  email: guardian.email,
+                }
+          );
 
           if (guardianAdded) {
             result.addedGuardians += 1;

@@ -305,6 +305,21 @@
       "noEmail": "No email",
       "openPlayerAction": "Open player"
     },
+    "duplicates": {
+      "openAction": "Resolve duplicates ({{count}})",
+      "title": "Potential Duplicate Members",
+      "description": "Temporary tool: detect same-name trainer/guardian members and merge guardians into the selected trainer account.",
+      "empty": "No trainer/guardian duplicate names found.",
+      "groupCount": "Trainers: {{trainerCount}}, Guardians: {{guardianCount}}",
+      "targetTrainerLabel": "Keep this trainer account",
+      "assignedTeams": "{{count}} teams assigned",
+      "linkedPlayers": "Linked to {{count}} players",
+      "mergeAction": "Merge guardian",
+      "errors": {
+        "noTargetTrainer": "Please select a target trainer.",
+        "mergeFailed": "Merge failed. Please try again."
+      }
+    },
     "deletePlayerTitle": "Delete Player",
     "deletePlayerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
     "deletePlayerConfirm": "Delete Player",

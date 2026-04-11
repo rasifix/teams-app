@@ -305,6 +305,21 @@
       "noEmail": "Keine E-Mail",
       "openPlayerAction": "Spieler öffnen"
     },
+    "duplicates": {
+      "openAction": "Duplikate bereinigen ({{count}})",
+      "title": "Mögliche doppelte Mitglieder",
+      "description": "Temporäres Werkzeug: erkennt gleichnamige Trainer/Erziehungsberechtigte und führt Erziehungsberechtigte in das ausgewählte Trainerkonto zusammen.",
+      "empty": "Keine gleichnamigen Trainer/Erziehungsberechtigten gefunden.",
+      "groupCount": "Trainer: {{trainerCount}}, Erziehungsberechtigte: {{guardianCount}}",
+      "targetTrainerLabel": "Dieses Trainerkonto behalten",
+      "assignedTeams": "{{count}} Teams zugewiesen",
+      "linkedPlayers": "Mit {{count}} Spielern verknüpft",
+      "mergeAction": "Erziehungsberechtigten zusammenführen",
+      "errors": {
+        "noTargetTrainer": "Bitte wähle ein Ziel-Trainerkonto aus.",
+        "mergeFailed": "Zusammenführen fehlgeschlagen. Bitte erneut versuchen."
+      }
+    },
     "deletePlayerTitle": "Spieler löschen",
     "deletePlayerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deletePlayerConfirm": "Spieler löschen",

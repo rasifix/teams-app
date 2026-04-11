@@ -109,22 +109,19 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
         return;
       }
 
-      if (!existingFirstName.trim() || !existingLastName.trim()) {
-        setError(t('guardians.errors.existingNameRequired'));
-        return;
-      }
+      const selectedTrainer = trainers.find((trainer) => trainer.id === selectedTrainerId);
 
-      if (!existingEmail.trim()) {
-        setError(t('guardians.errors.existingEmailRequired'));
+      if (!isEditMode && !selectedTrainer) {
+        setError(t('guardians.errors.selectExistingUser'));
         return;
       }
 
       const guardian: Guardian = {
-        id: selectedTrainerId || editingGuardian?.id || crypto.randomUUID(),
-        userId: selectedTrainerId || editingGuardian?.userId,
-        firstName: existingFirstName.trim(),
-        lastName: existingLastName.trim(),
-        email: existingEmail.trim(),
+        id: selectedTrainer?.id || selectedTrainerId || editingGuardian?.id || crypto.randomUUID(),
+        userId: selectedTrainer?.id || selectedTrainerId || editingGuardian?.userId,
+        firstName: selectedTrainer?.firstName || existingFirstName.trim(),
+        lastName: selectedTrainer?.lastName || existingLastName.trim(),
+        email: selectedTrainer?.email || existingEmail.trim() || undefined,
         isDocumentedOnly: false,
       };
 
@@ -245,6 +242,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                 {isEditMode && (
                   <p className="text-xs text-gray-500 mt-2">{t('guardians.selectionLocked')}</p>
                 )}
+                {isEditMode && (
                 <div className="mt-3 grid grid-cols-1 gap-3">
                   <div>
                     <label htmlFor="guardian-existing-first-name" className="form-label">{t('auth.firstName')}</label>
@@ -283,6 +281,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                     />
                   </div>
                 </div>
+                )}
               </div>
             ) : (
               <>

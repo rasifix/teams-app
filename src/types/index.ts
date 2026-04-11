@@ -21,8 +21,11 @@ export interface CreateGroupRequest {
   description?: string;
 }
 
+export type GroupRole = 'admin' | 'trainer' | 'guardian' | 'player';
+
 export interface Player {
   id: string;
+  roles?: GroupRole[];
   firstName: string;
   lastName: string;
   birthYear: number;
@@ -106,6 +109,7 @@ export interface ShirtSet {
 
 export interface Trainer {
   id: string;
+  roles?: GroupRole[];
   firstName: string;
   lastName: string;
   email?: string;

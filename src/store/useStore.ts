@@ -1,9 +1,9 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
-import { getAllMembers, addPlayer as addPlayerService, updatePlayer as updatePlayerService, deletePlayer as deletePlayerService, addGuardianToPlayer as addGuardianToPlayerService, deleteGuardianFromPlayer as deleteGuardianFromPlayerService, addTrainer as addTrainerService, updateTrainer as updateTrainerService, deleteTrainer as deleteTrainerService } from '../services/memberService';
+import { getAllMembers, getMemberById as getMemberByIdService, addMember as addMemberService, updateMember as updateMemberService, deleteMember as deleteMemberService, addGuardianToPlayer as addGuardianToPlayerService, deleteGuardianFromPlayer as deleteGuardianFromPlayerService } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
@@ -69,6 +69,24 @@ const sortGroups = (groups: Group[]): Group[] => {
 
 const EMPTY_PERIODS: Period[] = [];
 
+function dedupeGuardians(guardians: import('../types').Guardian[]): import('../types').Guardian[] {
+  const seenKeys = new Set<string>();
+
+  return guardians.filter((guardian) => {
+    const key = guardian.userId || guardian.id || `${(guardian.email || '').toLowerCase()}::${(guardian.firstName || '').toLowerCase()}::${(guardian.lastName || '').toLowerCase()}`;
+    if (seenKeys.has(key)) {
+      return false;
+    }
+
+    seenKeys.add(key);
+    return true;
+  });
+}
+
+function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: string): boolean {
+  return guardian.id === guardianId || guardian.userId === guardianId;
+}
+
 interface AppState {
   // Data
   group: Group | null;
@@ -118,7 +136,7 @@ interface AppState {
   addPlayer: (playerData: Omit<Player, 'id'>) => Promise<boolean>;
   updatePlayer: (id: string, playerData: Partial<Player>) => Promise<boolean>;
   deletePlayer: (id: string) => Promise<boolean>;
-  addGuardianToPlayer: (playerId: string, guardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>) => Promise<boolean>;
+  addGuardianToPlayer: (playerId: string, guardianData: import('../services/memberService').CreateGuardianPayload) => Promise<boolean>;
   deleteGuardianFromPlayer: (playerId: string, guardianId: string) => Promise<boolean>;
   editGuardianForPlayer: (
     playerId: string,
@@ -136,6 +154,7 @@ interface AppState {
   addTrainer: (trainerData: Omit<Trainer, 'id'>) => Promise<boolean>;
   updateTrainer: (id: string, trainerData: Partial<Trainer>) => Promise<boolean>;
   deleteTrainer: (id: string) => Promise<boolean>;
+  mergeGuardianIntoTrainer: (guardianId: string, trainerId: string) => Promise<boolean>;
   
   // Shirt set mutations
   addShirtSet: (shirtSetData: Omit<ShirtSet, 'id'>) => Promise<ShirtSet | null>;
@@ -428,7 +447,12 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const newPlayer = await addPlayerService(currentGroup.id, playerData);
+          const newPlayer = await addMemberService(currentGroup.id, {
+            ...playerData,
+            roles: Array.from(new Set([...(playerData.roles || []), 'player'])),
+            firstName: playerData.firstName,
+            lastName: playerData.lastName,
+          }) as Player;
           const currentPlayers = get().players;
           const updatedPlayers = [...currentPlayers, newPlayer];
           set({ players: sortPlayers(updatedPlayers) });
@@ -444,7 +468,11 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const updatedPlayer = await updatePlayerService(currentGroup.id, id, playerData);
+          const currentPlayer = get().players.find((player) => player.id === id);
+          const updatedPlayer = await updateMemberService(currentGroup.id, id, {
+            ...playerData,
+            roles: Array.from(new Set([...(currentPlayer?.roles || []), ...(playerData.roles || []), 'player'])),
+          }) as Player;
           const currentPlayers = get().players;
           const updatedPlayers = currentPlayers.map(player => 
             player.id === id ? { ...player, ...updatedPlayer } : player
@@ -462,7 +490,7 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          await deletePlayerService(currentGroup.id, id);
+          await deleteMemberService(currentGroup.id, id);
           const currentPlayers = get().players;
           const filteredPlayers = currentPlayers.filter(player => player.id !== id);
           set({ players: sortPlayers(filteredPlayers) });
@@ -478,11 +506,42 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
 
         try {
-          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, guardianData);
+          const existingGuardianId = guardianData.guardianId || guardianData.userId || guardianData.trainerId;
+
+          let guardianIdToLink = existingGuardianId;
+          if (!guardianIdToLink) {
+            if (!guardianData.firstName || !guardianData.lastName) {
+              throw new Error('firstName and lastName are required to create a new guardian');
+            }
+
+            const newGuardianMember = await addMemberService(currentGroup.id, {
+              firstName: guardianData.firstName,
+              lastName: guardianData.lastName,
+              email: guardianData.email,
+              roles: ['guardian'],
+            });
+
+            guardianIdToLink = newGuardianMember.id;
+          }
+
+          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, {
+            guardianId: guardianIdToLink,
+          });
+
           const currentPlayers = get().players;
           const updatedPlayers = currentPlayers.map((player) =>
             player.id === playerId ? { ...player, ...updatedPlayer } : player
           );
+
+          if (!existingGuardianId) {
+            const refreshedMembers = await getAllMembers(currentGroup.id);
+            set({
+              players: sortPlayers(updatedPlayers),
+              trainers: sortTrainers(refreshedMembers.trainers),
+            });
+            return true;
+          }
+
           set({ players: sortPlayers(updatedPlayers) });
           return true;
         } catch (error) {
@@ -514,34 +573,28 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
 
         try {
-          await deleteGuardianFromPlayerService(currentGroup.id, playerId, guardianId);
-        } catch (error) {
-          console.error('Failed to delete guardian before edit:', error);
-          return false;
-        }
-
-        try {
-          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, guardianData);
-          const currentPlayers = get().players;
-          const updatedPlayers = currentPlayers.map((player) =>
-            player.id === playerId ? { ...player, ...updatedPlayer } : player
-          );
-          set({ players: sortPlayers(updatedPlayers) });
-          return true;
-        } catch (error) {
-          console.error('Failed to add edited guardian, attempting rollback:', error);
-
-          try {
-            const rollbackPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, previousGuardianData);
-            const currentPlayers = get().players;
-            const updatedPlayers = currentPlayers.map((player) =>
-              player.id === playerId ? { ...player, ...rollbackPlayer } : player
-            );
-            set({ players: sortPlayers(updatedPlayers) });
-          } catch (rollbackError) {
-            console.error('Failed to rollback guardian edit:', rollbackError);
+          const existingGuardianMember = await getMemberByIdService(currentGroup.id, guardianId);
+          if (!existingGuardianMember) {
+            return false;
           }
 
+          const nextRoles = Array.from(new Set<GroupRole>([...(existingGuardianMember.roles || []), 'guardian']));
+          await updateMemberService(currentGroup.id, guardianId, {
+            ...existingGuardianMember,
+            firstName: guardianData.firstName,
+            lastName: guardianData.lastName,
+            email: guardianData.email,
+            roles: nextRoles,
+          });
+
+          const refreshedMembers = await getAllMembers(currentGroup.id);
+          set({
+            players: sortPlayers(refreshedMembers.players),
+            trainers: sortTrainers(refreshedMembers.trainers),
+          });
+          return true;
+        } catch (error) {
+          console.error('Failed to edit guardian member:', error, previousGuardianData, playerId);
           return false;
         }
       },
@@ -603,7 +656,12 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const newTrainer = await addTrainerService(currentGroup.id, trainerData);
+          const newTrainer = await addMemberService(currentGroup.id, {
+            ...trainerData,
+            roles: Array.from(new Set([...(trainerData.roles || []), 'trainer'])),
+            firstName: trainerData.firstName,
+            lastName: trainerData.lastName,
+          }) as Trainer;
           const currentTrainers = get().trainers;
           const updatedTrainers = [...currentTrainers, newTrainer];
           set({ trainers: sortTrainers(updatedTrainers) });
@@ -619,7 +677,11 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const updatedTrainer = await updateTrainerService(currentGroup.id, id, trainerData);
+          const currentTrainer = get().trainers.find((trainer) => trainer.id === id);
+          const updatedTrainer = await updateMemberService(currentGroup.id, id, {
+            ...trainerData,
+            roles: Array.from(new Set([...(currentTrainer?.roles || []), ...(trainerData.roles || []), 'trainer'])),
+          }) as Trainer;
           const currentTrainers = get().trainers;
           const updatedTrainers = currentTrainers.map(trainer => 
             trainer.id === id ? { ...trainer, ...updatedTrainer } : trainer
@@ -631,19 +693,119 @@ export const useStore = create<AppState>()(
           return false;
         }
       },
-      
+
       deleteTrainer: async (id) => {
         const currentGroup = get().group;
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          await deleteTrainerService(currentGroup.id, id);
+          await deleteMemberService(currentGroup.id, id);
           const currentTrainers = get().trainers;
           const filteredTrainers = currentTrainers.filter(trainer => trainer.id !== id);
           set({ trainers: sortTrainers(filteredTrainers) });
           return true;
         } catch (error) {
           console.error('Failed to delete trainer:', error);
+          return false;
+        }
+      },
+
+      mergeGuardianIntoTrainer: async (guardianId, trainerId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        const targetTrainer = get().trainers.find((trainer) => trainer.id === trainerId);
+        if (!targetTrainer) {
+          return false;
+        }
+
+        const currentPlayers = get().players;
+        const currentTrainers = get().trainers;
+        const playersToUpdate = currentPlayers.filter((player) =>
+          (player.guardians || []).some((guardian) => isMatchingGuardian(guardian, guardianId))
+        );
+
+        if (playersToUpdate.length === 0) {
+          return true;
+        }
+
+        let nextPlayers = currentPlayers;
+
+        try {
+          for (const player of playersToUpdate) {
+            let workingPlayer = nextPlayers.find((entry) => entry.id === player.id) || player;
+            const currentGuardiansForPlayer = workingPlayer.guardians || [];
+            const hasTargetGuardian = currentGuardiansForPlayer.some(
+              (guardian) => guardian.id === targetTrainer.id || guardian.userId === targetTrainer.id
+            );
+
+            if (!hasTargetGuardian) {
+              const playerAfterAdd = await addGuardianToPlayerService(currentGroup.id, player.id, {
+                userId: targetTrainer.id,
+                trainerId: targetTrainer.id,
+              });
+
+              nextPlayers = nextPlayers.map((entry) =>
+                entry.id === player.id ? { ...entry, ...playerAfterAdd } : entry
+              );
+              workingPlayer = playerAfterAdd;
+            }
+
+            const guardiansToRemove = (workingPlayer.guardians || [])
+              .filter((guardian) => isMatchingGuardian(guardian, guardianId))
+              .filter((guardian) => guardian.id !== targetTrainer.id && guardian.userId !== targetTrainer.id);
+
+            for (const guardian of guardiansToRemove) {
+              const playerAfterRemove = await deleteGuardianFromPlayerService(currentGroup.id, player.id, guardian.id);
+              nextPlayers = nextPlayers.map((entry) =>
+                entry.id === player.id ? { ...entry, ...playerAfterRemove } : entry
+              );
+              workingPlayer = playerAfterRemove;
+            }
+
+            const normalizedWorkingPlayer = {
+              ...workingPlayer,
+              guardians: dedupeGuardians(workingPlayer.guardians || []),
+            };
+            nextPlayers = nextPlayers.map((entry) =>
+              entry.id === player.id ? normalizedWorkingPlayer : entry
+            );
+          }
+
+          const trainerIdsToDelete = new Set<string>();
+          if (guardianId !== trainerId && currentTrainers.some((trainer) => trainer.id === guardianId)) {
+            trainerIdsToDelete.add(guardianId);
+          }
+
+          currentPlayers.forEach((player) => {
+            (player.guardians || []).forEach((guardian) => {
+              if (!isMatchingGuardian(guardian, guardianId)) {
+                return;
+              }
+
+              const candidateTrainerId = guardian.userId || guardian.id;
+              if (
+                candidateTrainerId &&
+                candidateTrainerId !== trainerId &&
+                currentTrainers.some((trainer) => trainer.id === candidateTrainerId)
+              ) {
+                trainerIdsToDelete.add(candidateTrainerId);
+              }
+            });
+          });
+
+          for (const duplicateTrainerId of trainerIdsToDelete) {
+            await deleteMemberService(currentGroup.id, duplicateTrainerId);
+          }
+
+          const nextTrainers = sortTrainers(
+            currentTrainers.filter((trainer) => !trainerIdsToDelete.has(trainer.id))
+          );
+
+          set({ players: sortPlayers(nextPlayers), trainers: nextTrainers });
+          return true;
+        } catch (error) {
+          console.error('Failed to merge guardian into trainer:', error);
           return false;
         }
       },

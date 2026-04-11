@@ -177,16 +177,19 @@ test.describe('UC-EV-002 - Invite Players', () => {
 
     await expect(page.getByRole('heading', { name: 'Invite Players' })).toBeVisible();
     await page.getByRole('radio', { name: 'Open' }).check();
-    await page.getByRole('button', { name: 'Select All', exact: true }).click();
+    await page.getByRole('button', { name: /select/i }).first().click();
     await expect(page.getByText('2 selected')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Invite (2)' }).click();
+    await page.locator('form button[type="submit"]').click();
     await pause(800);
 
     await expect(page.getByRole('heading', { name: 'Invite Players' })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'Open (2)' })).toBeVisible();
 
     expect(updatePayload).not.toBeNull();
+    if (!updatePayload) {
+      throw new Error('Expected event update payload to be captured');
+    }
     const invitations = ((updatePayload as { invitations?: Invitation[] }).invitations ?? []);
     expect(invitations).toHaveLength(2);
 

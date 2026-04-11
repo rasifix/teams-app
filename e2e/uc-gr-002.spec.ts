@@ -86,13 +86,14 @@ test.describe('UC-GR-002 - Manage Trainers', () => {
           firstName: String(createPayload.firstName ?? ''),
           lastName: String(createPayload.lastName ?? ''),
           email: createPayload.email ? String(createPayload.email) : undefined,
+          roles: Array.isArray(createPayload.roles) ? createPayload.roles : ['trainer'],
         };
         membersState.trainers.push(newTrainer);
 
         await route.fulfill({
           status: 201,
           contentType: 'application/json',
-          body: JSON.stringify({ ...newTrainer, role: 'trainer' }),
+          body: JSON.stringify(newTrainer),
         });
         return;
       }
@@ -135,7 +136,7 @@ test.describe('UC-GR-002 - Manage Trainers', () => {
       firstName: 'Nina',
       lastName: 'Coach',
       email: 'nina.coach@example.com',
-      role: 'trainer',
+      roles: ['trainer'],
     });
   });
 });

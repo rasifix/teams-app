@@ -95,15 +95,18 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
 
       if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
         guardianPostPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+        const linkedGuardianId = String(guardianPostPayload?.guardianId ?? '');
+        const linkedTrainer = trainers.find((trainer) => trainer.id === linkedGuardianId);
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-1',
+              id: linkedTrainer?.id || 'guardian-1',
+              userId: linkedTrainer?.id,
               groupId,
-              firstName: String(guardianPostPayload.firstName ?? ''),
-              lastName: String(guardianPostPayload.lastName ?? ''),
-              email: String(guardianPostPayload.email ?? ''),
+              firstName: linkedTrainer?.firstName || '',
+              lastName: linkedTrainer?.lastName || '',
+              email: linkedTrainer?.email || undefined,
             },
           ],
         };
@@ -127,9 +130,6 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
 
     await expect(page.getByRole('heading', { name: 'Assign Guardian' })).toBeVisible();
     await page.locator('#guardian-existing').selectOption('trainer-1');
-    await page.getByLabel('First Name').fill('Alex');
-    await page.getByLabel('Last Name').fill('Guardian');
-    await page.getByLabel('Email').fill('alex.guardian@example.com');
 
     await page.getByRole('button', { name: 'Assign' }).click();
     await pause(700);
@@ -140,9 +140,7 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
     await expect(page.getByText('alex.guardian@example.com')).toBeVisible();
 
     expect(guardianPostPayload).toEqual({
-      firstName: 'Alex',
-      lastName: 'Guardian',
-      email: 'alex.guardian@example.com',
+      guardianId: 'trainer-1',
     });
   });
 
@@ -168,6 +166,7 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
       guardians: [] as Array<Record<string, unknown>>,
     };
 
+    let createMemberPayload: Record<string, unknown> | null = null;
     let guardianPostPayload: Record<string, unknown> | null = null;
 
     await page.addInitScript((selectedId) => {
@@ -227,17 +226,33 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
         return;
       }
 
+      if (pathname === `/api/groups/${groupId}/members` && method === 'POST') {
+        createMemberPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'guardian-member-2',
+            firstName: String(createMemberPayload.firstName ?? ''),
+            lastName: String(createMemberPayload.lastName ?? ''),
+            email: createMemberPayload.email ? String(createMemberPayload.email) : undefined,
+            roles: ['guardian'],
+          }),
+        });
+        return;
+      }
+
       if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
         guardianPostPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-2',
+              id: String(guardianPostPayload.guardianId ?? 'guardian-member-2'),
               groupId,
-              firstName: String(guardianPostPayload.firstName ?? ''),
-              lastName: String(guardianPostPayload.lastName ?? ''),
-              email: guardianPostPayload.email ? String(guardianPostPayload.email) : undefined,
+              firstName: String(createMemberPayload?.firstName ?? ''),
+              lastName: String(createMemberPayload?.lastName ?? ''),
+              email: createMemberPayload?.email ? String(createMemberPayload.email) : undefined,
             },
           ],
         };
@@ -274,9 +289,14 @@ test.describe('UC-GR-004 - Manage Guardians', () => {
     await expect(page.getByText('pat.doe@example.com')).toBeVisible();
 
     expect(guardianPostPayload).toEqual({
+      guardianId: 'guardian-member-2',
+    });
+
+    expect(createMemberPayload).toEqual({
       firstName: 'Pat',
       lastName: 'Doe',
       email: 'pat.doe@example.com',
+      roles: ['guardian'],
     });
   });
 });

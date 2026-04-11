@@ -558,7 +558,18 @@ export const useStore = create<AppState>()(
           const updatedPlayer = await deleteGuardianFromPlayerService(currentGroup.id, playerId, guardianId);
           const currentPlayers = get().players;
           const updatedPlayers = currentPlayers.map((player) =>
-            player.id === playerId ? { ...player, ...updatedPlayer } : player
+            player.id === playerId
+              ? {
+                  ...player,
+                  ...updatedPlayer,
+                  // Keep UI in sync immediately even if API omits guardians in response.
+                  guardians: dedupeGuardians(
+                    ((updatedPlayer as Partial<Player>).guardians ?? player.guardians ?? []).filter(
+                      (guardian) => !isMatchingGuardian(guardian, guardianId)
+                    )
+                  ),
+                }
+              : player
           );
           set({ players: sortPlayers(updatedPlayers) });
           return true;

@@ -39,7 +39,7 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
     };
 
     const calls: string[] = [];
-    let addPayload: Record<string, unknown> | null = null;
+    let updatePayload: Record<string, unknown> | null = null;
 
     await page.addInitScript((selectedId) => {
       window.localStorage.setItem('token', 'e2e-token');
@@ -98,29 +98,47 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
         return;
       }
 
-      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians/guardian-existing-1` && method === 'DELETE') {
-        calls.push('DELETE');
-        player = { ...player, guardians: [] };
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+      if (pathname === `/api/groups/${groupId}/members/guardian-existing-1` && method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'guardian-existing-1',
+            firstName: 'Alex',
+            lastName: 'Guardian',
+            email: 'alex.guardian@example.com',
+            roles: ['guardian'],
+          }),
+        });
         return;
       }
 
-      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
-        calls.push('POST');
-        addPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+      if (pathname === `/api/groups/${groupId}/members/guardian-existing-1` && method === 'PUT') {
+        calls.push('PUT');
+        updatePayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-existing-2',
+              id: 'guardian-existing-1',
               groupId,
-              firstName: String(addPayload.firstName ?? ''),
-              lastName: String(addPayload.lastName ?? ''),
-              email: String(addPayload.email ?? ''),
+              firstName: String(updatePayload.firstName ?? ''),
+              lastName: String(updatePayload.lastName ?? ''),
+              email: String(updatePayload.email ?? ''),
             },
           ],
         };
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'guardian-existing-1',
+            firstName: String(updatePayload.firstName ?? ''),
+            lastName: String(updatePayload.lastName ?? ''),
+            email: String(updatePayload.email ?? ''),
+            roles: ['guardian'],
+          }),
+        });
         return;
       }
 
@@ -149,11 +167,13 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
     await expect(page.getByText('Alexa Guardian-Senior')).toBeVisible();
     await expect(page.getByText('alexa.guardian@example.com')).toBeVisible();
 
-    expect(calls).toEqual(['DELETE', 'POST']);
-    expect(addPayload).toEqual({
+    expect(calls).toEqual(['PUT']);
+    expect(updatePayload).toEqual({
+      id: 'guardian-existing-1',
       firstName: 'Alexa',
       lastName: 'Guardian-Senior',
       email: 'alexa.guardian@example.com',
+      roles: ['guardian'],
     });
   });
 
@@ -187,7 +207,7 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
     };
 
     const calls: string[] = [];
-    let addPayload: Record<string, unknown> | null = null;
+    let updatePayload: Record<string, unknown> | null = null;
 
     await page.addInitScript((selectedId) => {
       window.localStorage.setItem('token', 'e2e-token');
@@ -246,28 +266,44 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
         return;
       }
 
-      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians/guardian-doc-1` && method === 'DELETE') {
-        calls.push('DELETE');
-        player = { ...player, guardians: [] };
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+      if (pathname === `/api/groups/${groupId}/members/guardian-doc-1` && method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'guardian-doc-1',
+            firstName: 'Pat',
+            lastName: 'Doe',
+            roles: ['guardian'],
+          }),
+        });
         return;
       }
 
-      if (pathname === `/api/groups/${groupId}/members/${playerId}/guardians` && method === 'POST') {
-        calls.push('POST');
-        addPayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
+      if (pathname === `/api/groups/${groupId}/members/guardian-doc-1` && method === 'PUT') {
+        calls.push('PUT');
+        updatePayload = JSON.parse(request.postData() ?? '{}') as Record<string, unknown>;
         player = {
           ...player,
           guardians: [
             {
-              id: 'guardian-doc-2',
+              id: 'guardian-doc-1',
               groupId,
-              firstName: String(addPayload.firstName ?? ''),
-              lastName: String(addPayload.lastName ?? ''),
+              firstName: String(updatePayload.firstName ?? ''),
+              lastName: String(updatePayload.lastName ?? ''),
             },
           ],
         };
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...player, role: 'player' }) });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'guardian-doc-1',
+            firstName: String(updatePayload.firstName ?? ''),
+            lastName: String(updatePayload.lastName ?? ''),
+            roles: ['guardian'],
+          }),
+        });
         return;
       }
 
@@ -295,10 +331,12 @@ test.describe('UC-GR-005 - Edit Guardian', () => {
     await expect(page.getByRole('heading', { name: 'Edit Guardian' })).not.toBeVisible();
     await expect(page.getByText('Patricia Doe-Smith')).toBeVisible();
 
-    expect(calls).toEqual(['DELETE', 'POST']);
-    expect(addPayload).toEqual({
+    expect(calls).toEqual(['PUT']);
+    expect(updatePayload).toEqual({
+      id: 'guardian-doc-1',
       firstName: 'Patricia',
       lastName: 'Doe-Smith',
+      roles: ['guardian'],
     });
   });
 });

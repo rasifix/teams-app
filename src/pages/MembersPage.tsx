@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ImportMembersModal from "../components/ImportMembersModal";
+import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
-import type { Player, Trainer } from "../types";
+import type { Guardian, Player, Trainer } from "../types";
 
 export interface MembersOutletContext {
   players: Player[];
   trainers: Trainer[];
+  guardians: Guardian[];
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
   openImportModal: () => void;
@@ -38,6 +40,11 @@ export default function MembersPage() {
   // Delete confirmation states
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
   const [deletingTrainer, setDeletingTrainer] = useState<Trainer | null>(null);
+
+  const guardians = useMemo(
+    () => selectMemberGuardians(players).map((row) => row.guardian),
+    [players]
+  );
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {
@@ -109,6 +116,7 @@ export default function MembersPage() {
   const outletContext: MembersOutletContext = {
     players,
     trainers,
+    guardians,
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
     openImportModal: () => setIsImportModalOpen(true),
@@ -156,6 +164,16 @@ export default function MembersPage() {
             }`}
           >
             {t('domain.trainers')} ({trainers.length})
+          </NavLink>
+          <NavLink
+            to="/members/guardians"
+            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              isActive
+                ? 'border-orange-600 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            {t('domain.guardians')} ({guardians.length})
           </NavLink>
         </nav>
       </div>

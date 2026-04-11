@@ -13,6 +13,7 @@ import HomePage from './pages/HomePage';
 import MembersPage from './pages/MembersPage';
 import MembersPlayersPage from './pages/MembersPlayersPage';
 import MembersTrainersPage from './pages/MembersTrainersPage';
+import MembersGuardiansPage from './pages/MembersGuardiansPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import TrainerDetailPage from './pages/TrainerDetailPage';
 import EventsPage from './pages/EventsPage';
@@ -64,6 +65,7 @@ function App() {
                       <Route index element={<Navigate to="players" replace />} />
                       <Route path="players" element={<MembersPlayersPage />} />
                       <Route path="trainers" element={<MembersTrainersPage />} />
+                      <Route path="guardians" element={<MembersGuardiansPage />} />
                     </Route>
                     {/* Player detail still needs its own route */}
                     <Route path="/players/:id" element={<ProtectedRoute><PlayerDetailPage /></ProtectedRoute>} />

@@ -9,6 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
+import { selectTeamTrainerAssigneeById } from '../store/selectors/teamTrainerSelectors';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -28,7 +29,9 @@ export default function TeamDetailPage() {
   const event = eventId ? getEventById(eventId) : null;
   const team = event?.teams.find(t => t.id === teamId);
   
-  const trainer = team?.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
+  const trainerAssignee = team
+    ? selectTeamTrainerAssigneeById(team.trainerId, trainers, players)
+    : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = players.filter(p => team?.selectedPlayers?.includes(p.id));
   const usedShirtNumbersBySetId = useMemo(() => {
@@ -172,9 +175,9 @@ export default function TeamDetailPage() {
                 <span>👤</span>
                 <span className="font-medium text-sm">{t('teamDetail.trainerLabel')}</span>
               </div>
-              {trainer ? (
+              {trainerAssignee ? (
                 <div className="text-sm">
-                  {trainer.firstName} {trainer.lastName}
+                  {trainerAssignee.firstName} {trainerAssignee.lastName}
                 </div>
               ) : (
                 <div className="text-sm text-gray-500">{t('teamModal.noTrainerAssigned')}</div>

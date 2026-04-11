@@ -15,6 +15,7 @@ import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
+import { selectTeamTrainerAssigneeById } from '../store/selectors/teamTrainerSelectors';
 
 export default function EventDetailPage() {
   const { t } = useTranslation();
@@ -587,7 +588,7 @@ export default function EventDetailPage() {
               <div className="block lg:hidden">
                 {event.teams.map(team => {
                   const playerCount = team.selectedPlayers?.length || 0;
-                  const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
+                  const trainerAssignee = selectTeamTrainerAssigneeById(team.trainerId, trainers, players);
                   
                   return (
                     <div
@@ -616,9 +617,9 @@ export default function EventDetailPage() {
                             <span>🕐 {team.startTime}</span>
                             <Strength level={team.strength} />
                           </div>
-                          {trainer && (
+                          {trainerAssignee && (
                             <div className="text-xs text-gray-500 mt-1">
-                              👤 {trainer.firstName} {trainer.lastName}
+                              👤 {trainerAssignee.firstName} {trainerAssignee.lastName}
                             </div>
                           )}
                           {team.location && (

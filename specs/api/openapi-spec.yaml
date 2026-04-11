@@ -2145,14 +2145,14 @@ components:
       properties:
         id:
           type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupRole'
         firstName:
           type: string
         lastName:
           type: string
-        birthYear:
-          type: integer
-          minimum: 1900
-          maximum: 2030
         birthDate:
           type: string
           format: date
@@ -2173,9 +2173,9 @@ components:
             $ref: '#/components/schemas/Guardian'
       required:
         - id
+        - roles
         - firstName
         - lastName
-        - birthYear
         - level
     PlayerEvaluation:
       type: object
@@ -2221,6 +2221,10 @@ components:
       properties:
         id:
           type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupRole'
         firstName:
           type: string
         lastName:
@@ -2231,6 +2235,7 @@ components:
           nullable: true
       required:
         - id
+        - roles
         - firstName
         - lastName
     Guardian:
@@ -2238,6 +2243,10 @@ components:
       properties:
         id:
           type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupRole'
         groupId:
           type: string
         firstName:
@@ -2253,6 +2262,10 @@ components:
       required:
         - id
         - groupId
+        - roles
+    GroupRole:
+      type: string
+      enum: [admin, trainer, guardian, player]
     CreateGuardianRequest:
       type: object
       properties:
@@ -2269,23 +2282,9 @@ components:
     PlayerWithRole:
       allOf:
         - $ref: '#/components/schemas/Player'
-        - type: object
-          properties:
-            role:
-              type: string
-              enum: [player]
-          required:
-            - role
     TrainerWithRole:
       allOf:
         - $ref: '#/components/schemas/Trainer'
-        - type: object
-          properties:
-            role:
-              type: string
-              enum: [trainer]
-          required:
-            - role
     CreatePlayerRequest:
       type: object
       properties:
@@ -2296,10 +2295,6 @@ components:
           type: string
         lastName:
           type: string
-        birthYear:
-          type: integer
-          minimum: 1900
-          maximum: 2030
         birthDate:
           type: string
           format: date
@@ -2310,6 +2305,10 @@ components:
         preferredShirtNumber:
           type: integer
           minimum: 1
+        status:
+          type: string
+          enum: [active, trial, inactive]
+          default: active
       required:
         - role
         - firstName
@@ -2343,10 +2342,6 @@ components:
           type: string
         lastName:
           type: string
-        birthYear:
-          type: integer
-          minimum: 1900
-          maximum: 2030
         birthDate:
           type: string
           format: date
@@ -2357,11 +2352,15 @@ components:
         preferredShirtNumber:
           type: integer
           minimum: 1
+        status:
+          type: string
+          enum: [active, trial, inactive]
+          default: active
       required:
         - role
         - firstName
         - lastName
-        - birthYear
+        - birthDate
         - level
     UpdateTrainerRequest:
       type: object

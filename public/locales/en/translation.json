@@ -40,6 +40,7 @@
   "domain": {
     "player": "Player",
     "players": "Players",
+    "guardians": "Guardians",
     "events": "Events",
     "trainers": "Trainers",
     "shirtSets": "Shirt Sets",
@@ -145,6 +146,7 @@
       "teamName": "Team Name",
       "strength": "Strength",
       "startTime": "Start Time",
+      "trainerAssignee": "Trainer / Guardian",
       "locationOptional": "Team Location (optional)"
     },
     "placeholders": {
@@ -285,17 +287,24 @@
   "members": {
     "list": {
       "emptyPlayers": "No players added yet. Click \"Add Player\" to get started.",
-      "emptyTrainers": "No trainers added yet. Click \"Add Trainer\" to get started."
+      "emptyTrainers": "No trainers added yet. Click \"Add Trainer\" to get started.",
+      "emptyGuardians": "No guardians assigned yet."
     },
     "loading": "Loading members...",
     "allPlayersTitle": "All Players ({{count}})",
     "allPlayersFilteredTitle": "All Players ({{filteredCount}} of {{totalCount}})",
     "allTrainersTitle": "All Trainers ({{count}})",
+    "allGuardiansTitle": "All Guardians ({{count}})",
     "levelFilter": "Level:",
     "yearFilter": "Year:",
     "trialFilter": "Trial:",
     "showTrialPlayers": "Show",
     "hideTrialPlayers": "Hide",
+    "guardians": {
+      "playerPrefix": "Player:",
+      "noEmail": "No email",
+      "openPlayerAction": "Open player"
+    },
     "deletePlayerTitle": "Delete Player",
     "deletePlayerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
     "deletePlayerConfirm": "Delete Player",

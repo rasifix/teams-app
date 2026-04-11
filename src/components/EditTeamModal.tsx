@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
-import { useTrainers } from '../hooks/useTrainers';
+import { usePlayers, useTrainers } from '../store';
+import { selectTeamTrainerOptions } from '../store/selectors/teamTrainerSelectors';
 
 interface EditTeamModalProps {
   isOpen: boolean;
@@ -32,7 +33,12 @@ export default function EditTeamModal({
   const [trainerId, setTrainerId] = useState(currentTrainerId || '');
   const [location, setLocation] = useState(currentLocation || '');
 
+  const { players } = usePlayers();
   const { trainers } = useTrainers();
+  const trainerOptions = useMemo(
+    () => selectTeamTrainerOptions(trainers, players),
+    [trainers, players]
+  );
 
   useEffect(() => {
     setTeamName(currentName);
@@ -108,7 +114,7 @@ export default function EditTeamModal({
 
             <div>
               <label htmlFor="trainer" className="form-label">
-                {t('domain.trainers')}
+                {t('teamModal.fields.trainerAssignee')}
               </label>
               <select
                 id="trainer"
@@ -117,9 +123,10 @@ export default function EditTeamModal({
                 className="form-input"
               >
                 <option value="">{t('teamModal.noTrainerAssigned')}</option>
-                {trainers.map(trainer => (
-                  <option key={trainer.id} value={trainer.id}>
-                    {trainer.firstName} {trainer.lastName}
+                {trainerOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.firstName} {option.lastName}
+                    {option.source === 'guardian' ? ` (${t('domain.guardians')})` : ''}
                   </option>
                 ))}
               </select>

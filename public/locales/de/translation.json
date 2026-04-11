@@ -40,6 +40,7 @@
   "domain": {
     "player": "Spieler",
     "players": "Spieler",
+    "guardians": "Erziehungsberechtigte",
     "events": "Termine",
     "trainers": "Trainer",
     "shirtSets": "Trikotsätze",
@@ -145,6 +146,7 @@
       "teamName": "Teamname",
       "strength": "Stärke",
       "startTime": "Startzeit",
+      "trainerAssignee": "Trainer / Erziehungsberechtigte",
       "locationOptional": "Team-Standort (optional)"
     },
     "placeholders": {
@@ -285,17 +287,24 @@
   "members": {
     "list": {
       "emptyPlayers": "Noch keine Spieler hinzugefügt. Klicke auf \"Spieler hinzufügen\", um zu starten.",
-      "emptyTrainers": "Noch keine Trainer hinzugefügt. Klicke auf \"Trainer hinzufügen\", um zu starten."
+      "emptyTrainers": "Noch keine Trainer hinzugefügt. Klicke auf \"Trainer hinzufügen\", um zu starten.",
+      "emptyGuardians": "Noch keine Erziehungsberechtigten zugewiesen."
     },
     "loading": "Mitglieder werden geladen...",
     "allPlayersTitle": "Alle Spieler ({{count}})",
     "allPlayersFilteredTitle": "Alle Spieler ({{filteredCount}} von {{totalCount}})",
     "allTrainersTitle": "Alle Trainer ({{count}})",
+    "allGuardiansTitle": "Alle Erziehungsberechtigten ({{count}})",
     "levelFilter": "Level:",
     "yearFilter": "Jahr:",
     "trialFilter": "Schnupperli:",
     "showTrialPlayers": "Anzeigen",
     "hideTrialPlayers": "Ausblenden",
+    "guardians": {
+      "playerPrefix": "Spieler:",
+      "noEmail": "Keine E-Mail",
+      "openPlayerAction": "Spieler öffnen"
+    },
     "deletePlayerTitle": "Spieler löschen",
     "deletePlayerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deletePlayerConfirm": "Spieler löschen",

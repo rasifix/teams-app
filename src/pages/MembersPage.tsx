@@ -6,8 +6,9 @@ import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ImportMembersModal from "../components/ImportMembersModal";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
-import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors } from "../store";
+import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from "../store";
 import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from "../store/useStore";
+import { useAuth } from "../hooks/useAuth";
 import type { Guardian, Player, Trainer } from "../types";
 
 export interface MembersOutletContext {
@@ -27,6 +28,8 @@ export default function MembersPage() {
   // Store hooks
   const { players, addPlayer: addPlayerToStore, deletePlayer } = usePlayers();
   const { trainers, addTrainer, deleteTrainer } = useTrainers();
+  const group = useGroup();
+  const { user } = useAuth();
   
   // Use individual selectors for loading/error states
   const isLoading = useAppLoading();
@@ -47,6 +50,12 @@ export default function MembersPage() {
     () => selectMemberGuardians(players).map((row) => row.guardian),
     [players]
   );
+
+  const isAdmin = useMemo(() => {
+    if (!user || !group?.id) return false;
+    if (!user.groupRoles) return true; // backward compat: no role data → allow
+    return user.groupRoles[group.id]?.includes('admin') || false;
+  }, [user, group?.id]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {
@@ -181,6 +190,7 @@ export default function MembersPage() {
           >
             {t('domain.trainers')} ({trainers.length})
           </NavLink>
+          {isAdmin && (
           <NavLink
             to="/members/guardians"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -191,6 +201,7 @@ export default function MembersPage() {
           >
             {t('domain.guardians')} ({guardians.length})
           </NavLink>
+          )}
         </nav>
       </div>
 

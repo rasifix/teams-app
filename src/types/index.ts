@@ -10,6 +10,15 @@ export interface Group {
   name: string;
   club?: string;
   description?: string;
+  trainers?: Array<{
+    id: string;
+    email?: string;
+  }>;
+  members?: Array<{
+    id: string;
+    email?: string;
+    roles?: string[];
+  }>;
   periods: Period[];
   createdAt?: string;
   updatedAt?: string;

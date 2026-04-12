@@ -15,10 +15,12 @@ import {
   MEMBER_ROLE_PLAYER,
   MEMBER_ROLE_TRAINER,
 } from '../services/memberService';
-import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService } from '../services/eventService';
+import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService, updatePlayerInvitationStatus as updatePlayerInvitationStatusService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
+import { authService } from '../services/authService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
+import { canAccessRestrictedManagement } from '../utils/permissions';
 
 // Helper function to sort players alphabetically by lastName + firstName
 const sortPlayers = (players: Player[]): Player[] => {
@@ -166,6 +168,7 @@ interface AppState {
   // Event mutations
   addEvent: (eventData: Omit<Event, 'id'>) => Promise<boolean>;
   updateEvent: (id: string, eventData: Partial<Event>) => Promise<boolean>;
+  updateInvitationStatus: (eventId: string, playerId: string, status: import('../types').InvitationStatus) => Promise<boolean>;
   deleteEvent: (id: string) => Promise<boolean>;
   
   // Trainer mutations
@@ -238,6 +241,32 @@ export const useStore = create<AppState>()(
       // Actions
       initializeApp: async () => {
         const state = get();
+        const selectedGroup = get().group;
+
+        if (!selectedGroup) {
+          throw new Error('No group selected');
+        }
+
+        let currentGroup = selectedGroup;
+        try {
+          currentGroup = await getGroup(selectedGroup.id);
+          const sortedPeriods = sortPeriods(currentGroup.periods ?? []);
+          set({
+            group: {
+              ...currentGroup,
+              periods: sortedPeriods,
+            },
+          });
+        } catch (error) {
+          console.warn('Failed to resolve full group before permission checks:', error);
+        }
+
+        let currentUser: import('../services/authService').User | null = null;
+        try {
+          currentUser = await authService.getCurrentUser();
+        } catch (error) {
+          console.warn('Failed to resolve current user for app initialization:', error);
+        }
         
         // Set all loading states
         set({
@@ -247,7 +276,7 @@ export const useStore = create<AppState>()(
             players: true,
             events: true,
             trainers: true,
-            shirtSets: true,
+            shirtSets: false,
           },
           errors: {
             group: null,
@@ -261,19 +290,23 @@ export const useStore = create<AppState>()(
         
         // Load all data in parallel
         const loadData = async () => {
-          const currentGroup = get().group;
-          if (!currentGroup) {
-            throw new Error('No group selected');
-          }
-          
           const results = await Promise.allSettled([
             getGroup(currentGroup.id).then((group) => ({ type: 'group' as const, data: group })),
             getAllMembers(currentGroup.id).then((members) => ({ type: 'members' as const, data: members })),
             getEvents(currentGroup.id).then((events: Event[]) => ({ type: 'events' as const, data: events })),
-            getShirtSets(currentGroup.id).then((shirtSets: ShirtSet[]) => ({ type: 'shirtSets' as const, data: shirtSets })),
           ]);
           
-          const newState = {
+          const newState: {
+            loading: AppState['loading'];
+            errors: AppState['errors'];
+            group: Group | null;
+            groups: Group[];
+            selectedStatisticsPeriodId: string | null;
+            players: Player[];
+            events: Event[];
+            trainers: Trainer[];
+            shirtSets: ShirtSet[];
+          } = {
             loading: {
               group: false,
               groups: false,
@@ -301,20 +334,18 @@ export const useStore = create<AppState>()(
           
           results.forEach((result, index) => {
             if (result.status === 'fulfilled') {
-              const { type, data } = result.value;
+              const { type } = result.value;
               if (type === 'group') {
                 newState.group = {
-                  ...(data as Group),
-                  periods: sortPeriods((data as Group).periods ?? []),
+                  ...result.value.data,
+                  periods: sortPeriods(result.value.data.periods ?? []),
                 };
               } else if (type === 'members') {
-                const membersData = data as { players: Player[], trainers: Trainer[] };
+                const membersData = result.value.data as { players: Player[], trainers: Trainer[] };
                 newState.players = sortPlayers(membersData.players);
                 newState.trainers = sortTrainers(membersData.trainers);
               } else if (type === 'events') {
-                newState.events = sortEvents(data as Event[]);
-              } else if (type === 'shirtSets') {
-                newState.shirtSets = sortShirtSets(data as ShirtSet[]);
+                newState.events = sortEvents(result.value.data);
               }
             } else {
               // Map index to appropriate error handling
@@ -329,12 +360,30 @@ export const useStore = create<AppState>()(
               } else if (index === 2) {
                 // Events call failed
                 newState.errors.events = result.reason?.message || 'Failed to load events';
-              } else if (index === 3) {
-                // ShirtSets call failed
-                newState.errors.shirtSets = result.reason?.message || 'Failed to load shirt sets';
               }
             }
           });
+
+          const shouldLoadShirtSets = canAccessRestrictedManagement(currentUser, {
+            group: newState.group,
+            trainers: newState.trainers,
+          });
+
+          if (shouldLoadShirtSets) {
+            set({
+              loading: {
+                ...get().loading,
+                shirtSets: true,
+              },
+            });
+
+            try {
+              const shirtSets = await getShirtSets(currentGroup.id);
+              newState.shirtSets = sortShirtSets(shirtSets);
+            } catch (error) {
+              newState.errors.shirtSets = error instanceof Error ? error.message : 'Failed to load shirt sets';
+            }
+          }
 
           if (
             newState.selectedStatisticsPeriodId &&
@@ -417,19 +466,17 @@ export const useStore = create<AppState>()(
       },
       
       selectGroup: async (groupId: string) => {
-        // Set the selected group (simplified: just use the groupId directly)
         const groups = get().groups;
         const selectedGroup = groups.find(g => g.id === groupId);
         
         let group: Group;
-        if (selectedGroup) {
-          group = selectedGroup;
-        } else {
-          // Fetch the group from API if not in the groups array
-          try {
-            group = await getGroup(groupId);
-          } catch (error) {
-            console.error('Failed to fetch group:', error);
+        try {
+          group = await getGroup(groupId);
+        } catch (error) {
+          console.error('Failed to fetch group:', error);
+          if (selectedGroup) {
+            group = selectedGroup;
+          } else {
             // Fallback to minimal group object
             group = { id: groupId, name: `Group ${groupId}`, periods: [] };
           }
@@ -689,6 +736,24 @@ export const useStore = create<AppState>()(
           return true;
         } catch (error) {
           console.error('Failed to update event:', error);
+          return false;
+        }
+      },
+
+      updateInvitationStatus: async (eventId, playerId, status) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedEvent = await updatePlayerInvitationStatusService(currentGroup.id, eventId, playerId, status);
+          const currentEvents = get().events;
+          const updatedEvents = currentEvents.map((event) =>
+            event.id === eventId ? { ...event, ...updatedEvent } : event
+          );
+          set({ events: sortEvents(updatedEvents) });
+          return true;
+        } catch (error) {
+          console.error('Failed to update invitation status:', error);
           return false;
         }
       },

@@ -5,6 +5,7 @@ export function useEvents() {
     events,
     addEvent: addEventToStore,
     updateEvent: updateEventInStore,
+    updateInvitationStatus: updateInvitationStatusInStore,
     deleteEvent: deleteEventFromStore
   } = useEventsFromStore();
   
@@ -24,6 +25,14 @@ export function useEvents() {
     return await updateEventInStore(eventId, updates);
   };
 
+  const updateInvitationStatus = async (
+    eventId: string,
+    playerId: string,
+    status: import('../types').InvitationStatus,
+  ): Promise<boolean> => {
+    return await updateInvitationStatusInStore(eventId, playerId, status);
+  };
+
   const deleteEvent = async (eventId: string): Promise<boolean> => {
     return await deleteEventFromStore(eventId);
   };
@@ -34,6 +43,7 @@ export function useEvents() {
     error,
     addEvent,
     updateEvent,
+    updateInvitationStatus,
     deleteEvent,
   };
 }

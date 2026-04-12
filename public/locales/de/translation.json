@@ -275,6 +275,19 @@
   },
   "home": {
     "title": "Willkommen bei My Teams",
+    "upcomingEvents": {
+      "title": "Bevorstehende Termine",
+      "viewAll": "Alle anzeigen",
+      "empty": "Noch keine bevorstehenden Termine.",
+      "eventMeta": "{{date}} • {{teamCount}} Teams"
+    },
+    "openInvitations": {
+      "title": "Offene Einladungen",
+      "empty": "Keine offenen Einladungen für deine Kinder.",
+      "accept": "Zusagen",
+      "decline": "Absagen",
+      "updateError": "Einladung konnte nicht aktualisiert werden. Bitte versuche es erneut."
+    },
     "cards": {
       "membersTitle": "Mitglieder verwalten",
       "membersDescription": "Füge Spieler und Trainer hinzu, setze Leistungsstufen und verwalte den Kader",

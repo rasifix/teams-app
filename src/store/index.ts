@@ -48,6 +48,7 @@ export const useEvents = () => {
   const getEventById = useStore((state) => state.getEventById);
   const addEvent = useStore((state) => state.addEvent);
   const updateEvent = useStore((state) => state.updateEvent);
+  const updateInvitationStatus = useStore((state) => state.updateInvitationStatus);
   const deleteEvent = useStore((state) => state.deleteEvent);
   
   return {
@@ -55,6 +56,7 @@ export const useEvents = () => {
     getEventById,
     addEvent,
     updateEvent,
+    updateInvitationStatus,
     deleteEvent,
   };
 };

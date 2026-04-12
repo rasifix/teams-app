@@ -9,6 +9,7 @@ import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelecto
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from "../store";
 import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from "../store/useStore";
 import { useAuth } from "../hooks/useAuth";
+import { canManageGuardians } from "../utils/guardians";
 import type { Guardian, Player, Trainer } from "../types";
 
 export interface MembersOutletContext {
@@ -52,10 +53,8 @@ export default function MembersPage() {
   );
 
   const isAdmin = useMemo(() => {
-    if (!user || !group?.id) return false;
-    if (!user.groupRoles) return true; // backward compat: no role data → allow
-    return user.groupRoles[group.id]?.includes('admin') || false;
-  }, [user, group?.id]);
+    return canManageGuardians(user, group);
+  }, [user, group]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {

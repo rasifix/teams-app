@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup } from '../store/useStore';
+import { useGroup, useTrainers } from '../store/useStore';
 import { useAuth } from '../hooks/useAuth';
+import { selectHeaderNavItems } from '../store/selectors/navigationSelectors';
 import LoginButton from './LoginButton';
 import LogoutButton from './LogoutButton';
 import { SUPPORTED_LANGUAGES } from '../i18n/config';
@@ -12,6 +13,7 @@ export default function Header() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const group = useGroup();
+  const trainers = useTrainers();
   const { isAuthenticated, user } = useAuth();
 
   const toggleMobileMenu = () => {
@@ -22,12 +24,10 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   };
 
-  const navItems = [
-    { path: '/members', labelKey: 'nav.members' },
-    { path: '/events', labelKey: 'nav.events' },
-    { path: '/shirts', labelKey: 'nav.shirts' },
-    { path: '/statistics', labelKey: 'nav.statistics' },
-  ];
+  const navItems = useMemo(
+    () => selectHeaderNavItems(user, group, trainers),
+    [user, group, trainers],
+  );
 
   const activeLanguage = i18n.language.startsWith('de') ? 'de' : 'en';
 

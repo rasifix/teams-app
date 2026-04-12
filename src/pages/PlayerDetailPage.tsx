@@ -93,7 +93,7 @@ export default function PlayerDetailPage() {
   }
 
   const guardians = player.guardians || [];
-  const canManagePlayerGuardians = canManageGuardians(user, group?.id);
+  const canManagePlayerGuardians = canManageGuardians(user, group);
   const underageForGuardianAssignment = isPlayerUnderage(player);
   const playerStatus = player.status || 'active';
   const playerStatusBadgeClassName = playerStatus === 'active'

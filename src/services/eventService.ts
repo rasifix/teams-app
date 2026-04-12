@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { Event } from '../types';
+import type { Event, InvitationStatus } from '../types';
 
 /**
  * Service layer for event data operations.
@@ -51,4 +51,19 @@ export async function getEventById(groupId: string, id: string): Promise<Event |
     }
     throw error;
   }
+}
+
+export async function updatePlayerInvitationStatus(
+  groupId: string,
+  id: string,
+  playerId: string,
+  status: InvitationStatus,
+): Promise<Event> {
+  return apiClient.request<Event>(
+    apiClient.getGroupEndpoint(groupId, `/events/${id}/players/${playerId}/status`),
+    {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }
+  );
 }

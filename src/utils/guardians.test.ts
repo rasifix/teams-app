@@ -23,20 +23,32 @@ describe('guardians utils', () => {
   });
 
   it('allows fallback authorization when no role data exists', () => {
-    const allowed = canManageGuardians({ id: 'u1', email: 'a@a.com', firstName: 'A', lastName: 'B' }, 'group-1');
+    const allowed = canManageGuardians(
+      { id: 'u1', email: 'a@a.com', firstName: 'A', lastName: 'B' },
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+        trainers: [{ id: 'u1', email: 'a@a.com' }],
+      }
+    );
     expect(allowed).toBe(true);
   });
 
-  it('enforces group manager role when role data is present', () => {
+  it('denies guardian management when user is not listed as trainer', () => {
     const denied = canManageGuardians(
       {
         id: 'u2',
         email: 'b@b.com',
         firstName: 'C',
         lastName: 'D',
-        roles: ['trainer'],
       },
-      'group-1',
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+        trainers: [{ id: 'another-user', email: 'x@y.com' }],
+      },
     );
     const allowed = canManageGuardians(
       {
@@ -44,9 +56,13 @@ describe('guardians utils', () => {
         email: 'c@c.com',
         firstName: 'E',
         lastName: 'F',
-        groupRoles: { 'group-1': ['group_manager'] },
       },
-      'group-1',
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+        trainers: [{ id: 'u3', email: 'c@c.com' }],
+      },
     );
 
     expect(denied).toBe(false);

@@ -3,21 +3,29 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import AddGroupModal from '../components/AddGroupModal';
+import UpcomingEventCard from '../components/UpcomingEventCard';
 import { useGroup, useGroups, useGroupsError, useGroupsLoading, useStore } from '../store/useStore';
+import { selectUpcomingEventsWithGuardianInvitations } from '../store/selectors/homeSelectors';
 import type { CreateGroupRequest } from '../types';
 
 export default function HomePage() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  const { addGroup, selectGroup, initializeApp, loadGroups } = useStore();
+  const { isAuthenticated, user } = useAuth();
+  const { addGroup, selectGroup, initializeApp, loadGroups, updateInvitationStatus } = useStore();
   const group = useGroup();
   const groups = useGroups();
   const groupsLoading = useGroupsLoading();
   const groupsError = useGroupsError();
+  const events = useStore((state) => state.events);
+  const players = useStore((state) => state.players);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [switchingGroupId, setSwitchingGroupId] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [respondingInvitationId, setRespondingInvitationId] = useState<string | null>(null);
+  const [invitationError, setInvitationError] = useState<string | null>(null);
+
+  const upcomingEvents = selectUpcomingEventsWithGuardianInvitations(events, players, user, new Date(), 5);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -56,6 +64,19 @@ export default function HomePage() {
       await initializeApp();
     } finally {
       setSwitchingGroupId(null);
+    }
+  };
+
+  const handleInvitationResponse = async (eventId: string, playerId: string, invitationId: string, status: 'accepted' | 'declined') => {
+    setRespondingInvitationId(invitationId);
+    setInvitationError(null);
+    try {
+      const success = await updateInvitationStatus(eventId, playerId, status);
+      if (!success) {
+        setInvitationError(t('home.openInvitations.updateError'));
+      }
+    } finally {
+      setRespondingInvitationId(null);
     }
   };
 
@@ -139,82 +160,44 @@ export default function HomePage() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {isAuthenticated ? (
-            <>
-              <Link
-                to="/members"
-                className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
-              >
-                <div className="text-blue-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 119.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.membersTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.membersDescription')}</p>
-              </Link>
-
+        {isAuthenticated && (
+          <div className="max-w-3xl mx-auto mt-12 text-left">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-semibold text-gray-900">{t('home.upcomingEvents.title')}</h2>
               <Link
                 to="/events"
-                className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+                className="text-sm font-medium text-orange-700 hover:text-orange-800"
               >
-                <div className="text-green-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.eventsTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.eventsDescription')}</p>
+                {t('home.upcomingEvents.viewAll')}
               </Link>
+            </div>
 
-              <Link
-                to="/statistics"
-                className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
-              >
-                <div className="text-purple-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.statisticsTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.statisticsDescription')}</p>
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="text-blue-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 119.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.membersTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.membersDescription')}</p>
+            {upcomingEvents.length === 0 ? (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 text-gray-600">
+                {t('home.upcomingEvents.empty')}
               </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingEvents.map((event) => (
+                  <UpcomingEventCard
+                    key={event.id}
+                    event={event}
+                    respondingInvitationId={respondingInvitationId}
+                    onInvitationResponse={handleInvitationResponse}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="text-green-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.eventsTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.eventsDescription')}</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="text-purple-600 mb-4">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('home.cards.statisticsTitle')}</h3>
-                <p className="text-gray-600">{t('home.cards.statisticsDescription')}</p>
-              </div>
-            </>
-          )}
-        </div>
+        {isAuthenticated && invitationError && (
+          <div className="max-w-3xl mx-auto mt-4 text-left">
+            <div className="bg-red-50 rounded-lg border border-red-200 p-4 text-red-700">
+              {invitationError}
+            </div>
+          </div>
+        )}
       </div>
 
       <AddGroupModal

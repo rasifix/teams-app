@@ -23,7 +23,7 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   
   // Use store hooks
-  const { events, updateEvent, deleteEvent, getEventById } = useEvents();
+  const { events, updateEvent, updateInvitationStatus, deleteEvent, getEventById } = useEvents();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
@@ -268,12 +268,12 @@ export default function EventDetailPage() {
   const handleInvitationStatusChange = async (invitationId: string, newStatus: InvitationStatus) => {
     if (!event || !id) return;
 
-    const updatedInvitations = event.invitations.map(inv =>
-      inv.id === invitationId ? { ...inv, status: newStatus } : inv
-    );
+    const invitation = event.invitations.find((entry) => entry.id === invitationId);
+    if (!invitation) {
+      return;
+    }
 
-    await updateEvent(id, { invitations: updatedInvitations });
-    // Store will automatically update the event data
+    await updateInvitationStatus(id, invitation.playerId, newStatus);
   };
 
   const handleRemoveInvitation = async (invitationId: string) => {

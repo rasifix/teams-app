@@ -1,5 +1,6 @@
 import type { Guardian, Player } from '../types';
 import type { User } from '../services/authService';
+import type { Group } from '../types';
 
 const DEFAULT_UNDERAGE_LIMIT = 18;
 
@@ -59,20 +60,15 @@ export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, 
   return existingGuardians.some((guardian) => guardian.id === candidate.id);
 }
 
-export function canManageGuardians(user: User | null | undefined, groupId: string | undefined): boolean {
+export function canManageGuardians(user: User | null | undefined, group: Group | null | undefined): boolean {
   if (!user) {
     return false;
   }
 
-  const hasTopLevelRoles = Array.isArray(user.roles);
-  const hasGroupRoleMap = !!user.groupRoles;
+  const normalizedEmail = (user.email || '').trim().toLowerCase();
 
-  // Backward compatibility: older auth payloads have no role data.
-  if (!hasTopLevelRoles && !hasGroupRoleMap) {
-    return true;
-  }
-
-  const topLevelManager = user.roles?.includes('group_manager') || false;
-  const groupManager = (groupId && user.groupRoles?.[groupId]?.includes('group_manager')) || false;
-  return topLevelManager || groupManager;
+  return (group?.trainers || []).some((trainer) => (
+    trainer.id === user.id ||
+    ((trainer.email || '').trim().toLowerCase() !== '' && (trainer.email || '').trim().toLowerCase() === normalizedEmail)
+  ));
 }

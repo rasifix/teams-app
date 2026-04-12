@@ -275,6 +275,19 @@
   },
   "home": {
     "title": "Welcome to My Teams",
+    "upcomingEvents": {
+      "title": "Upcoming Events",
+      "viewAll": "View all",
+      "empty": "No upcoming events yet.",
+      "eventMeta": "{{date}} • {{teamCount}} teams"
+    },
+    "openInvitations": {
+      "title": "Open Invitations",
+      "empty": "No open invitations for your children.",
+      "accept": "Accept",
+      "decline": "Decline",
+      "updateError": "Failed to update invitation. Please try again."
+    },
     "cards": {
       "membersTitle": "Manage Members",
       "membersDescription": "Add players and trainers, set skill levels, and manage your roster",

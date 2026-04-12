@@ -1,6 +1,7 @@
 import type { Guardian, Player } from '../types';
 import type { User } from '../services/authService';
 import type { Group } from '../types';
+import { canAccessRestrictedManagement } from './permissions';
 
 const DEFAULT_UNDERAGE_LIMIT = 18;
 
@@ -61,14 +62,8 @@ export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, 
 }
 
 export function canManageGuardians(user: User | null | undefined, group: Group | null | undefined): boolean {
-  if (!user) {
-    return false;
-  }
-
-  const normalizedEmail = (user.email || '').trim().toLowerCase();
-
-  return (group?.trainers || []).some((trainer) => (
-    trainer.id === user.id ||
-    ((trainer.email || '').trim().toLowerCase() !== '' && (trainer.email || '').trim().toLowerCase() === normalizedEmail)
-  ));
+  return canAccessRestrictedManagement(user, {
+    group,
+    trainers: group?.trainers || [],
+  });
 }

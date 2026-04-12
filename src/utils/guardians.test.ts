@@ -68,4 +68,24 @@ describe('guardians utils', () => {
     expect(denied).toBe(false);
     expect(allowed).toBe(true);
   });
+
+  it('allows guardian management for elevated group member roles', () => {
+    const allowed = canManageGuardians(
+      {
+        id: 'u-admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+      },
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+        trainers: [],
+        members: [{ id: 'u-admin', email: 'admin@example.com', roles: ['group_manager'] }],
+      },
+    );
+
+    expect(allowed).toBe(true);
+  });
 });

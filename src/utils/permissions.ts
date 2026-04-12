@@ -48,6 +48,39 @@ function normalizeRole(role: string | undefined): string {
   return (role || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
 }
 
+function hasEntries<T>(value: T[] | undefined): value is T[] {
+  return Array.isArray(value) && value.length > 0;
+}
+
+export function withResolvedGroupPermissions(
+  group: Group | null | undefined,
+  fallbacks: Array<Group | null | undefined>,
+): Group | null | undefined {
+  if (!group) {
+    return group;
+  }
+
+  const fallbackWithTrainers = fallbacks.find((candidate) => hasEntries(candidate?.trainers));
+  const fallbackWithMembers = fallbacks.find((candidate) => hasEntries(candidate?.members));
+
+  const trainers = hasEntries(group.trainers)
+    ? group.trainers
+    : fallbackWithTrainers?.trainers ?? group.trainers;
+  const members = hasEntries(group.members)
+    ? group.members
+    : fallbackWithMembers?.members ?? group.members;
+
+  if (trainers === group.trainers && members === group.members) {
+    return group;
+  }
+
+  return {
+    ...group,
+    trainers,
+    members,
+  };
+}
+
 function getTrainerMatches(
   user: User,
   trainers: Array<Pick<Trainer, 'id' | 'email'>>,

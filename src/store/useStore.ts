@@ -20,7 +20,7 @@ import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as upda
 import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
 import { authService } from '../services/authService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
-import { canAccessRestrictedManagement } from '../utils/permissions';
+import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
 
 // Helper function to sort players alphabetically by lastName + firstName
 const sortPlayers = (players: Player[]): Player[] => {
@@ -98,6 +98,26 @@ function dedupeGuardians(guardians: import('../types').Guardian[]): import('../t
 
 function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: string): boolean {
   return guardian.id === guardianId || guardian.userId === guardianId;
+}
+
+function mergeGroupMember(group: Group | null, member: Player | Trainer | null): Group | null {
+  if (!group || !member) {
+    return group;
+  }
+
+  const nextMember = {
+    id: member.id,
+    email: 'email' in member ? member.email : undefined,
+    roles: member.roles || [],
+  };
+
+  return {
+    ...group,
+    members: [
+      ...(group.members || []).filter((existingMember) => existingMember.id !== member.id),
+      nextMember,
+    ],
+  };
 }
 
 const PLAYER_DELETE_ROLE_CONSTRAINT = 'PLAYER_DELETE_ROLE_CONSTRAINT';
@@ -336,9 +356,10 @@ export const useStore = create<AppState>()(
             if (result.status === 'fulfilled') {
               const { type } = result.value;
               if (type === 'group') {
+                const resolvedGroup = withResolvedGroupPermissions(result.value.data, [get().group, newState.group]) || result.value.data;
                 newState.group = {
-                  ...result.value.data,
-                  periods: sortPeriods(result.value.data.periods ?? []),
+                  ...resolvedGroup,
+                  periods: sortPeriods(resolvedGroup?.periods ?? []),
                 };
               } else if (type === 'members') {
                 const membersData = result.value.data as { players: Player[], trainers: Trainer[] };
@@ -363,6 +384,15 @@ export const useStore = create<AppState>()(
               }
             }
           });
+
+          if (currentUser && newState.group) {
+            try {
+              const currentUserMember = await getMemberByIdService(newState.group.id, currentUser.id);
+              newState.group = mergeGroupMember(newState.group, currentUserMember);
+            } catch (error) {
+              console.warn('Failed to load current user member for permissions:', error);
+            }
+          }
 
           const shouldLoadShirtSets = canAccessRestrictedManagement(currentUser, {
             group: newState.group,
@@ -486,9 +516,11 @@ export const useStore = create<AppState>()(
         const savedPeriodId = getSelectedStatisticsPeriodId();
         const isValidSavedPeriod = savedPeriodId && sortedPeriods.some((period) => period.id === savedPeriodId);
         
+        const resolvedGroup = withResolvedGroupPermissions(group, [selectedGroup, get().group]) || group;
+
         set({
           group: {
-            ...group,
+            ...resolvedGroup,
             periods: sortedPeriods,
           },
           selectedStatisticsPeriodId: isValidSavedPeriod ? savedPeriodId : null,

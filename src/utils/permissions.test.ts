@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessRestrictedManagement } from './permissions';
+import { canAccessRestrictedManagement, withResolvedGroupPermissions } from './permissions';
 
 describe('permissions utils', () => {
   it('allows access for admin role on current group', () => {
@@ -167,5 +167,47 @@ describe('permissions utils', () => {
     );
 
     expect(allowed).toBe(false);
+  });
+
+  it('preserves member roles from fallback group data when the fresh payload omits members', () => {
+    const resolved = withResolvedGroupPermissions(
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+      },
+      [
+        {
+          id: 'group-1',
+          name: 'Group',
+          periods: [],
+          members: [{ id: 'u10', email: 'member-admin@example.com', roles: ['admin'] }],
+        },
+      ],
+    );
+
+    expect(resolved?.members).toEqual([
+      { id: 'u10', email: 'member-admin@example.com', roles: ['admin'] },
+    ]);
+  });
+
+  it('preserves trainers from fallback group data when the fresh payload omits trainers', () => {
+    const resolved = withResolvedGroupPermissions(
+      {
+        id: 'group-1',
+        name: 'Group',
+        periods: [],
+      },
+      [
+        {
+          id: 'group-1',
+          name: 'Group',
+          periods: [],
+          trainers: [{ id: 'u2', email: 'trainer@example.com' }],
+        },
+      ],
+    );
+
+    expect(resolved?.trainers).toEqual([{ id: 'u2', email: 'trainer@example.com' }]);
   });
 });

@@ -53,8 +53,8 @@ export default function MembersPage() {
   );
 
   const isAdmin = useMemo(() => {
-    return canManageGuardians(user, group);
-  }, [user, group]);
+    return canManageGuardians(user, group, trainers);
+  }, [user, group, trainers]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {

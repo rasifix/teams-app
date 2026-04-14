@@ -38,9 +38,16 @@ export default function PlayerEventHistory({
                 <h5 className="font-semibold text-gray-900 truncate" title={item.eventName}>{item.eventName}</h5>
                 <div className="mt-2">
                   {item.isSelected ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {t('statistics.playerTable.selected')}
-                    </span>
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {t('statistics.playerTable.selected')}
+                      </span>
+                      <p className="text-xs text-gray-600">
+                        {t('playerDetail.assignedTeam', {
+                          teamName: item.teamName || t('team.unknownTeam'),
+                        })}
+                      </p>
+                    </div>
                   ) : (
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${invitationStatusMeta[item.invitationStatus].badgeClassName}`}>
                       {t(`invitationStatus.${item.invitationStatus}`)}

@@ -628,6 +628,7 @@
       "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted."
     },
     "preferredShirtNumber": "Preferred #{{number}}",
+    "assignedTeam": "Assigned to team {{teamName}}",
     "eventsWithoutInvitation": "Events without Invitation",
     "guardians": {
       "title": "Guardians ({{count}})",

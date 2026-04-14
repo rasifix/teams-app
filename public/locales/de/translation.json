@@ -628,6 +628,7 @@
       "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden."
     },
     "preferredShirtNumber": "Bevorzugt #{{number}}",
+    "assignedTeam": "Zugeteilt zu Team {{teamName}}",
     "eventsWithoutInvitation": "Termine ohne Einladung",
     "guardians": {
       "title": "Erziehungsberechtigte ({{count}})",

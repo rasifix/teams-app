@@ -11,6 +11,9 @@ export interface MembersResponse {
   trainers: Trainer[];
 }
 
+type Member = Player | Trainer;
+type MembersApiResponse = MembersResponse | Member[];
+
 const normalizePlayer = (player: Player): Player => ({
   ...player,
   status: player.status || 'active',
@@ -21,6 +24,47 @@ const normalizeTrainer = (trainer: Trainer): Trainer => ({
   ...trainer,
   roles: trainer.roles || [],
 });
+
+const isMembersResponse = (response: MembersApiResponse): response is MembersResponse => !Array.isArray(response);
+
+const isPlayerMember = (member: Member): member is Player => {
+  if (member.roles?.includes('player')) {
+    return true;
+  }
+
+  return 'birthYear' in member || 'level' in member || 'status' in member;
+};
+
+const isTrainerMember = (member: Member): member is Trainer => {
+  if (member.roles?.includes('trainer')) {
+    return true;
+  }
+
+  return !isPlayerMember(member) && (!member.roles || member.roles.length === 0);
+};
+
+const normalizeMembersResponse = (response: MembersApiResponse): MembersResponse => {
+  if (isMembersResponse(response)) {
+    return {
+      ...response,
+      players: response.players.map(normalizePlayer),
+      trainers: response.trainers.map(normalizeTrainer),
+    };
+  }
+
+  return response.reduce<MembersResponse>(
+    (members, member) => {
+      if (isPlayerMember(member)) {
+        members.players.push(normalizePlayer(member));
+      } else if (isTrainerMember(member)) {
+        members.trainers.push(normalizeTrainer(member));
+      }
+
+      return members;
+    },
+    { players: [], trainers: [] },
+  );
+};
 
 export interface MemberUpsertPayload {
   firstName: string;
@@ -95,24 +139,18 @@ export async function revokeMemberRole(
 
 // Get all members (players and trainers) in one call
 export async function getAllMembers(groupId: string): Promise<MembersResponse> {
-  const response = await apiClient.request<MembersResponse>(
+  const response = await apiClient.request<MembersApiResponse>(
     apiClient.getGroupEndpoint(groupId, '/members')
   );
 
-  return {
-    ...response,
-    players: response.players.map(normalizePlayer),
-    trainers: response.trainers.map(normalizeTrainer),
-  };
+  return normalizeMembersResponse(response);
 }
 
 // Player-specific operations
 export async function getPlayers(groupId: string): Promise<Player[]> {
-  const players = await apiClient.request<Player[]>(
-    apiClient.getGroupEndpoint(groupId, '/members?role=player')
-  );
+  const members = await getAllMembers(groupId);
 
-  return players.map(normalizePlayer);
+  return members.players;
 }
 
 export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>): Promise<Player> {
@@ -198,11 +236,9 @@ export async function deleteGuardianFromPlayer(groupId: string, playerId: string
 
 // Trainer-specific operations
 export async function getTrainers(groupId: string): Promise<Trainer[]> {
-  const trainers = await apiClient.request<Trainer[]>(
-    apiClient.getGroupEndpoint(groupId, '/members?role=trainer')
-  );
+  const members = await getAllMembers(groupId);
 
-  return trainers.map(normalizeTrainer);
+  return members.trainers;
 }
 
 export async function addTrainer(groupId: string, trainerData: Omit<Trainer, 'id'>): Promise<Trainer> {

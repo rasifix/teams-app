@@ -111,4 +111,23 @@ describe('useStore selectors', () => {
     expect(entry.startTime).toBe('09:00');
     expect(entry.location).toBe('Main Stadium');
   });
+
+  it('returns history for any assigned member id including guardian assignees', () => {
+    useStore.setState({
+      events: [
+        createEvent({
+          id: 'e-guardian',
+          name: 'Guardian Led Event',
+          date: '2026-06-01',
+          teams: [createTeam({ id: 'tg-1', trainerId: 'g-42', name: 'Guardians', strength: 2 })],
+        }),
+      ],
+    });
+
+    const history = useStore.getState().getTrainerEventHistory('g-42');
+
+    expect(history).toHaveLength(1);
+    expect(history[0].eventId).toBe('e-guardian');
+    expect(history[0].teamName).toBe('Guardians');
+  });
 });

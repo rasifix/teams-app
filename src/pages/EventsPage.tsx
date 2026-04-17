@@ -8,7 +8,7 @@ import AddEventModal from '../components/AddEventModal';
 import type { Team } from '../types';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
-import { selectTeamTrainerAssigneeMap } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeMap } from '../store/selectors/teamTrainerSelectors';
 
 export default function EventsPage() {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export default function EventsPage() {
   const players = useStore((state) => state.players);
   const trainers = useTrainers();
   const trainerAssignees = useMemo(
-    () => selectTeamTrainerAssigneeMap(trainers, players),
+    () => selectTeamAssigneeMap(trainers, players),
     [trainers, players]
   );
   const [isModalOpen, setIsModalOpen] = useState(false);

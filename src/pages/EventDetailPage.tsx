@@ -15,7 +15,7 @@ import Strength from '../components/Strength';
 import { formatDate } from '../utils/dateFormatter';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
-import { selectTeamTrainerAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
 
 export default function EventDetailPage() {
   const { t } = useTranslation();
@@ -588,7 +588,7 @@ export default function EventDetailPage() {
               <div className="block lg:hidden">
                 {event.teams.map(team => {
                   const playerCount = team.selectedPlayers?.length || 0;
-                  const trainerAssignee = selectTeamTrainerAssigneeById(team.trainerId, trainers, players);
+                  const trainerAssignee = selectTeamAssigneeById(team.trainerId, trainers, players);
                   
                   return (
                     <div

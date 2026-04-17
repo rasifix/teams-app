@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import Strength from './Strength';
 import { DateColumn } from './ui';
-import type { TeamTrainerAssignee } from '../store/selectors/teamTrainerSelectors';
+import type { TeamAssignee } from '../store/selectors/teamTrainerSelectors';
 
 interface EventCardProps {
   event: Event;
-  trainerAssignees?: Map<string, TeamTrainerAssignee>;
+  trainerAssignees?: Map<string, TeamAssignee>;
   onClick?: (eventId: string) => void;
 }
 

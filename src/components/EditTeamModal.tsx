@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
 import { usePlayers, useTrainers } from '../store';
-import { selectTeamTrainerOptions } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 
 interface EditTeamModalProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export default function EditTeamModal({
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const trainerOptions = useMemo(
-    () => selectTeamTrainerOptions(trainers, players),
+    () => selectTeamAssigneeOptions(trainers, players),
     [trainers, players]
   );
 

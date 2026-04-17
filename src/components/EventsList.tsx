@@ -1,11 +1,11 @@
 import type { Event } from '../types';
 import { useTranslation } from 'react-i18next';
 import EventCard from './EventCard';
-import type { TeamTrainerAssignee } from '../store/selectors/teamTrainerSelectors';
+import type { TeamAssignee } from '../store/selectors/teamTrainerSelectors';
 
 interface EventsListProps {
   events: Event[];
-  trainerAssignees?: Map<string, TeamTrainerAssignee>;
+  trainerAssignees?: Map<string, TeamAssignee>;
   onEventClick?: (eventId: string) => void;
 }
 

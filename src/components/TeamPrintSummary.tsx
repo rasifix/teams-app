@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/dateFormatter';
 import type { Event, Team, Player, Trainer, ShirtSet } from '../types';
+import { selectTeamAssigneeMap } from '../store/selectors/teamTrainerSelectors';
 
 interface TeamPrintSummaryProps {
   event: Event;
@@ -27,6 +28,10 @@ export default function TeamPrintSummary({
 }: TeamPrintSummaryProps) {
   const { t } = useTranslation();
   const [format, setFormat] = useState<PrintFormat>('selection');
+  const assigneesById = useMemo(
+    () => selectTeamAssigneeMap(trainers, players),
+    [trainers, players]
+  );
   
   if (!isOpen) return null;
 
@@ -105,7 +110,7 @@ export default function TeamPrintSummary({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
-              const trainer = team.trainerId ? trainers.find(t => t.id === team.trainerId) : null;
+              const assignee = team.trainerId ? assigneesById.get(team.trainerId) : undefined;
               const playersData = selectedPlayers
                 .map(playerId => players.find(p => p.id === playerId))
                 .filter(Boolean)
@@ -128,8 +133,8 @@ export default function TeamPrintSummary({
                       {event.location && format === 'selection' && (
                         <p>📍 {event.location}</p>
                       )}
-                      {trainer && (
-                        <p className="text-blue-600 font-medium">👤 {trainer.firstName} {trainer.lastName}</p>
+                      {assignee && (
+                        <p className="text-blue-600 font-medium">👤 {assignee.firstName} {assignee.lastName}</p>
                       )}
                     </div>
                   </div>

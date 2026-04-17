@@ -4,7 +4,7 @@ import { getPlayerStats } from '../utils/playerStats';
 import type { Team, Player, Trainer, ShirtSet, Event } from '../types';
 import Level from './Level';
 import Strength from './Strength';
-import { selectTeamTrainerAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
 
 interface TeamCardProps {
   team: Team;
@@ -59,7 +59,7 @@ export default function TeamCard({
         return sum + (player?.level || 0);
       }, 0) / selectedPlayers.length
     : 0;
-  const trainerAssignee = selectTeamTrainerAssigneeById(team.trainerId, trainers, players);
+  const trainerAssignee = selectTeamAssigneeById(team.trainerId, trainers, players);
   const shirtSet = team.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const displayLocation = team.location || eventLocation;
 

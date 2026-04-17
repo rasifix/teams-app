@@ -9,7 +9,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
-import { selectTeamTrainerAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -30,7 +30,7 @@ export default function TeamDetailPage() {
   const team = event?.teams.find(t => t.id === teamId);
   
   const trainerAssignee = team
-    ? selectTeamTrainerAssigneeById(team.trainerId, trainers, players)
+    ? selectTeamAssigneeById(team.trainerId, trainers, players)
     : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = players.filter(p => team?.selectedPlayers?.includes(p.id));

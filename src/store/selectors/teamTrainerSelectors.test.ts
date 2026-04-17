@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Trainer } from '../../types';
-import { selectTeamTrainerAssigneeById, selectTeamTrainerAssigneeMap, selectTeamTrainerOptions } from './teamTrainerSelectors';
+import { selectTeamAssigneeById, selectTeamAssigneeMap, selectTeamAssigneeOptions } from './teamTrainerSelectors';
 
 function trainer(overrides: Partial<Trainer>): Trainer {
   return {
@@ -25,7 +25,7 @@ function player(overrides: Partial<Player>): Player {
   };
 }
 
-describe('team trainer selectors', () => {
+describe('team assignee selectors', () => {
   it('returns trainers and guardians sorted by name', () => {
     const trainers = [
       trainer({ id: 't-2', firstName: 'Zed', lastName: 'Trainer' }),
@@ -42,16 +42,16 @@ describe('team trainer selectors', () => {
       }),
     ];
 
-    const result = selectTeamTrainerOptions(trainers, players);
+    const result = selectTeamAssigneeOptions(trainers, players);
 
     expect(result.map((entry) => entry.id)).toEqual(['g-2', 't-1', 'g-1', 't-2']);
     expect(result.find((entry) => entry.id === 'g-2')?.source).toBe('guardian');
     expect(result.find((entry) => entry.id === 't-1')?.source).toBe('trainer');
   });
 
-  it('deduplicates guardians across players and keeps trainer precedence by id', () => {
+  it('deduplicates guardians across players with unique member ids', () => {
     const trainers = [
-      trainer({ id: 'shared-id', firstName: 'Sam', lastName: 'Trainer' }),
+      trainer({ id: 't-1', firstName: 'Sam', lastName: 'Trainer' }),
     ];
 
     const players = [
@@ -59,7 +59,7 @@ describe('team trainer selectors', () => {
         id: 'p-1',
         guardians: [
           { id: 'g-1', firstName: 'Robin', lastName: 'Guardian' },
-          { id: 'shared-id', firstName: 'Should', lastName: 'BeIgnored' },
+          { id: 'g-2', firstName: 'Chris', lastName: 'Guardian' },
         ],
       }),
       player({
@@ -70,10 +70,10 @@ describe('team trainer selectors', () => {
       }),
     ];
 
-    const result = selectTeamTrainerOptions(trainers, players);
+    const result = selectTeamAssigneeOptions(trainers, players);
 
     expect(result.filter((entry) => entry.id === 'g-1')).toHaveLength(1);
-    expect(result.find((entry) => entry.id === 'shared-id')).toMatchObject({
+    expect(result.find((entry) => entry.id === 't-1')).toMatchObject({
       firstName: 'Sam',
       lastName: 'Trainer',
       source: 'trainer',
@@ -88,38 +88,39 @@ describe('team trainer selectors', () => {
       }),
     ];
 
-    const trainerAssignee = selectTeamTrainerAssigneeById('t-1', trainers, players);
-    const guardianAssignee = selectTeamTrainerAssigneeById('g-1', trainers, players);
-    const missingAssignee = selectTeamTrainerAssigneeById('missing', trainers, players);
+    const trainerAssignee = selectTeamAssigneeById('t-1', trainers, players);
+    const guardianAssignee = selectTeamAssigneeById('g-1', trainers, players);
+    const missingAssignee = selectTeamAssigneeById('missing', trainers, players);
 
     expect(trainerAssignee).toMatchObject({ id: 't-1', source: 'trainer' });
     expect(guardianAssignee).toMatchObject({ id: 'g-1', source: 'guardian' });
     expect(missingAssignee).toBeNull();
   });
 
-  describe('selectTeamTrainerAssigneeMap', () => {
+  describe('selectTeamAssigneeMap', () => {
     it('returns a map with trainers and guardians', () => {
       const trainers = [trainer({ id: 't-1', firstName: 'Alex', lastName: 'Coach' })];
       const players = [
         player({ guardians: [{ id: 'g-1', firstName: 'Lia', lastName: 'Parent' }] }),
       ];
 
-      const map = selectTeamTrainerAssigneeMap(trainers, players);
+      const map = selectTeamAssigneeMap(trainers, players);
 
       expect(map.get('t-1')).toMatchObject({ id: 't-1', source: 'trainer' });
       expect(map.get('g-1')).toMatchObject({ id: 'g-1', source: 'guardian' });
       expect(map.get('missing')).toBeUndefined();
     });
 
-    it('trainers take precedence over guardians with the same id', () => {
-      const trainers = [trainer({ id: 'shared', firstName: 'Sam', lastName: 'Trainer' })];
+    it('resolves distinct trainer and guardian ids from the same map', () => {
+      const trainers = [trainer({ id: 't-2', firstName: 'Sam', lastName: 'Trainer' })];
       const players = [
-        player({ guardians: [{ id: 'shared', firstName: 'Should', lastName: 'BeIgnored' }] }),
+        player({ guardians: [{ id: 'g-2', firstName: 'Lia', lastName: 'Parent' }] }),
       ];
 
-      const map = selectTeamTrainerAssigneeMap(trainers, players);
+      const map = selectTeamAssigneeMap(trainers, players);
 
-      expect(map.get('shared')).toMatchObject({ source: 'trainer', firstName: 'Sam' });
+      expect(map.get('t-2')).toMatchObject({ source: 'trainer', firstName: 'Sam' });
+      expect(map.get('g-2')).toMatchObject({ source: 'guardian', firstName: 'Lia' });
     });
 
     it('deduplicates guardians appearing across multiple players', () => {
@@ -129,13 +130,13 @@ describe('team trainer selectors', () => {
         player({ id: 'p-2', guardians: [{ id: 'g-1', firstName: 'Robin', lastName: 'G' }] }),
       ];
 
-      const map = selectTeamTrainerAssigneeMap(trainers, players);
+      const map = selectTeamAssigneeMap(trainers, players);
 
       expect(map.size).toBe(1);
     });
 
     it('returns empty map when no trainers or players', () => {
-      const map = selectTeamTrainerAssigneeMap([], []);
+      const map = selectTeamAssigneeMap([], []);
       expect(map.size).toBe(0);
     });
   });

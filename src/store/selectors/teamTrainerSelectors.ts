@@ -1,19 +1,19 @@
 import type { Guardian, Player, Trainer } from '../../types';
 
-export type TeamTrainerSource = 'trainer' | 'guardian';
+export type TeamAssigneeSource = 'trainer' | 'guardian';
 
-export interface TeamTrainerAssignee {
+export interface TeamAssignee {
   id: string;
   firstName: string;
   lastName: string;
-  source: TeamTrainerSource;
+  source: TeamAssigneeSource;
 }
 
 function toComparableName(value: string | undefined): string {
   return (value || '').trim().toLowerCase();
 }
 
-function compareByName(left: Pick<TeamTrainerAssignee, 'firstName' | 'lastName'>, right: Pick<TeamTrainerAssignee, 'firstName' | 'lastName'>): number {
+function compareByName(left: Pick<TeamAssignee, 'firstName' | 'lastName'>, right: Pick<TeamAssignee, 'firstName' | 'lastName'>): number {
   const lastNameCompare = toComparableName(left.lastName)
     .localeCompare(toComparableName(right.lastName));
   if (lastNameCompare !== 0) {
@@ -24,7 +24,7 @@ function compareByName(left: Pick<TeamTrainerAssignee, 'firstName' | 'lastName'>
     .localeCompare(toComparableName(right.firstName));
 }
 
-function createGuardianAssignee(guardian: Guardian): TeamTrainerAssignee {
+function createGuardianAssignee(guardian: Guardian): TeamAssignee {
   return {
     id: guardian.id,
     firstName: guardian.firstName,
@@ -33,17 +33,16 @@ function createGuardianAssignee(guardian: Guardian): TeamTrainerAssignee {
   };
 }
 
-export function selectTeamTrainerOptions(trainers: Trainer[], players: Player[]): TeamTrainerAssignee[] {
-  const trainerAssignees = trainers.map((trainer) => ({
-    id: trainer.id,
-    firstName: trainer.firstName,
-    lastName: trainer.lastName,
-    source: 'trainer' as const,
-  }));
+function buildAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamAssignee> {
+  const assigneesById = new Map<string, TeamAssignee>();
 
-  const assigneesById = new Map<string, TeamTrainerAssignee>();
-  trainerAssignees.forEach((trainer) => {
-    assigneesById.set(trainer.id, trainer);
+  trainers.forEach((trainer) => {
+    assigneesById.set(trainer.id, {
+      id: trainer.id,
+      firstName: trainer.firstName,
+      lastName: trainer.lastName,
+      source: 'trainer',
+    });
   });
 
   players.forEach((player) => {
@@ -54,52 +53,33 @@ export function selectTeamTrainerOptions(trainers: Trainer[], players: Player[])
     });
   });
 
-  return Array.from(assigneesById.values()).sort(compareByName);
+  return assigneesById;
 }
 
-export function selectTeamTrainerAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamTrainerAssignee> {
-  const map = new Map<string, TeamTrainerAssignee>();
-
-  for (const t of trainers) {
-    map.set(t.id, { id: t.id, firstName: t.firstName, lastName: t.lastName, source: 'trainer' });
-  }
-
-  for (const player of players) {
-    for (const guardian of player.guardians || []) {
-      if (!map.has(guardian.id)) {
-        map.set(guardian.id, createGuardianAssignee(guardian));
-      }
-    }
-  }
-
-  return map;
+export function selectTeamAssigneeOptions(trainers: Trainer[], players: Player[]): TeamAssignee[] {
+  return Array.from(buildAssigneeMap(trainers, players).values()).sort(compareByName);
 }
 
-export function selectTeamTrainerAssigneeById(
-  trainerId: string | undefined,
+export function selectTeamAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamAssignee> {
+  return buildAssigneeMap(trainers, players);
+}
+
+export function selectTeamAssigneeById(
+  assigneeId: string | undefined,
   trainers: Trainer[],
   players: Player[]
-): TeamTrainerAssignee | null {
-  if (!trainerId) {
+): TeamAssignee | null {
+  if (!assigneeId) {
     return null;
   }
 
-  const matchingTrainer = trainers.find((trainer) => trainer.id === trainerId);
-  if (matchingTrainer) {
-    return {
-      id: matchingTrainer.id,
-      firstName: matchingTrainer.firstName,
-      lastName: matchingTrainer.lastName,
-      source: 'trainer',
-    };
-  }
-
-  for (const player of players) {
-    const matchingGuardian = (player.guardians || []).find((guardian) => guardian.id === trainerId);
-    if (matchingGuardian) {
-      return createGuardianAssignee(matchingGuardian);
-    }
-  }
-
-  return null;
+  return selectTeamAssigneeMap(trainers, players).get(assigneeId) || null;
 }
+
+// Backward-compatible aliases; keep temporarily during migration.
+export type TeamTrainerSource = TeamAssigneeSource;
+export type TeamTrainerAssignee = TeamAssignee;
+
+export const selectTeamTrainerOptions = selectTeamAssigneeOptions;
+export const selectTeamTrainerAssigneeMap = selectTeamAssigneeMap;
+export const selectTeamTrainerAssigneeById = selectTeamAssigneeById;

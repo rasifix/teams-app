@@ -65,7 +65,7 @@ export interface Team {
   startTime: string; // HH:MM format - each team can have different start times
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
-  trainerId?: string; // Trainer ID assigned to this team
+  trainerId?: string; // Assigned team lead member ID (trainer or guardian)
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
 }

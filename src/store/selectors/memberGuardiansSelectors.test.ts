@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player } from '../../types';
-import { selectMemberGuardians } from './memberGuardiansSelectors';
+import { selectMemberGuardians, selectUniqueMemberGuardians } from './memberGuardiansSelectors';
 
 function player(overrides: Partial<Player>): Player {
   return {
@@ -81,5 +81,37 @@ describe('member guardians selectors', () => {
       'Meier,Anna:Bauer',
       'Meier,Anna:Zimmer',
     ]);
+  });
+
+  it('returns one card per guardian with linked players', () => {
+    const players = [
+      player({
+        id: 'p-1',
+        firstName: 'Luca',
+        lastName: 'Bauer',
+        guardians: [
+          { id: 'g-1', userId: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
+        ],
+      }),
+      player({
+        id: 'p-2',
+        firstName: 'Nora',
+        lastName: 'Zimmer',
+        guardians: [
+          { id: 'g-2', userId: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
+          { id: 'g-3', firstName: 'Ben', lastName: 'Aebi', email: 'ben@example.com' },
+        ],
+      }),
+    ];
+
+    const result = selectUniqueMemberGuardians(players);
+
+    expect(result).toHaveLength(2);
+    expect(result[0].guardian.lastName).toBe('Aebi');
+    expect(result[0].playerRefs).toHaveLength(1);
+
+    const anna = result.find((entry) => (entry.guardian.userId || entry.guardian.id) === 'm-1');
+    expect(anna).toBeDefined();
+    expect(anna?.playerRefs.map((entry) => entry.playerId)).toEqual(['p-1', 'p-2']);
   });
 });

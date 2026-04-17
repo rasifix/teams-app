@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { useStore } from './useStore';
+import { selectPlayersFromMembers, selectTrainersFromMembers } from './selectors/memberSelectors';
 
 // Re-export store hooks for easier imports
 export { 
@@ -19,7 +21,8 @@ export {
 
 // Hook specifically for players data and related selectors
 export const usePlayers = () => {
-  const players = useStore((state) => state.players);
+  const members = useStore((state) => state.members);
+  const players = useMemo(() => selectPlayersFromMembers(members), [members]);
   const getPlayerById = useStore((state) => state.getPlayerById);
   const getPlayerStats = useStore((state) => state.getPlayerStats);
   const addPlayer = useStore((state) => state.addPlayer);
@@ -28,6 +31,7 @@ export const usePlayers = () => {
   const addGuardianToPlayer = useStore((state) => state.addGuardianToPlayer);
   const deleteGuardianFromPlayer = useStore((state) => state.deleteGuardianFromPlayer);
   const editGuardianForPlayer = useStore((state) => state.editGuardianForPlayer);
+  const mergeGuardianDuplicates = useStore((state) => state.mergeGuardianDuplicates);
   
   return {
     players,
@@ -39,6 +43,7 @@ export const usePlayers = () => {
     addGuardianToPlayer,
     deleteGuardianFromPlayer,
     editGuardianForPlayer,
+    mergeGuardianDuplicates,
   };
 };
 
@@ -63,7 +68,8 @@ export const useEvents = () => {
 
 // Hook specifically for trainers data
 export const useTrainers = () => {
-  const trainers = useStore((state) => state.trainers);
+  const members = useStore((state) => state.members);
+  const trainers = useMemo(() => selectTrainersFromMembers(members), [members]);
   const getTrainerById = useStore((state) => state.getTrainerById);
   const getTrainerEventHistory = useStore((state) => state.getTrainerEventHistory);
   const addTrainer = useStore((state) => state.addTrainer);

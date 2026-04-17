@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { getAllMembers, getPlayers, getTrainers } from './memberService';
+import { getAllMembers, getTrainers } from './memberService';
 
 describe('memberService', () => {
   afterEach(() => {
@@ -118,39 +118,4 @@ describe('memberService', () => {
     ]);
   });
 
-  it('loads players from the full members endpoint and filters flat member payloads', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue([
-      {
-        id: 'player-1',
-        firstName: 'Pat',
-        lastName: 'Player',
-        birthYear: 2014,
-        level: 3,
-        status: 'active',
-        roles: ['player'],
-      },
-      {
-        id: 'trainer-1',
-        firstName: 'Terry',
-        lastName: 'Trainer',
-        email: 'trainer@example.com',
-        roles: ['trainer'],
-      },
-    ]);
-
-    const players = await getPlayers('group-1');
-
-    expect(requestSpy).toHaveBeenCalledWith('/api/groups/group-1/members');
-    expect(players).toEqual([
-      {
-        id: 'player-1',
-        firstName: 'Pat',
-        lastName: 'Player',
-        birthYear: 2014,
-        level: 3,
-        status: 'active',
-        roles: ['player'],
-      },
-    ]);
-  });
 });

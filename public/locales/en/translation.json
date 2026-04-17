@@ -316,11 +316,22 @@
     "guardians": {
       "playerPrefix": "Player:",
       "noEmail": "No email",
+      "tableGuardian": "Guardian",
+      "tableEmail": "Email",
+      "tablePlayers": "Players",
+      "tableActions": "Actions",
       "openPlayerAction": "Open player",
       "assignTrainerRole": "Make trainer",
       "assigningTrainerRole": "Assigning...",
       "alreadyTrainerRole": "Trainer",
       "assignTrainerRoleFailed": "Failed to assign trainer role. Please try again."
+    },
+    "guardianDuplicates": {
+      "detected": "Duplicate guardians detected: {{count}}",
+      "groupMeta": "{{guardianCount}} guardian entries across {{playerCount}} players",
+      "resolveAction": "Resolve duplicates",
+      "resolving": "Resolving...",
+      "resolveFailed": "Failed to resolve guardian duplicates. Please try again."
     },
     "duplicates": {
       "openAction": "Resolve duplicates ({{count}})",
@@ -598,6 +609,7 @@
     "assignTitle": "Assign Guardian",
     "editTitle": "Edit Guardian",
     "existingUser": "Existing user",
+    "newGuardian": "New guardian",
     "documentedOnly": "Documented only",
     "selectUser": "Select user",
     "noAvailableUsers": "No available existing users to assign.",
@@ -606,7 +618,7 @@
     "placeholderLastName": "Enter last name",
     "emailOptional": "Email (optional)",
     "placeholderEmail": "guardian@example.com",
-    "documentedHint": "Documented-only guardians are contacts only and cannot log in.",
+    "documentedHint": "New guardians are created as group members and can be linked to multiple children.",
     "assignAction": "Assign",
     "errors": {
       "selectExistingUser": "Please select an existing user to assign.",

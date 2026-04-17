@@ -316,11 +316,22 @@
     "guardians": {
       "playerPrefix": "Spieler:",
       "noEmail": "Keine E-Mail",
+      "tableGuardian": "Erziehungsberechtigte",
+      "tableEmail": "E-Mail",
+      "tablePlayers": "Spieler",
+      "tableActions": "Aktionen",
       "openPlayerAction": "Spieler öffnen",
       "assignTrainerRole": "Zum Trainer machen",
       "assigningTrainerRole": "Wird zugewiesen...",
       "alreadyTrainerRole": "Trainer",
       "assignTrainerRoleFailed": "Trainerrolle konnte nicht zugewiesen werden. Bitte versuche es erneut."
+    },
+    "guardianDuplicates": {
+      "detected": "Doppelte Erziehungsberechtigte gefunden: {{count}}",
+      "groupMeta": "{{guardianCount}} Einträge bei {{playerCount}} Spielern",
+      "resolveAction": "Duplikate bereinigen",
+      "resolving": "Bereinigt...",
+      "resolveFailed": "Duplikate konnten nicht bereinigt werden. Bitte versuche es erneut."
     },
     "duplicates": {
       "openAction": "Duplikate bereinigen ({{count}})",
@@ -598,6 +609,7 @@
     "assignTitle": "Erziehungsberechtigte Person zuweisen",
     "editTitle": "Erziehungsberechtigte Person bearbeiten",
     "existingUser": "Bestehender Benutzer",
+    "newGuardian": "Neue erziehungsberechtigte Person",
     "documentedOnly": "Nur dokumentiert",
     "selectUser": "Benutzer auswählen",
     "noAvailableUsers": "Keine verfügbaren bestehenden Benutzer zum Zuweisen.",
@@ -606,7 +618,7 @@
     "placeholderLastName": "Nachname eingeben",
     "emailOptional": "E-Mail (optional)",
     "placeholderEmail": "guardian@example.com",
-    "documentedHint": "Nur dokumentierte Erziehungsberechtigte sind reine Kontakte und können sich nicht anmelden.",
+    "documentedHint": "Neue erziehungsberechtigte Personen werden als Gruppenmitglieder angelegt und konnen mehreren Kindern zugeordnet werden.",
     "assignAction": "Zuweisen",
     "errors": {
       "selectExistingUser": "Bitte wähle einen bestehenden Benutzer aus.",

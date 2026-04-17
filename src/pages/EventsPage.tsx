@@ -9,12 +9,14 @@ import type { Team } from '../types';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
 import { selectTeamAssigneeMap } from '../store/selectors/teamTrainerSelectors';
+import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
 
 export default function EventsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { events, loading, error, addEvent } = useEvents();
-  const players = useStore((state) => state.players);
+  const members = useStore((state) => state.members);
+  const players = useMemo(() => selectPlayersFromMembers(members), [members]);
   const trainers = useTrainers();
   const trainerAssignees = useMemo(
     () => selectTeamAssigneeMap(trainers, players),

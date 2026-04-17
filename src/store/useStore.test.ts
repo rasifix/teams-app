@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Event, Team } from '../types';
+import type { Event, Team, Trainer } from '../types';
 import { useStore } from './useStore';
+import { mergeMembersFromCollections } from './selectors/memberSelectors';
 
 const baseState = useStore.getState();
 
@@ -28,6 +29,17 @@ function createEvent(overrides: Partial<Event>): Event {
   };
 }
 
+function createTrainer(overrides: Partial<Trainer>): Trainer {
+  return {
+    id: 'trainer-default',
+    firstName: 'Alex',
+    lastName: 'Coach',
+    email: 'alex@example.com',
+    roles: ['trainer'],
+    ...overrides,
+  };
+}
+
 describe('useStore selectors', () => {
   beforeEach(() => {
     useStore.setState(baseState, true);
@@ -35,6 +47,7 @@ describe('useStore selectors', () => {
 
   it('returns trainer event history sorted newest first', () => {
     useStore.setState({
+      members: mergeMembersFromCollections([], [createTrainer({ id: 'tr-1' }), createTrainer({ id: 'tr-2' })]),
       events: [
         createEvent({
           id: 'e1',
@@ -67,6 +80,7 @@ describe('useStore selectors', () => {
 
   it('uses team time and location when present', () => {
     useStore.setState({
+      members: mergeMembersFromCollections([], [createTrainer({ id: 'tr-1' })]),
       events: [
         createEvent({
           id: 'e1',
@@ -92,6 +106,7 @@ describe('useStore selectors', () => {
 
   it('falls back to earliest event time and event location when team values are missing', () => {
     useStore.setState({
+      members: mergeMembersFromCollections([], [createTrainer({ id: 'tr-1' }), createTrainer({ id: 'tr-2' }), createTrainer({ id: 'tr-3' })]),
       events: [
         createEvent({
           id: 'e1',
@@ -114,6 +129,7 @@ describe('useStore selectors', () => {
 
   it('returns history for any assigned member id including guardian assignees', () => {
     useStore.setState({
+      members: mergeMembersFromCollections([], [createTrainer({ id: 'g-42' })]),
       events: [
         createEvent({
           id: 'e-guardian',

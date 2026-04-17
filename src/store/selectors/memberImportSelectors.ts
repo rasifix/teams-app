@@ -54,6 +54,18 @@ export interface PlayerImportDiffResult {
   summary: PlayerImportDiffSummary;
 }
 
+export function selectVisiblePlayerImportRows(rows: PlayerImportDiffRow[]): PlayerImportDiffRow[] {
+  return rows.filter((row) => {
+    const isUnchangedExistingPlayer = Boolean(row.existingPlayerId)
+      && !row.createPlayer
+      && !row.fillBirthDate
+      && row.guardiansToAdd.length === 0
+      && row.issues.length === 0;
+
+    return !isUnchangedExistingPlayer;
+  });
+}
+
 export interface ImportDefaults {
   level: number;
   status: PlayerStatus;
@@ -72,30 +84,30 @@ function normalizeEmail(value: string | undefined): string {
   return (value ?? '').trim().toLowerCase();
 }
 
+function toGuardianIdentityKey(firstName: string | undefined, lastName: string | undefined, email: string | undefined): string {
+  return `${normalizeName(firstName || '')}::${normalizeName(lastName || '')}::${normalizeEmail(email)}`;
+}
+
+function hasCompleteGuardianIdentity(firstName: string | undefined, lastName: string | undefined, email: string | undefined): boolean {
+  return Boolean(normalizeName(firstName || ''))
+    && Boolean(normalizeName(lastName || ''))
+    && Boolean(normalizeEmail(email));
+}
+
 function hasDuplicateGuardianMatch(
   existingGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'userId' | 'id'>,
   candidateGuardian: PlannedGuardianImport
 ): boolean {
-  const existingUserId = (existingGuardian.userId || '').trim();
-  const candidateTrainerId = (candidateGuardian.trainerId || '').trim();
-  if (existingUserId && candidateTrainerId && existingUserId === candidateTrainerId) {
-    return true;
+  if (!hasCompleteGuardianIdentity(existingGuardian.firstName, existingGuardian.lastName, existingGuardian.email)) {
+    return false;
   }
 
-  const existingId = (existingGuardian.id || '').trim();
-  if (existingId && candidateTrainerId && existingId === candidateTrainerId) {
-    return true;
+  if (!hasCompleteGuardianIdentity(candidateGuardian.firstName, candidateGuardian.lastName, candidateGuardian.email)) {
+    return false;
   }
 
-  const existingEmail = normalizeEmail(existingGuardian.email);
-  const candidateEmail = normalizeEmail(candidateGuardian.email);
-  if (existingEmail && candidateEmail && existingEmail === candidateEmail) {
-    return true;
-  }
-
-  const existingName = `${normalizeName(existingGuardian.firstName)}::${normalizeName(existingGuardian.lastName)}`;
-  const candidateName = `${normalizeName(candidateGuardian.firstName)}::${normalizeName(candidateGuardian.lastName)}`;
-  return existingName === candidateName;
+  return toGuardianIdentityKey(existingGuardian.firstName, existingGuardian.lastName, existingGuardian.email)
+    === toGuardianIdentityKey(candidateGuardian.firstName, candidateGuardian.lastName, candidateGuardian.email);
 }
 
 function toComparableBirthDate(value: string | undefined): string {
@@ -131,11 +143,69 @@ function buildTrainerByEmailMap(trainers: Trainer[]): Map<string, Trainer> {
   return result;
 }
 
+interface ExistingGuardianMember {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+}
+
+interface ExistingGuardianLookup {
+  byIdentity: Map<string, ExistingGuardianMember>;
+}
+
+function buildExistingGuardianLookup(players: Player[], trainers: Trainer[]): ExistingGuardianLookup {
+  const byIdentity = new Map<string, ExistingGuardianMember>();
+
+  const addMember = (member: ExistingGuardianMember) => {
+    if (!hasCompleteGuardianIdentity(member.firstName, member.lastName, member.email)) {
+      return;
+    }
+
+    const identityKey = toGuardianIdentityKey(member.firstName, member.lastName, member.email);
+    const existing = byIdentity.get(identityKey);
+    if (!existing || Boolean(member.id)) {
+      byIdentity.set(identityKey, member);
+    }
+  };
+
+  trainers.forEach((trainer) => {
+    addMember({
+      id: trainer.id,
+      firstName: trainer.firstName,
+      lastName: trainer.lastName,
+      email: trainer.email,
+    });
+  });
+
+  players.forEach((player) => {
+    (player.guardians || []).forEach((guardian) => {
+      if (guardian.isDocumentedOnly && !guardian.userId) {
+        return;
+      }
+
+      const id = guardian.userId || guardian.id;
+      if (!id) {
+        return;
+      }
+
+      addMember({
+        id,
+        firstName: guardian.firstName,
+        lastName: guardian.lastName,
+        email: guardian.email,
+      });
+    });
+  });
+
+  return { byIdentity };
+}
+
 function createPlannedGuardian(
   rowId: string,
   guardian: ParsedGuardianImportCandidate,
   index: number,
-  trainerByEmail: Map<string, Trainer>
+  existingGuardianLookup: ExistingGuardianLookup
 ): PlannedGuardianImport | null {
   const firstName = guardian.firstName.trim();
   const lastName = guardian.lastName.trim();
@@ -145,15 +215,17 @@ function createPlannedGuardian(
   }
 
   const normalizedEmail = normalizeEmail(guardian.email);
-  const matchingTrainer = normalizedEmail ? trainerByEmail.get(normalizedEmail) : undefined;
+  const matchingGuardianMember = hasCompleteGuardianIdentity(firstName, lastName, normalizedEmail)
+    ? existingGuardianLookup.byIdentity.get(toGuardianIdentityKey(firstName, lastName, normalizedEmail))
+    : undefined;
 
-  if (matchingTrainer) {
+  if (matchingGuardianMember) {
     return {
-      id: `${rowId}:guardian:${index}:trainer:${matchingTrainer.id}`,
-      firstName: matchingTrainer.firstName,
-      lastName: matchingTrainer.lastName,
-      email: matchingTrainer.email,
-      trainerId: matchingTrainer.id,
+      id: `${rowId}:guardian:${index}:member:${matchingGuardianMember.id}`,
+      firstName: matchingGuardianMember.firstName,
+      lastName: matchingGuardianMember.lastName,
+      email: matchingGuardianMember.email,
+      trainerId: matchingGuardianMember.id,
     };
   }
 
@@ -194,15 +266,47 @@ function dedupePlannedGuardians(
   return deduped;
 }
 
+function dedupeGuardiansAcrossRows(rows: PlayerImportDiffRow[]): PlayerImportDiffRow[] {
+  const plannedByExistingPlayer = new Map<string, PlannedGuardianImport[]>();
+
+  return rows.map((row) => {
+    if (!row.existingPlayerId || row.guardiansToAdd.length === 0) {
+      return row;
+    }
+
+    const alreadyPlanned = plannedByExistingPlayer.get(row.existingPlayerId) || [];
+    const guardiansToAdd = row.guardiansToAdd.filter((guardian) => {
+      return !alreadyPlanned.some((plannedGuardian) => {
+        const plannedAsGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'userId' | 'id'> = {
+          id: plannedGuardian.trainerId || plannedGuardian.id,
+          userId: plannedGuardian.trainerId,
+          firstName: plannedGuardian.firstName,
+          lastName: plannedGuardian.lastName,
+          email: plannedGuardian.email,
+        };
+        return hasDuplicateGuardianMatch(plannedAsGuardian, guardian);
+      });
+    });
+
+    plannedByExistingPlayer.set(row.existingPlayerId, [...alreadyPlanned, ...guardiansToAdd]);
+
+    return {
+      ...row,
+      guardiansToAdd,
+      isActionable: guardiansToAdd.length > 0 || Boolean(row.fillBirthDate),
+    };
+  });
+}
+
 export function selectPlayerImportDiff(
   candidates: ParsedPlayerImportCandidate[],
   players: Player[],
   trainers: Trainer[],
   defaults: ImportDefaults = DEFAULT_IMPORT_DEFAULTS
 ): PlayerImportDiffResult {
-  const trainerByEmail = buildTrainerByEmailMap(trainers);
+  const existingGuardianLookup = buildExistingGuardianLookup(players, trainers);
 
-  const rows = candidates.map<PlayerImportDiffRow>((candidate) => {
+  const preliminaryRows = candidates.map<PlayerImportDiffRow>((candidate) => {
     const issues = [...candidate.issues];
     const candidateFirstName = candidate.firstName.trim();
     const candidateLastName = candidate.lastName.trim();
@@ -227,12 +331,14 @@ export function selectPlayerImportDiff(
       && normalizeName(player.lastName) === normalizeName(candidateLastName)
     ));
 
-    const matchingPlayers = candidateBirthDate
-      ? sameNamePlayers.filter((player) => {
-          const playerBirthDate = toComparableBirthDate(player.birthDate);
-          return !playerBirthDate || playerBirthDate === candidateBirthDate;
-        })
-      : sameNamePlayers;
+    const matchingPlayers = sameNamePlayers.length === 1
+      ? sameNamePlayers
+      : candidateBirthDate
+        ? sameNamePlayers.filter((player) => {
+            const playerBirthDate = toComparableBirthDate(player.birthDate);
+            return !playerBirthDate || playerBirthDate === candidateBirthDate;
+          })
+        : sameNamePlayers;
 
     if (matchingPlayers.length > 1) {
       issues.push('ambiguous-player-match');
@@ -250,7 +356,7 @@ export function selectPlayerImportDiff(
 
     const plannedGuardians = dedupePlannedGuardians(
       candidate.guardians
-        .map((guardian, index) => createPlannedGuardian(candidate.id, guardian, index, trainerByEmail))
+        .map((guardian, index) => createPlannedGuardian(candidate.id, guardian, index, existingGuardianLookup))
         .filter((guardian): guardian is PlannedGuardianImport => guardian !== null),
       matchingPlayers[0]?.guardians
     );
@@ -286,7 +392,9 @@ export function selectPlayerImportDiff(
 
     const existingPlayer = matchingPlayers[0];
     const existingBirthDate = toComparableBirthDate(existingPlayer.birthDate);
-    const fillBirthDate = !existingBirthDate && candidateBirthDate ? candidateBirthDate : undefined;
+    const fillBirthDate = candidateBirthDate && existingBirthDate !== candidateBirthDate
+      ? candidateBirthDate
+      : undefined;
 
     return {
       id: candidate.id,
@@ -301,6 +409,8 @@ export function selectPlayerImportDiff(
       isActionable: plannedGuardians.length > 0 || Boolean(fillBirthDate),
     };
   });
+
+  const rows = dedupeGuardiansAcrossRows(preliminaryRows);
 
   const summary: PlayerImportDiffSummary = {
     totalRows: rows.length,

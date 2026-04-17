@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
@@ -6,6 +6,7 @@ import AddGroupModal from '../components/AddGroupModal';
 import UpcomingEventCard from '../components/UpcomingEventCard';
 import { useGroup, useGroups, useGroupsError, useGroupsLoading, useStore } from '../store/useStore';
 import { selectUpcomingEventsWithGuardianInvitations } from '../store/selectors/homeSelectors';
+import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
 import type { CreateGroupRequest } from '../types';
 
 export default function HomePage() {
@@ -17,7 +18,8 @@ export default function HomePage() {
   const groupsLoading = useGroupsLoading();
   const groupsError = useGroupsError();
   const events = useStore((state) => state.events);
-  const players = useStore((state) => state.players);
+  const members = useStore((state) => state.members);
+  const players = useMemo(() => selectPlayersFromMembers(members), [members]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [switchingGroupId, setSwitchingGroupId] = useState<string | null>(null);

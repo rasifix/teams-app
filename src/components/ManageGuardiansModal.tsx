@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Guardian, Trainer } from '../types';
+import type { Guardian } from '../types';
+import type { ExistingGuardianUserOption } from '../store/selectors/guardianAssignmentSelectors';
 import { hasDuplicateGuardian } from '../utils/guardians';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import Button from './ui/Button';
@@ -9,7 +10,7 @@ interface ManageGuardiansModalProps {
   isOpen: boolean;
   onClose: () => void;
   guardians: Guardian[];
-  trainers: Trainer[];
+  existingUsers: ExistingGuardianUserOption[];
   onAssign: (guardian: Guardian) => Promise<boolean>;
   editingGuardian?: Guardian | null;
   onEdit?: (guardianId: string, guardianData: Pick<Guardian, 'firstName' | 'lastName' | 'email'>) => Promise<boolean>;
@@ -17,10 +18,10 @@ interface ManageGuardiansModalProps {
 
 type Mode = 'existing' | 'documented';
 
-export default function ManageGuardiansModal({ isOpen, onClose, guardians, trainers, onAssign, editingGuardian = null, onEdit }: ManageGuardiansModalProps) {
+export default function ManageGuardiansModal({ isOpen, onClose, guardians, existingUsers, onAssign, editingGuardian = null, onEdit }: ManageGuardiansModalProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('existing');
-  const [selectedTrainerId, setSelectedTrainerId] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [existingFirstName, setExistingFirstName] = useState('');
   const [existingLastName, setExistingLastName] = useState('');
   const [existingEmail, setExistingEmail] = useState('');
@@ -31,17 +32,17 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = Boolean(editingGuardian);
 
-  const availableTrainers = useMemo(() => {
+  const availableExistingUsers = useMemo(() => {
     const nonCurrentGuardians = guardians.filter((guardian) => guardian.id !== editingGuardian?.id);
-    return trainers.filter((trainer) => !hasDuplicateGuardian(nonCurrentGuardians, {
-      id: trainer.id,
-      userId: trainer.id,
-      firstName: trainer.firstName,
-      lastName: trainer.lastName,
-      email: trainer.email,
+    return existingUsers.filter((existingUser) => !hasDuplicateGuardian(nonCurrentGuardians, {
+      id: existingUser.id,
+      userId: existingUser.id,
+      firstName: existingUser.firstName,
+      lastName: existingUser.lastName,
+      email: existingUser.email,
       isDocumentedOnly: false,
     }));
-  }, [guardians, trainers, editingGuardian?.id]);
+  }, [guardians, existingUsers, editingGuardian?.id]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,7 +52,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     if (editingGuardian) {
       const nextMode: Mode = editingGuardian.email ? 'existing' : 'documented';
       setMode(nextMode);
-      setSelectedTrainerId(editingGuardian.userId || '');
+      setSelectedUserId(editingGuardian.userId || editingGuardian.id || '');
       setExistingFirstName(editingGuardian.firstName || '');
       setExistingLastName(editingGuardian.lastName || '');
       setExistingEmail(editingGuardian.email || '');
@@ -68,7 +69,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
   const reset = () => {
     setMode('existing');
-    setSelectedTrainerId('');
+    setSelectedUserId('');
     setExistingFirstName('');
     setExistingLastName('');
     setExistingEmail('');
@@ -79,19 +80,19 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     setIsSubmitting(false);
   };
 
-  const handleSelectedTrainerChange = (trainerId: string) => {
-    setSelectedTrainerId(trainerId);
-    const trainer = trainers.find((entry) => entry.id === trainerId);
-    if (!trainer) {
+  const handleSelectedExistingUserChange = (userId: string) => {
+    setSelectedUserId(userId);
+    const user = existingUsers.find((entry) => entry.id === userId);
+    if (!user) {
       setExistingFirstName('');
       setExistingLastName('');
       setExistingEmail('');
       return;
     }
 
-    setExistingFirstName(trainer.firstName || '');
-    setExistingLastName(trainer.lastName || '');
-    setExistingEmail(trainer.email || '');
+    setExistingFirstName(user.firstName || '');
+    setExistingLastName(user.lastName || '');
+    setExistingEmail(user.email || '');
   };
 
   const handleClose = () => {
@@ -104,24 +105,24 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
     setError(null);
 
     if (mode === 'existing') {
-      if (!selectedTrainerId && !isEditMode) {
+      if (!selectedUserId && !isEditMode) {
         setError(t('guardians.errors.selectExistingUser'));
         return;
       }
 
-      const selectedTrainer = trainers.find((trainer) => trainer.id === selectedTrainerId);
+      const selectedUser = existingUsers.find((entry) => entry.id === selectedUserId);
 
-      if (!isEditMode && !selectedTrainer) {
+      if (!isEditMode && !selectedUser) {
         setError(t('guardians.errors.selectExistingUser'));
         return;
       }
 
       const guardian: Guardian = {
-        id: selectedTrainer?.id || selectedTrainerId || editingGuardian?.id || crypto.randomUUID(),
-        userId: selectedTrainer?.id || selectedTrainerId || editingGuardian?.userId,
-        firstName: selectedTrainer?.firstName || existingFirstName.trim(),
-        lastName: selectedTrainer?.lastName || existingLastName.trim(),
-        email: selectedTrainer?.email || existingEmail.trim() || undefined,
+        id: selectedUser?.id || selectedUserId || editingGuardian?.id || crypto.randomUUID(),
+        userId: selectedUser?.id || selectedUserId || editingGuardian?.userId,
+        firstName: isEditMode ? existingFirstName.trim() : (selectedUser?.firstName || existingFirstName.trim()),
+        lastName: isEditMode ? existingLastName.trim() : (selectedUser?.lastName || existingLastName.trim()),
+        email: isEditMode ? (existingEmail.trim() || undefined) : (selectedUser?.email || existingEmail.trim() || undefined),
         isDocumentedOnly: false,
       };
 
@@ -133,7 +134,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
       setIsSubmitting(true);
       const success = isEditMode && editingGuardian && onEdit
-        ? await onEdit(editingGuardian.id, {
+        ? await onEdit(editingGuardian.userId || editingGuardian.id, {
             firstName: guardian.firstName,
             lastName: guardian.lastName,
             email: guardian.email,
@@ -168,7 +169,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
 
     setIsSubmitting(true);
     const success = isEditMode && editingGuardian && onEdit
-      ? await onEdit(editingGuardian.id, {
+      ? await onEdit(editingGuardian.userId || editingGuardian.id, {
           firstName: guardian.firstName,
           lastName: guardian.lastName,
           email: guardian.email,
@@ -215,7 +216,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                     setError(null);
                   }}
                 />
-                {t('guardians.documentedOnly')}
+                {t('guardians.newGuardian')}
               </label>
             </div>
 
@@ -224,19 +225,19 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, train
                 <label htmlFor="guardian-existing" className="form-label">{t('guardians.existingUser')}</label>
                 <select
                   id="guardian-existing"
-                  value={selectedTrainerId}
-                  onChange={(e) => handleSelectedTrainerChange(e.target.value)}
+                  value={selectedUserId}
+                  onChange={(e) => handleSelectedExistingUserChange(e.target.value)}
                   className="form-select"
                   disabled={isEditMode}
                 >
                   <option value="">{t('guardians.selectUser')}</option>
-                  {availableTrainers.map((trainer) => (
-                    <option key={trainer.id} value={trainer.id}>
-                      {trainer.firstName} {trainer.lastName}
+                  {availableExistingUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
                     </option>
                   ))}
                 </select>
-                {availableTrainers.length === 0 && (
+                {availableExistingUsers.length === 0 && (
                   <p className="text-xs text-gray-500 mt-2">{t('guardians.noAvailableUsers')}</p>
                 )}
                 {isEditMode && (

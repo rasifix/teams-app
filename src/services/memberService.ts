@@ -146,13 +146,6 @@ export async function getAllMembers(groupId: string): Promise<MembersResponse> {
   return normalizeMembersResponse(response);
 }
 
-// Player-specific operations
-export async function getPlayers(groupId: string): Promise<Player[]> {
-  const members = await getAllMembers(groupId);
-
-  return members.players;
-}
-
 export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>): Promise<Player> {
   const member = await addMember(groupId, {
     ...playerData,

@@ -2,7 +2,12 @@ import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePlayers, useTrainers } from '../store';
 import { useStore } from '../store/useStore';
-import { selectPlayerImportDiff, type PlayerImportDiffRow } from '../store/selectors/memberImportSelectors';
+import {
+  selectPlayerImportDiff,
+  selectVisiblePlayerImportRows,
+  type PlayerImportDiffRow,
+} from '../store/selectors/memberImportSelectors';
+import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
 import { parseSpondMembersCsv } from '../utils/spondCsvImport';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import Button from './ui/Button';
@@ -39,7 +44,7 @@ function findPlayerIdByRow(row: PlayerImportDiffRow): string | null {
     return null;
   }
 
-  const players = useStore.getState().players;
+  const players = selectPlayersFromMembers(useStore.getState().members);
   const match = players.find((player: Player) => (
     normalizeName(player.firstName) === normalizeName(row.firstName)
     && normalizeName(player.lastName) === normalizeName(row.lastName)
@@ -66,6 +71,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const diff = useMemo(() => selectPlayerImportDiff(candidateRows, players, trainers), [candidateRows, players, trainers]);
+  const visibleRows = useMemo(() => selectVisiblePlayerImportRows(diff.rows), [diff.rows]);
 
   const includedActionableRows = useMemo(() => {
     return diff.rows.filter((row) => row.isActionable && !excludedRowIds.has(row.id));
@@ -156,7 +162,8 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
       }
 
       if (!rowFailed && playerId && row.fillBirthDate) {
-        const currentPlayer = useStore.getState().players.find((player: Player) => player.id === playerId);
+        const currentPlayer = selectPlayersFromMembers(useStore.getState().members)
+          .find((player: Player) => player.id === playerId);
         if (!currentPlayer) {
           rowFailed = true;
         }
@@ -357,7 +364,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
               </div>
 
               <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
-                {diff.rows.map((row) => {
+                {visibleRows.map((row) => {
                   const isExcluded = excludedRowIds.has(row.id);
                   const birthDateAdded = row.createPlayer?.birthDate || row.fillBirthDate;
                   return (

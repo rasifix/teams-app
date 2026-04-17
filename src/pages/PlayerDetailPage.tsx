@@ -17,6 +17,7 @@ import {
   selectGroupedPlayerEventHistory,
   selectPlayerEventHistory,
 } from '../store/selectors/playerDetailSelectors';
+import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
 
 export default function PlayerDetailPage() {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ export default function PlayerDetailPage() {
   
   // Use store hooks
   const { events } = useEvents();
-  const { updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
+  const { players, updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const group = useGroup();
   const isInitialized = useAppInitialized();
@@ -116,6 +117,11 @@ export default function PlayerDetailPage() {
   const futureEventsWithoutInvitation = useMemo(
     () => selectFutureEventsWithoutInvitation(events, player.id),
     [events, player.id]
+  );
+
+  const existingGuardianUsers = useMemo(
+    () => selectExistingGuardianUsers(players, trainers),
+    [players, trainers]
   );
 
   const handleEditPlayer = () => {
@@ -425,7 +431,7 @@ export default function PlayerDetailPage() {
           setEditingGuardian(null);
         }}
         guardians={guardians}
-        trainers={trainers}
+        existingUsers={existingGuardianUsers}
         onAssign={handleAssignGuardian}
         editingGuardian={editingGuardian}
         onEdit={handleEditGuardian}

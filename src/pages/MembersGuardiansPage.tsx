@@ -148,56 +148,93 @@ export default function MembersGuardiansPage() {
             <p>{t('members.list.emptyGuardians')}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-md border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    {t('members.guardians.tableGuardian')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    {t('members.guardians.tableEmail')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    {t('members.guardians.tablePlayers')}
-                  </th>
-                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    {t('members.guardians.tableActions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {guardians.map((row) => (
-                  <tr key={row.guardian.userId || row.guardian.id}>
-                    <td className="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-                      {row.guardian.firstName} {row.guardian.lastName}
-                    </td>
-                    <td className="px-3 py-2 text-sm text-gray-600 whitespace-nowrap">
-                      {row.guardian.email || t('members.guardians.noEmail')}
-                    </td>
-                    <td className="px-3 py-2 text-sm text-gray-600">
-                      <div className="flex flex-wrap gap-x-2 gap-y-1">
-                        {row.playerRefs.map((playerRef) => (
-                          <Link
-                            key={playerRef.playerId}
-                            to={`/players/${playerRef.playerId}`}
-                            className="text-blue-600 hover:text-blue-700 hover:underline"
-                          >
-                            {playerRef.playerFirstName} {playerRef.playerLastName}
-                          </Link>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-sm">
-                      <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
-                        {t('common.actions.edit')}
-                      </Button>
-                    </td>
+          <>
+            <div className="md:hidden space-y-3">
+              {guardians.map((row) => (
+                <div
+                  key={row.guardian.userId || row.guardian.id}
+                  className="rounded-lg border border-gray-200 bg-white p-3"
+                >
+                  <p className="text-sm font-medium text-gray-900">
+                    {row.guardian.firstName} {row.guardian.lastName}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    {row.guardian.email || t('members.guardians.noEmail')}
+                  </p>
+                  <div className="mt-2 text-xs text-gray-600">
+                    <span className="font-medium">{t('members.guardians.tablePlayers')}:</span>{' '}
+                    {row.playerRefs.map((playerRef, index) => (
+                      <span key={playerRef.playerId}>
+                        <Link
+                          to={`/players/${playerRef.playerId}`}
+                          className="text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          {playerRef.playerFirstName} {playerRef.playerLastName}
+                        </Link>
+                        {index < row.playerRefs.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
+                      {t('common.actions.edit')}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto rounded-md border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      {t('members.guardians.tableGuardian')}
+                    </th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      {t('members.guardians.tableEmail')}
+                    </th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      {t('members.guardians.tablePlayers')}
+                    </th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      {t('members.guardians.tableActions')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {guardians.map((row) => (
+                    <tr key={row.guardian.userId || row.guardian.id}>
+                      <td className="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                        {row.guardian.firstName} {row.guardian.lastName}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-gray-600 whitespace-nowrap">
+                        {row.guardian.email || t('members.guardians.noEmail')}
+                      </td>
+                      <td className="px-3 py-2 text-sm text-gray-600">
+                        <div className="flex flex-wrap gap-x-2 gap-y-1">
+                          {row.playerRefs.map((playerRef) => (
+                            <Link
+                              key={playerRef.playerId}
+                              to={`/players/${playerRef.playerId}`}
+                              className="text-blue-600 hover:text-blue-700 hover:underline"
+                            >
+                              {playerRef.playerFirstName} {playerRef.playerLastName}
+                            </Link>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-sm">
+                        <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
+                          {t('common.actions.edit')}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </CardBody>
 

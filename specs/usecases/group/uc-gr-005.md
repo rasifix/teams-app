@@ -9,7 +9,7 @@ Allow a Group Manager to edit guardian details assigned to an underage player.
 This use case covers:
 - opening edit action for an existing guardian assignment,
 - updating guardian identity/contact fields,
-- persisting the edit and refreshing guardian cards.
+- persisting the edit and refreshing guardian cards/table rows.
 
 This use case does not cover:
 - creating user accounts,
@@ -34,6 +34,7 @@ Group Manager
 ## Trigger
 
 The Group Manager selects Edit on a guardian card in player detail.
+The Group Manager can also select Edit from the Members > Guardians table/grid.
 
 ## Input Data
 
@@ -56,11 +57,11 @@ Optional:
 3. System opens guardian modal in edit mode, prefilled with guardian data.
 4. Group Manager updates fields and confirms Save.
 5. System validates edit input and duplicate constraints.
-6. System persists edit using current API capabilities:
-   - delete current guardian assignment,
-   - add new guardian payload.
-7. System refreshes player guardian data in store.
-8. Updated guardian card is shown with new values.
+6. System resolves the guardian member id (`userId` when present, otherwise
+   guardian `id`).
+7. System persists edit by updating the linked guardian member record.
+8. System refreshes player guardian data in store.
+9. Updated guardian card/table row is shown with new values.
 
 ## Alternative Flows
 
@@ -76,18 +77,11 @@ Optional:
 2. System rejects save with duplicate message.
 3. Existing guardian data remains unchanged.
 
-### A3 - Delete Step Fails
+### A3 - Persist Step Fails
 
-1. Guardian delete request fails.
+1. Guardian member update request fails.
 2. System aborts edit flow and shows error.
-3. Existing assignment remains unchanged.
-
-### A4 - Add Step Fails After Delete
-
-1. Delete succeeds but add fails.
-2. System attempts rollback by re-adding previous guardian data.
-3. If rollback succeeds, assignment returns to previous value.
-4. System reports edit failure.
+3. Existing guardian data remains unchanged.
 
 ### A5 - Permission Denied
 
@@ -103,7 +97,6 @@ Success:
 
 Failure:
 - No final partial edit is intentionally kept.
-- Best-effort rollback is attempted when edit flow fails after delete.
 
 ## Business Rules
 
@@ -120,12 +113,12 @@ Failure:
 
 ## API Contract Alignment
 
-Current API provides dedicated single-guardian operations:
+Current API provides member update operation used for guardian edits:
+- `PUT /api/groups/{groupId}/members/{id}`
+
+Guardian assignment operations remain available for assign/remove flows:
 - `POST /api/groups/{groupId}/members/{id}/guardians`
 - `DELETE /api/groups/{groupId}/members/{id}/guardians/{guardianId}`
-
-No dedicated guardian update endpoint is available.
-Current implementation edits by delete-then-add sequence with best-effort rollback.
 
 ## Acceptance Criteria
 
@@ -135,7 +128,7 @@ Current implementation edits by delete-then-add sequence with best-effort rollba
    blocked.
 3. Given duplicate data conflict, when save is attempted, then edit is rejected.
 4. Given API failure during edit, when save is attempted, then UI shows failure
-   and rollback is attempted.
+   and existing data remains unchanged.
 
 ## Notes
 

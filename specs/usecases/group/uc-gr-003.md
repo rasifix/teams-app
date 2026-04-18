@@ -11,6 +11,7 @@ This use case covers:
 - viewing the player list in Members -> Players,
 - filtering players by level and year,
 - creating a new player,
+- importing players and guardians from Spond CSV,
 - opening a player detail view,
 - updating a player,
 - deleting a player from list or detail flow.
@@ -78,6 +79,20 @@ Derived field:
     confirmation.
 14. System persists delete and removes player from store.
 
+## Main Success Scenario - Import Players And Guardians (CSV)
+
+1. User opens Members > Players and starts Import.
+2. System parses Spond CSV rows and computes import diff.
+3. System hides unchanged existing-player rows from preview.
+4. User reviews actionable rows and confirms Apply.
+5. For each row, system applies add-only changes:
+   - creates new player when no match exists and birth date is available,
+   - updates existing player birth date when player is matched,
+   - links or creates guardian references according to matching rules.
+6. System deduplicates guardian additions per player and across duplicate CSV
+   rows targeting the same existing player.
+7. System shows import summary with processed rows and applied changes.
+
 ## Alternative Flows
 
 ### A1 - Missing Required Input During Create Or Edit
@@ -104,6 +119,20 @@ Derived field:
 2. API client clears token and redirects to login.
 3. Pending player mutation is not persisted.
 
+### A5 - Existing Player Name Match With Different Birth Date
+
+1. CSV row matches exactly one existing player by firstName + lastName but has
+   a different birthDate.
+2. System matches the existing player and plans birthDate update.
+3. System does not create a duplicate player.
+
+### A6 - Duplicate Rows In CSV For Same Existing Player
+
+1. Multiple CSV rows resolve to the same existing player.
+2. System keeps only the first actionable guardian addition for duplicate
+   guardian identities.
+3. Later duplicate rows become non-actionable and are hidden in preview.
+
 ## Postconditions
 
 Success:
@@ -125,6 +154,11 @@ Failure:
 - Year filter is computed from player birthDate when present, otherwise
   from birthYear.
 - Delete operations require explicit user confirmation in UI dialogs.
+- Import matching prefers unique same-name player matches even if birthDate
+   differs, then updates birthDate instead of creating duplicates.
+- Guardian identity matching for import and dedupe uses strict
+   firstName + lastName + email.
+- Import preview excludes unchanged existing-player rows.
 
 ## Validation Rules Reflected In Current Implementation
 
@@ -171,6 +205,12 @@ Delete removes member by id for current group.
    data is updated and reflected in store.
 5. Given delete confirmation accepted, when delete succeeds, then player is
    removed from list and store.
+6. Given a unique same-name existing player and different imported birthDate,
+   when import is applied, then existing player birthDate is updated and no new
+   player is created.
+7. Given duplicate CSV rows for the same existing player guardian, when import
+   preview/apply runs, then guardian is added once and duplicate row additions
+   are skipped.
 
 ## Notes
 

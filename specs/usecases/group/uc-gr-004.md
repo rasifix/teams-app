@@ -10,8 +10,12 @@ contact data, and to remove guardian assignments when needed.
 
 This use case covers:
 - viewing guardians linked to a player,
+- viewing unique guardians in Members > Guardians with all linked players,
 - assigning one or more guardians to an underage player,
+- assigning existing users from both trainer and guardian member pools,
 - removing a guardian assignment from a player,
+- detecting duplicate guardians by identity and resolving duplicates by merging
+   player references to a single guardian,
 - persisting guardian assignments as part of player data.
 
 This use case does not cover:
@@ -69,6 +73,8 @@ Required for removal:
    guardian details.
 5. Group Manager confirms assignment.
 6. System validates guardian eligibility and duplicate constraints.
+   Duplicate matching for assignment uses guardian identity
+   (firstName + lastName + email) when those fields are present.
 7. System persists assignment to player guardians collection, including account
    link when present or documented-only guardian data when no user exists.
 8. System refreshes player data and displays new guardian in assigned list.
@@ -97,6 +103,16 @@ Required for removal:
 1. Group Manager selects a guardian already linked to the player.
 2. System rejects duplicate assignment.
 3. Existing assignments remain unchanged.
+
+### A7 - Resolve Duplicate Guardians
+
+1. Group Manager opens Members > Guardians.
+2. System detects duplicate guardians sharing firstName + lastName + email.
+3. Group Manager triggers Resolve duplicates for one duplicate group.
+4. System selects one target guardian and re-links all affected player
+   guardian references to that target.
+5. System removes obsolete duplicate references from player guardian arrays.
+6. System refreshes guardians list and duplicate warning section.
 
 ### A3 - Guardian Candidate Not Eligible
 
@@ -139,6 +155,7 @@ Failure:
 - Only Group Managers can assign or remove guardians.
 - Guardian assignment is permitted only for underage players.
 - A player may have multiple guardians.
+- The same guardian may be linked to multiple players in the same group.
 - The same guardian cannot be linked more than once to the same player.
 - Removing one guardian must not affect other guardian assignments.
 - A guardian assignment may be account-linked or documented-only.
@@ -152,6 +169,8 @@ Failure:
 - Guardian input must provide either a valid user reference or sufficient
    documented guardian identity/contact data.
 - Duplicate guardian links for one player are invalid.
+- Duplicate detection and merge actions on Members > Guardians use strict
+   identity: firstName + lastName + email.
 - Underage eligibility check must pass at assignment time.
 
 ## Data Persistence Expectations
@@ -191,6 +210,9 @@ Suggested persistence path for this use case:
    is denied and no data changes.
 6. Given technical failure during save, when operation is attempted, then no
    partial update is persisted.
+7. Given duplicate guardians with same firstName + lastName + email, when
+   Group Manager resolves duplicates, then all linked players reference the
+   selected target guardian and duplicates are removed.
 
 ## Notes
 

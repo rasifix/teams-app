@@ -130,19 +130,6 @@ function toComparableBirthDate(value: string | undefined): string {
   return `${year}-${month}-${day}`;
 }
 
-function buildTrainerByEmailMap(trainers: Trainer[]): Map<string, Trainer> {
-  const result = new Map<string, Trainer>();
-
-  trainers.forEach((trainer) => {
-    const email = normalizeEmail(trainer.email);
-    if (email && !result.has(email)) {
-      result.set(email, trainer);
-    }
-  });
-
-  return result;
-}
-
 interface ExistingGuardianMember {
   id: string;
   firstName: string;

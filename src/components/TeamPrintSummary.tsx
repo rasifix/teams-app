@@ -111,6 +111,7 @@ export default function TeamPrintSummary({
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
               const assignee = team.trainerId ? assigneesById.get(team.trainerId) : undefined;
+              const resolvedLocation = team.location?.trim() || event.location?.trim();
               const playersData = selectedPlayers
                 .map(playerId => players.find(p => p.id === playerId))
                 .filter(Boolean)
@@ -130,8 +131,8 @@ export default function TeamPrintSummary({
                     </h1>
                     <div className="text-sm text-gray-600">
                       <p>📅 {formatDate(event.date)} {format === 'selection' && `🕐 ${team.startTime}`}</p>
-                      {event.location && format === 'selection' && (
-                        <p>📍 {event.location}</p>
+                      {resolvedLocation && format === 'selection' && (
+                        <p>📍 {resolvedLocation}</p>
                       )}
                       {assignee && (
                         <p className="text-blue-600 font-medium">👤 {assignee.firstName} {assignee.lastName}</p>

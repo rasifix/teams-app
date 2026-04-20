@@ -70,6 +70,7 @@
   },
   "shirts": {
     "goalkeeperShort": "GK",
+    "unavailableShort": "UNAV",
     "editShirt": "Edit shirt",
     "removeShirt": "Remove shirt",
     "editSet": "Edit set",
@@ -95,7 +96,8 @@
     "fields": {
       "numberRequired": "Shirt Number *",
       "sizeRequired": "Size *",
-      "isGoalkeeper": "This is a goalkeeper shirt"
+      "isGoalkeeper": "This is a goalkeeper shirt",
+      "isUnavailable": "Mark shirt as unavailable"
     },
     "placeholders": {
       "number": "Enter shirt number (1-99)"
@@ -165,6 +167,7 @@
     "selectSetPlaceholder": "Select a shirt set...",
     "noShirt": "No shirt",
     "usedInOtherTeamsHint": "Shirts already used in other teams for this event are disabled.",
+    "unavailableHint": "Unavailable shirts cannot be assigned.",
     "noPlayersInTeam": "No players assigned to this team yet.",
     "errors": {
       "selectSetRequired": "Please select a shirt set"

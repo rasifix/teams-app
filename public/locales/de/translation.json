@@ -70,6 +70,7 @@
   },
   "shirts": {
     "goalkeeperShort": "TW",
+    "unavailableShort": "NICHT VERF",
     "editShirt": "Trikot bearbeiten",
     "removeShirt": "Trikot entfernen",
     "editSet": "Satz bearbeiten",
@@ -95,7 +96,8 @@
     "fields": {
       "numberRequired": "Trikotnummer *",
       "sizeRequired": "Grösse *",
-      "isGoalkeeper": "Dies ist ein Torwarttrikot"
+      "isGoalkeeper": "Dies ist ein Torwarttrikot",
+      "isUnavailable": "Trikot als nicht verfügbar markieren"
     },
     "placeholders": {
       "number": "Trikotnummer eingeben (1-99)"
@@ -165,6 +167,7 @@
     "selectSetPlaceholder": "Trikotsatz auswählen...",
     "noShirt": "Kein Trikot",
     "usedInOtherTeamsHint": "Trikots, die in anderen Teams dieses Termines bereits verwendet werden, sind deaktiviert.",
+    "unavailableHint": "Nicht verfügbare Trikots können nicht zugewiesen werden.",
     "noPlayersInTeam": "Diesem Team sind noch keine Spieler zugewiesen.",
     "errors": {
       "selectSetRequired": "Bitte wähle einen Trikotsatz aus"

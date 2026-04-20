@@ -43,7 +43,8 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
           shirts.push({
             number: num,
             size: shirtOptions.size,
-            isGoalkeeper: false
+            isGoalkeeper: false,
+            status: 'available'
           });
         }
         
@@ -52,7 +53,8 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
           shirts.push({
             number: shirtOptions.goalkeeperNumber,
             size: shirtOptions.size,
-            isGoalkeeper: true
+            isGoalkeeper: true,
+            status: 'available'
           });
         }
       }

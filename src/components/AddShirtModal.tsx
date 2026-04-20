@@ -15,7 +15,8 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
   const [formData, setFormData] = useState({
     number: '',
     size: 'M' as '128' | '140' | '152' | '164' | 'XS' | 'S' | 'M' | 'L' | 'XL',
-    isGoalkeeper: false
+    isGoalkeeper: false,
+    status: 'available' as 'available' | 'unavailable'
   });
 
   const [errors, setErrors] = useState<{number?: string}>({});
@@ -41,7 +42,8 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
     onSubmit({
       number: numberValue,
       size: formData.size,
-      isGoalkeeper: formData.isGoalkeeper
+      isGoalkeeper: formData.isGoalkeeper,
+      status: formData.status
     });
   };
 
@@ -138,6 +140,25 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
               />
               <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-gray-700">
                 {t('shirtModal.fields.isGoalkeeper')}
+              </label>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="isUnavailable"
+                name="status"
+                type="checkbox"
+                checked={formData.status === 'unavailable'}
+                onChange={(e) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    status: e.target.checked ? 'unavailable' : 'available'
+                  }));
+                }}
+                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isUnavailable" className="ml-2 text-sm font-medium text-gray-700">
+                {t('shirtModal.fields.isUnavailable')}
               </label>
             </div>
 

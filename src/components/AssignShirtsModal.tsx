@@ -51,7 +51,8 @@ export default function AssignShirtsModal({
         return;
       }
 
-      const shirtNumbersInSet = new Set(shirtSet.shirts.map(shirt => shirt.number));
+      const availableShirts = shirtSet.shirts.filter(shirt => shirt.status !== 'unavailable');
+      const shirtNumbersInSet = new Set(availableShirts.map(shirt => shirt.number));
       const playersById = new Map(players.map(player => [player.id, player]));
       const keepExistingAssignments = selectedShirtSetId === currentShirtSetId;
       const usedShirtNumbers = new Set<number>();
@@ -185,6 +186,7 @@ export default function AssignShirtsModal({
                           >
                             <option value={0}>{t('assignShirts.noShirt')}</option>
                             {selectedShirtSet.shirts
+                              .filter(shirt => shirt.status !== 'unavailable')
                               .sort((a, b) => a.number - b.number)
                               .map(shirt => (
                               <option 
@@ -207,6 +209,10 @@ export default function AssignShirtsModal({
                     {t('assignShirts.usedInOtherTeamsHint')}
                   </p>
                 )}
+
+                <p className="text-xs text-gray-600 mt-1">
+                  {t('assignShirts.unavailableHint')}
+                </p>
 
                 {team.selectedPlayers.length === 0 && (
                   <p className="text-gray-500 text-center py-4">

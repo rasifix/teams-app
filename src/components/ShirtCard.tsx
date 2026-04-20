@@ -17,12 +17,19 @@ export default function ShirtCard({
   return (
     <div 
       className={`flex items-center justify-between p-2 rounded border h-11 ${
-        shirt.isGoalkeeper ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
+        shirt.status === 'unavailable'
+          ? 'bg-red-50 border-red-200'
+          : shirt.isGoalkeeper
+            ? 'bg-yellow-50 border-yellow-200'
+            : 'bg-gray-50 border-gray-200'
       }`}
     >
       <div className="flex items-center gap-2">
         <span className="font-semibold">#{shirt.number}</span>
         <span className="text-sm text-gray-600">{shirt.size}</span>
+        {shirt.status === 'unavailable' && (
+          <span className="text-xs text-red-700 font-medium bg-red-100 px-1 py-0.5 rounded">{t('shirts.unavailableShort')}</span>
+        )}
         {shirt.isGoalkeeper && (
           <span className="text-xs text-yellow-600 font-medium bg-yellow-100 px-1 py-0.5 rounded">{t('shirts.goalkeeperShort')}</span>
         )}

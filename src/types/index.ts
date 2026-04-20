@@ -107,6 +107,7 @@ export interface Shirt {
   number: number;
   size: '128' | '140' | '152' | '164' | 'XS' | 'S' | 'M' | 'L' | 'XL';
   isGoalkeeper: boolean;
+  status?: 'available' | 'unavailable';
 }
 
 export interface ShirtSet {

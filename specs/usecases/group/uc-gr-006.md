@@ -15,7 +15,8 @@ This use case covers:
 - deleting a shirt set,
 - adding a shirt to a set,
 - editing a shirt in a set,
-- removing a shirt from a set.
+- removing a shirt from a set,
+- marking a shirt as unavailable or available.
 
 This use case does not cover:
 - assigning shirts to players in a team,
@@ -57,6 +58,7 @@ Required for shirt creation/update in set:
 - number (1-99)
 - size (128, 140, 152, 164, XS, S, M, L, XL)
 - isGoalkeeper
+- status (available, unavailable)
 
 ## Main Success Scenario - Create Shirt Set
 
@@ -128,6 +130,8 @@ Failure:
 - Shirt set sorting is alphabetical by sponsor, then color.
 - Shirt numbers must be unique within one shirt set.
 - Shirt size must be one of the supported domain values.
+- Shirt status must be either `available` or `unavailable`.
+- Shirts with status `unavailable` are not assignable to players in future events.
 - A shirt set can contain zero or more shirts.
 
 ## Validation Rules
@@ -137,6 +141,7 @@ Failure:
 - `shirts` is required in API create/update payloads (may be empty array).
 - Shirt `number` must be integer from 1 to 99.
 - Shirt `size` must match allowed enum.
+- Shirt `status` must match allowed enum (`available`, `unavailable`).
 
 ## API Contract Alignment
 
@@ -162,6 +167,8 @@ the full `shirts` array through `PUT /shirtsets/{id}`.
    valid data, then shirt inventory updates correctly.
 5. Given duplicate shirt number in one set, when Group Manager tries to add it,
    then operation is rejected.
+6. Given a shirt is marked as unavailable, when Group Manager later assigns
+   shirts for a future tournament, then that shirt is not selectable.
 
 ## Notes
 

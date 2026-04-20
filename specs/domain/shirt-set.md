@@ -42,6 +42,7 @@ Each Shirt contains:
 - number,
 - size: one of 128, 140, 152, 164, XS, S, M, L, XL,
 - isGoalkeeper: boolean.
+- status: available, unavailable
 
 ## Lifecycle
 

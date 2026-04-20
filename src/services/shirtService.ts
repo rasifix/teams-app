@@ -18,11 +18,22 @@ export async function addShirtSet(groupId: string, shirtData: Omit<ShirtSet, 'id
 }
 
 export async function updateShirtSet(groupId: string, id: string, shirtData: Partial<ShirtSet>): Promise<ShirtSet> {
+  const shirtSet = await getShirtSetById(groupId, id);
+  if (!shirtSet) {
+    throw new Error('Shirt set not found');
+  }
+
+  const payload: Omit<ShirtSet, 'id'> = {
+    sponsor: shirtData.sponsor ?? shirtSet.sponsor,
+    color: shirtData.color ?? shirtSet.color,
+    shirts: shirtData.shirts ?? shirtSet.shirts
+  };
+
   return apiClient.request<ShirtSet>(
     apiClient.getGroupEndpoint(groupId, `/shirtsets/${id}`),
     {
       method: 'PUT',
-      body: JSON.stringify(shirtData)
+      body: JSON.stringify(payload)
     }
   );
 }
@@ -56,7 +67,11 @@ export async function addShirtToSet(groupId: string, shirtSetId: string, shirtDa
   }
 
   const updatedShirts = [...shirtSet.shirts, shirtData];
-  await updateShirtSet(groupId, shirtSetId, { shirts: updatedShirts });
+  await updateShirtSet(groupId, shirtSetId, {
+    sponsor: shirtSet.sponsor,
+    color: shirtSet.color,
+    shirts: updatedShirts
+  });
   return shirtData;
 }
 
@@ -68,7 +83,11 @@ export async function removeShirtFromSet(groupId: string, shirtSetId: string, sh
   }
 
   const updatedShirts = shirtSet.shirts.filter(shirt => shirt.number !== shirtNumber);
-  await updateShirtSet(groupId, shirtSetId, { shirts: updatedShirts });
+  await updateShirtSet(groupId, shirtSetId, {
+    sponsor: shirtSet.sponsor,
+    color: shirtSet.color,
+    shirts: updatedShirts
+  });
 }
 
 // Helper function to update a shirt in a shirt set
@@ -81,5 +100,9 @@ export async function updateShirt(groupId: string, shirtSetId: string, updatedSh
   const updatedShirts = shirtSet.shirts.map(shirt => 
     shirt.number === updatedShirt.number ? updatedShirt : shirt
   );
-  await updateShirtSet(groupId, shirtSetId, { shirts: updatedShirts });
+  await updateShirtSet(groupId, shirtSetId, {
+    sponsor: shirtSet.sponsor,
+    color: shirtSet.color,
+    shirts: updatedShirts
+  });
 }

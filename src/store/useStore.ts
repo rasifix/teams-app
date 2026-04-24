@@ -598,12 +598,22 @@ export const useStore = create<AppState>()(
             throw new Error(PLAYER_DELETE_ROLE_CONSTRAINT);
           }
 
-          await deleteMemberService(currentGroup.id, id);
-          const refreshedMembers = await getAllMembers(currentGroup.id);
-          set({ members: toMembers(refreshedMembers.players, refreshedMembers.trainers) });
+          const currentPlayer = playersFromMembers(get().members).find((player) => player.id === id);
+          if (!currentPlayer) {
+            return false;
+          }
+
+          const updatedPlayer = await updateMemberService(currentGroup.id, id, {
+            ...currentPlayer,
+            status: 'inactive',
+            roles: Array.from(new Set([...(currentPlayer.roles || []), MEMBER_ROLE_PLAYER])),
+          }) as Player;
+
+          const updatedMembers = upsertMember(get().members, updatedPlayer);
+          set({ members: updatedMembers });
           return true;
         } catch (error) {
-          console.error('Failed to delete player:', error);
+          console.error('Failed to set player inactive:', error);
           if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT) {
             throw error;
           }

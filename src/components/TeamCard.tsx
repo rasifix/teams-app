@@ -9,6 +9,7 @@ import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors'
 interface TeamCardProps {
   team: Team;
   eventLocation?: string;
+  inactiveFutureEventPlayerIds: Set<string>;
   players: Player[];
   trainers: Trainer[];
   shirtSets: ShirtSet[];
@@ -30,6 +31,7 @@ interface TeamCardProps {
 export default function TeamCard({
   team,
   eventLocation,
+  inactiveFutureEventPlayerIds,
   players,
   trainers,
   shirtSets,
@@ -179,6 +181,7 @@ export default function TeamCard({
               .map(({ playerId, player }) => {
               const isDragOverPlayer = dragOverPlayerId === playerId;
               const stats = getPlayerStats(playerId, events);
+              const hasInactiveFutureError = inactiveFutureEventPlayerIds.has(playerId);
               return player ? (
                 <div 
                   key={playerId} 
@@ -234,6 +237,11 @@ export default function TeamCard({
                           <div className="flex items-center gap-2">
                             {shirtNumber && shirtNumber > 0 && <span className="text-gray-800 text-xs mr-1 font-extrabold">{shirtNumber}</span>}
                             <span className="text-sm">{player.firstName} {player.lastName}</span>
+                            {hasInactiveFutureError && (
+                              <span className="text-xs text-red-700 bg-red-100 px-1.5 py-0.5 rounded font-medium" title={t('teamCard.inactiveIndicatorTooltip')}>
+                                {t('teamCard.inactiveIndicator')}
+                              </span>
+                            )}
                             <Level level={player.level} className="text-sm" />
                             <span 
                               className="text-xs text-gray-500 font-mono"

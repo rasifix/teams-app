@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { getAllMembers, getTrainers } from './memberService';
+import { addMember, getAllMembers, updateMember, getTrainers } from './memberService';
 
 describe('memberService', () => {
   afterEach(() => {
@@ -116,6 +116,49 @@ describe('memberService', () => {
         roles: [],
       },
     ]);
+  });
+
+  it('omits preferredShirtNumber when null in add member payload', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'player-1',
+      firstName: 'Pat',
+      lastName: 'Player',
+      roles: ['player'],
+      level: 3,
+      birthYear: 2014,
+      status: 'active',
+    });
+
+    await addMember('group-1', {
+      firstName: 'Pat',
+      lastName: 'Player',
+      roles: ['player'],
+      preferredShirtNumber: null as unknown as number,
+    });
+
+    const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
+    expect(options?.body).toBeDefined();
+    expect(JSON.parse(options?.body || '{}')).not.toHaveProperty('preferredShirtNumber');
+  });
+
+  it('omits preferredShirtNumber when non-integer in update member payload', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'player-1',
+      firstName: 'Pat',
+      lastName: 'Player',
+      roles: ['player'],
+      level: 3,
+      birthYear: 2014,
+      status: 'active',
+    });
+
+    await updateMember('group-1', 'player-1', {
+      preferredShirtNumber: 10.5,
+    });
+
+    const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
+    expect(options?.body).toBeDefined();
+    expect(JSON.parse(options?.body || '{}')).not.toHaveProperty('preferredShirtNumber');
   });
 
 });

@@ -146,7 +146,7 @@ export default function PlayerDetailPage() {
       try {
         const success = await deletePlayer(id);
         if (success) {
-          navigate('/members/players', { replace: true });
+          setIsDeleteConfirmOpen(false);
           return;
         }
 

@@ -14,7 +14,7 @@ This use case covers:
 - importing players and guardians from Spond CSV,
 - opening a player detail view,
 - updating a player,
-- deleting a player from list or detail flow.
+- setting a player to inactive from list or detail flow.
 
 This use case does not cover:
 - trainer management,
@@ -75,9 +75,9 @@ Derived field:
 10. User can open a player card to see player detail.
 11. On player detail, user can open Edit, update fields, and save.
 12. System persists update and refreshes player state in store.
-13. User can delete a player from Members list or Player detail after
+13. User can set a player inactive from Members list or Player detail after
     confirmation.
-14. System persists delete and removes player from store.
+14. System persists status update and keeps player in store for historical data.
 
 ## Main Success Scenario - Import Players And Guardians (CSV)
 
@@ -101,7 +101,7 @@ Derived field:
 2. Browser form constraints and modal guard prevent persistence request.
 3. Modal remains open for correction.
 
-### A2 - API Or Network Failure During Create/Update/Delete
+### A2 - API Or Network Failure During Create/Update/Set Inactive
 
 1. Persistence request fails.
 2. Store action returns failure and logs error.
@@ -137,7 +137,7 @@ Derived field:
 
 Success:
 - Player records are persisted for selected group.
-- Store state reflects create/update/delete results.
+- Store state reflects create/update/status-update results.
 - Player list remains alphabetically sorted.
 
 Failure:
@@ -153,7 +153,10 @@ Failure:
 - Level filter supports multi-select values from 1 to 5.
 - Year filter is computed from player birthDate when present, otherwise
   from birthYear.
-- Delete operations require explicit user confirmation in UI dialogs.
+- Set inactive operations require explicit user confirmation in UI dialogs.
+- Inactive players are excluded from invite-player flows.
+- If an inactive player remains invited or assigned in a future event, UI
+   highlights this as an error indicator.
 - Import matching prefers unique same-name player matches even if birthDate
    differs, then updates birthDate instead of creating duplicates.
 - Guardian identity matching for import and dedupe uses strict
@@ -183,14 +186,13 @@ Update payload contains:
 - role: player
 - updated player fields
 
-Delete removes member by id for current group.
+Set inactive updates member status to inactive for current group.
 
 ## API Contract Used By Current Frontend
 
 - GET /api/groups/{groupId}/members
 - POST /api/groups/{groupId}/members (with role=player)
 - PUT /api/groups/{groupId}/members/{id} (with role=player)
-- DELETE /api/groups/{groupId}/members/{id}
 
 ## Acceptance Criteria
 
@@ -203,12 +205,16 @@ Delete removes member by id for current group.
    players are displayed.
 4. Given a player detail edit, when valid updates are submitted, then player
    data is updated and reflected in store.
-5. Given delete confirmation accepted, when delete succeeds, then player is
-   removed from list and store.
-6. Given a unique same-name existing player and different imported birthDate,
+5. Given set-inactive confirmation accepted, when update succeeds, then player
+   status is inactive and historical references remain intact.
+6. Given inactive players exist, when opening invite players modal, then
+   inactive players are not listed as inviteable.
+7. Given an inactive player is still invited or assigned in a future event,
+   when viewing that event, then the player row shows an error indicator.
+8. Given a unique same-name existing player and different imported birthDate,
    when import is applied, then existing player birthDate is updated and no new
    player is created.
-7. Given duplicate CSV rows for the same existing player guardian, when import
+9. Given duplicate CSV rows for the same existing player guardian, when import
    preview/apply runs, then guardian is added once and duplicate row additions
    are skipped.
 

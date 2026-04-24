@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Player, InvitationStatus } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
+import { selectInviteablePlayers } from '../store/selectors/eventInactivePlayerSelectors';
 
 interface InvitePlayersModalProps {
   isOpen: boolean;
@@ -45,7 +46,7 @@ export default function InvitePlayersModal({
   };
 
   const handleSelectAll = () => {
-    const availablePlayerIds = players
+    const availablePlayerIds = selectInviteablePlayers(players)
       .filter(p => !alreadyInvitedPlayerIds.includes(p.id))
       .filter(p => p.level >= levelRange[0] && p.level <= levelRange[1])
       .map(p => p.id);
@@ -73,7 +74,9 @@ export default function InvitePlayersModal({
     onClose();
   };
 
-  const availablePlayers = players
+  const inviteablePlayers = selectInviteablePlayers(players);
+
+  const availablePlayers = inviteablePlayers
     .filter(p => !alreadyInvitedPlayerIds.includes(p.id))
     .filter(p => p.level >= levelRange[0] && p.level <= levelRange[1]);
 
@@ -84,6 +87,9 @@ export default function InvitePlayersModal({
           <h2 className="text-2xl font-bold text-gray-900">{t('invitePlayers.title')}</h2>
           <p className="mt-1 text-sm text-gray-600">
             {t('invitePlayers.subtitle')}
+          </p>
+          <p className="mt-1 text-xs text-amber-700">
+            {t('invitePlayers.inactiveExcludedHint')}
           </p>
         </div>
         

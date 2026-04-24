@@ -79,22 +79,40 @@ export interface MemberUpsertPayload {
   roles: GroupRole[];
 }
 
+const sanitizeMemberPayload = <T extends Partial<MemberUpsertPayload>>(payload: T): T => {
+  const sanitized = { ...payload } as T;
+  const preferredShirtNumber = sanitized.preferredShirtNumber;
+
+  if (preferredShirtNumber == null) {
+    delete sanitized.preferredShirtNumber;
+    return sanitized;
+  }
+
+  if (!Number.isInteger(preferredShirtNumber)) {
+    delete sanitized.preferredShirtNumber;
+  }
+
+  return sanitized;
+};
+
 export async function addMember(groupId: string, memberData: MemberUpsertPayload): Promise<Player | Trainer> {
+  const payload = sanitizeMemberPayload(memberData);
   return apiClient.request<Player | Trainer>(
     apiClient.getGroupEndpoint(groupId, '/members'),
     {
       method: 'POST',
-      body: JSON.stringify(memberData)
+      body: JSON.stringify(payload)
     }
   );
 }
 
 export async function updateMember(groupId: string, id: string, memberData: Partial<MemberUpsertPayload>): Promise<Player | Trainer> {
+  const payload = sanitizeMemberPayload(memberData);
   return apiClient.request<Player | Trainer>(
     apiClient.getGroupEndpoint(groupId, `/members/${id}`),
     {
       method: 'PUT',
-      body: JSON.stringify(memberData)
+      body: JSON.stringify(payload)
     }
   );
 }

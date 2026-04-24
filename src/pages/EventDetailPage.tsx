@@ -16,6 +16,7 @@ import { formatDate } from '../utils/dateFormatter';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectInactiveFutureEventPlayerIds } from '../store/selectors/eventInactivePlayerSelectors';
 
 export default function EventDetailPage() {
   const { t } = useTranslation();
@@ -53,6 +54,14 @@ export default function EventDetailPage() {
     }
     return [...periodFilteredEvents, event];
   }, [event, periodFilteredEvents]);
+
+  const inactiveFutureEventPlayerIds = useMemo(() => {
+    if (!event) {
+      return new Set<string>();
+    }
+
+    return selectInactiveFutureEventPlayerIds(event, players);
+  }, [event, players]);
   
   // Determine loading and error states
   const loading = isLoading;
@@ -563,6 +572,7 @@ export default function EventDetailPage() {
                       key={team.id}
                       team={team}
                       eventLocation={event.location}
+                      inactiveFutureEventPlayerIds={inactiveFutureEventPlayerIds}
                       players={players}
                       trainers={trainers}
                       shirtSets={shirtSets}
@@ -660,6 +670,7 @@ export default function EventDetailPage() {
           currentEvent={event}
           players={players}
           events={eventsForSelectionStats}
+          inactiveFutureEventPlayerIds={inactiveFutureEventPlayerIds}
           onInviteClick={() => setIsInviteModalOpen(true)}
           onStatusChange={handleInvitationStatusChange}
           onRemoveInvitation={handleRemoveInvitation}

@@ -351,15 +351,15 @@
         "mergeFailed": "Merge failed. Please try again."
       }
     },
-    "deletePlayerTitle": "Delete Player",
-    "deletePlayerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
-    "deletePlayerConfirm": "Delete Player",
+    "deletePlayerTitle": "Set Player Inactive",
+    "deletePlayerMessage": "Set {{firstName}} {{lastName}} to inactive? Historical data is preserved, and the player can no longer be invited.",
+    "deletePlayerConfirm": "Set Inactive",
     "deleteTrainerTitle": "Delete Trainer",
     "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
     "deleteTrainerConfirm": "Delete Trainer",
     "errors": {
-      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
-      "deletePlayerFailed": "Failed to delete player. Please try again.",
+      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be set inactive.",
+      "deletePlayerFailed": "Failed to set player inactive. Please try again.",
       "deleteTrainerFailed": "Failed to remove trainer. Please try again."
     }
   },
@@ -486,6 +486,8 @@
     "remove": "Remove",
     "removeInvitation": "Remove invitation",
     "cannotRemoveAssigned": "Cannot remove invitation for assigned players",
+    "inactiveIndicator": "INACTIVE",
+    "inactiveIndicatorTooltip": "Inactive player is still invited or assigned in this future event.",
     "playerIdFallback": "Player ID: {{id}}",
     "tabs": {
       "assigned": "Assigned",
@@ -509,12 +511,15 @@
     "expand": "Expand details",
     "collapse": "Collapse details",
     "statsTooltip": "{{accepted}} accepted, {{selected}} selected",
+    "inactiveIndicator": "INACTIVE",
+    "inactiveIndicatorTooltip": "Inactive player is still assigned in this future event.",
     "removePlayer": "Remove player",
     "unknownPlayer": "Unknown player"
   },
   "invitePlayers": {
     "title": "Invite Players",
     "subtitle": "Select players to invite to this event",
+    "inactiveExcludedHint": "Inactive players are excluded from invitations.",
     "noPlayers": "No players available",
     "noPlayersDetail": "Add players in Members first.",
     "defaultStatus": "Default status",
@@ -639,8 +644,8 @@
       "noPlayerId": "No player ID provided",
       "notFound": "Player not found",
       "failedToLoadData": "Failed to load data",
-      "deleteFailed": "Failed to delete player. Please try again.",
-      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted."
+      "deleteFailed": "Failed to set player inactive. Please try again.",
+      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be set inactive."
     },
     "preferredShirtNumber": "Preferred #{{number}}",
     "assignedTeam": "Assigned to team {{teamName}}",

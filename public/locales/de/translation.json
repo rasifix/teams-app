@@ -351,15 +351,15 @@
         "mergeFailed": "Zusammenführen fehlgeschlagen. Bitte erneut versuchen."
       }
     },
-    "deletePlayerTitle": "Spieler löschen",
-    "deletePlayerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deletePlayerConfirm": "Spieler löschen",
+    "deletePlayerTitle": "Spieler auf inaktiv setzen",
+    "deletePlayerMessage": "{{firstName}} {{lastName}} auf inaktiv setzen? Historische Daten bleiben erhalten und der Spieler kann nicht mehr eingeladen werden.",
+    "deletePlayerConfirm": "Inaktiv setzen",
     "deleteTrainerTitle": "Trainer löschen",
     "deleteTrainerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTrainerConfirm": "Trainer löschen",
     "errors": {
-      "playerHasUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden.",
-      "deletePlayerFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "playerHasUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht auf inaktiv gesetzt werden.",
+      "deletePlayerFailed": "Spieler konnte nicht auf inaktiv gesetzt werden. Bitte versuche es erneut.",
       "deleteTrainerFailed": "Trainer konnte nicht entfernt werden. Bitte versuche es erneut."
     }
   },
@@ -486,6 +486,8 @@
     "remove": "Entfernen",
     "removeInvitation": "Einladung entfernen",
     "cannotRemoveAssigned": "Einladung für zugewiesene Spieler kann nicht entfernt werden",
+    "inactiveIndicator": "INAKTIV",
+    "inactiveIndicatorTooltip": "Inaktiver Spieler ist in diesem zukünftigen Termin noch eingeladen oder zugewiesen.",
     "playerIdFallback": "Spieler-ID: {{id}}",
     "tabs": {
       "assigned": "Zugewiesen",
@@ -509,12 +511,15 @@
     "expand": "Details anzeigen",
     "collapse": "Details ausblenden",
     "statsTooltip": "{{accepted}} zugesagt, {{selected}} ausgewählt",
+    "inactiveIndicator": "INAKTIV",
+    "inactiveIndicatorTooltip": "Inaktiver Spieler ist in diesem zukünftigen Termin noch zugewiesen.",
     "removePlayer": "Spieler entfernen",
     "unknownPlayer": "Unbekannter Spieler"
   },
   "invitePlayers": {
     "title": "Spieler einladen",
     "subtitle": "Wähle Spieler aus, die zu diesem Termin eingeladen werden sollen",
+    "inactiveExcludedHint": "Inaktive Spieler sind von Einladungen ausgeschlossen.",
     "noPlayers": "Keine Spieler verfügbar",
     "noPlayersDetail": "Füge zuerst Spieler unter Mitglieder hinzu.",
     "defaultStatus": "Standardstatus",
@@ -639,8 +644,8 @@
       "noPlayerId": "Keine Spieler-ID angegeben",
       "notFound": "Spieler nicht gefunden",
       "failedToLoadData": "Daten konnten nicht geladen werden",
-      "deleteFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
-      "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden."
+      "deleteFailed": "Spieler konnte nicht auf inaktiv gesetzt werden. Bitte versuche es erneut.",
+      "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht auf inaktiv gesetzt werden."
     },
     "preferredShirtNumber": "Bevorzugt #{{number}}",
     "assignedTeam": "Zugeteilt zu Team {{teamName}}",

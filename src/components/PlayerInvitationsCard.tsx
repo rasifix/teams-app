@@ -11,6 +11,7 @@ interface PlayerInvitationsCardProps {
   currentEvent: Event;
   players: Player[];
   events: Event[];
+  inactiveFutureEventPlayerIds: Set<string>;
   onInviteClick: () => void;
   onStatusChange: (invitationId: string, newStatus: InvitationStatus) => void;
   onRemoveInvitation: (invitationId: string) => void;
@@ -26,6 +27,7 @@ export default function PlayerInvitationsCard({
   currentEvent,
   players,
   events,
+  inactiveFutureEventPlayerIds,
   onInviteClick,
   onStatusChange,
   onRemoveInvitation,
@@ -106,7 +108,9 @@ export default function PlayerInvitationsCard({
   const tabInvitations = activeTab === 'assigned'
     ? invitations.filter(inv => assignedPlayerIds.includes(inv.playerId))
     : activeTab === 'unavailable'
-      ? invitations.filter(inv => unavailableStatuses.includes(inv.status))
+      ? invitations.filter(inv => unavailableStatuses.includes(inv.status) || inactiveFutureEventPlayerIds.has(inv.playerId))
+      : activeTab === 'accepted'
+      ? invitations.filter(inv => inv.status === 'accepted' && !inactiveFutureEventPlayerIds.has(inv.playerId))
       : invitations.filter(inv => inv.status === activeTab);
 
   const invitationTabs: Array<{ status: TabType; label: string; count: number; activeClassName: string; className?: string }> = [
@@ -238,6 +242,7 @@ export default function PlayerInvitationsCard({
               const isDraggable = activeTab === 'accepted' && isAccepted && !isAssigned;
               // Only dim assigned players on the accepted tab since we have separate tabs now
               const shouldDim = activeTab === 'accepted' && isAssigned;
+              const hasInactiveFutureError = inactiveFutureEventPlayerIds.has(invitation.playerId);
 
               // Calculate player statistics including current event real-time state
               const stats = getPlayerStatsWithCurrent(invitation.playerId);
@@ -273,6 +278,11 @@ export default function PlayerInvitationsCard({
                           <span className="text-sm text-gray-900">
                             {player ? `${player.firstName} ${player.lastName}` : t('playerInvitations.playerIdFallback', { id: invitation.playerId })}
                           </span>
+                          {hasInactiveFutureError && (
+                            <span className="text-xs text-red-700 bg-red-100 px-1.5 py-0.5 rounded font-medium" title={t('playerInvitations.inactiveIndicatorTooltip')}>
+                              {t('playerInvitations.inactiveIndicator')}
+                            </span>
+                          )}
                           {player && <Level level={player.level} className="text-sm" />}
                           <span className="text-xs text-gray-500 font-mono" title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}>
                             {stats.selectedCount}/{stats.acceptedCount}

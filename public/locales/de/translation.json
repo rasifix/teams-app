@@ -314,8 +314,11 @@
     "levelFilter": "Level:",
     "yearFilter": "Jahr:",
     "trialFilter": "Schnupperli:",
+    "inactiveFilter": "Inaktiv:",
     "showTrialPlayers": "Anzeigen",
     "hideTrialPlayers": "Ausblenden",
+    "showInactivePlayers": "Anzeigen",
+    "hideInactivePlayers": "Ausblenden",
     "guardians": {
       "playerPrefix": "Spieler:",
       "noEmail": "Keine E-Mail",

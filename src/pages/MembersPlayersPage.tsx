@@ -13,6 +13,7 @@ export default function MembersPlayersPage() {
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [showTrialPlayers, setShowTrialPlayers] = useState(false);
+  const [showInactivePlayers, setShowInactivePlayers] = useState(false);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -40,9 +41,13 @@ export default function MembersPlayersPage() {
         return false;
       }
 
+      if (!showInactivePlayers && player.status === "inactive") {
+        return false;
+      }
+
       return true;
     });
-  }, [players, selectedLevels, selectedYear, showTrialPlayers]);
+  }, [players, selectedLevels, selectedYear, showTrialPlayers, showInactivePlayers]);
 
   return (
     <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
@@ -146,6 +151,26 @@ export default function MembersPlayersPage() {
               <span
                 className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
                   showTrialPlayers ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("members.inactiveFilter")}</span>
+            <button
+              onClick={() => setShowInactivePlayers((prev) => !prev)}
+              aria-pressed={showInactivePlayers}
+              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                showInactivePlayers ? "bg-orange-600" : "bg-gray-300"
+              }`}
+            >
+              <span className="sr-only">
+                {showInactivePlayers ? t("members.hideInactivePlayers") : t("members.showInactivePlayers")}
+              </span>
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                  showInactivePlayers ? "translate-x-6" : "translate-x-1"
                 }`}
               />
             </button>

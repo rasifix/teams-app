@@ -368,56 +368,56 @@
   },
   "membersImport": {
     "openAction": "Import",
-    "title": "Spieler und Erziehungsberechtigte importieren",
-    "description": "Lade eine Spond-Mitglieder-CSV hoch, prüfe die erkannten Änderungen, schliesse bei Bedarf Zeilen aus und wende nur additive Änderungen an.",
-    "dropZone": "CSV-Datei hier ablegen",
-    "fileTypeHint": "Spond-Export (.csv, durch Semikolon getrennt)",
-    "selectFile": "Datei auswählen",
-    "fileLoaded": "Geladen: {{fileName}}",
+    "title": "Mitglieder importieren",
+    "description": "Wähle eine andere Gruppe, markiere die zu importierenden Mitglieder und übernehme sie in die aktuelle Gruppe.",
+    "sourceGroupLabel": "Quellgruppe",
+    "sourceGroupPlaceholder": "Quellgruppe auswählen",
+    "selectedSourceGroup": "Quellgruppe: {{name}}",
+    "noSourceGroups": "Es sind keine weiteren zugänglichen Gruppen für den Import verfügbar.",
+    "loadingSourceMembers": "Mitglieder der Quellgruppe werden geladen...",
+    "noSourceMembers": "Die gewählte Quellgruppe enthält keine Mitglieder.",
+    "noImportableMembers": "Alle Mitglieder der Quellgruppe existieren bereits in dieser Gruppe.",
+    "noEmail": "Keine E-Mail",
+    "birthYearFilter": {
+      "label": "Geburtsjahr-Filter",
+      "all": "Alle Jahre",
+      "clear": "Filter löschen",
+      "empty": "In der gewählten Quellgruppe sind keine Geburtsjahre verfügbar."
+    },
     "completedTitle": "Import abgeschlossen",
     "newImport": "Neuen Import starten",
-    "includeAll": "Alle einschliessen",
-    "excludeAll": "Alle ausschliessen",
+    "selectAll": "Alle auswählen",
+    "clearSelection": "Auswahl aufheben",
     "apply": "Import anwenden",
     "applying": "Wird angewendet...",
     "summary": {
-      "totalRows": "Zeilen: {{count}}",
-      "actionableRows": "Anwendbar: {{count}}",
-      "newPlayers": "Neue Spieler: {{count}}",
-      "guardiansToAdd": "Erziehungsberechtigte zum Hinzufügen: {{count}}",
-      "birthDateFills": "Geburtsdaten zu ergänzen: {{count}}"
+      "totalSourceMembers": "Mitglieder in Quellgruppe: {{count}}",
+      "importableMembers": "Importierbare Mitglieder: {{count}}",
+      "hiddenExistingMembers": "Bereits vorhanden (ausgeblendet): {{count}}",
+      "selectedMembers": "Ausgewählte Mitglieder: {{count}}"
     },
     "progress": {
       "label": "Import läuft",
       "count": "{{completed}} / {{total}}"
     },
-    "row": {
-      "newPlayer": "Neuer Spieler",
-      "existingPlayer": "Bestehender Spieler",
-      "unresolved": "Nicht auflösbare Zeile",
-      "birthDateFill": "Fehlendes Geburtsdatum ergänzen",
-      "birthDateAdded": "Geburtsdatum zum Hinzufügen: {{date}}",
-      "guardiansAdded": "Erziehungsberechtigte hinzufügen: {{count}}",
-      "guardianNames": "Erziehungsberechtigte: {{names}}"
+    "role": {
+      "player": "Spieler",
+      "trainer": "Trainer"
+    },
+    "memberMeta": {
+      "player": "Level {{level}} • Erziehungsberechtigte: {{guardiansCount}}",
+      "trainer": "E-Mail: {{email}}"
     },
     "errors": {
-      "empty-file": "Die gewählte Datei ist leer.",
-      "missing-required-header-child-name": "In der CSV fehlt die erforderliche Spalte für den Kindnamen."
-    },
-    "issues": {
-      "missing-player-name": "Der Spielername ist unvollständig.",
-      "player-name-incomplete": "Der Spielername ist unvollständig.",
-      "invalid-birth-date": "Das Geburtsdatum konnte nicht gelesen werden.",
-      "guardian-name-incomplete": "Mindestens ein Eintrag für Erziehungsberechtigte ist unvollständig und wurde übersprungen.",
-      "ambiguous-player-match": "Mehrere bestehende Spieler passen zu dieser Zeile.",
-      "missing-birth-date-for-new-player": "Neuer Spieler kann ohne Geburtsdatum nicht erstellt werden."
+      "sourceMembersLoadFailed": "Mitglieder der gewählten Quellgruppe konnten nicht geladen werden."
     },
     "result": {
-      "processedRows": "Verarbeitete Zeilen: {{count}}",
-      "addedPlayers": "Hinzugefügte Spieler: {{count}}",
-      "addedGuardians": "Hinzugefügte Erziehungsberechtigte: {{count}}",
-      "filledBirthDates": "Ergänzte Geburtsdaten: {{count}}",
-      "failedRows": "Fehlgeschlagene Zeilen: {{count}}"
+      "processedMembers": "Verarbeitete Mitglieder: {{count}}",
+      "importedPlayers": "Importierte Spieler: {{count}}",
+      "importedTrainers": "Importierte Trainer: {{count}}",
+      "importedGuardians": "Importierte Erziehungsberechtigte: {{count}}",
+      "skippedMembers": "Übersprungene Mitglieder: {{count}}",
+      "failedMembers": "Fehlgeschlagene Mitglieder: {{count}}"
     }
   },
   "levels": {

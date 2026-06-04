@@ -18,6 +18,7 @@ be described in files grouped in subfolders per category.
 * UC-GR-004 - manage guardians
 * UC-GR-005 - edit guardian
 * UC-GR-006 - manage shirt sets
+* UC-GR-007 - sync members from another group
 
 ## Event
 

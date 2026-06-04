@@ -24,6 +24,21 @@ import { authService } from '../services/authService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
 import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type GroupMember } from './selectors/memberSelectors';
+import { isDuplicateTargetMember, type GroupImportCandidate } from './selectors/memberGroupImportSelectors';
+
+export interface GroupMemberImportProgress {
+  total: number;
+  completed: number;
+}
+
+export interface GroupMemberImportResult {
+  processedMembers: number;
+  importedPlayers: number;
+  importedTrainers: number;
+  importedGuardians: number;
+  skippedMembers: number;
+  failedMembers: number;
+}
 
 // Helper function to sort members alphabetically by lastName + firstName
 const sortMembers = (members: GroupMember[]): GroupMember[] => {
@@ -122,6 +137,45 @@ function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: s
   return guardian.id === guardianId || guardian.userId === guardianId;
 }
 
+function toGuardianIdentityKey(firstName: string | undefined, lastName: string | undefined, email: string | undefined): string {
+  return `${(firstName || '').trim().toLowerCase()}::${(lastName || '').trim().toLowerCase()}::${(email || '').trim().toLowerCase()}`;
+}
+
+function hasCompleteGuardianIdentity(firstName: string | undefined, lastName: string | undefined, email: string | undefined): boolean {
+  return Boolean((firstName || '').trim()) && Boolean((lastName || '').trim()) && Boolean((email || '').trim());
+}
+
+function buildGuardianIdentityLookup(members: GroupMember[]): Map<string, string> {
+  const lookup = new Map<string, string>();
+  const players = playersFromMembers(members);
+  const trainers = trainersFromMembers(members);
+
+  trainers.forEach((trainer) => {
+    if (!hasCompleteGuardianIdentity(trainer.firstName, trainer.lastName, trainer.email)) {
+      return;
+    }
+
+    lookup.set(toGuardianIdentityKey(trainer.firstName, trainer.lastName, trainer.email), trainer.id);
+  });
+
+  players.forEach((player) => {
+    (player.guardians || []).forEach((guardian) => {
+      if (!hasCompleteGuardianIdentity(guardian.firstName, guardian.lastName, guardian.email)) {
+        return;
+      }
+
+      const guardianMemberId = guardian.userId || guardian.id;
+      if (!guardianMemberId) {
+        return;
+      }
+
+      lookup.set(toGuardianIdentityKey(guardian.firstName, guardian.lastName, guardian.email), guardianMemberId);
+    });
+  });
+
+  return lookup;
+}
+
 function mergeGroupMember(group: Group | null, member: GroupMember | null): Group | null {
   if (!group || !member) {
     return group;
@@ -188,6 +242,12 @@ interface AppState {
   selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
   clearAuthenticatedData: () => void;
+  getMembersForGroup: (groupId: string) => Promise<{ players: Player[]; trainers: Trainer[] } | null>;
+  importMembersFromGroup: (
+    sourceGroupId: string,
+    memberIds: string[],
+    onProgress?: (progress: GroupMemberImportProgress) => void
+  ) => Promise<GroupMemberImportResult>;
   setMembers: (members: GroupMember[]) => void;
   setEvents: (events: Event[]) => void;
   setShirtSets: (shirtSets: ShirtSet[]) => void;
@@ -461,6 +521,168 @@ export const useStore = create<AppState>()(
             shirtSets: null,
           },
         });
+      },
+
+      getMembersForGroup: async (groupId: string) => {
+        try {
+          return await getAllMembers(groupId);
+        } catch (error) {
+          console.error('Failed to load members for group:', error);
+          return null;
+        }
+      },
+
+      importMembersFromGroup: async (sourceGroupId, memberIds, onProgress) => {
+        const targetGroup = get().group;
+        if (!targetGroup) {
+          throw new Error('No group selected');
+        }
+
+        const uniqueMemberIds = Array.from(new Set(memberIds));
+        const result: GroupMemberImportResult = {
+          processedMembers: 0,
+          importedPlayers: 0,
+          importedTrainers: 0,
+          importedGuardians: 0,
+          skippedMembers: 0,
+          failedMembers: 0,
+        };
+
+        onProgress?.({ total: uniqueMemberIds.length, completed: 0 });
+
+        const sourceMembers = await getAllMembers(sourceGroupId);
+        const sourceCandidatesById = new Map<string, GroupImportCandidate>();
+
+        sourceMembers.players.forEach((player) => {
+          sourceCandidatesById.set(player.id, {
+            id: player.id,
+            role: 'player',
+            firstName: player.firstName,
+            lastName: player.lastName,
+            birthDate: player.birthDate,
+            birthYear: player.birthYear,
+            level: player.level,
+            status: player.status,
+            guardians: player.guardians,
+          });
+        });
+
+        sourceMembers.trainers.forEach((trainer) => {
+          sourceCandidatesById.set(trainer.id, {
+            id: trainer.id,
+            role: 'trainer',
+            firstName: trainer.firstName,
+            lastName: trainer.lastName,
+            email: trainer.email,
+          });
+        });
+
+        for (const sourceMemberId of uniqueMemberIds) {
+          const sourceCandidate = sourceCandidatesById.get(sourceMemberId);
+          let memberFailed = false;
+
+          result.processedMembers += 1;
+
+          if (!sourceCandidate) {
+            result.failedMembers += 1;
+            onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
+            continue;
+          }
+
+          const currentMembers = get().members;
+          const targetPlayers = playersFromMembers(currentMembers);
+          const targetTrainers = trainersFromMembers(currentMembers);
+          if (isDuplicateTargetMember(sourceCandidate, targetPlayers, targetTrainers)) {
+            result.skippedMembers += 1;
+            onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
+            continue;
+          }
+
+          if (sourceCandidate.role === 'player') {
+            try {
+              const createdPlayer = await addMemberService(targetGroup.id, {
+                firstName: sourceCandidate.firstName,
+                lastName: sourceCandidate.lastName,
+                birthDate: sourceCandidate.birthDate,
+                birthYear: sourceCandidate.birthYear,
+                level: sourceCandidate.level || 1,
+                status: sourceCandidate.status || 'active',
+                guardians: [],
+                roles: ['player'],
+              }) as Player;
+
+              set({ members: upsertMember(get().members, createdPlayer) });
+              result.importedPlayers += 1;
+
+              const sourceGuardians = sourceCandidate.guardians || [];
+              const seenGuardianIdentity = new Set<string>();
+
+              for (const guardian of sourceGuardians) {
+                if (!guardian.firstName?.trim() || !guardian.lastName?.trim()) {
+                  continue;
+                }
+
+                const guardianIdentity = toGuardianIdentityKey(guardian.firstName, guardian.lastName, guardian.email);
+                if (seenGuardianIdentity.has(guardianIdentity)) {
+                  continue;
+                }
+                seenGuardianIdentity.add(guardianIdentity);
+
+                const guardianIdentityLookup = buildGuardianIdentityLookup(get().members);
+                const existingGuardianMemberId = hasCompleteGuardianIdentity(
+                  guardian.firstName,
+                  guardian.lastName,
+                  guardian.email
+                )
+                  ? guardianIdentityLookup.get(guardianIdentity)
+                  : undefined;
+
+                const guardianAdded = await get().addGuardianToPlayer(
+                  createdPlayer.id,
+                  existingGuardianMemberId
+                    ? { guardianId: existingGuardianMemberId }
+                    : {
+                        firstName: guardian.firstName,
+                        lastName: guardian.lastName,
+                        email: guardian.email,
+                      }
+                );
+
+                if (guardianAdded) {
+                  result.importedGuardians += 1;
+                } else {
+                  memberFailed = true;
+                }
+              }
+            } catch (error) {
+              console.error('Failed to import player from source group:', error);
+              memberFailed = true;
+            }
+          } else {
+            try {
+              const createdTrainer = await addMemberService(targetGroup.id, {
+                firstName: sourceCandidate.firstName,
+                lastName: sourceCandidate.lastName,
+                email: sourceCandidate.email,
+                roles: ['trainer'],
+              }) as Trainer;
+
+              set({ members: upsertMember(get().members, createdTrainer) });
+              result.importedTrainers += 1;
+            } catch (error) {
+              console.error('Failed to import trainer from source group:', error);
+              memberFailed = true;
+            }
+          }
+
+          if (memberFailed) {
+            result.failedMembers += 1;
+          }
+
+          onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
+        }
+
+        return result;
       },
       
       loadGroups: async () => {

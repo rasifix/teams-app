@@ -11,7 +11,10 @@ import PlayerEventHistory from '../components/PlayerEventHistory';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
-import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from '../store/useStore';
+import {
+  PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE,
+  PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE,
+} from '../store/useStore';
 import {
   selectFutureEventsWithoutInvitation,
   selectGroupedPlayerEventHistory,
@@ -154,6 +157,8 @@ export default function PlayerDetailPage() {
       } catch (error) {
         if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
           setDeleteActionError(t('playerDetail.errors.deleteUnexpectedRoles'));
+        } else if (error instanceof Error && error.message === PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE) {
+          setDeleteActionError(t('playerDetail.errors.deleteBlockedPastTeamAssignments'));
         } else {
           setDeleteActionError(t('playerDetail.errors.deleteFailed'));
         }

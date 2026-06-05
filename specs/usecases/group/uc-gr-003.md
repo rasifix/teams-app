@@ -14,7 +14,8 @@ This use case covers:
 - importing players and guardians from Spond CSV,
 - opening a player detail view,
 - updating a player,
-- setting a player to inactive from list or detail flow.
+- setting a player to inactive from list or detail flow,
+- deleting a player from list or detail flow.
 
 This use case does not cover:
 - trainer management,
@@ -57,6 +58,11 @@ Required player fields:
 Optional player fields:
 - preferredShirtNumber
 
+Delete prerequisites:
+- player status
+- team assignment history
+- active invitations in the current group
+
 Derived field:
 - birthYear (derived from birthDate in UI before persistence)
 
@@ -78,6 +84,9 @@ Derived field:
 13. User can set a player inactive from Members list or Player detail after
     confirmation.
 14. System persists status update and keeps player in store for historical data.
+15. User can delete a player from Members list or Player detail after
+   confirmation when deletion is permitted.
+16. System removes the player and clears active invitations when deletion runs.
 
 ## Main Success Scenario - Import Players And Guardians (CSV)
 
@@ -133,12 +142,28 @@ Derived field:
    guardian identities.
 3. Later duplicate rows become non-actionable and are hidden in preview.
 
+### A7 - Delete Player
+
+1. User starts delete action from player list or detail view.
+2. System displays confirmation dialog.
+3. User confirms delete.
+4. System checks whether the player has ever been assigned to a team in the
+   past.
+5. If the player has past team assignment history, system rejects deletion.
+6. If the player has no past team assignment history, system removes the
+   player.
+7. System removes any active invitations for that player in the current group.
+8. If the deleted player was inactive, the player is fully removed and no
+   inactive record remains.
+
 ## Postconditions
 
 Success:
 - Player records are persisted for selected group.
 - Store state reflects create/update/status-update results.
 - Player list remains alphabetically sorted.
+- When deletion is permitted, the player is removed from current group data and
+   any active invitations are removed.
 
 Failure:
 - No partial mutation is committed in store.
@@ -154,6 +179,11 @@ Failure:
 - Year filter is computed from player birthDate when present, otherwise
   from birthYear.
 - Set inactive operations require explicit user confirmation in UI dialogs.
+- Delete operations require explicit user confirmation in UI dialogs.
+- Delete is only permitted when the player has never been assigned to a team
+   in the past.
+- Deleting a player removes any active invitations for that player.
+- Deleting an inactive player removes the player entirely from group data.
 - Inactive players are excluded from invite-player flows.
 - If an inactive player remains invited or assigned in a future event, UI
    highlights this as an error indicator.
@@ -170,6 +200,7 @@ Failure:
 - preferredShirtNumber is optional and, when present, must be numeric
   (input min 1).
 - Create/Edit submit does not proceed if required fields are missing.
+- Delete submit is blocked when the player has past team assignment history.
 
 ## Data Persistence Expectations
 
@@ -187,6 +218,9 @@ Update payload contains:
 - updated player fields
 
 Set inactive updates member status to inactive for current group.
+
+Delete payload removes the player record and any active invitations for the
+current group.
 
 ## API Contract Used By Current Frontend
 
@@ -207,14 +241,20 @@ Set inactive updates member status to inactive for current group.
    data is updated and reflected in store.
 5. Given set-inactive confirmation accepted, when update succeeds, then player
    status is inactive and historical references remain intact.
-6. Given inactive players exist, when opening invite players modal, then
+6. Given a player with no past team assignments, when Group Manager confirms
+   delete, then the player is removed and any active invitations are cleared.
+7. Given a player with past team assignments, when Group Manager attempts
+   delete, then the operation is rejected.
+8. Given a deleted inactive player, when deletion succeeds, then the player is
+   fully removed from group data.
+9. Given inactive players exist, when opening invite players modal, then
    inactive players are not listed as inviteable.
-7. Given an inactive player is still invited or assigned in a future event,
+10. Given an inactive player is still invited or assigned in a future event,
    when viewing that event, then the player row shows an error indicator.
-8. Given a unique same-name existing player and different imported birthDate,
+11. Given a unique same-name existing player and different imported birthDate,
    when import is applied, then existing player birthDate is updated and no new
    player is created.
-9. Given duplicate CSV rows for the same existing player guardian, when import
+12. Given duplicate CSV rows for the same existing player guardian, when import
    preview/apply runs, then guardian is added once and duplicate row additions
    are skipped.
 
@@ -224,4 +264,5 @@ Set inactive updates member status to inactive for current group.
   without invitation, but those are read-only enrichments and not part of
   player CRUD itself.
 - Current detail-delete flow attempts navigation to /players after success,
-  which is the currently implemented behavior.
+- Current detail-delete flow should remove active invitations and block players
+   with past team assignment history.

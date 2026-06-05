@@ -354,15 +354,16 @@
         "mergeFailed": "Zusammenführen fehlgeschlagen. Bitte erneut versuchen."
       }
     },
-    "deletePlayerTitle": "Spieler auf inaktiv setzen",
-    "deletePlayerMessage": "{{firstName}} {{lastName}} auf inaktiv setzen? Historische Daten bleiben erhalten und der Spieler kann nicht mehr eingeladen werden.",
-    "deletePlayerConfirm": "Inaktiv setzen",
+    "deletePlayerTitle": "Spieler löschen",
+    "deletePlayerMessage": "{{firstName}} {{lastName}} löschen? Aktive Einladungen werden entfernt.",
+    "deletePlayerConfirm": "Spieler löschen",
     "deleteTrainerTitle": "Trainer löschen",
     "deleteTrainerMessage": "Möchtest du {{firstName}} {{lastName}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteTrainerConfirm": "Trainer löschen",
     "errors": {
-      "playerHasUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht auf inaktiv gesetzt werden.",
-      "deletePlayerFailed": "Spieler konnte nicht auf inaktiv gesetzt werden. Bitte versuche es erneut.",
+      "playerHasUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden.",
+      "playerHasPastTeamAssignments": "Dieser Spieler kann nicht gelöscht werden, weil er in einem vergangenen Termin einem Team zugewiesen war.",
+      "deletePlayerFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
       "deleteTrainerFailed": "Trainer konnte nicht entfernt werden. Bitte versuche es erneut."
     }
   },
@@ -647,8 +648,9 @@
       "noPlayerId": "Keine Spieler-ID angegeben",
       "notFound": "Spieler nicht gefunden",
       "failedToLoadData": "Daten konnten nicht geladen werden",
-      "deleteFailed": "Spieler konnte nicht auf inaktiv gesetzt werden. Bitte versuche es erneut.",
-      "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht auf inaktiv gesetzt werden."
+      "deleteFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "deleteUnexpectedRoles": "Dieser Spieler hat unerwartete zusätzliche Rollen und kann nicht gelöscht werden.",
+      "deleteBlockedPastTeamAssignments": "Dieser Spieler kann nicht gelöscht werden, weil er in einem vergangenen Termin einem Team zugewiesen war."
     },
     "preferredShirtNumber": "Bevorzugt #{{number}}",
     "assignedTeam": "Zugeteilt zu Team {{teamName}}",

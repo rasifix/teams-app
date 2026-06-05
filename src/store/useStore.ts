@@ -25,6 +25,10 @@ import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId
 import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
 import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type GroupMember } from './selectors/memberSelectors';
 import { isDuplicateTargetMember, type GroupImportCandidate } from './selectors/memberGroupImportSelectors';
+import {
+  selectEventWithoutActiveInvitations,
+  selectPlayerDeletionImpact,
+} from './selectors/playerDeletionSelectors';
 
 export interface GroupMemberImportProgress {
   total: number;
@@ -198,6 +202,8 @@ function mergeGroupMember(group: Group | null, member: GroupMember | null): Grou
 
 const PLAYER_DELETE_ROLE_CONSTRAINT = 'PLAYER_DELETE_ROLE_CONSTRAINT';
 export const PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE = PLAYER_DELETE_ROLE_CONSTRAINT;
+const PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT = 'PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT';
+export const PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE = PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT;
 
 function getUniqueRoles(roles: GroupRole[] | undefined): GroupRole[] {
   return Array.from(new Set(roles || []));
@@ -825,18 +831,42 @@ export const useStore = create<AppState>()(
             return false;
           }
 
-          const updatedPlayer = await updateMemberService(currentGroup.id, id, {
-            ...currentPlayer,
-            status: 'inactive',
-            roles: Array.from(new Set([...(currentPlayer.roles || []), MEMBER_ROLE_PLAYER])),
-          }) as Player;
+          const deletionImpact = selectPlayerDeletionImpact(get().events, id);
+          if (deletionImpact.hasPastTeamAssignment) {
+            throw new Error(PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT);
+          }
 
-          const updatedMembers = upsertMember(get().members, updatedPlayer);
-          set({ members: updatedMembers });
+          let updatedEvents = get().events;
+          for (const event of deletionImpact.eventsWithActiveInvitations) {
+            const sanitizedEvent = selectEventWithoutActiveInvitations(event, id);
+            const persistedEvent = await updateEventService(currentGroup.id, event.id, {
+              invitations: sanitizedEvent.invitations,
+            });
+
+            updatedEvents = updatedEvents.map((entry) => (
+              entry.id === persistedEvent.id ? persistedEvent : entry
+            ));
+          }
+
+          await deleteMemberService(currentGroup.id, id);
+
+          const updatedMembers = sortMembers(
+            get().members.filter((entry) => entry.id !== id)
+          );
+
+          set({
+            members: updatedMembers,
+            events: sortEvents(updatedEvents),
+          });
           return true;
         } catch (error) {
-          console.error('Failed to set player inactive:', error);
-          if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT) {
+          console.error('Failed to delete player:', error);
+          if (
+            error instanceof Error && (
+              error.message === PLAYER_DELETE_ROLE_CONSTRAINT
+              || error.message === PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT
+            )
+          ) {
             throw error;
           }
           return false;

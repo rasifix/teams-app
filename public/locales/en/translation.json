@@ -354,15 +354,16 @@
         "mergeFailed": "Merge failed. Please try again."
       }
     },
-    "deletePlayerTitle": "Set Player Inactive",
-    "deletePlayerMessage": "Set {{firstName}} {{lastName}} to inactive? Historical data is preserved, and the player can no longer be invited.",
-    "deletePlayerConfirm": "Set Inactive",
+    "deletePlayerTitle": "Delete Player",
+    "deletePlayerMessage": "Delete {{firstName}} {{lastName}}? Active invitations will be removed.",
+    "deletePlayerConfirm": "Delete Player",
     "deleteTrainerTitle": "Delete Trainer",
     "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
     "deleteTrainerConfirm": "Delete Trainer",
     "errors": {
-      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be set inactive.",
-      "deletePlayerFailed": "Failed to set player inactive. Please try again.",
+      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
+      "playerHasPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past event.",
+      "deletePlayerFailed": "Failed to delete player. Please try again.",
       "deleteTrainerFailed": "Failed to remove trainer. Please try again."
     }
   },
@@ -647,8 +648,9 @@
       "noPlayerId": "No player ID provided",
       "notFound": "Player not found",
       "failedToLoadData": "Failed to load data",
-      "deleteFailed": "Failed to set player inactive. Please try again.",
-      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be set inactive."
+      "deleteFailed": "Failed to delete player. Please try again.",
+      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
+      "deleteBlockedPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past event."
     },
     "preferredShirtNumber": "Preferred #{{number}}",
     "assignedTeam": "Assigned to team {{teamName}}",

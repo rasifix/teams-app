@@ -7,7 +7,10 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import ImportMembersModal from "../components/ImportMembersModal";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from "../store";
-import { PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE } from "../store/useStore";
+import {
+  PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE,
+  PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE,
+} from "../store/useStore";
 import { useAuth } from "../hooks/useAuth";
 import { canManageGuardians } from "../utils/guardians";
 import type { Guardian, Player, Trainer } from "../types";
@@ -82,6 +85,8 @@ export default function MembersPage() {
         console.error('Error deleting player:', error);
         if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
           setDeleteActionError(t('members.errors.playerHasUnexpectedRoles'));
+        } else if (error instanceof Error && error.message === PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE) {
+          setDeleteActionError(t('members.errors.playerHasPastTeamAssignments'));
         } else {
           setDeleteActionError(t('members.errors.deletePlayerFailed'));
         }

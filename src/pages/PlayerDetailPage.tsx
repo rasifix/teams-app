@@ -62,6 +62,37 @@ export default function PlayerDetailPage() {
     }
   }, [isInitialized, loading, id, player, navigate]);
 
+  const guardians = player?.guardians || [];
+  const canManagePlayerGuardians = canManageGuardians(user, group, trainers);
+  const underageForGuardianAssignment = player ? isPlayerUnderage(player) : false;
+  const playerStatus = player?.status || 'active';
+  const playerStatusBadgeClassName = playerStatus === 'active'
+    ? 'bg-green-50 text-green-700'
+    : playerStatus === 'trial'
+      ? 'bg-amber-50 text-amber-700'
+      : 'bg-gray-100 text-gray-700';
+  const playerStatusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
+
+  const playerEventHistory = useMemo(
+    () => (player ? selectPlayerEventHistory(events, player.id) : []),
+    [events, player]
+  );
+
+  const groupedPlayerEventHistory = useMemo(
+    () => selectGroupedPlayerEventHistory(groupPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
+    [groupPeriods, playerEventHistory, t]
+  );
+
+  const futureEventsWithoutInvitation = useMemo(
+    () => (player ? selectFutureEventsWithoutInvitation(events, player.id) : []),
+    [events, player]
+  );
+
+  const existingGuardianUsers = useMemo(
+    () => selectExistingGuardianUsers(players, trainers),
+    [players, trainers]
+  );
+
   if (loading) {
     return (
       <div className="page-container">
@@ -96,37 +127,6 @@ export default function PlayerDetailPage() {
     );
   }
 
-  const guardians = player.guardians || [];
-  const canManagePlayerGuardians = canManageGuardians(user, group, trainers);
-  const underageForGuardianAssignment = isPlayerUnderage(player);
-  const playerStatus = player.status || 'active';
-  const playerStatusBadgeClassName = playerStatus === 'active'
-    ? 'bg-green-50 text-green-700'
-    : playerStatus === 'trial'
-      ? 'bg-amber-50 text-amber-700'
-      : 'bg-gray-100 text-gray-700';
-  const playerStatusLabel = playerStatus.charAt(0).toUpperCase() + playerStatus.slice(1);
-
-  const playerEventHistory = useMemo(
-    () => selectPlayerEventHistory(events, player.id),
-    [events, player.id]
-  );
-
-  const groupedPlayerEventHistory = useMemo(
-    () => selectGroupedPlayerEventHistory(groupPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
-    [groupPeriods, playerEventHistory, t]
-  );
-
-  const futureEventsWithoutInvitation = useMemo(
-    () => selectFutureEventsWithoutInvitation(events, player.id),
-    [events, player.id]
-  );
-
-  const existingGuardianUsers = useMemo(
-    () => selectExistingGuardianUsers(players, trainers),
-    [players, trainers]
-  );
-
   const handleEditPlayer = () => {
     setIsEditModalOpen(true);
   };
@@ -150,6 +150,7 @@ export default function PlayerDetailPage() {
         const success = await deletePlayer(id);
         if (success) {
           setIsDeleteConfirmOpen(false);
+          navigate('/members/players', { replace: true });
           return;
         }
 

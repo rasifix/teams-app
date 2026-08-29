@@ -256,7 +256,9 @@
       "maxPlayersPerTeam": "Max Players per Team",
       "maxPlayersPerTeamRequired": "Max Players per Team *",
       "minPlayersPerTeam": "Min Players per Team",
-      "minPlayersPerTeamRequired": "Min Players per Team *"
+      "minPlayersPerTeamRequired": "Min Players per Team *",
+      "playingMode": "Playing Mode",
+      "noPlayingMode": "No playing mode"
     },
     "placeholders": {
       "eventName": "e.g., Saturday Morning Game",
@@ -544,6 +546,7 @@
     "members": "Members",
     "events": "Events",
     "shirts": "Shirts",
+    "matchPlanning": "Match Planning",
     "statistics": "Statistics"
   },
   "statistics": {
@@ -718,7 +721,11 @@
     "noPlayersSelected": "No players selected yet",
     "removeAction": "Remove",
     "removePlayerTitle": "Remove Player",
-    "removePlayerMessage": "Are you sure you want to remove {{firstName}} {{lastName}} from this team?"
+    "removePlayerMessage": "Are you sure you want to remove {{firstName}} {{lastName}} from this team?",
+    "formationLabel": "Formation",
+    "noFormationAssigned": "No formation selected",
+    "lineupLabel": "Lineup",
+    "planLineupAction": "Plan Lineup"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team not found",
@@ -730,5 +737,98 @@
     "tooManySelected": "Too many selected (max {{max}})",
     "addPlayersAction_one": "Add {{count}} Player",
     "addPlayersAction_other": "Add {{count}} Players"
+  },
+  "matchPlanning": {
+    "title": "Match Planning",
+    "description": "Enable playing modes and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
+    "disabledState": "Match planning is disabled for this group. Turn it on to define playing modes and formations.",
+    "playingModes": {
+      "title": "Playing Modes",
+      "emptyState": "No playing modes yet. Add one to get started.",
+      "defaultBadge": "Default",
+      "summary": "{{periods}} periods x {{minutes}} min",
+      "setDefault": "Set as default",
+      "deleteTitle": "Delete Playing Mode",
+      "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+    },
+    "formations": {
+      "title": "Formations",
+      "emptyState": "No formations yet. Add one to get started.",
+      "deleteTitle": "Delete Formation",
+      "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+    }
+  },
+  "playingModeModal": {
+    "addTitle": "Add Playing Mode",
+    "editTitle": "Edit Playing Mode",
+    "fields": {
+      "name": "Name",
+      "numberOfPeriods": "Number of Periods",
+      "periodLengthMinutes": "Period Length (minutes)"
+    },
+    "placeholders": {
+      "name": "e.g. 4x20"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "numberOfPeriodsMin": "Number of periods must be at least 1",
+      "periodLengthMin": "Period length must be at least 1 minute",
+      "saveFailed": "Failed to save playing mode. Please try again."
+    }
+  },
+  "formationModal": {
+    "addTitle": "Add Formation",
+    "editTitle": "Edit Formation",
+    "addSlot": "Add Slot",
+    "removeSlot": "Remove slot",
+    "fields": {
+      "name": "Name",
+      "slots": "Slots"
+    },
+    "placeholders": {
+      "name": "e.g. 3-3"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "minSlots": "At least 2 slots are required",
+      "exactlyOneGoalkeeper": "Exactly one slot must be the goalkeeper (GK)",
+      "saveFailed": "Failed to save formation. Please try again."
+    }
+  },
+  "positions": {
+    "GK": "GK",
+    "LB": "LB",
+    "CB": "CB",
+    "RB": "RB",
+    "LWB": "LWB",
+    "RWB": "RWB",
+    "CDM": "CDM",
+    "CM": "CM",
+    "CAM": "CAM",
+    "LM": "LM",
+    "RM": "RM",
+    "LW": "LW",
+    "RW": "RW",
+    "CF": "CF",
+    "ST": "ST"
+  },
+  "teamLineup": {
+    "loading": "Loading lineup...",
+    "teamNotFound": "Team not found",
+    "notConfigured": "This team needs a playing mode and a formation before a lineup can be planned.",
+    "title": "Lineup - {{team}}",
+    "periodLabel": "Period {{number}}",
+    "copyPreviousPeriod": "Copy previous period",
+    "plannedPeriods": "{{count}}/{{total}} periods planned",
+    "summaryTab": "Summary",
+    "summaryTitle": "Lineup summary",
+    "printSummary": "Print summary",
+    "benchLabel": "Bench",
+    "unknownPlayer": "Unknown player",
+    "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",
+    "slotsTitle": "Formation ({{formation}})",
+    "emptySlot": "Empty",
+    "benchTitle": "Bench ({{count}})",
+    "noBenchedPlayers": "No players on the bench for this period."
   }
 }

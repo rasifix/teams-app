@@ -23,6 +23,9 @@ Event level.
 - Teams in an Event have selected Players, assigned Trainers, and optional Shirt
 	Sets.
 - Event statistics contribute to Group-level and Player-level fairness metrics.
+- When its Group has match planning enabled, an Event may reference one of
+	the Group's Playing Modes, which then governs how many periods its Teams
+	can plan lineups for.
 
 ## Key Responsibilities
 
@@ -30,16 +33,22 @@ Event level.
 - collect invitation responses for in-scope Players,
 - provide the candidate pool for team selection,
 - store the final selected Players per Team,
-- serve as the atomic record for attendance and selection history.
+- serve as the atomic record for attendance and selection history,
+- when match planning is enabled for its Group, optionally reference a
+	Playing Mode that Teams use to plan per-period lineups.
 
 ## Lifecycle
 
 1. An Event is created inside a Group with date and configuration.
-2. Invitations are generated for eligible Players.
-3. Players respond (for example, open, accepted, declined).
-4. Teams are created and filled manually or via selection logic.
-5. Final selections are stored and used for statistics.
-6. The Event is considered historical after completion, but remains queryable.
+2. If the Group has match planning enabled, the Event is auto-assigned the
+	Group's default Playing Mode (still optional and resettable to none).
+3. Invitations are generated for eligible Players.
+4. Players respond (for example, open, accepted, declined).
+5. Teams are created and filled manually or via selection logic.
+6. If a Playing Mode is assigned, Teams may select a Formation and plan a
+	per-period lineup.
+7. Final selections are stored and used for statistics.
+8. The Event is considered historical after completion, but remains queryable.
 
 ## Invariants And Rules
 
@@ -52,6 +61,12 @@ Event level.
 	Group when deciding current selection priority.
 - Changes to Event date or roster rules after invitations are sent should trigger
 	revalidation of planning assumptions.
+- An Event's Playing Mode, if set, must belong to the same Group as the
+	Event.
+- An Event's Playing Mode remains optional at all times; it can be reset to
+	none even after being auto-assigned on creation.
+- An Event can only reference a Playing Mode when its Group has match
+	planning enabled.
 
 ## Scope Boundaries
 
@@ -73,4 +88,10 @@ The Event does not:
 sent to Group players. Accepted players are balanced into Team A and Team B,
 with trainers and shirt sets assigned. The final participation record from this
 single date is then included in fairness statistics for future Events.
+
+"Saturday Match - 2026-05-02" is an Event in Group "D7", which has match
+planning enabled. It is auto-assigned the Group's default Playing Mode
+"4x20". Team A selects Formation "3-3" and plans a lineup for each of the
+four periods, with unassigned selected Players implicitly on the bench for
+that period.
 

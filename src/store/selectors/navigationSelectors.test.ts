@@ -18,7 +18,7 @@ describe('navigation selectors', () => {
       },
     );
 
-    expect(items.map((item) => item.path)).toEqual(['/members', '/events', '/shirts', '/statistics']);
+    expect(items.map((item) => item.path)).toEqual(['/members', '/events', '/shirts', '/match-planning', '/statistics']);
   });
 
   it('shows all navigation items for trainers', () => {
@@ -37,7 +37,7 @@ describe('navigation selectors', () => {
       },
     );
 
-    expect(items.map((item) => item.path)).toEqual(['/members', '/events', '/shirts', '/statistics']);
+    expect(items.map((item) => item.path)).toEqual(['/members', '/events', '/shirts', '/match-planning', '/statistics']);
   });
 
   it('hides shirts and statistics for guardians without admin or trainer role', () => {

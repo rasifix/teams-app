@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
+import { useMatchPlanning } from '../store';
 
 interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string }) => void;
+  onSave: (data: { name: string; date: string; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string; playingModeId?: string | null }) => void;
   currentData: {
     name: string;
     date: string;
     maxPlayersPerTeam: number;
     minPlayersPerTeam: number;
     location?: string;
+    playingModeId?: string | null;
   };
   minMaxPlayers: number;
 }
@@ -25,27 +27,38 @@ export default function EditEventModal({
   minMaxPlayers
 }: EditEventModalProps) {
   const { t } = useTranslation();
+  const { matchPlanningEnabled, playingModes } = useMatchPlanning();
   const [name, setName] = useState(currentData.name);
   const [date, setDate] = useState(currentData.date);
   const [location, setLocation] = useState(currentData.location || '');
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(currentData.maxPlayersPerTeam);
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(currentData.minPlayersPerTeam);
+  const [playingModeId, setPlayingModeId] = useState(currentData.playingModeId ?? '');
   const [error, setError] = useState<string | null>(null);
 
+  // Reset only when the modal opens, not on every parent re-render, since `currentData` is a
+  // fresh object each render and would otherwise clobber in-progress edits (e.g. playingModeId).
   useEffect(() => {
     if (isOpen) {
+      console.log('EditEventModal: Resetting form state from currentData', currentData);
       setName(currentData.name);
       setDate(currentData.date);
       setLocation(currentData.location || '');
       setMaxPlayersPerTeam(currentData.maxPlayersPerTeam || 9);
       setMinPlayersPerTeam(currentData.minPlayersPerTeam || 6);
+      setPlayingModeId(currentData.playingModeId ?? '');
       setError(null);
     }
-  }, [currentData, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    const submittedPlayingModeId = new FormData(e.currentTarget).get('playingModeId');
+    const resolvedPlayingModeId = matchPlanningEnabled
+      ? (typeof submittedPlayingModeId === 'string' && submittedPlayingModeId ? submittedPlayingModeId : null)
+      : undefined;
 
     if (!name.trim()) {
       setError(t('editEventModal.errors.eventNameRequired'));
@@ -83,6 +96,7 @@ export default function EditEventModal({
       maxPlayersPerTeam,
       minPlayersPerTeam,
       location: location.trim() || undefined,
+      playingModeId: resolvedPlayingModeId,
     });
     onClose();
   };
@@ -175,6 +189,26 @@ export default function EditEventModal({
                 className="form-input"
               />
             </div>
+
+            {matchPlanningEnabled && (
+              <div>
+                <label htmlFor="eventPlayingMode" className="form-label">
+                  {t('eventModal.fields.playingMode')}
+                </label>
+                <select
+                  id="eventPlayingMode"
+                  name="playingModeId"
+                  value={playingModeId}
+                  onChange={(e) => setPlayingModeId(e.target.value)}
+                  className="form-input"
+                >
+                  <option value="">{t('eventModal.fields.noPlayingMode')}</option>
+                  {playingModes.map((mode) => (
+                    <option key={mode.id} value={mode.id}>{mode.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">

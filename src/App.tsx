@@ -20,11 +20,13 @@ import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import TeamDetailPage from './pages/TeamDetailPage';
 import TeamPlayerSelectionPage from './pages/TeamPlayerSelectionPage';
+import TeamLineupPage from './pages/TeamLineupPage';
 import StatisticsPage from './pages/StatisticsPage';
 import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
 import EventAttendancePage from './pages/EventAttendancePage';
 import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
+import MatchPlanningPage from './pages/MatchPlanningPage';
 import GroupSelectionPage from './pages/GroupSelectionPage';
 
 function App() {
@@ -75,7 +77,9 @@ function App() {
                     <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId/select-players" element={<ProtectedRoute><TeamPlayerSelectionPage /></ProtectedRoute>} />
+                    <Route path="/events/:eventId/teams/:teamId/lineup" element={<ProtectedRoute><TeamLineupPage /></ProtectedRoute>} />
                     <Route path="/shirts" element={<ProtectedRoute><ShirtSetsPage /></ProtectedRoute>} />
+                    <Route path="/match-planning" element={<ProtectedRoute><MatchPlanningPage /></ProtectedRoute>} />
                     <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>
                       <Route path="player-statistics" element={<PlayerStatisticsPage />} />
                       <Route path="event-attendance" element={<EventAttendancePage />} />

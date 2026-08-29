@@ -5,6 +5,31 @@ export interface Period {
   endDate: string;
 }
 
+export type PositionCode =
+  | 'GK'
+  | 'LB' | 'CB' | 'RB' | 'LWB' | 'RWB'
+  | 'CDM' | 'CM' | 'CAM' | 'LM' | 'RM'
+  | 'LW' | 'RW' | 'CF' | 'ST';
+
+export interface FormationSlot {
+  id: string;
+  positionCode: PositionCode;
+}
+
+export interface Formation {
+  id: string;
+  name: string; // e.g. "3-3"
+  slots: FormationSlot[]; // exactly one slot must have positionCode GK
+}
+
+export interface PlayingMode {
+  id: string;
+  name: string; // e.g. "4x20"
+  numberOfPeriods: number;
+  periodLengthMinutes: number;
+  isDefault?: boolean;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -20,6 +45,9 @@ export interface Group {
     roles?: string[];
   }>;
   periods: Period[];
+  matchPlanningEnabled?: boolean;
+  playingModes?: PlayingMode[]; // group-scoped only, never shared across groups
+  formations?: Formation[]; // group-scoped only, never shared across groups
   createdAt?: string;
   updatedAt?: string;
 }
@@ -58,6 +86,16 @@ export interface Guardian {
   isDocumentedOnly?: boolean;
 }
 
+export interface LineupPositionAssignment {
+  slotId: string; // references a FormationSlot in the Team's selected Formation
+  playerId: string; // must be in the Team's selectedPlayers
+}
+
+export interface TeamLineupPeriod {
+  periodNumber: number; // 1-based, bounded by the Event's Playing Mode numberOfPeriods
+  assignments: LineupPositionAssignment[]; // selected players absent here are implicitly benched
+}
+
 export interface Team {
   id: string;
   name: string;
@@ -68,6 +106,8 @@ export interface Team {
   trainerId?: string; // Assigned team lead member ID (trainer or guardian)
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
+  formationId?: string | null; // only settable while the Event has a playingModeId; fixed for the whole match
+  lineup?: TeamLineupPeriod[]; // one entry per planned period
 }
 
 export type InvitationStatus = 'open' | 'accepted' | 'declined' | 'injured' | 'sick' | 'unavailable';
@@ -85,6 +125,7 @@ export interface Event {
   maxPlayersPerTeam: number; // Max players applies to all teams in this event
   minPlayersPerTeam: number; // Minimum players required per team
   location?: string; // Optional event location
+  playingModeId?: string | null; // only usable when the group has matchPlanningEnabled; always optional
   teams: Team[]; // Teams are contained within the event
   invitations: Invitation[];
 }

@@ -17,6 +17,7 @@ interface TeamCardProps {
   maxPlayersPerTeam: number;
   isDragOver: boolean;
   dragOverPlayerId: string | null;
+  onOpenTeam: (teamId: string) => void;
   onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string, currentTrainerId?: string, currentLocation?: string) => void;
   onDeleteTeam: (teamId: string) => void;
   onAssignShirts: (team: Team) => void;
@@ -39,6 +40,7 @@ export default function TeamCard({
   maxPlayersPerTeam,
   isDragOver,
   dragOverPlayerId,
+  onOpenTeam,
   onEditTeam,
   onDeleteTeam,
   onAssignShirts,
@@ -121,7 +123,14 @@ export default function TeamCard({
           </div>
           <div className="flex-1">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            {team.name} <Strength level={team.strength || 2} className="text-xs" /> 
+            <button
+              type="button"
+              onClick={() => onOpenTeam(team.id)}
+              className="text-left hover:text-blue-600 hover:underline"
+            >
+              {team.name}
+            </button>
+            <Strength level={team.strength || 2} className="text-xs" /> 
           </h3>
           <p className="text-sm text-gray-600">
             👥 {selectedPlayers.length}/{maxPlayersPerTeam} <span className="text-yellow-500">★</span> {averageLevel.toFixed(1)}

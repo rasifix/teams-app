@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useMatchPlanning } from '../store';
+import { selectDefaultPlayingMode } from '../store/selectors/matchPlanningSelectors';
 
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string }) => void;
+  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string; playingModeId?: string | null }) => void;
 }
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
   const { t } = useTranslation();
+  const { matchPlanningEnabled, playingModes } = useMatchPlanning();
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -16,11 +19,14 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(6);
+  const defaultPlayingMode = selectDefaultPlayingMode(playingModes);
+  const [playingModeId, setPlayingModeId] = useState<string>(defaultPlayingMode?.id ?? '');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const submittedPlayingModeId = new FormData(e.currentTarget).get('playingModeId');
     
     if (!name.trim() || !date || !startTime) {
       return;
@@ -34,6 +40,9 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       maxPlayersPerTeam,
       minPlayersPerTeam,
       location: location.trim() || undefined,
+      playingModeId: matchPlanningEnabled
+        ? (typeof submittedPlayingModeId === 'string' && submittedPlayingModeId ? submittedPlayingModeId : null)
+        : undefined,
     });
 
     // Reset form
@@ -44,6 +53,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setNumberOfTeams(1);
     setMaxPlayersPerTeam(9);
     setMinPlayersPerTeam(6);
+    setPlayingModeId(defaultPlayingMode?.id ?? '');
     onClose();
   };
 
@@ -56,6 +66,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setNumberOfTeams(1);
     setMaxPlayersPerTeam(9);
     setMinPlayersPerTeam(6);
+    setPlayingModeId(defaultPlayingMode?.id ?? '');
     onClose();
   };
 
@@ -171,6 +182,26 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                   required
                 />
               </div>
+
+              {matchPlanningEnabled && (
+                <div>
+                  <label htmlFor="event-playing-mode" className="block text-sm font-medium text-gray-700 mb-1">
+                    {t('eventModal.fields.playingMode')}
+                  </label>
+                  <select
+                    id="event-playing-mode"
+                    name="playingModeId"
+                    value={playingModeId}
+                    onChange={(e) => setPlayingModeId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="">{t('eventModal.fields.noPlayingMode')}</option>
+                    {playingModes.map((mode) => (
+                      <option key={mode.id} value={mode.id}>{mode.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex gap-3">

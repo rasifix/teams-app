@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEvents, usePlayers, useTrainers, useShirtSets } from '../store';
+import { useEvents, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
@@ -20,6 +20,7 @@ export default function TeamDetailPage() {
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
+  const { formations } = useMatchPlanning();
   
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
   const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
@@ -54,6 +55,16 @@ export default function TeamDetailPage() {
     await updateEvent(eventId, { teams: updatedTeams });
     setPlayerToRemove(null);
     setSwipedPlayerId(null);
+  };
+
+  const handleChangeFormation = async (formationId: string | undefined) => {
+    if (!event || !eventId || !team) return;
+
+    const updatedTeams = event.teams.map(t =>
+      t.id === teamId ? { ...t, formationId: formationId || null } : t
+    );
+
+    await updateEvent(eventId, { teams: updatedTeams });
   };
   
   const handleTouchStart = (playerId: string, e: React.TouchEvent) => {
@@ -200,6 +211,34 @@ export default function TeamDetailPage() {
                 <div className="text-sm text-gray-500">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
             </div>
+
+            {event.playingModeId && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span>🧩</span>
+                  <span className="font-medium text-sm">{t('teamDetail.formationLabel')}</span>
+                </div>
+                <select
+                  value={team.formationId || ''}
+                  onChange={(e) => handleChangeFormation(e.target.value || undefined)}
+                  className="form-input text-sm py-1"
+                >
+                  <option value="">{t('teamDetail.noFormationAssigned')}</option>
+                  {formations.map((formation) => (
+                    <option key={formation.id} value={formation.id}>{formation.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {event.playingModeId && team.formationId && (
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
+                <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup`)}>
+                  {t('teamDetail.planLineupAction')}
+                </Button>
+              </div>
+            )}
           </CardBody>
         </Card>
         

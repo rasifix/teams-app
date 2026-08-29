@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore } from './useStore';
+import { useStore, useGroupPlayingModes, useGroupFormations } from './useStore';
 import { selectPlayersFromMembers, selectTrainersFromMembers } from './selectors/memberSelectors';
 
 // Re-export store hooks for easier imports
@@ -14,7 +14,10 @@ export {
   useGroups,
   useSelectedStatisticsPeriod,
   useGroupsLoading,
-  useGroupsError
+  useGroupsError,
+  useMatchPlanningEnabled,
+  useGroupPlayingModes,
+  useGroupFormations,
 } from './useStore';
 
 // Individual entity hooks for convenience
@@ -110,5 +113,34 @@ export const useShirtSets = () => {
     addShirtToSet,
     removeShirtFromSet,
     updateShirt,
+  };
+};
+
+// Hook for match planning: matchPlanningEnabled toggle, playing modes, and formations
+export const useMatchPlanning = () => {
+  const matchPlanningEnabled = useStore((state) => state.group?.matchPlanningEnabled ?? false);
+  const playingModes = useGroupPlayingModes();
+  const formations = useGroupFormations();
+  const setMatchPlanningEnabled = useStore((state) => state.setMatchPlanningEnabled);
+  const addPlayingMode = useStore((state) => state.addPlayingMode);
+  const updatePlayingMode = useStore((state) => state.updatePlayingMode);
+  const deletePlayingMode = useStore((state) => state.deletePlayingMode);
+  const setDefaultPlayingMode = useStore((state) => state.setDefaultPlayingMode);
+  const addFormation = useStore((state) => state.addFormation);
+  const updateFormation = useStore((state) => state.updateFormation);
+  const deleteFormation = useStore((state) => state.deleteFormation);
+
+  return {
+    matchPlanningEnabled,
+    playingModes,
+    formations,
+    setMatchPlanningEnabled,
+    addPlayingMode,
+    updatePlayingMode,
+    deletePlayingMode,
+    setDefaultPlayingMode,
+    addFormation,
+    updateFormation,
+    deleteFormation,
   };
 };

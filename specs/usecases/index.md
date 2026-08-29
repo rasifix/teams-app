@@ -19,6 +19,9 @@ be described in files grouped in subfolders per category.
 * UC-GR-005 - edit guardian
 * UC-GR-006 - manage shirt sets
 * UC-GR-007 - sync members from another group
+* UC-GR-008 - enable or disable match planning
+* UC-GR-009 - manage playing modes
+* UC-GR-010 - manage formations
 
 ## Event
 
@@ -27,6 +30,9 @@ be described in files grouped in subfolders per category.
 * UC-EV-003 - select players for teams
 * UC-EV-004 - change invitation status
 * UC-EV-005 - assign shirt set
+* UC-EV-006 - assign playing mode to event
+* UC-EV-007 - select team formation
+* UC-EV-008 - plan per-period lineup
 
 ## Statistics
 

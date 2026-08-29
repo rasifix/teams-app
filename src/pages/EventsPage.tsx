@@ -49,6 +49,7 @@ export default function EventsPage() {
     maxPlayersPerTeam: number;
     minPlayersPerTeam: number;
     location?: string;
+    playingModeId?: string | null;
   }) => {
     // Create teams for the event
     const teams: Team[] = Array.from({ length: eventData.numberOfTeams }, (_, index) => ({
@@ -65,6 +66,7 @@ export default function EventsPage() {
       maxPlayersPerTeam: eventData.maxPlayersPerTeam,
       minPlayersPerTeam: eventData.minPlayersPerTeam,
       location: eventData.location,
+      playingModeId: eventData.playingModeId,
       teams,
       invitations: [],
     });

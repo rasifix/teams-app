@@ -233,7 +233,7 @@ export default function EventDetailPage() {
     setIsAssignShirtsModalOpen(false);
   };
 
-  const handleSaveEvent = async (data: { name: string; date: string; maxPlayersPerTeam: number; location?: string }) => {
+  const handleSaveEvent = async (data: { name: string; date: string; maxPlayersPerTeam: number; location?: string; playingModeId?: string | null }) => {
     if (!event || !id) return;
 
     await updateEvent(id, data);
@@ -580,6 +580,7 @@ export default function EventDetailPage() {
                       maxPlayersPerTeam={event.maxPlayersPerTeam}
                       isDragOver={isDragOver}
                       dragOverPlayerId={dragOverPlayerId}
+                      onOpenTeam={(teamId) => navigate(`/events/${event.id}/teams/${teamId}`)}
                       onEditTeam={handleEditTeamName}
                       onDeleteTeam={setTeamToDelete}
                       onAssignShirts={handleAssignShirts}
@@ -721,6 +722,7 @@ export default function EventDetailPage() {
           maxPlayersPerTeam: event.maxPlayersPerTeam,
           minPlayersPerTeam: event.minPlayersPerTeam,
           location: event.location,
+          playingModeId: event.playingModeId,
         }}
         minMaxPlayers={Math.max(...event.teams.map(team => (team.selectedPlayers || []).length), 1)}
       />

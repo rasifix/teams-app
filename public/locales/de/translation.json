@@ -256,7 +256,9 @@
       "maxPlayersPerTeam": "Max. Spieler pro Team",
       "maxPlayersPerTeamRequired": "Max. Spieler pro Team *",
       "minPlayersPerTeam": "Min. Spieler pro Team",
-      "minPlayersPerTeamRequired": "Min. Spieler pro Team *"
+      "minPlayersPerTeamRequired": "Min. Spieler pro Team *",
+      "playingMode": "Spielmodus",
+      "noPlayingMode": "Kein Spielmodus"
     },
     "placeholders": {
       "eventName": "z.B. Samstagmorgen-Spiel",
@@ -544,6 +546,7 @@
     "members": "Mitglieder",
     "events": "Termine",
     "shirts": "Trikots",
+    "matchPlanning": "Spielplanung",
     "statistics": "Statistiken"
   },
   "statistics": {
@@ -718,7 +721,11 @@
     "noPlayersSelected": "Noch keine Spieler ausgewählt",
     "removeAction": "Entfernen",
     "removePlayerTitle": "Spieler entfernen",
-    "removePlayerMessage": "Möchtest du {{firstName}} {{lastName}} aus diesem Team entfernen?"
+    "removePlayerMessage": "Möchtest du {{firstName}} {{lastName}} aus diesem Team entfernen?",
+    "formationLabel": "Formation",
+    "noFormationAssigned": "Keine Formation ausgewählt",
+    "lineupLabel": "Aufstellung",
+    "planLineupAction": "Aufstellung planen"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team nicht gefunden",
@@ -730,5 +737,98 @@
     "tooManySelected": "Zu viele ausgewählt (max. {{max}})",
     "addPlayersAction_one": "{{count}} Spieler hinzufügen",
     "addPlayersAction_other": "{{count}} Spieler hinzufügen"
+  },
+  "matchPlanning": {
+    "title": "Spielplanung",
+    "description": "Aktiviere Spielmodi und Formationen, um Aufstellungen pro Abschnitt zu planen. Relevant meist für ältere Jugendkategorien (D, C, B, A).",
+    "disabledState": "Die Spielplanung ist für diese Gruppe deaktiviert. Aktiviere sie, um Spielmodi und Formationen festzulegen.",
+    "playingModes": {
+      "title": "Spielmodi",
+      "emptyState": "Noch keine Spielmodi. Füge einen hinzu, um zu starten.",
+      "defaultBadge": "Standard",
+      "summary": "{{periods}} Abschnitte x {{minutes}} Min.",
+      "setDefault": "Als Standard festlegen",
+      "deleteTitle": "Spielmodus löschen",
+      "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+    },
+    "formations": {
+      "title": "Formationen",
+      "emptyState": "Noch keine Formationen. Füge eine hinzu, um zu starten.",
+      "deleteTitle": "Formation löschen",
+      "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+    }
+  },
+  "playingModeModal": {
+    "addTitle": "Spielmodus hinzufügen",
+    "editTitle": "Spielmodus bearbeiten",
+    "fields": {
+      "name": "Name",
+      "numberOfPeriods": "Anzahl Abschnitte",
+      "periodLengthMinutes": "Abschnittslänge (Minuten)"
+    },
+    "placeholders": {
+      "name": "z.B. 4x20"
+    },
+    "errors": {
+      "nameRequired": "Name ist erforderlich",
+      "numberOfPeriodsMin": "Die Anzahl der Abschnitte muss mindestens 1 sein",
+      "periodLengthMin": "Die Abschnittslänge muss mindestens 1 Minute betragen",
+      "saveFailed": "Speichern des Spielmodus fehlgeschlagen. Bitte versuche es erneut."
+    }
+  },
+  "formationModal": {
+    "addTitle": "Formation hinzufügen",
+    "editTitle": "Formation bearbeiten",
+    "addSlot": "Position hinzufügen",
+    "removeSlot": "Position entfernen",
+    "fields": {
+      "name": "Name",
+      "slots": "Positionen"
+    },
+    "placeholders": {
+      "name": "z.B. 3-3"
+    },
+    "errors": {
+      "nameRequired": "Name ist erforderlich",
+      "minSlots": "Mindestens 2 Positionen sind erforderlich",
+      "exactlyOneGoalkeeper": "Genau eine Position muss der Torwart (TW) sein",
+      "saveFailed": "Speichern der Formation fehlgeschlagen. Bitte versuche es erneut."
+    }
+  },
+  "positions": {
+    "GK": "TW",
+    "LB": "LV",
+    "CB": "IV",
+    "RB": "RV",
+    "LWB": "LAV",
+    "RWB": "RAV",
+    "CDM": "DM",
+    "CM": "ZM",
+    "CAM": "OM",
+    "LM": "LM",
+    "RM": "RM",
+    "LW": "LA",
+    "RW": "RA",
+    "CF": "MS",
+    "ST": "ST"
+  },
+  "teamLineup": {
+    "loading": "Aufstellung wird geladen...",
+    "teamNotFound": "Team nicht gefunden",
+    "notConfigured": "Für dieses Team müssen zuerst ein Spielmodus und eine Formation festgelegt werden, bevor eine Aufstellung geplant werden kann.",
+    "title": "Aufstellung - {{team}}",
+    "periodLabel": "Abschnitt {{number}}",
+    "copyPreviousPeriod": "Vorherigen Abschnitt kopieren",
+    "plannedPeriods": "{{count}}/{{total}} Abschnitte eingeplant",
+    "summaryTab": "Übersicht",
+    "summaryTitle": "Aufstellungsübersicht",
+    "printSummary": "Übersicht drucken",
+    "benchLabel": "Bank",
+    "unknownPlayer": "Unbekannter Spieler",
+    "rosterMismatchWarning": "Einige zugewiesene Spieler sind nicht mehr im Kader dieses Teams. Bitte die Aufstellung vor dem Speichern prüfen.",
+    "slotsTitle": "Formation ({{formation}})",
+    "emptySlot": "Leer",
+    "benchTitle": "Bank ({{count}})",
+    "noBenchedPlayers": "Keine Spieler auf der Bank für diesen Abschnitt."
   }
 }

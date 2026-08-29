@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, PlayingMode, Formation, PositionCode } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import {
   getAllMembers,
@@ -19,7 +19,7 @@ import {
 } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService, updatePlayerInvitationStatus as updatePlayerInvitationStatusService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService } from '../services/groupService';
+import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addGroupPlayingMode as addGroupPlayingModeService, updateGroupPlayingMode as updateGroupPlayingModeService, deleteGroupPlayingMode as deleteGroupPlayingModeService, setDefaultGroupPlayingMode as setDefaultGroupPlayingModeService, addGroupFormation as addGroupFormationService, updateGroupFormation as updateGroupFormationService, deleteGroupFormation as deleteGroupFormationService } from '../services/groupService';
 import { authService } from '../services/authService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
@@ -29,6 +29,7 @@ import {
   selectEventWithoutActiveInvitations,
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
+import { selectEventMutationResult } from './selectors/eventMutationSelectors';
 
 export interface GroupMemberImportProgress {
   total: number;
@@ -297,6 +298,16 @@ interface AppState {
   addGroupPeriod: (periodData: Omit<Period, 'id'>) => Promise<Period | null>;
   updateGroupPeriod: (periodId: string, periodData: Omit<Period, 'id'>) => Promise<boolean>;
   deleteGroupPeriod: (periodId: string) => Promise<boolean>;
+
+  // Match planning mutations
+  setMatchPlanningEnabled: (enabled: boolean) => Promise<boolean>;
+  addPlayingMode: (data: Omit<PlayingMode, 'id' | 'isDefault'>) => Promise<PlayingMode | null>;
+  updatePlayingMode: (playingModeId: string, data: Omit<PlayingMode, 'id' | 'isDefault'>) => Promise<boolean>;
+  deletePlayingMode: (playingModeId: string) => Promise<boolean>;
+  setDefaultPlayingMode: (playingModeId: string) => Promise<boolean>;
+  addFormation: (data: { name: string; slots: Array<{ positionCode: PositionCode }> }) => Promise<Formation | null>;
+  updateFormation: (formationId: string, data: { name: string; slots: Array<{ id?: string; positionCode: PositionCode }> }) => Promise<boolean>;
+  deleteFormation: (formationId: string) => Promise<boolean>;
   
   // Selectors (computed values)
   getPlayerById: (id: string) => Player | undefined;
@@ -1130,7 +1141,8 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const newEvent = await addEventService(currentGroup.id, eventData);
+          const responseEvent = await addEventService(currentGroup.id, eventData);
+          const newEvent = selectEventMutationResult(responseEvent, eventData);
           const currentEvents = get().events;
           const updatedEvents = [...currentEvents, newEvent];
           set({ events: sortEvents(updatedEvents) });
@@ -1146,10 +1158,10 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
         
         try {
-          const updatedEvent = await updateEventService(currentGroup.id, id, eventData);
+          const responseEvent = await updateEventService(currentGroup.id, id, eventData);
           const currentEvents = get().events;
-          const updatedEvents = currentEvents.map(event => 
-            event.id === id ? { ...event, ...updatedEvent } : event
+          const updatedEvents = currentEvents.map(event =>
+            event.id === id ? selectEventMutationResult(responseEvent, eventData, event) : event
           );
           set({ events: sortEvents(updatedEvents) });
           return true;
@@ -1603,6 +1615,209 @@ export const useStore = create<AppState>()(
           return false;
         }
       },
+
+      setMatchPlanningEnabled: async (enabled) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedGroup = await setMatchPlanningEnabledService(currentGroup.id, enabled);
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to update match planning setting:', error);
+          return false;
+        }
+      },
+
+      addPlayingMode: async (data) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const newPlayingMode = await addGroupPlayingModeService(currentGroup.id, data);
+          const updatedGroup = {
+            ...currentGroup,
+            playingModes: [...(currentGroup.playingModes ?? []), newPlayingMode],
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return newPlayingMode;
+        } catch (error) {
+          console.error('Failed to add playing mode:', error);
+          return null;
+        }
+      },
+
+      updatePlayingMode: async (playingModeId, data) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedPlayingMode = await updateGroupPlayingModeService(currentGroup.id, playingModeId, data);
+          const updatedGroup = {
+            ...currentGroup,
+            playingModes: (currentGroup.playingModes ?? []).map((mode) => (
+              mode.id === playingModeId ? updatedPlayingMode : mode
+            )),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to update playing mode:', error);
+          return false;
+        }
+      },
+
+      deletePlayingMode: async (playingModeId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          await deleteGroupPlayingModeService(currentGroup.id, playingModeId);
+          const updatedGroup = {
+            ...currentGroup,
+            playingModes: (currentGroup.playingModes ?? []).filter((mode) => mode.id !== playingModeId),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to delete playing mode:', error);
+          return false;
+        }
+      },
+
+      setDefaultPlayingMode: async (playingModeId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          await setDefaultGroupPlayingModeService(currentGroup.id, playingModeId);
+          const updatedGroup = {
+            ...currentGroup,
+            playingModes: (currentGroup.playingModes ?? []).map((mode) => ({
+              ...mode,
+              isDefault: mode.id === playingModeId,
+            })),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to set default playing mode:', error);
+          return false;
+        }
+      },
+
+      addFormation: async (data) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const newFormation = await addGroupFormationService(currentGroup.id, data);
+          const updatedGroup = {
+            ...currentGroup,
+            formations: [...(currentGroup.formations ?? []), newFormation],
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return newFormation;
+        } catch (error) {
+          console.error('Failed to add formation:', error);
+          return null;
+        }
+      },
+
+      updateFormation: async (formationId, data) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          const updatedFormation = await updateGroupFormationService(currentGroup.id, formationId, data);
+          const updatedGroup = {
+            ...currentGroup,
+            formations: (currentGroup.formations ?? []).map((formation) => (
+              formation.id === formationId ? updatedFormation : formation
+            )),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to update formation:', error);
+          return false;
+        }
+      },
+
+      deleteFormation: async (formationId) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          await deleteGroupFormationService(currentGroup.id, formationId);
+          const updatedGroup = {
+            ...currentGroup,
+            formations: (currentGroup.formations ?? []).filter((formation) => formation.id !== formationId),
+          };
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => (
+              group.id === currentGroup.id ? updatedGroup : group
+            )),
+          }));
+
+          return true;
+        } catch (error) {
+          console.error('Failed to delete formation:', error);
+          return false;
+        }
+      },
       
       // Selectors
       getPlayerById: (id) => playersFromMembers(get().members).find((player) => player.id === id),
@@ -1697,6 +1912,15 @@ export const useGroup = () => useStore((state) => state.group);
 export const useGroups = () => useStore((state) => state.groups);
 
 export const useGroupPeriods = () => useStore((state) => state.group?.periods ?? EMPTY_PERIODS);
+
+const EMPTY_PLAYING_MODES: PlayingMode[] = [];
+const EMPTY_FORMATIONS: Formation[] = [];
+
+export const useMatchPlanningEnabled = () => useStore((state) => state.group?.matchPlanningEnabled ?? false);
+
+export const useGroupPlayingModes = () => useStore((state) => state.group?.playingModes ?? EMPTY_PLAYING_MODES);
+
+export const useGroupFormations = () => useStore((state) => state.group?.formations ?? EMPTY_FORMATIONS);
 
 export const useSelectedStatisticsPeriod = () => useStore((state) => {
   if (!state.selectedStatisticsPeriodId) return null;

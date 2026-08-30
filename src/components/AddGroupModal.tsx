@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { CreateGroupRequest } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
+import { GROUP_CATEGORIES } from '../store/selectors/groupCategorySelectors';
 
 interface AddGroupModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function AddGroupModal({
     name: '',
     description: '',
     club: '',
+    category: null,
   });
   const [nameError, setNameError] = useState<string | null>(null);
 
@@ -33,6 +35,7 @@ export default function AddGroupModal({
         name: '',
         description: '',
         club: '',
+        category: null,
       });
       setNameError(null);
     }
@@ -64,6 +67,7 @@ export default function AddGroupModal({
       name: trimmedName,
       description: formData.description?.trim() || undefined,
       club: formData.club?.trim() || undefined,
+      category: formData.category || null,
     };
 
     await onSave(payload);
@@ -110,6 +114,28 @@ export default function AddGroupModal({
                 className="form-input"
                 placeholder={t('groupModal.placeholders.club')}
               />
+            </div>
+
+            <div>
+              <label htmlFor="category" className="form-label">
+                {t('groupModal.fields.categoryOptional')}
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category ?? ''}
+                onChange={(event) => setFormData((previous) => ({
+                  ...previous,
+                  category: (event.target.value || null) as CreateGroupRequest['category'],
+                }))}
+                className="form-input"
+              >
+                <option value="">{t('groupModal.fields.noCategory')}</option>
+                {GROUP_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">{t('groupModal.categoryHint')}</p>
             </div>
 
             <div>

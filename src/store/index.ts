@@ -122,6 +122,7 @@ export const useMatchPlanning = () => {
   const playingModes = useGroupPlayingModes();
   const formations = useGroupFormations();
   const setMatchPlanningEnabled = useStore((state) => state.setMatchPlanningEnabled);
+  const configureGroupCategory = useStore((state) => state.configureGroupCategory);
   const addPlayingMode = useStore((state) => state.addPlayingMode);
   const updatePlayingMode = useStore((state) => state.updatePlayingMode);
   const deletePlayingMode = useStore((state) => state.deletePlayingMode);
@@ -135,6 +136,7 @@ export const useMatchPlanning = () => {
     playingModes,
     formations,
     setMatchPlanningEnabled,
+    configureGroupCategory,
     addPlayingMode,
     updatePlayingMode,
     deletePlayingMode,

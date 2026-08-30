@@ -178,6 +178,7 @@
     "loading": "Gruppen werden geladen...",
     "createNew": "Neue Gruppe erstellen",
     "clubLabel": "Verein: {{club}}",
+    "categoryLabel": "Kategorie: {{category}}",
     "switching": "Gruppe wird gewechselt...",
     "selectTitle": "Gruppe auswählen",
     "selectDescription": "Wähle die Gruppe, mit der du arbeiten möchtest",
@@ -196,8 +197,11 @@
     "fields": {
       "groupName": "Gruppenname",
       "clubOptional": "Verein (optional)",
+      "categoryOptional": "SFV-Kategorie (optional)",
+      "noCategory": "Keine Kategorie",
       "descriptionOptional": "Beschreibung (optional)"
     },
+    "categoryHint": "Für D7 bis A wird der offizielle Spielmodus automatisch erstellt und als Standard festgelegt.",
     "placeholders": {
       "groupName": "Gruppenname eingeben",
       "club": "Verein eingeben",
@@ -742,6 +746,15 @@
     "title": "Spielplanung",
     "description": "Aktiviere Spielmodi und Formationen, um Aufstellungen pro Abschnitt zu planen. Relevant meist für ältere Jugendkategorien (D, C, B, A).",
     "disabledState": "Die Spielplanung ist für diese Gruppe deaktiviert. Aktiviere sie, um Spielmodi und Formationen festzulegen.",
+    "category": {
+      "title": "SFV-Kategorie",
+      "description": "Weise dieser Gruppe die offizielle Kategorie des Schweizerischen Fussballverbands zu.",
+      "label": "Kategorie",
+      "none": "Keine Kategorie",
+      "saving": "Wird gespeichert...",
+      "officialModeHint": "Der offizielle Spielmodus {{mode}} wird bei Bedarf erstellt und als Standard festgelegt.",
+      "ff14Hint": "Der SFV definiert FF14 sowohl für 7er- als auch für 9er-Fussball. Der Spielmodus muss deshalb manuell gewählt werden."
+    },
     "playingModes": {
       "title": "Spielmodi",
       "emptyState": "Noch keine Spielmodi. Füge einen hinzu, um zu starten.",

@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { CreateGroupRequest, Formation, FormationSlot, Group, Period, PlayingMode, PositionCode } from '../types';
+import type { CreateGroupRequest, Formation, FormationSlot, Group, GroupCategory, Period, PlayingMode, PositionCode } from '../types';
 
 /**
  * Service layer for group data operations.
@@ -29,6 +29,15 @@ export async function createGroup(groupData: CreateGroupRequest): Promise<Group>
   const group = await apiClient.request<Group>('/api/groups', {
     method: 'POST',
     body: JSON.stringify(groupData),
+  });
+
+  return normalizeGroup(group);
+}
+
+export async function updateGroupCategory(groupId: string, category: GroupCategory | null): Promise<Group> {
+  const group = await apiClient.request<Group>(`/api/groups/${groupId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ category }),
   });
 
   return normalizeGroup(group);

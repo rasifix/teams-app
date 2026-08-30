@@ -5,6 +5,8 @@ export interface Period {
   endDate: string;
 }
 
+export type GroupCategory = 'A' | 'B' | 'C' | 'D9' | 'D7' | 'E' | 'F' | 'G' | 'FF9' | 'FF11' | 'FF14' | 'FF17';
+
 export type PositionCode =
   | 'GK'
   | 'LB' | 'CB' | 'RB' | 'LWB' | 'RWB'
@@ -35,6 +37,7 @@ export interface Group {
   name: string;
   club?: string;
   description?: string;
+  category?: GroupCategory | null;
   trainers?: Array<{
     id: string;
     email?: string;
@@ -56,6 +59,7 @@ export interface CreateGroupRequest {
   name: string;
   club?: string;
   description?: string;
+  category?: GroupCategory | null;
 }
 
 export type GroupRole = 'admin' | 'trainer' | 'guardian' | 'player';

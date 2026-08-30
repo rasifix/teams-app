@@ -1,21 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMatchPlanning } from '../store';
+import { useGroup, useMatchPlanning } from '../store';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayingModeModal from '../components/PlayingModeModal';
 import FormationModal from '../components/FormationModal';
 import { getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
-import type { Formation, PlayingMode } from '../types';
+import type { Formation, GroupCategory, PlayingMode } from '../types';
+import { GROUP_CATEGORIES, selectOfficialPlayingModeForCategory } from '../store/selectors/groupCategorySelectors';
 
 export default function MatchPlanningPage() {
   const { t } = useTranslation();
+  const group = useGroup();
   const {
     matchPlanningEnabled,
     playingModes,
     formations,
     setMatchPlanningEnabled,
+    configureGroupCategory,
     addPlayingMode,
     updatePlayingMode,
     deletePlayingMode,
@@ -26,12 +29,24 @@ export default function MatchPlanningPage() {
   } = useMatchPlanning();
 
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<GroupCategory | ''>(group?.category ?? '');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isPlayingModeModalOpen, setIsPlayingModeModalOpen] = useState(false);
   const [editingPlayingMode, setEditingPlayingMode] = useState<PlayingMode | null>(null);
   const [deletingPlayingMode, setDeletingPlayingMode] = useState<PlayingMode | null>(null);
   const [isFormationModalOpen, setIsFormationModalOpen] = useState(false);
   const [editingFormation, setEditingFormation] = useState<Formation | null>(null);
   const [deletingFormation, setDeletingFormation] = useState<Formation | null>(null);
+
+  useEffect(() => {
+    setSelectedCategory(group?.category ?? '');
+  }, [group?.category]);
+
+  const handleSaveCategory = async () => {
+    setIsSavingCategory(true);
+    await configureGroupCategory(selectedCategory || null);
+    setIsSavingCategory(false);
+  };
 
   const handleToggleEnabled = async () => {
     setIsTogglingEnabled(true);
@@ -57,6 +72,46 @@ export default function MatchPlanningPage() {
 
   return (
     <div className="page-container">
+      <Card className="mb-4">
+        <CardBody>
+          <CardTitle>{t('matchPlanning.category.title')}</CardTitle>
+          <p className="text-sm text-gray-600 mt-1 mb-4">{t('matchPlanning.category.description')}</p>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <div className="flex-1">
+              <label htmlFor="group-category" className="form-label">{t('matchPlanning.category.label')}</label>
+              <select
+                id="group-category"
+                value={selectedCategory}
+                onChange={(event) => setSelectedCategory(event.target.value as GroupCategory | '')}
+                className="form-input"
+              >
+                <option value="">{t('matchPlanning.category.none')}</option>
+                {GROUP_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            <Button
+              variant="primary"
+              onClick={handleSaveCategory}
+              disabled={isSavingCategory || selectedCategory === (group?.category ?? '')}
+            >
+              {isSavingCategory ? t('matchPlanning.category.saving') : t('common.actions.save')}
+            </Button>
+          </div>
+          {selectedCategory && selectOfficialPlayingModeForCategory(selectedCategory) && (
+            <p className="mt-3 text-sm text-orange-700">
+              {t('matchPlanning.category.officialModeHint', {
+                mode: selectOfficialPlayingModeForCategory(selectedCategory)?.name,
+              })}
+            </p>
+          )}
+          {selectedCategory === 'FF14' && (
+            <p className="mt-3 text-sm text-gray-600">{t('matchPlanning.category.ff14Hint')}</p>
+          )}
+        </CardBody>
+      </Card>
+
       <Card className="mb-4">
         <CardBody>
           <div className="flex items-center justify-between">

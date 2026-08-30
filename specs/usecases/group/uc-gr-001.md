@@ -41,6 +41,7 @@ Required:
 Optional:
 - `description` (string)
 - `club` (string)
+- `category` (SFV category or null)
 
 ## Main Success Scenario
 
@@ -51,8 +52,11 @@ Optional:
 5. The system validates input.
 6. The system creates the Group record.
 7. The system returns the created Group including generated identifier.
-8. The UI refreshes Group state and shows the newly created Group
-9. The system confirms successful creation to the actor.
+8. The UI refreshes Group state and shows the newly created Group.
+9. If the category has one unambiguous official SFV playing mode (D7/D9:
+   4x20; C/B/A: 2x45), the UI enables match planning, creates the mode when
+   needed, and marks it as default.
+10. The system confirms successful creation to the actor.
 
 ## Alternative Flows
 
@@ -95,6 +99,10 @@ Failure:
 - Newly created Groups are active by default
 - The authenticated user is added as member with role Group Manager
 - Group creation must not implicitly add Players, Trainers, or Events.
+- Category is optional and must be one of the SFV categories supported by the
+  API.
+- FF14 does not trigger automatic mode creation because SFV defines both 7v7
+  and 9v9 variants.
 
 ## Validation Rules
 

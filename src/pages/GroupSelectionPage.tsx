@@ -8,7 +8,7 @@ import type { CreateGroupRequest } from '../types';
 export default function GroupSelectionPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { loadGroups, addGroup, selectGroup, initializeApp } = useStore();
+  const { loadGroups, addGroup, configureGroupCategory, selectGroup, initializeApp } = useStore();
   const groups = useGroups();
   const loading = useGroupsLoading();
   const error = useGroupsError();
@@ -39,6 +39,9 @@ export default function GroupSelectionPage() {
 
       setIsAddModalOpen(false);
       await handleGroupSelect(newGroup.id);
+      if (groupData.category) {
+        await configureGroupCategory(groupData.category);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -103,6 +106,9 @@ export default function GroupSelectionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium text-gray-900">{group.name}</h3>
+                  {group.category && (
+                    <p className="text-sm text-gray-500">{t('groups.categoryLabel', { category: group.category })}</p>
+                  )}
                   <p className="text-sm text-gray-500">{t('groups.idLabel', { id: group.id })}</p>
                 </div>
                 <svg

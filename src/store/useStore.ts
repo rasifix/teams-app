@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, PlayingMode, Formation, PositionCode } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import {
   getAllMembers,
@@ -19,7 +19,7 @@ import {
 } from '../services/memberService';
 import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService, updatePlayerInvitationStatus as updatePlayerInvitationStatusService } from '../services/eventService';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups, getGroup, createGroup as createGroupService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addGroupPlayingMode as addGroupPlayingModeService, updateGroupPlayingMode as updateGroupPlayingModeService, deleteGroupPlayingMode as deleteGroupPlayingModeService, setDefaultGroupPlayingMode as setDefaultGroupPlayingModeService, addGroupFormation as addGroupFormationService, updateGroupFormation as updateGroupFormationService, deleteGroupFormation as deleteGroupFormationService } from '../services/groupService';
+import { getGroups, getGroup, createGroup as createGroupService, updateGroupCategory as updateGroupCategoryService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addGroupPlayingMode as addGroupPlayingModeService, updateGroupPlayingMode as updateGroupPlayingModeService, deleteGroupPlayingMode as deleteGroupPlayingModeService, setDefaultGroupPlayingMode as setDefaultGroupPlayingModeService, addGroupFormation as addGroupFormationService, updateGroupFormation as updateGroupFormationService, deleteGroupFormation as deleteGroupFormationService } from '../services/groupService';
 import { authService } from '../services/authService';
 import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
@@ -30,6 +30,7 @@ import {
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
 import { selectEventMutationResult } from './selectors/eventMutationSelectors';
+import { selectMatchingPlayingMode, selectOfficialPlayingModeForCategory } from './selectors/groupCategorySelectors';
 
 export interface GroupMemberImportProgress {
   total: number;
@@ -245,6 +246,7 @@ interface AppState {
   // Actions
   loadGroups: () => Promise<void>;
   addGroup: (groupData: CreateGroupRequest) => Promise<Group | null>;
+  configureGroupCategory: (category: GroupCategory | null) => Promise<boolean>;
   selectGroup: (groupId: string) => Promise<void>;
   selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
@@ -735,6 +737,50 @@ export const useStore = create<AppState>()(
             errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to add group' },
           });
           return null;
+        }
+      },
+
+      configureGroupCategory: async (category) => {
+        const currentGroup = get().group;
+        if (!currentGroup) throw new Error('No group selected');
+
+        try {
+          let updatedGroup = await updateGroupCategoryService(currentGroup.id, category);
+          const officialMode = selectOfficialPlayingModeForCategory(category);
+
+          if (officialMode) {
+            if (!updatedGroup.matchPlanningEnabled) {
+              updatedGroup = await setMatchPlanningEnabledService(currentGroup.id, true);
+            }
+
+            const availableModes = updatedGroup.playingModes ?? currentGroup.playingModes ?? [];
+            let matchingMode = selectMatchingPlayingMode(availableModes, officialMode);
+            if (!matchingMode) {
+              matchingMode = await addGroupPlayingModeService(currentGroup.id, officialMode);
+            }
+
+            await setDefaultGroupPlayingModeService(currentGroup.id, matchingMode.id);
+            const playingModes = [
+              ...availableModes.filter((mode) => mode.id !== matchingMode.id),
+              matchingMode,
+            ].map((mode) => ({ ...mode, isDefault: mode.id === matchingMode.id }));
+
+            updatedGroup = {
+              ...updatedGroup,
+              category,
+              matchPlanningEnabled: true,
+              playingModes,
+            };
+          }
+
+          set((state) => ({
+            group: updatedGroup,
+            groups: state.groups.map((group) => group.id === updatedGroup.id ? updatedGroup : group),
+          }));
+          return true;
+        } catch (error) {
+          console.error('Failed to configure group category:', error);
+          return false;
         }
       },
       

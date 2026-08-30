@@ -12,7 +12,7 @@ import type { CreateGroupRequest } from '../types';
 export default function HomePage() {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
-  const { addGroup, selectGroup, initializeApp, loadGroups, updateInvitationStatus } = useStore();
+  const { addGroup, configureGroupCategory, selectGroup, initializeApp, loadGroups, updateInvitationStatus } = useStore();
   const group = useGroup();
   const groups = useGroups();
   const groupsLoading = useGroupsLoading();
@@ -49,6 +49,9 @@ export default function HomePage() {
 
       await selectGroup(newGroup.id);
       await initializeApp();
+      if (groupData.category) {
+        await configureGroupCategory(groupData.category);
+      }
       setIsAddModalOpen(false);
     } finally {
       setIsSubmitting(false);
@@ -126,6 +129,9 @@ export default function HomePage() {
                       <p className="font-medium text-gray-900">{groupItem.name}</p>
                       {groupItem.club && (
                         <p className="text-sm text-gray-600 mt-1">{t('groups.clubLabel', { club: groupItem.club })}</p>
+                      )}
+                      {groupItem.category && (
+                        <p className="text-sm text-gray-600 mt-1">{t('groups.categoryLabel', { category: groupItem.category })}</p>
                       )}
                       {isSwitching && (
                         <p className="text-xs text-gray-500 mt-2">{t('groups.switching')}</p>

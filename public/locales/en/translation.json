@@ -178,6 +178,7 @@
     "loading": "Loading groups...",
     "createNew": "Create a new group",
     "clubLabel": "Club: {{club}}",
+    "categoryLabel": "Category: {{category}}",
     "switching": "Switching group...",
     "selectTitle": "Select Your Group",
     "selectDescription": "Choose the group you want to work with",
@@ -196,8 +197,11 @@
     "fields": {
       "groupName": "Group Name",
       "clubOptional": "Club (optional)",
+      "categoryOptional": "SFV category (optional)",
+      "noCategory": "No category",
       "descriptionOptional": "Description (optional)"
     },
+    "categoryHint": "For D7 through A, the official playing mode is created and set as default automatically.",
     "placeholders": {
       "groupName": "Enter group name",
       "club": "Enter club",
@@ -742,6 +746,15 @@
     "title": "Match Planning",
     "description": "Enable playing modes and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
     "disabledState": "Match planning is disabled for this group. Turn it on to define playing modes and formations.",
+    "category": {
+      "title": "SFV category",
+      "description": "Assign the official Swiss Football Association category for this group.",
+      "label": "Category",
+      "none": "No category",
+      "saving": "Saving...",
+      "officialModeHint": "The official {{mode}} playing mode will be created if needed and set as default.",
+      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its playing mode must be selected manually."
+    },
     "playingModes": {
       "title": "Playing Modes",
       "emptyState": "No playing modes yet. Add one to get started.",

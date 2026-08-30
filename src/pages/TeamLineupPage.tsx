@@ -37,6 +37,7 @@ export default function TeamLineupPage() {
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
   const [activeTab, setActiveTab] = useState<number | 'summary'>(1);
+  const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
 
   // Only reinitialize the draft when switching teams, not on every store refresh, to avoid clobbering in-progress edits.
   useEffect(() => {
@@ -193,7 +194,16 @@ export default function TeamLineupPage() {
                   <CardTitle>{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
                   <div className="mt-3 divide-y divide-gray-100">
                     {period.assignments.map((assignment) => (
-                      <div key={assignment.slotId} className="flex justify-between gap-3 py-1.5 text-sm">
+                      <div
+                        key={assignment.slotId}
+                        className={`flex justify-between gap-3 py-1.5 px-1 text-sm rounded transition-colors ${
+                          assignment.playerId && hoveredSummaryPlayerId === assignment.playerId
+                            ? 'bg-orange-100 ring-1 ring-orange-300'
+                            : ''
+                        }`}
+                        onMouseEnter={() => assignment.playerId && setHoveredSummaryPlayerId(assignment.playerId)}
+                        onMouseLeave={() => setHoveredSummaryPlayerId(null)}
+                      >
                         <span className="font-medium text-gray-600">
                           {t(getPositionLabelKey(assignment.positionCode))}
                           {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
@@ -204,11 +214,26 @@ export default function TeamLineupPage() {
                   </div>
                   <div className="mt-3 pt-3 border-t border-gray-200">
                     <div className="text-sm font-semibold text-gray-700 mb-1">{t('teamLineup.benchLabel')}</div>
-                    <div className="text-sm text-gray-600">
-                      {period.benchedPlayers.length > 0
-                        ? period.benchedPlayers.map((player) => player.playerName ?? t('teamLineup.unknownPlayer')).join(', ')
-                        : t('teamLineup.noBenchedPlayers')}
-                    </div>
+                    {period.benchedPlayers.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 text-sm text-gray-600">
+                        {period.benchedPlayers.map((player) => (
+                          <span
+                            key={player.playerId}
+                            className={`px-1 rounded transition-colors ${
+                              hoveredSummaryPlayerId === player.playerId
+                                ? 'bg-orange-100 text-orange-900 ring-1 ring-orange-300'
+                                : ''
+                            }`}
+                            onMouseEnter={() => setHoveredSummaryPlayerId(player.playerId)}
+                            onMouseLeave={() => setHoveredSummaryPlayerId(null)}
+                          >
+                            {player.playerName ?? t('teamLineup.unknownPlayer')}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">{t('teamLineup.noBenchedPlayers')}</div>
+                    )}
                   </div>
                 </CardBody>
               </Card>

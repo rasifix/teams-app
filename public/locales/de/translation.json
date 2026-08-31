@@ -841,6 +841,7 @@
     "rosterMismatchWarning": "Einige zugewiesene Spieler sind nicht mehr im Kader dieses Teams. Bitte die Aufstellung vor dem Speichern prüfen.",
     "slotsTitle": "Formation ({{formation}})",
     "emptySlot": "Leer",
+    "selectPlayerForPosition": "Spieler für {{position}} auswählen",
     "benchTitle": "Bank ({{count}})",
     "noBenchedPlayers": "Keine Spieler auf der Bank für diesen Abschnitt."
   }

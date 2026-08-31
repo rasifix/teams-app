@@ -8,6 +8,9 @@ export interface LineupSummaryPeriod {
     displayIndex: number | null;
     playerId: string | null;
     playerName: string | null;
+    playerLabel: string | null;
+    pitchX: number;
+    pitchY: number;
   }>;
   benchedPlayers: Array<{ playerId: string; playerName: string | null }>;
 }
@@ -63,6 +66,39 @@ export function selectSlotDisplayIndexes(slots: FormationSlot[]): Map<string, nu
   return indexes;
 }
 
+const PITCH_POSITION_COORDINATES: Record<PositionCode, { x: number; y: number }> = {
+  GK: { x: 50, y: 90 },
+  LB: { x: 18, y: 72 }, CB: { x: 50, y: 72 }, RB: { x: 82, y: 72 },
+  LWB: { x: 15, y: 60 }, RWB: { x: 85, y: 60 },
+  CDM: { x: 50, y: 58 }, CM: { x: 50, y: 45 }, CAM: { x: 50, y: 33 },
+  LM: { x: 17, y: 43 }, RM: { x: 83, y: 43 },
+  LW: { x: 17, y: 20 }, RW: { x: 83, y: 20 },
+  CF: { x: 50, y: 24 }, ST: { x: 50, y: 12 },
+};
+
+export function selectPitchCoordinates(slots: FormationSlot[]): Map<string, { x: number; y: number }> {
+  const slotsByCode = new Map<PositionCode, FormationSlot[]>();
+  slots.forEach((slot) => {
+    slotsByCode.set(slot.positionCode, [...(slotsByCode.get(slot.positionCode) ?? []), slot]);
+  });
+
+  const coordinates = new Map<string, { x: number; y: number }>();
+  slotsByCode.forEach((matchingSlots, positionCode) => {
+    const base = PITCH_POSITION_COORDINATES[positionCode];
+    matchingSlots.forEach((slot, index) => {
+      const offset = (index - (matchingSlots.length - 1) / 2) * 18;
+      coordinates.set(slot.id, { x: Math.max(8, Math.min(92, base.x + offset)), y: base.y });
+    });
+  });
+
+  return coordinates;
+}
+
+export function selectPitchPlayerLabel(player: Player | undefined): string | null {
+  if (!player) return null;
+  return `${player.firstName} ${player.lastName.charAt(0)}.`;
+}
+
 export function selectAssignmentsForPeriod(team: Team, periodNumber: number): LineupPositionAssignment[] {
   return team.lineup?.find((period) => period.periodNumber === periodNumber)?.assignments ?? [];
 }
@@ -92,6 +128,27 @@ export function selectBenchedPlayerIds(team: Team, periodNumber: number): string
   return (team.selectedPlayers || []).filter((playerId) => !assignedPlayerIds.has(playerId));
 }
 
+export function selectAssignablePlayersForSlot(
+  team: Team,
+  players: Player[],
+  periodNumber: number,
+  slotId: string
+): Player[] {
+  const selectedPlayerIds = new Set(team.selectedPlayers || []);
+  const assignments = selectAssignmentsForPeriod(team, periodNumber);
+  const currentPlayerId = assignments.find((assignment) => assignment.slotId === slotId)?.playerId;
+  const assignedElsewhere = new Set(
+    assignments
+      .filter((assignment) => assignment.slotId !== slotId)
+      .map((assignment) => assignment.playerId)
+  );
+
+  return players.filter((player) => (
+    selectedPlayerIds.has(player.id) &&
+    (player.id === currentPlayerId || !assignedElsewhere.has(player.id))
+  ));
+}
+
 // Number of distinct periods in which each selected player has a field assignment.
 export function selectPlannedPeriodCounts(team: Team): Map<string, number> {
   const selectedPlayerIds = new Set(team.selectedPlayers || []);
@@ -117,6 +174,7 @@ export function selectLineupSummary(
 ): LineupSummaryPeriod[] {
   const playersById = new Map(players.map((player) => [player.id, player]));
   const slotDisplayIndexes = selectSlotDisplayIndexes(formation.slots);
+  const pitchCoordinates = selectPitchCoordinates(formation.slots);
   const playerName = (playerId: string): string | null => {
     const player = playersById.get(playerId);
     return player ? `${player.firstName} ${player.lastName}` : null;
@@ -132,12 +190,17 @@ export function selectLineupSummary(
       periodNumber,
       assignments: formation.slots.map((slot) => {
         const assignment = assignmentsBySlotId.get(slot.id);
+        const player = assignment ? playersById.get(assignment.playerId) : undefined;
+        const coordinates = pitchCoordinates.get(slot.id) ?? { x: 50, y: 50 };
         return {
           slotId: slot.id,
           positionCode: slot.positionCode,
           displayIndex: slotDisplayIndexes.get(slot.id) ?? null,
           playerId: assignment?.playerId ?? null,
           playerName: assignment ? playerName(assignment.playerId) : null,
+          playerLabel: selectPitchPlayerLabel(player),
+          pitchX: coordinates.x,
+          pitchY: coordinates.y,
         };
       }),
       benchedPlayers: selectBenchedPlayerIds(team, periodNumber).map((playerId) => ({

@@ -841,6 +841,7 @@
     "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",
     "slotsTitle": "Formation ({{formation}})",
     "emptySlot": "Empty",
+    "selectPlayerForPosition": "Select player for {{position}}",
     "benchTitle": "Bench ({{count}})",
     "noBenchedPlayers": "No players on the bench for this period."
   }

@@ -63,10 +63,12 @@ Derived (not user input):
 1. User opens the lineup editor for a Team with a Formation and Playing Mode
    assigned.
 2. System shows a period selector (1 to `numberOfPeriods`) and, for the
-   selected period, one row per Formation slot plus a bench list. Each Player
-   is shown with the number of periods in which they are currently planned.
-3. User assigns a selected Player to a slot (for example by picking a player
-   for each slot, or dragging from the bench).
+   selected period, a graphical playing field with one selectable marker per
+   Formation slot plus a bench list. Each Player is shown with the number of
+   periods in which they are currently planned.
+3. User assigns a selected Player by clicking a field slot and choosing an
+   available Player. On desktop, the user may alternatively drag a Player
+   from the bench onto a field slot.
 4. System validates the assignment (player is selected on the team, slot
    exists in the Formation, no player used twice in this period) and updates
    the in-progress lineup for that period.

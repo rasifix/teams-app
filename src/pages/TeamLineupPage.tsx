@@ -7,13 +7,12 @@ import Level from '../components/Level';
 import {
   selectPlayingModeById,
   selectFormationById,
-  selectAssignmentsForPeriod,
   selectBenchedPlayerIds,
+  selectAssignablePlayersForSlot,
   selectPlannedPeriodCounts,
   selectLineupSummary,
   selectLineupWithCopiedPeriod,
   hasLineupRosterMismatch,
-  selectSlotDisplayIndexes,
   getPositionLabelKey,
 } from '../store/selectors/matchPlanningSelectors';
 import type { Team, TeamLineupPeriod } from '../types';
@@ -38,6 +37,7 @@ export default function TeamLineupPage() {
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
   const [activeTab, setActiveTab] = useState<number | 'summary'>(1);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
+  const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
 
   // Only reinitialize the draft when switching teams, not on every store refresh, to avoid clobbering in-progress edits.
   useEffect(() => {
@@ -50,11 +50,6 @@ export default function TeamLineupPage() {
   const selectedPlayers = useMemo(
     () => players.filter((p) => team?.selectedPlayers?.includes(p.id)),
     [players, team]
-  );
-
-  const slotDisplayIndexes = useMemo(
-    () => (formation ? selectSlotDisplayIndexes(formation.slots) : new Map()),
-    [formation]
   );
 
   if (!isInitialized || isLoading) {
@@ -82,11 +77,15 @@ export default function TeamLineupPage() {
   }
 
   const activePeriod = typeof activeTab === 'number' ? activeTab : 1;
-  const currentAssignments = selectAssignmentsForPeriod(draftTeam, activePeriod);
   const benchedPlayerIds = selectBenchedPlayerIds(draftTeam, activePeriod);
   const plannedPeriodCounts = selectPlannedPeriodCounts(draftTeam);
   const hasMismatch = hasLineupRosterMismatch(draftTeam, activePeriod);
   const lineupSummary = selectLineupSummary(draftTeam, formation, players, playingMode.numberOfPeriods);
+  const currentPeriodSummary = lineupSummary.find((period) => period.periodNumber === activePeriod);
+  const selectingAssignment = currentPeriodSummary?.assignments.find((assignment) => assignment.slotId === selectingSlotId);
+  const assignablePlayers = selectingSlotId
+    ? selectAssignablePlayersForSlot(draftTeam, players, activePeriod, selectingSlotId)
+    : [];
 
   const handleAssignSlot = (slotId: string, playerId: string) => {
     setDraftLineup((current) => {
@@ -105,6 +104,7 @@ export default function TeamLineupPage() {
         (a, b) => a.periodNumber - b.periodNumber
       );
     });
+    setSelectingSlotId(null);
   };
 
   const handleCopyPreviousPeriod = () => {
@@ -139,7 +139,10 @@ export default function TeamLineupPage() {
         {Array.from({ length: playingMode.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
           <button
             key={periodNumber}
-            onClick={() => setActiveTab(periodNumber)}
+            onClick={() => {
+              setActiveTab(periodNumber);
+              setSelectingSlotId(null);
+            }}
             className={`px-3 py-1.5 rounded-md text-sm font-medium border ${
               activeTab === periodNumber
                 ? 'bg-orange-600 text-white border-orange-600'
@@ -150,7 +153,10 @@ export default function TeamLineupPage() {
           </button>
         ))}
         <button
-          onClick={() => setActiveTab('summary')}
+          onClick={() => {
+            setActiveTab('summary');
+            setSelectingSlotId(null);
+          }}
           className={`px-3 py-1.5 rounded-md text-sm font-medium border ${
             activeTab === 'summary'
               ? 'bg-orange-600 text-white border-orange-600'
@@ -187,41 +193,46 @@ export default function TeamLineupPage() {
             <h1 className="text-2xl font-bold">{t('teamLineup.title', { team: team.name })}</h1>
             <p>{playingMode.name} · {formation.name}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="lineup-summary-grid grid grid-cols-1 md:grid-cols-2 gap-3">
             {lineupSummary.map((period) => (
-              <Card key={period.periodNumber} className="break-inside-avoid">
-                <CardBody>
-                  <CardTitle>{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
-                  <div className="mt-3 divide-y divide-gray-100">
+              <Card key={period.periodNumber} className="lineup-period-card break-inside-avoid">
+                <CardBody className="p-3">
+                  <CardTitle className="text-center">{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
+                  <div className="lineup-pitch relative mt-2 mx-auto w-full max-w-xs aspect-[4/3] overflow-hidden rounded-md bg-emerald-600 shadow-inner">
                     {period.assignments.map((assignment) => (
                       <div
                         key={assignment.slotId}
-                        className={`flex justify-between gap-3 py-1.5 px-1 text-sm rounded transition-colors ${
+                        className={`absolute z-10 w-[25%] -translate-x-1/2 -translate-y-1/2 rounded border px-1 py-0.5 text-center shadow-sm transition-all ${
                           assignment.playerId && hoveredSummaryPlayerId === assignment.playerId
-                            ? 'bg-orange-100 ring-1 ring-orange-300'
-                            : ''
+                            ? 'scale-110 border-orange-300 bg-orange-100 text-orange-950 ring-2 ring-orange-300'
+                            : assignment.playerId
+                              ? 'border-white/70 bg-white/95 text-gray-900'
+                              : 'border-dashed border-white/70 bg-emerald-700/80 text-white'
                         }`}
+                        style={{ left: `${assignment.pitchX}%`, top: `${assignment.pitchY}%` }}
                         onMouseEnter={() => assignment.playerId && setHoveredSummaryPlayerId(assignment.playerId)}
                         onMouseLeave={() => setHoveredSummaryPlayerId(null)}
                       >
-                        <span className="font-medium text-gray-600">
+                        <span className="block text-[10px] font-bold leading-none opacity-70">
                           {t(getPositionLabelKey(assignment.positionCode))}
                           {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
                         </span>
-                        <span>{assignment.playerName ?? t('teamLineup.emptySlot')}</span>
+                        <span className="mt-0.5 block truncate text-xs font-semibold leading-tight">
+                          {assignment.playerLabel ?? t('teamLineup.emptySlot')}
+                        </span>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="text-sm font-semibold text-gray-700 mb-1">{t('teamLineup.benchLabel')}</div>
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="text-xs font-semibold text-center text-gray-700 mb-1">{t('teamLineup.benchLabel')}</div>
                     {period.benchedPlayers.length > 0 ? (
-                      <div className="flex flex-wrap gap-1 text-sm text-gray-600">
+                      <div className="flex flex-wrap justify-center gap-1 text-center text-xs text-gray-600">
                         {period.benchedPlayers.map((player) => (
                           <span
                             key={player.playerId}
                             className={`px-1 rounded transition-colors ${
                               hoveredSummaryPlayerId === player.playerId
-                                ? 'bg-orange-100 text-orange-900 ring-1 ring-orange-300'
+                                ? 'bg-orange-100 text-orange-900'
                                 : ''
                             }`}
                             onMouseEnter={() => setHoveredSummaryPlayerId(player.playerId)}
@@ -232,7 +243,7 @@ export default function TeamLineupPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-600">{t('teamLineup.noBenchedPlayers')}</div>
+                      <div className="text-center text-xs text-gray-600">{t('teamLineup.noBenchedPlayers')}</div>
                     )}
                   </div>
                 </CardBody>
@@ -245,40 +256,75 @@ export default function TeamLineupPage() {
       <Card className="mb-4">
         <CardBody>
           <CardTitle>{t('teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
-          <div className="space-y-2 mt-3">
-            {formation.slots.map((slot) => {
-              const assignment = currentAssignments.find((a) => a.slotId === slot.id);
-              const displayIndex = slotDisplayIndexes.get(slot.id);
-              const label = `${t(getPositionLabelKey(slot.positionCode))}${
-                displayIndex !== null && displayIndex !== undefined ? ` ${displayIndex}` : ''
-              }`;
+          {currentPeriodSummary && (
+            <div className="lineup-pitch relative mt-3 mx-auto w-full max-w-md aspect-[4/3] overflow-hidden rounded-md bg-emerald-600 shadow-inner">
+              {currentPeriodSummary.assignments.map((assignment) => (
+                <button
+                  type="button"
+                  key={assignment.slotId}
+                  onClick={() => setSelectingSlotId(assignment.slotId)}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const playerId = event.dataTransfer.getData('lineupPlayerId');
+                    if (playerId) handleAssignSlot(assignment.slotId, playerId);
+                  }}
+                  className={`absolute z-10 w-[25%] -translate-x-1/2 -translate-y-1/2 rounded border px-1 py-1 text-center shadow-sm transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+                    selectingSlotId === assignment.slotId
+                      ? 'border-orange-300 bg-orange-100 text-orange-950 ring-2 ring-orange-300'
+                      : assignment.playerId
+                        ? 'border-white/70 bg-white/95 text-gray-900'
+                        : 'border-dashed border-white/80 bg-emerald-700/80 text-white'
+                  }`}
+                  style={{ left: `${assignment.pitchX}%`, top: `${assignment.pitchY}%` }}
+                >
+                  <span className="block text-[10px] font-bold leading-none opacity-70">
+                    {t(getPositionLabelKey(assignment.positionCode))}
+                    {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs font-semibold leading-tight">
+                    {assignment.playerLabel ?? t('teamLineup.emptySlot')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
-              const assignablePlayerIds = new Set([
-                ...benchedPlayerIds,
-                ...(assignment ? [assignment.playerId] : []),
-              ]);
-
-              return (
-                <div key={slot.id} className="flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-3 py-2">
-                  <span className="text-sm font-medium w-20">{label}</span>
-                  <select
-                    value={assignment?.playerId ?? ''}
-                    onChange={(e) => handleAssignSlot(slot.id, e.target.value)}
-                    className="form-input flex-1"
+          {selectingAssignment && (
+            <div className="mt-3 rounded-lg border border-orange-200 bg-orange-50 p-3">
+              <div className="mb-2 text-sm font-semibold text-gray-800">
+                {t('teamLineup.selectPlayerForPosition', {
+                  position: t(getPositionLabelKey(selectingAssignment.positionCode)),
+                })}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleAssignSlot(selectingAssignment.slotId, '')}
+                  className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+                >
+                  {t('teamLineup.emptySlot')}
+                </button>
+                {assignablePlayers.map((player) => (
+                  <button
+                    type="button"
+                    key={player.id}
+                    onClick={() => handleAssignSlot(selectingAssignment.slotId, player.id)}
+                    className={`rounded border px-3 py-1.5 text-sm ${
+                      selectingAssignment.playerId === player.id
+                        ? 'border-orange-500 bg-orange-100 text-orange-900'
+                        : 'border-gray-300 bg-white hover:bg-gray-50'
+                    }`}
                   >
-                    <option value="">{t('teamLineup.emptySlot')}</option>
-                    {selectedPlayers
-                      .filter((player) => assignablePlayerIds.has(player.id))
-                      .map((player) => (
-                        <option key={player.id} value={player.id}>
-                          {player.firstName} {player.lastName}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              );
-            })}
-          </div>
+                    {player.firstName} {player.lastName}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </CardBody>
       </Card>
 
@@ -292,7 +338,15 @@ export default function TeamLineupPage() {
               {selectedPlayers
                 .filter((player) => benchedPlayerIds.includes(player.id))
                 .map((player) => (
-                  <div key={player.id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+                  <div
+                    key={player.id}
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('lineupPlayerId', player.id);
+                    }}
+                    className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2 lg:cursor-grab lg:active:cursor-grabbing"
+                  >
                     <span>{player.firstName} {player.lastName}</span>
                     <span className="flex items-center gap-3">
                       <span className="text-xs text-gray-500">
@@ -318,9 +372,14 @@ export default function TeamLineupPage() {
         </Button>
       </div>
       <style>{`@media print {
+        @page { size: A4 portrait; margin: 8mm; }
         body * { visibility: hidden; }
         .lineup-print-content, .lineup-print-content * { visibility: visible; }
-        .lineup-print-content { position: absolute; inset: 0; width: 100%; padding: 12mm; }
+        .lineup-print-content { position: absolute; inset: 0; width: 100%; padding: 0; }
+        .lineup-summary-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
+        .lineup-period-card .card-body { padding: 3mm !important; }
+        .lineup-pitch { max-width: none !important; aspect-ratio: 4 / 3 !important; }
+        .lineup-pitch { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         body { background: white !important; }
       }`}</style>
     </div>

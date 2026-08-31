@@ -3,6 +3,7 @@ import type { Formation, FormationSlot, Player, PlayingMode, Team } from '../../
 import {
   hasLineupRosterMismatch,
   selectAssignmentsForPeriod,
+  selectAssignablePlayersForSlot,
   selectBenchedPlayerIds,
   selectDefaultPlayingMode,
   selectFormationById,
@@ -10,6 +11,8 @@ import {
   selectPlannedPeriodCounts,
   selectLineupSummary,
   selectLineupWithCopiedPeriod,
+  selectPitchCoordinates,
+  selectPitchPlayerLabel,
   selectSlotDisplayIndexes,
   selectStaleAssignmentsForPeriod,
   getPositionLabelKey,
@@ -47,6 +50,31 @@ function formation(overrides: Partial<Formation>): Formation {
 function player(id: string, firstName: string): Player {
   return { id, firstName, lastName: 'Player', birthYear: 2015, level: 3, status: 'active' };
 }
+
+describe('pitch summary selectors', () => {
+  it('places position groups in their tactical areas and spreads duplicate positions', () => {
+    const coordinates = selectPitchCoordinates([
+      slot({ id: 'gk', positionCode: 'GK' }),
+      slot({ id: 'cb-1', positionCode: 'CB' }),
+      slot({ id: 'cb-2', positionCode: 'CB' }),
+      slot({ id: 'st', positionCode: 'ST' }),
+    ]);
+
+    expect(coordinates.get('gk')).toEqual({ x: 50, y: 90 });
+    expect(coordinates.get('st')).toEqual({ x: 50, y: 12 });
+    expect(coordinates.get('cb-1')?.x).toBeLessThan(coordinates.get('cb-2')?.x ?? 0);
+    expect(coordinates.get('cb-1')?.y).toBe(72);
+  });
+
+  it('uses the first name plus last-name initial for every pitch label', () => {
+    expect(selectPitchPlayerLabel(player('p1', 'Ada'))).toBe('Ada P.');
+    expect(selectPitchPlayerLabel({ ...player('p2', 'Maximilian'), lastName: 'Mustermann' })).toBe('Maximilian M.');
+  });
+
+  it('returns a null label when player data is unavailable', () => {
+    expect(selectPitchPlayerLabel(undefined)).toBeNull();
+  });
+});
 
 describe('getPositionLabelKey', () => {
   it('builds a namespaced i18n key from the position code', () => {
@@ -88,6 +116,37 @@ describe('selectPlannedPeriodCounts', () => {
   });
 });
 
+describe('selectAssignablePlayersForSlot', () => {
+  const roster = [player('p1', 'Ada'), player('p2', 'Ben'), player('p3', 'Cia'), player('outside', 'Dan')];
+
+  it('returns benched players plus the player currently assigned to the slot', () => {
+    const result = selectAssignablePlayersForSlot(team({
+      selectedPlayers: ['p1', 'p2', 'p3'],
+      lineup: [{
+        periodNumber: 1,
+        assignments: [{ slotId: 'gk', playerId: 'p1' }, { slotId: 'cb', playerId: 'p2' }],
+      }],
+    }), roster, 1, 'gk');
+
+    expect(result.map((entry) => entry.id)).toEqual(['p1', 'p3']);
+  });
+
+  it('returns the full resolved roster for an unplanned period', () => {
+    const result = selectAssignablePlayersForSlot(
+      team({ selectedPlayers: ['p1', 'p2', 'missing'] }),
+      roster,
+      2,
+      'gk'
+    );
+
+    expect(result.map((entry) => entry.id)).toEqual(['p1', 'p2']);
+  });
+
+  it('ignores players who are not selected for the team', () => {
+    expect(selectAssignablePlayersForSlot(team({ selectedPlayers: [] }), roster, 1, 'gk')).toEqual([]);
+  });
+});
+
 describe('selectLineupSummary', () => {
   const summaryFormation = formation({
     slots: [slot({ id: 'gk', positionCode: 'GK' }), slot({ id: 'cb-1' }), slot({ id: 'cb-2' })],
@@ -105,7 +164,9 @@ describe('selectLineupSummary', () => {
     );
 
     expect(summary).toHaveLength(2);
-    expect(summary[0].assignments[0]).toMatchObject({ positionCode: 'GK', playerName: 'Ada Player' });
+    expect(summary[0].assignments[0]).toMatchObject({
+      positionCode: 'GK', playerName: 'Ada Player', playerLabel: 'Ada P.', pitchX: 50, pitchY: 90,
+    });
     expect(summary[0].assignments[1]).toMatchObject({ displayIndex: 1, playerId: null });
     expect(summary[0].benchedPlayers).toEqual([{ playerId: 'p2', playerName: 'Ben Player' }]);
     expect(summary[1].assignments.every((assignment) => assignment.playerId === null)).toBe(true);

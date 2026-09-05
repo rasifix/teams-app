@@ -423,8 +423,15 @@ export default function TeamLineupPage() {
         .lineup-print-content { position: static !important; width: 100%; padding: 0; }
         .lineup-summary-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
         .lineup-period-card .card-body { padding: 3mm !important; }
-        .lineup-pitch { max-width: none !important; aspect-ratio: 4 / 3 !important; }
-        .lineup-pitch { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .lineup-pitch {
+          max-width: none !important;
+          aspect-ratio: 4 / 3 !important;
+          background: white !important;
+          border: 1.5px solid #4b5563 !important;
+          box-shadow: none !important;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
         .lineup-shirt-page { display: block !important; break-before: page !important; page-break-before: always !important; padding-top: 4mm; }
         .lineup-shirt-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
         .lineup-shirt-row { break-inside: avoid; min-height: 18mm; padding: 2.5mm 3mm !important; }

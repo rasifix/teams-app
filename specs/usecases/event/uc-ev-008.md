@@ -167,6 +167,9 @@ Failure:
   number assigned.
 - The printed lineup overview and Player shirt-number list must be separated
   by a forced page break; the shirt-number list always starts on a new page.
+- In print, each graphical playing field uses a white background with a clear
+  border instead of the interactive view's green background to improve
+  readability and reduce ink usage.
 
 ## Validation Rules
 

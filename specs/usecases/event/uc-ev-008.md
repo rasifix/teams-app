@@ -16,6 +16,10 @@ This use case covers:
   assignment,
 - reviewing and printing a summary of all periods, position assignments, and
   benched Players,
+- starting the print flow directly from Team Detail once all required lineup
+  and shirt data is complete,
+- printing the lineup overview and the Player shirt-number list on separate
+  pages,
 - copying or clearing assignments when moving between periods,
 - non-blocking validation warnings when assignment counts don't match the
   roster.
@@ -80,10 +84,16 @@ Derived (not user input):
 7. User may open the Summary tab to review all periods. The summary includes
    every Formation slot and its assigned Player or empty state, plus the
    implicitly benched Players for each period.
-8. User may print the summary; navigation, editing controls, and save actions
-   are excluded from the printed output.
-9. User saves the lineup.
-10. System persists the Team's full `lineup` (all edited periods) via team
+8. Once a shirt set and a valid shirt number for every selected Player have
+   been assigned and the lineup contains at least one position assignment,
+   the print action on Team Detail becomes enabled. Selecting it opens the
+   Summary tab and the browser print dialog.
+9. User may also print from the Summary tab. Navigation, editing controls,
+   and save actions are excluded from the printed output. An explicit page
+   break separates the lineup overview from the additional A4 page listing
+   every selected Player and the assigned shirt number in a large font.
+10. User saves the lineup.
+11. System persists the Team's full `lineup` (all edited periods) via team
    update.
 
 ## Alternative Flows
@@ -122,6 +132,15 @@ Derived (not user input):
 2. System keeps the previously persisted `lineup` and shows an error; local
    in-progress edits remain available for retry.
 
+### A6 - Print Requirements Incomplete
+
+1. The Event has no Playing Mode, the Team has no Formation or shirt set, the
+   lineup has no position assignment, the Team has no selected Players, or at
+   least one selected Player has no positive shirt number.
+2. The print action remains visible but disabled on Team Detail.
+3. User completes the missing configuration or assignments.
+4. System enables the print action once every requirement is satisfied.
+
 ## Postconditions
 
 Success:
@@ -142,6 +161,12 @@ Failure:
   containing a field assignment for that Player. It is derived from the
   current in-progress lineup and updates immediately when assignments change.
 - Only group admin or trainer roles may edit or save a Team's lineup.
+- Team Detail enables the lineup print action only when the Event has a
+  Playing Mode, the Team has a Formation and shirt set, at least one lineup
+  position assignment exists, and every selected Player has a positive shirt
+  number assigned.
+- The printed lineup overview and Player shirt-number list must be separated
+  by a forced page break; the shirt-number list always starts on a new page.
 
 ## Validation Rules
 

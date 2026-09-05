@@ -10,6 +10,7 @@ import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectCanPrintTeamLineup } from '../store/selectors/matchPlanningSelectors';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ export default function TeamDetailPage() {
     : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = players.filter(p => team?.selectedPlayers?.includes(p.id));
+  const canPrintLineup = event && team ? selectCanPrintTeamLineup(event, team) : false;
   const usedShirtNumbersBySetId = useMemo(() => {
     if (!event || !team) {
       return {} as Record<string, number[]>;
@@ -231,14 +233,24 @@ export default function TeamDetailPage() {
               </div>
             )}
 
-            {event.playingModeId && team.formationId && (
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
-                <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup`)}>
-                  {t('teamDetail.planLineupAction')}
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
+              <div className="flex flex-wrap justify-end gap-2">
+                {event.playingModeId && team.formationId && (
+                  <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup`)}>
+                    {t('teamDetail.planLineupAction')}
+                  </Button>
+                )}
+                <Button
+                  variant="secondary"
+                  className="btn-sm"
+                  disabled={!canPrintLineup}
+                  onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup?print=true`)}
+                >
+                  {t('teamDetail.printLineupAction')}
                 </Button>
               </div>
-            )}
+            </div>
           </CardBody>
         </Card>
         

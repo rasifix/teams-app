@@ -729,7 +729,8 @@
     "formationLabel": "Formation",
     "noFormationAssigned": "Keine Formation ausgewählt",
     "lineupLabel": "Aufstellung",
-    "planLineupAction": "Aufstellung planen"
+    "planLineupAction": "Aufstellung planen",
+    "printLineupAction": "Aufstellung drucken"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team nicht gefunden",
@@ -836,6 +837,8 @@
     "summaryTab": "Übersicht",
     "summaryTitle": "Aufstellungsübersicht",
     "printSummary": "Übersicht drucken",
+    "shirtNumbersTitle": "Spieler und Trikotnummern",
+    "noShirtNumber": "—",
     "benchLabel": "Bank",
     "unknownPlayer": "Unbekannter Spieler",
     "rosterMismatchWarning": "Einige zugewiesene Spieler sind nicht mehr im Kader dieses Teams. Bitte die Aufstellung vor dem Speichern prüfen.",

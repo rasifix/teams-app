@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
@@ -11,6 +11,7 @@ import {
   selectAssignablePlayersForSlot,
   selectPlannedPeriodCounts,
   selectLineupSummary,
+  selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
   hasLineupRosterMismatch,
   getPositionLabelKey,
@@ -21,6 +22,9 @@ export default function TeamLineupPage() {
   const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldPrint = searchParams.get('print') === 'true';
+  const hasPrinted = useRef(false);
 
   const { getEventById, updateEvent } = useEvents();
   const { players } = usePlayers();
@@ -35,7 +39,7 @@ export default function TeamLineupPage() {
   const formation = selectFormationById(formations, team?.formationId);
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
-  const [activeTab, setActiveTab] = useState<number | 'summary'>(1);
+  const [activeTab, setActiveTab] = useState<number | 'summary'>(shouldPrint ? 'summary' : 1);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
 
@@ -44,6 +48,22 @@ export default function TeamLineupPage() {
     setDraftLineup(team?.lineup ?? []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team?.id]);
+
+  useEffect(() => {
+    if (
+      !shouldPrint || hasPrinted.current || activeTab !== 'summary' ||
+      !isInitialized || isLoading || !event || !team || !playingMode || !formation
+    ) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      hasPrinted.current = true;
+      window.print();
+    }, 100);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activeTab, event, formation, isInitialized, isLoading, playingMode, shouldPrint, team]);
 
   const draftTeam: Team | null = team ? { ...team, lineup: draftLineup } : null;
 
@@ -81,6 +101,7 @@ export default function TeamLineupPage() {
   const plannedPeriodCounts = selectPlannedPeriodCounts(draftTeam);
   const hasMismatch = hasLineupRosterMismatch(draftTeam, activePeriod);
   const lineupSummary = selectLineupSummary(draftTeam, formation, players, playingMode.numberOfPeriods);
+  const shirtNumberRows = selectLineupShirtNumberRows(draftTeam, players);
   const currentPeriodSummary = lineupSummary.find((period) => period.periodNumber === activePeriod);
   const selectingAssignment = currentPeriodSummary?.assignments.find((assignment) => assignment.slotId === selectingSlotId);
   const assignablePlayers = selectingSlotId
@@ -250,6 +271,27 @@ export default function TeamLineupPage() {
               </Card>
             ))}
           </div>
+          <section className="lineup-shirt-page hidden print:block">
+            <header className="mb-6 text-center">
+              <h1 className="text-3xl font-bold text-gray-900">{team.name}</h1>
+              <h2 className="mt-1 text-2xl font-semibold text-gray-700">{t('teamLineup.shirtNumbersTitle')}</h2>
+            </header>
+            <div className="lineup-shirt-grid grid grid-cols-2 gap-3">
+              {shirtNumberRows.map((row) => (
+                <div
+                  key={row.playerId}
+                  className="lineup-shirt-row flex items-center gap-4 rounded-lg border-2 border-gray-300 px-4 py-3"
+                >
+                  <span className="w-14 flex-none text-center text-4xl font-black text-gray-900">
+                    {row.shirtNumber ?? t('teamLineup.noShirtNumber')}
+                  </span>
+                  <span className="min-w-0 text-xl font-semibold text-gray-900">
+                    {row.playerName ?? t('teamLineup.unknownPlayer')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       ) : (
       <>
@@ -375,11 +417,17 @@ export default function TeamLineupPage() {
         @page { size: A4 portrait; margin: 8mm; }
         body * { visibility: hidden; }
         .lineup-print-content, .lineup-print-content * { visibility: visible; }
-        .lineup-print-content { position: absolute; inset: 0; width: 100%; padding: 0; }
+        #root > div > header { display: none !important; }
+        .page-container { max-width: none !important; padding: 0 !important; }
+        .page-container > *:not(.lineup-print-content):not(style) { display: none !important; }
+        .lineup-print-content { position: static !important; width: 100%; padding: 0; }
         .lineup-summary-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
         .lineup-period-card .card-body { padding: 3mm !important; }
         .lineup-pitch { max-width: none !important; aspect-ratio: 4 / 3 !important; }
         .lineup-pitch { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .lineup-shirt-page { display: block !important; break-before: page !important; page-break-before: always !important; padding-top: 4mm; }
+        .lineup-shirt-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
+        .lineup-shirt-row { break-inside: avoid; min-height: 18mm; padding: 2.5mm 3mm !important; }
         body { background: white !important; }
       }`}</style>
     </div>

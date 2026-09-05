@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import type { Formation, FormationSlot, Player, PlayingMode, Team } from '../../types';
+import type { Event, Formation, FormationSlot, Player, PlayingMode, Team } from '../../types';
 import {
   hasLineupRosterMismatch,
   selectAssignmentsForPeriod,
   selectAssignablePlayersForSlot,
   selectBenchedPlayerIds,
+  selectCanPrintTeamLineup,
   selectDefaultPlayingMode,
   selectFormationById,
   selectPlayingModeById,
   selectPlannedPeriodCounts,
   selectLineupSummary,
+  selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
   selectPitchCoordinates,
   selectPitchPlayerLabel,
@@ -25,6 +27,19 @@ function team(overrides: Partial<Team>): Team {
     strength: 2,
     startTime: '10:00',
     selectedPlayers: [],
+    ...overrides,
+  };
+}
+
+function event(overrides: Partial<Event>): Event {
+  return {
+    id: 'e-default',
+    name: 'Match',
+    date: '2026-09-05',
+    maxPlayersPerTeam: 12,
+    minPlayersPerTeam: 7,
+    teams: [],
+    invitations: [],
     ...overrides,
   };
 }
@@ -144,6 +159,84 @@ describe('selectAssignablePlayersForSlot', () => {
 
   it('ignores players who are not selected for the team', () => {
     expect(selectAssignablePlayersForSlot(team({ selectedPlayers: [] }), roster, 1, 'gk')).toEqual([]);
+  });
+});
+
+describe('selectLineupShirtNumberRows', () => {
+  it('lists selected players in shirt-number order and puts unassigned players last', () => {
+    const rows = selectLineupShirtNumberRows(team({
+      selectedPlayers: ['p1', 'p2', 'p3'],
+      shirtAssignments: [
+        { playerId: 'p1', shirtNumber: 12 },
+        { playerId: 'p3', shirtNumber: 4 },
+      ],
+    }), [player('p1', 'Ada'), player('p2', 'Ben'), player('p3', 'Cia')]);
+
+    expect(rows).toEqual([
+      { playerId: 'p3', playerName: 'Cia Player', shirtNumber: 4 },
+      { playerId: 'p1', playerName: 'Ada Player', shirtNumber: 12 },
+      { playerId: 'p2', playerName: 'Ben Player', shirtNumber: null },
+    ]);
+  });
+
+  it('uses fallbacks for missing players and invalid shirt numbers', () => {
+    const rows = selectLineupShirtNumberRows(team({
+      selectedPlayers: ['missing'],
+      shirtAssignments: [{ playerId: 'missing', shirtNumber: 0 }],
+    }), []);
+
+    expect(rows).toEqual([{ playerId: 'missing', playerName: null, shirtNumber: null }]);
+  });
+
+  it('ignores shirt assignments for players outside the selected roster', () => {
+    expect(selectLineupShirtNumberRows(team({
+      selectedPlayers: [],
+      shirtAssignments: [{ playerId: 'outside', shirtNumber: 7 }],
+    }), [player('outside', 'Dan')])).toEqual([]);
+  });
+});
+
+describe('selectCanPrintTeamLineup', () => {
+  const printableTeam = team({
+    selectedPlayers: ['p1', 'p2'],
+    shirtSetId: 'shirts-1',
+    shirtAssignments: [
+      { playerId: 'p1', shirtNumber: 4 },
+      { playerId: 'p2', shirtNumber: 7 },
+    ],
+    formationId: 'formation-1',
+    lineup: [{ periodNumber: 1, assignments: [{ slotId: 'gk', playerId: 'p1' }] }],
+  });
+
+  it('allows printing when playing mode, formation, lineup, and every shirt number are assigned', () => {
+    expect(selectCanPrintTeamLineup(event({ playingModeId: 'mode-1' }), printableTeam)).toBe(true);
+  });
+
+  it('blocks printing when a selected player has no valid shirt assignment', () => {
+    expect(selectCanPrintTeamLineup(event({ playingModeId: 'mode-1' }), {
+      ...printableTeam,
+      shirtAssignments: [{ playerId: 'p1', shirtNumber: 4 }],
+    })).toBe(false);
+    expect(selectCanPrintTeamLineup(event({ playingModeId: 'mode-1' }), {
+      ...printableTeam,
+      shirtAssignments: [
+        { playerId: 'p1', shirtNumber: 4 },
+        { playerId: 'p2', shirtNumber: 0 },
+      ],
+    })).toBe(false);
+  });
+
+  it.each([
+    ['playing mode', event({}), printableTeam],
+    ['formation', event({ playingModeId: 'mode-1' }), { ...printableTeam, formationId: null }],
+    ['lineup assignments', event({ playingModeId: 'mode-1' }), { ...printableTeam, lineup: [{ periodNumber: 1, assignments: [] }] }],
+    ['shirt set', event({ playingModeId: 'mode-1' }), { ...printableTeam, shirtSetId: undefined }],
+  ])('blocks printing without a %s', (_missingRequirement, matchEvent, candidateTeam) => {
+    expect(selectCanPrintTeamLineup(matchEvent, candidateTeam)).toBe(false);
+  });
+
+  it('uses a non-printable fallback for an empty roster and missing optional data', () => {
+    expect(selectCanPrintTeamLineup(event({ playingModeId: 'mode-1' }), team({ formationId: 'formation-1' }))).toBe(false);
   });
 });
 

@@ -729,7 +729,8 @@
     "formationLabel": "Formation",
     "noFormationAssigned": "No formation selected",
     "lineupLabel": "Lineup",
-    "planLineupAction": "Plan Lineup"
+    "planLineupAction": "Plan Lineup",
+    "printLineupAction": "Print Lineup"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team not found",
@@ -836,6 +837,8 @@
     "summaryTab": "Summary",
     "summaryTitle": "Lineup summary",
     "printSummary": "Print summary",
+    "shirtNumbersTitle": "Players and shirt numbers",
+    "noShirtNumber": "—",
     "benchLabel": "Bench",
     "unknownPlayer": "Unknown player",
     "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",

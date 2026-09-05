@@ -1,4 +1,4 @@
-import type { Formation, FormationSlot, LineupPositionAssignment, Player, PlayingMode, PositionCode, Team, TeamLineupPeriod } from '../../types';
+import type { Event, Formation, FormationSlot, LineupPositionAssignment, Player, PlayingMode, PositionCode, Team, TeamLineupPeriod } from '../../types';
 
 export interface LineupSummaryPeriod {
   periodNumber: number;
@@ -13,6 +13,12 @@ export interface LineupSummaryPeriod {
     pitchY: number;
   }>;
   benchedPlayers: Array<{ playerId: string; playerName: string | null }>;
+}
+
+export interface LineupShirtNumberRow {
+  playerId: string;
+  playerName: string | null;
+  shirtNumber: number | null;
 }
 
 export const POSITION_CODES: PositionCode[] = [
@@ -147,6 +153,46 @@ export function selectAssignablePlayersForSlot(
     selectedPlayerIds.has(player.id) &&
     (player.id === currentPlayerId || !assignedElsewhere.has(player.id))
   ));
+}
+
+export function selectLineupShirtNumberRows(team: Team, players: Player[]): LineupShirtNumberRow[] {
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  const shirtNumbersByPlayerId = new Map(
+    (team.shirtAssignments ?? []).map((assignment) => [assignment.playerId, assignment.shirtNumber])
+  );
+
+  return (team.selectedPlayers ?? [])
+    .map((playerId) => {
+      const player = playersById.get(playerId);
+      const assignedNumber = shirtNumbersByPlayerId.get(playerId);
+      return {
+        playerId,
+        playerName: player ? `${player.firstName} ${player.lastName}` : null,
+        shirtNumber: assignedNumber && assignedNumber > 0 ? assignedNumber : null,
+      };
+    })
+    .sort((left, right) => {
+      if (left.shirtNumber !== null && right.shirtNumber !== null) {
+        return left.shirtNumber - right.shirtNumber;
+      }
+      if (left.shirtNumber !== null) return -1;
+      if (right.shirtNumber !== null) return 1;
+      return (left.playerName ?? '').localeCompare(right.playerName ?? '');
+    });
+}
+
+export function selectCanPrintTeamLineup(event: Event, team: Team): boolean {
+  const selectedPlayerIds = team.selectedPlayers ?? [];
+  const assignedShirtNumbers = new Map(
+    (team.shirtAssignments ?? []).map((assignment) => [assignment.playerId, assignment.shirtNumber])
+  );
+
+  const hasShirtsAssigned = Boolean(team.shirtSetId) &&
+    selectedPlayerIds.length > 0 &&
+    selectedPlayerIds.every((playerId) => (assignedShirtNumbers.get(playerId) ?? 0) > 0);
+  const hasLineup = (team.lineup ?? []).some((period) => period.assignments.length > 0);
+
+  return Boolean(event.playingModeId && team.formationId && hasLineup && hasShirtsAssigned);
 }
 
 // Number of distinct periods in which each selected player has a field assignment.

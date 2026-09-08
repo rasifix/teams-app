@@ -11,6 +11,7 @@ import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
 import { selectCanPrintTeamLineup } from '../store/selectors/matchPlanningSelectors';
+import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export default function TeamDetailPage() {
     ? selectTeamAssigneeById(team.trainerId, trainers, players)
     : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
-  const selectedPlayers = players.filter(p => team?.selectedPlayers?.includes(p.id));
+  const selectedPlayers = team ? selectTeamPlayersByName(team, players) : [];
   const canPrintLineup = event && team ? selectCanPrintTeamLineup(event, team) : false;
   const usedShirtNumbersBySetId = useMemo(() => {
     if (!event || !team) {

@@ -10,11 +10,11 @@ export function selectTeamPlayersByName(team: Team, players: Player[]): Player[]
   return players
     .filter((player) => selectedPlayerIds.has(player.id))
     .sort((left, right) => {
-      const lastNameComparison = comparableName(left.lastName).localeCompare(comparableName(right.lastName));
-      if (lastNameComparison !== 0) return lastNameComparison;
-
       const firstNameComparison = comparableName(left.firstName).localeCompare(comparableName(right.firstName));
       if (firstNameComparison !== 0) return firstNameComparison;
+
+      const lastNameComparison = comparableName(left.lastName).localeCompare(comparableName(right.lastName));
+      if (lastNameComparison !== 0) return lastNameComparison;
 
       return left.id.localeCompare(right.id);
     });

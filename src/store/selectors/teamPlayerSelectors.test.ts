@@ -11,11 +11,11 @@ function team(selectedPlayers: string[] = []): Team {
 }
 
 describe('selectTeamPlayersByName', () => {
-  it('sorts selected players by last name and then first name', () => {
+  it('sorts selected players by first name and then last name', () => {
     const result = selectTeamPlayersByName(team(['p3', 'p1', 'p2']), [
-      player('p1', 'Zoe', 'Alpha'),
+      player('p1', 'Ada', 'Zulu'),
       player('p2', 'Ada', 'Alpha'),
-      player('p3', 'Ben', 'Zulu'),
+      player('p3', 'Ben', 'Alpha'),
     ]);
 
     expect(result.map((entry) => entry.id)).toEqual(['p2', 'p1', 'p3']);

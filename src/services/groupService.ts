@@ -34,10 +34,10 @@ export async function createGroup(groupData: CreateGroupRequest): Promise<Group>
   return normalizeGroup(group);
 }
 
-export async function updateGroupCategory(groupId: string, category: GroupCategory | null): Promise<Group> {
+export async function updateGroupCategory(groupId: string, name: string, category: GroupCategory | null): Promise<Group> {
   const group = await apiClient.request<Group>(`/api/groups/${groupId}`, {
     method: 'PUT',
-    body: JSON.stringify({ category }),
+    body: JSON.stringify({ name, category }),
   });
 
   return normalizeGroup(group);

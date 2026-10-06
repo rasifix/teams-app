@@ -753,6 +753,7 @@
       "label": "Kategorie",
       "none": "Keine Kategorie",
       "saving": "Wird gespeichert...",
+      "saveFailed": "Die Kategorie konnte nicht gespeichert werden. Bitte versuche es erneut.",
       "officialModeHint": "Der offizielle Spielmodus {{mode}} wird bei Bedarf erstellt und als Standard festgelegt.",
       "ff14Hint": "Der SFV definiert FF14 sowohl für 7er- als auch für 9er-Fussball. Der Spielmodus muss deshalb manuell gewählt werden."
     },

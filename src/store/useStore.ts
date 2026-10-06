@@ -745,7 +745,7 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
 
         try {
-          let updatedGroup = await updateGroupCategoryService(currentGroup.id, category);
+          let updatedGroup = await updateGroupCategoryService(currentGroup.id, currentGroup.name, category);
           const officialMode = selectOfficialPlayingModeForCategory(category);
 
           if (officialMode) {

@@ -31,6 +31,7 @@ export default function MatchPlanningPage() {
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<GroupCategory | ''>(group?.category ?? '');
   const [isSavingCategory, setIsSavingCategory] = useState(false);
+  const [categorySaveError, setCategorySaveError] = useState<string | null>(null);
   const [isPlayingModeModalOpen, setIsPlayingModeModalOpen] = useState(false);
   const [editingPlayingMode, setEditingPlayingMode] = useState<PlayingMode | null>(null);
   const [deletingPlayingMode, setDeletingPlayingMode] = useState<PlayingMode | null>(null);
@@ -43,9 +44,18 @@ export default function MatchPlanningPage() {
   }, [group?.category]);
 
   const handleSaveCategory = async () => {
+    setCategorySaveError(null);
     setIsSavingCategory(true);
-    await configureGroupCategory(selectedCategory || null);
-    setIsSavingCategory(false);
+    try {
+      const success = await configureGroupCategory(selectedCategory || null);
+      if (!success) {
+        setCategorySaveError(t('matchPlanning.category.saveFailed'));
+      }
+    } catch {
+      setCategorySaveError(t('matchPlanning.category.saveFailed'));
+    } finally {
+      setIsSavingCategory(false);
+    }
   };
 
   const handleToggleEnabled = async () => {
@@ -82,7 +92,10 @@ export default function MatchPlanningPage() {
               <select
                 id="group-category"
                 value={selectedCategory}
-                onChange={(event) => setSelectedCategory(event.target.value as GroupCategory | '')}
+                onChange={(event) => {
+                  setSelectedCategory(event.target.value as GroupCategory | '');
+                  setCategorySaveError(null);
+                }}
                 className="form-input"
               >
                 <option value="">{t('matchPlanning.category.none')}</option>
@@ -99,6 +112,9 @@ export default function MatchPlanningPage() {
               {isSavingCategory ? t('matchPlanning.category.saving') : t('common.actions.save')}
             </Button>
           </div>
+          {categorySaveError && (
+            <p className="mt-3 text-sm text-red-600" role="alert">{categorySaveError}</p>
+          )}
           {selectedCategory && selectOfficialPlayingModeForCategory(selectedCategory) && (
             <p className="mt-3 text-sm text-orange-700">
               {t('matchPlanning.category.officialModeHint', {

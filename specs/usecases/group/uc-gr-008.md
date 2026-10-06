@@ -9,7 +9,8 @@ Allow a Group Manager to opt a Group in or out of the match planning feature
 
 This use case covers:
 - viewing the current `matchPlanningEnabled` state for the active group,
-- turning match planning on or off for the group.
+- turning match planning on or off for the group,
+- assigning or clearing the Group's SFV category from Match Planning.
 
 This use case does not cover:
 - creating or editing Playing Modes (UC-GR-009),
@@ -41,6 +42,11 @@ The user opens Group settings and toggles the match planning switch.
 
 Required:
 - `matchPlanningEnabled` (boolean)
+
+Optional category update:
+- `category` (supported SFV category or null)
+- current Group `name`, included in the Group update request to satisfy the
+  Groups API update contract
 
 ## Main Success Scenario
 
@@ -76,8 +82,9 @@ Required:
 
 ### A3 - Persistence Failure
 
-1. Toggle update request fails.
-2. System reverts the toggle to its previous state and shows an error.
+1. Match-planning toggle or category update request fails.
+2. System keeps the previously persisted value and shows a translated inline
+   error message next to the affected control.
 3. No group data is changed.
 
 ### A4 - Insufficient Permissions
@@ -85,6 +92,16 @@ Required:
 1. User without admin/trainer role attempts to change the toggle.
 2. System blocks the action (control not shown, or request rejected).
 3. No group data is changed.
+
+### A5 - Assign Or Clear Category
+
+1. User selects an SFV category or the empty category option and saves.
+2. System sends the current Group name together with the selected `category`
+   in the Group update request.
+3. System persists the category without changing the Group name.
+4. If the selected category has one unambiguous official Playing Mode, the UI
+   enables match planning and creates or selects that mode as defined by the
+   category mapping.
 
 ## Postconditions
 
@@ -100,7 +117,13 @@ Failure:
 - Match planning is opt-in per group; default is disabled.
 - Toggling the flag is non-destructive in both directions.
 - Only group admin or trainer roles may change the flag.
+- Saving a category must preserve the current Group name and include it in the
+  update payload because category alone does not satisfy the Groups API's
+  required update fields.
 
 ## Validation Rules
 
 - `matchPlanningEnabled` must be a boolean.
+- `category` must be null or one of the supported SFV categories.
+- `name` included with a category update must be the current non-empty Group
+  name.

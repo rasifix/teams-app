@@ -35,7 +35,7 @@ Authenticated User with Role admin or trainer
 
 ## Trigger
 
-The user opens the Formation picker on a Team in Team Detail.
+The user selects the Formation row on a Team in Team Detail.
 
 ## Input Data
 
@@ -46,11 +46,12 @@ Optional:
 ## Main Success Scenario
 
 1. User opens Team Detail for a Team whose Event has a Playing Mode.
-2. System shows the group's Formations plus a "None" option, with the
-   current selection highlighted.
-3. User selects a Formation.
-4. System persists `formationId` on the Team.
-5. Team Detail now offers the per-period lineup editor (UC-EV-008) using the
+2. User selects the Formation row.
+3. System opens an assignment modal showing the group's Formations plus a
+   "None" option, with the current selection preselected.
+4. User selects a Formation and saves the modal.
+5. System persists `formationId` on the Team and closes the modal.
+6. Team Detail now offers the per-period lineup editor (UC-EV-008) using the
    selected Formation's slots.
 
 ## Alternative Flows
@@ -97,6 +98,8 @@ Failure:
   per-period player-to-slot assignments vary.
 - `formationId` can only be set while the Team's Event has a Playing Mode.
 - Only group admin or trainer roles may change a Team's `formationId`.
+- Formation is assigned through the clickable Team Detail row and a focused
+  modal; it is not edited through an inline select control.
 
 ## Validation Rules
 

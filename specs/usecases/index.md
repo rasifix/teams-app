@@ -33,6 +33,7 @@ be described in files grouped in subfolders per category.
 * UC-EV-006 - assign playing mode to event
 * UC-EV-007 - select team formation
 * UC-EV-008 - plan per-period lineup
+* UC-EV-009 - assign team trainer
 
 ## Statistics
 

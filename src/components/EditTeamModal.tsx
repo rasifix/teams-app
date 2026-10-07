@@ -14,6 +14,7 @@ interface EditTeamModalProps {
   currentStartTime: string;
   currentTrainerId?: string;
   currentLocation?: string;
+  showTrainerAssignee?: boolean;
 }
 
 export default function EditTeamModal({ 
@@ -25,6 +26,7 @@ export default function EditTeamModal({
   currentStartTime,
   currentTrainerId,
   currentLocation,
+  showTrainerAssignee = true,
 }: EditTeamModalProps) {
   const { t } = useTranslation();
   const [teamName, setTeamName] = useState(currentName);
@@ -112,7 +114,7 @@ export default function EditTeamModal({
               />
             </div>
 
-            <div>
+            {showTrainerAssignee && <div>
               <label htmlFor="trainer" className="form-label">
                 {t('teamModal.fields.trainerAssignee')}
               </label>
@@ -130,7 +132,7 @@ export default function EditTeamModal({
                   </option>
                 ))}
               </select>
-            </div>
+            </div>}
 
             <div>
               <label htmlFor="location" className="form-label">

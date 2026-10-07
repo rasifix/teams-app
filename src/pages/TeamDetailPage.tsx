@@ -8,8 +8,9 @@ import Strength from '../components/Strength';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
+import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
-import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamAssigneeById, selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 
 export default function TeamDetailPage() {
@@ -27,6 +28,8 @@ export default function TeamDetailPage() {
   const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [isAssignShirtsModalOpen, setIsAssignShirtsModalOpen] = useState(false);
+  const [isAssignTrainerModalOpen, setIsAssignTrainerModalOpen] = useState(false);
+  const [isAssignFormationModalOpen, setIsAssignFormationModalOpen] = useState(false);
   
   const event = eventId ? getEventById(eventId) : null;
   const team = event?.teams.find(t => t.id === teamId);
@@ -36,6 +39,17 @@ export default function TeamDetailPage() {
     : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = team ? selectTeamPlayersByName(team, players) : [];
+  const trainerOptions = useMemo(
+    () => selectTeamAssigneeOptions(trainers, players).map((option) => ({
+      value: option.id,
+      label: `${option.firstName} ${option.lastName}${option.source === 'guardian' ? ` (${t('domain.guardians')})` : ''}`,
+    })),
+    [players, t, trainers]
+  );
+  const formationOptions = useMemo(
+    () => formations.map((formation) => ({ value: formation.id, label: formation.name })),
+    [formations]
+  );
   const usedShirtNumbersBySetId = useMemo(() => {
     if (!event || !team) {
       return {} as Record<string, number[]>;
@@ -64,6 +78,16 @@ export default function TeamDetailPage() {
     const updatedTeams = event.teams.map(t =>
       t.id === teamId ? { ...t, formationId: formationId || null } : t
     );
+
+    await updateEvent(eventId, { teams: updatedTeams });
+  };
+
+  const handleAssignTrainer = async (trainerId: string | undefined) => {
+    if (!event || !eventId || !team) return;
+
+    const updatedTeams = event.teams.map((candidate) => (
+      candidate.id === teamId ? { ...candidate, trainerId } : candidate
+    ));
 
     await updateEvent(eventId, { teams: updatedTeams });
   };
@@ -182,7 +206,11 @@ export default function TeamDetailPage() {
               </div>
             </div>            
 
-            <div className="flex items-center justify-between">
+            <button
+              type="button"
+              className="-mx-4 flex w-[calc(100%+2rem)] items-center justify-between rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              onClick={() => setIsAssignTrainerModalOpen(true)}
+            >
               <div className="flex items-center gap-2">
                 <span>👤</span>
                 <span className="font-medium text-sm">{t('teamDetail.trainerLabel')}</span>
@@ -194,11 +222,13 @@ export default function TeamDetailPage() {
               ) : (
                 <div className="text-sm text-gray-500">{t('teamModal.noTrainerAssigned')}</div>
               )}
-            </div>
+            </button>
             
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -mx-6 px-6 py-2 rounded transition-colors"
-              onClick={() => selectedPlayers.length > 0 && setIsAssignShirtsModalOpen(true)}
+            <button
+              type="button"
+              className="-mx-4 flex w-[calc(100%+2rem)] items-center justify-between rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 disabled:cursor-default disabled:hover:bg-transparent lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              disabled={selectedPlayers.length === 0}
+              onClick={() => setIsAssignShirtsModalOpen(true)}
             >
               <div className="flex items-center gap-2">
                 <span>👕</span>
@@ -211,25 +241,22 @@ export default function TeamDetailPage() {
               ) : (
                 <div className="text-sm text-gray-500">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
-            </div>
+            </button>
 
             {event.playingModeId && (
-              <div className="flex items-center justify-between">
+              <button
+                type="button"
+                className="-mx-4 flex w-[calc(100%+2rem)] items-center justify-between rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+                onClick={() => setIsAssignFormationModalOpen(true)}
+              >
                 <div className="flex items-center gap-2">
                   <span>🧩</span>
                   <span className="font-medium text-sm">{t('teamDetail.formationLabel')}</span>
                 </div>
-                <select
-                  value={team.formationId || ''}
-                  onChange={(e) => handleChangeFormation(e.target.value || undefined)}
-                  className="form-input text-sm py-1"
-                >
-                  <option value="">{t('teamDetail.noFormationAssigned')}</option>
-                  {formations.map((formation) => (
-                    <option key={formation.id} value={formation.id}>{formation.name}</option>
-                  ))}
-                </select>
-              </div>
+                <span className={`text-sm ${team.formationId ? '' : 'text-gray-500'}`}>
+                  {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
+                </span>
+              </button>
             )}
 
             <div className="flex items-center justify-between gap-3">
@@ -347,6 +374,8 @@ export default function TeamDetailPage() {
             currentStrength={team.strength}
             currentStartTime={team.startTime}
             currentTrainerId={team.trainerId}
+            currentLocation={team.location}
+            showTrainerAssignee={false}
           />
           
           <AssignShirtsModal
@@ -359,6 +388,28 @@ export default function TeamDetailPage() {
             shirtSets={shirtSets}
             currentShirtSetId={team.shirtSetId}
             currentShirtAssignments={team.shirtAssignments}
+          />
+
+          <AssignTeamPropertyModal
+            isOpen={isAssignTrainerModalOpen}
+            title={t('teamDetail.assignTrainerTitle')}
+            label={t('teamDetail.trainerLabel')}
+            emptyOptionLabel={t('teamModal.noTrainerAssigned')}
+            currentValue={team.trainerId}
+            options={trainerOptions}
+            onClose={() => setIsAssignTrainerModalOpen(false)}
+            onSave={handleAssignTrainer}
+          />
+
+          <AssignTeamPropertyModal
+            isOpen={isAssignFormationModalOpen}
+            title={t('teamDetail.assignFormationTitle')}
+            label={t('teamDetail.formationLabel')}
+            emptyOptionLabel={t('teamDetail.noFormationAssigned')}
+            currentValue={team.formationId}
+            options={formationOptions}
+            onClose={() => setIsAssignFormationModalOpen(false)}
+            onSave={handleChangeFormation}
           />
         </>
       )}

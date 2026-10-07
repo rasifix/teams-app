@@ -720,6 +720,7 @@
   "teamDetail": {
     "teamNotFound": "Team nicht gefunden",
     "trainerLabel": "Trainer",
+    "assignTrainerTitle": "Trainer zuweisen",
     "shirtSetLabel": "Trikotsatz",
     "noShirtSetAssigned": "Kein Trikotsatz zugewiesen",
     "noPlayersSelected": "Noch keine Spieler ausgewählt",
@@ -727,6 +728,7 @@
     "removePlayerTitle": "Spieler entfernen",
     "removePlayerMessage": "Möchtest du {{firstName}} {{lastName}} aus diesem Team entfernen?",
     "formationLabel": "Formation",
+    "assignFormationTitle": "Formation zuweisen",
     "noFormationAssigned": "Keine Formation ausgewählt",
     "lineupLabel": "Aufstellung",
     "planLineupAction": "Aufstellung planen"

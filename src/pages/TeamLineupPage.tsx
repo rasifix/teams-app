@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
@@ -23,9 +23,6 @@ export default function TeamLineupPage() {
   const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const shouldPrint = searchParams.get('print') === 'true';
-  const hasPrinted = useRef(false);
 
   const { getEventById, updateEvent } = useEvents();
   const { players } = usePlayers();
@@ -40,7 +37,7 @@ export default function TeamLineupPage() {
   const formation = selectFormationById(formations, team?.formationId);
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
-  const [activeTab, setActiveTab] = useState<number | 'summary'>(shouldPrint ? 'summary' : 1);
+  const [activeTab, setActiveTab] = useState<number | 'summary'>(1);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
 
@@ -49,22 +46,6 @@ export default function TeamLineupPage() {
     setDraftLineup(team?.lineup ?? []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team?.id]);
-
-  useEffect(() => {
-    if (
-      !shouldPrint || hasPrinted.current || activeTab !== 'summary' ||
-      !isInitialized || isLoading || !event || !team || !playingMode || !formation
-    ) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      hasPrinted.current = true;
-      window.print();
-    }, 100);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [activeTab, event, formation, isInitialized, isLoading, playingMode, shouldPrint, team]);
 
   const draftTeam: Team | null = team ? { ...team, lineup: draftLineup } : null;
 

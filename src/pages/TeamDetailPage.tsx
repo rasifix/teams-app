@@ -10,7 +10,6 @@ import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
-import { selectCanPrintTeamLineup } from '../store/selectors/matchPlanningSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 
 export default function TeamDetailPage() {
@@ -37,7 +36,6 @@ export default function TeamDetailPage() {
     : null;
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = team ? selectTeamPlayersByName(team, players) : [];
-  const canPrintLineup = event && team ? selectCanPrintTeamLineup(event, team) : false;
   const usedShirtNumbersBySetId = useMemo(() => {
     if (!event || !team) {
       return {} as Record<string, number[]>;
@@ -242,14 +240,6 @@ export default function TeamDetailPage() {
                     {t('teamDetail.planLineupAction')}
                   </Button>
                 )}
-                <Button
-                  variant="secondary"
-                  className="btn-sm"
-                  disabled={!canPrintLineup}
-                  onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup?print=true`)}
-                >
-                  {t('teamDetail.printLineupAction')}
-                </Button>
               </div>
             </div>
           </CardBody>

@@ -729,8 +729,7 @@
     "formationLabel": "Formation",
     "noFormationAssigned": "No formation selected",
     "lineupLabel": "Lineup",
-    "planLineupAction": "Plan Lineup",
-    "printLineupAction": "Print Lineup"
+    "planLineupAction": "Plan Lineup"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team not found",

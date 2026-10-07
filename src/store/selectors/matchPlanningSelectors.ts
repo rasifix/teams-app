@@ -1,4 +1,4 @@
-import type { Event, Formation, FormationSlot, LineupPositionAssignment, Player, PlayingMode, PositionCode, Team, TeamLineupPeriod } from '../../types';
+import type { Formation, FormationSlot, LineupPositionAssignment, Player, PlayingMode, PositionCode, Team, TeamLineupPeriod } from '../../types';
 
 export interface LineupSummaryPeriod {
   periodNumber: number;
@@ -186,20 +186,6 @@ export function selectLineupShirtNumberRows(team: Team, players: Player[]): Line
       if (right.shirtNumber !== null) return 1;
       return (left.playerName ?? '').localeCompare(right.playerName ?? '');
     });
-}
-
-export function selectCanPrintTeamLineup(event: Event, team: Team): boolean {
-  const selectedPlayerIds = team.selectedPlayers ?? [];
-  const assignedShirtNumbers = new Map(
-    (team.shirtAssignments ?? []).map((assignment) => [assignment.playerId, assignment.shirtNumber])
-  );
-
-  const hasShirtsAssigned = Boolean(team.shirtSetId) &&
-    selectedPlayerIds.length > 0 &&
-    selectedPlayerIds.every((playerId) => (assignedShirtNumbers.get(playerId) ?? 0) > 0);
-  const hasLineup = (team.lineup ?? []).some((period) => period.assignments.length > 0);
-
-  return Boolean(event.playingModeId && team.formationId && hasLineup && hasShirtsAssigned);
 }
 
 // Number of distinct periods in which each selected player has a field assignment.

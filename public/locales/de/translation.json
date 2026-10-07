@@ -729,8 +729,7 @@
     "formationLabel": "Formation",
     "noFormationAssigned": "Keine Formation ausgewählt",
     "lineupLabel": "Aufstellung",
-    "planLineupAction": "Aufstellung planen",
-    "printLineupAction": "Aufstellung drucken"
+    "planLineupAction": "Aufstellung planen"
   },
   "teamPlayerSelection": {
     "teamNotFound": "Team nicht gefunden",

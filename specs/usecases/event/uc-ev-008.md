@@ -16,6 +16,8 @@ This use case covers:
   assignment,
 - reviewing and printing a summary of all periods, position assignments, and
   benched Players,
+- identifying selected Players who are planned for fewer periods than the
+  Playing Mode's configured minimum,
 - starting the print flow directly from Team Detail once all required lineup
   and shirt data is complete,
 - printing the lineup overview and the Player shirt-number list on separate
@@ -83,7 +85,9 @@ Derived (not user input):
    assignments in the current period and remain editable.
 7. User may open the Summary tab to review all periods. The summary includes
    every Formation slot and its assigned Player or empty state, plus the
-   implicitly benched Players for each period.
+   implicitly benched Players for each period. If a configured minimum number
+   of periods per Player is not met, the overview lists every violating Player
+   with the planned and required period counts.
 8. Once a shirt set and a valid shirt number for every selected Player have
    been assigned and the lineup contains at least one position assignment,
    the print action on Team Detail becomes enabled. Selecting it opens the
@@ -160,6 +164,9 @@ Failure:
 - A Player's planned-period count is the number of distinct lineup periods
   containing a field assignment for that Player. It is derived from the
   current in-progress lineup and updates immediately when assignments change.
+- A minimum-period violation occurs when a selected Player's planned-period
+  count is lower than `playingMode.minimumPeriodsPerPlayer`. A missing or zero
+  minimum disables this rule. Violations are advisory and do not block saving.
 - Only group admin or trainer roles may edit or save a Team's lineup.
 - Team Detail enables the lineup print action only when the Event has a
   Playing Mode, the Team has a Formation and shirt set, at least one lineup

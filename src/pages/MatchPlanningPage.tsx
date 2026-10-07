@@ -64,7 +64,7 @@ export default function MatchPlanningPage() {
     setIsTogglingEnabled(false);
   };
 
-  const handleSavePlayingMode = async (data: { name: string; numberOfPeriods: number; periodLengthMinutes: number }) => {
+  const handleSavePlayingMode = async (data: { name: string; numberOfPeriods: number; periodLengthMinutes: number; minimumPeriodsPerPlayer: number }) => {
     if (editingPlayingMode) {
       return updatePlayingMode(editingPlayingMode.id, data);
     }
@@ -197,6 +197,11 @@ export default function MatchPlanningPage() {
                           {t('matchPlanning.playingModes.summary', {
                             periods: playingMode.numberOfPeriods,
                             minutes: playingMode.periodLengthMinutes,
+                          })}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {t('matchPlanning.playingModes.minimumPeriods', {
+                            count: playingMode.minimumPeriodsPerPlayer ?? 0,
                           })}
                         </div>
                       </div>

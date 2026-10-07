@@ -29,6 +29,7 @@ export interface PlayingMode {
   name: string; // e.g. "4x20"
   numberOfPeriods: number;
   periodLengthMinutes: number;
+  minimumPeriodsPerPlayer?: number; // 0 or omitted means no minimum playing-time rule
   isDefault?: boolean;
 }
 

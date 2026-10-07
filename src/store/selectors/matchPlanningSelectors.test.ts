@@ -12,6 +12,7 @@ import {
   selectPlannedPeriodCounts,
   selectLineupSummary,
   selectLineupShirtNumberRows,
+  selectMinimumPeriodViolations,
   selectLineupWithCopiedPeriod,
   selectPitchCoordinates,
   selectPitchPlayerLabel,
@@ -128,6 +129,40 @@ describe('selectPlannedPeriodCounts', () => {
 
     expect(Object.fromEntries(counts)).toEqual({ p1: 0 });
     expect(counts.has('removed')).toBe(false);
+  });
+});
+
+describe('selectMinimumPeriodViolations', () => {
+  it('returns selected players planned for fewer than the configured minimum periods', () => {
+    const violations = selectMinimumPeriodViolations(team({
+      selectedPlayers: ['p1', 'p2', 'p3'],
+      lineup: [
+        { periodNumber: 1, assignments: [{ slotId: 's1', playerId: 'p1' }, { slotId: 's2', playerId: 'p2' }] },
+        { periodNumber: 2, assignments: [{ slotId: 's1', playerId: 'p1' }] },
+      ],
+    }), [player('p1', 'Ada'), player('p2', 'Ben'), player('p3', 'Cia')], 2);
+
+    expect(violations).toEqual([
+      { playerId: 'p3', playerName: 'Cia Player', plannedPeriods: 0, minimumPeriods: 2 },
+      { playerId: 'p2', playerName: 'Ben Player', plannedPeriods: 1, minimumPeriods: 2 },
+    ]);
+  });
+
+  it('returns no violations when the minimum is disabled or every player satisfies it', () => {
+    const plannedTeam = team({
+      selectedPlayers: ['p1'],
+      lineup: [{ periodNumber: 1, assignments: [{ slotId: 's1', playerId: 'p1' }] }],
+    });
+
+    expect(selectMinimumPeriodViolations(plannedTeam, [player('p1', 'Ada')], 0)).toEqual([]);
+    expect(selectMinimumPeriodViolations(plannedTeam, [player('p1', 'Ada')], undefined)).toEqual([]);
+    expect(selectMinimumPeriodViolations(plannedTeam, [player('p1', 'Ada')], 1)).toEqual([]);
+  });
+
+  it('uses a null-name fallback when a selected player cannot be resolved', () => {
+    expect(selectMinimumPeriodViolations(team({ selectedPlayers: ['missing'] }), [], 1)).toEqual([
+      { playerId: 'missing', playerName: null, plannedPeriods: 0, minimumPeriods: 1 },
+    ]);
   });
 });
 

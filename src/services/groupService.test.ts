@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { updateGroupCategory } from './groupService';
+import { addGroupPlayingMode, updateGroupCategory } from './groupService';
 
 describe('groupService', () => {
   afterEach(() => {
@@ -35,5 +35,25 @@ describe('groupService', () => {
 
     const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
     expect(JSON.parse(options?.body ?? '{}')).toEqual({ name: 'Juniors', category: null });
+  });
+
+  it('persists the minimum periods per player with a playing mode', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'mode-1',
+      name: '4x20',
+      numberOfPeriods: 4,
+      periodLengthMinutes: 20,
+      minimumPeriodsPerPlayer: 2,
+    });
+
+    await addGroupPlayingMode('group-1', {
+      name: '4x20',
+      numberOfPeriods: 4,
+      periodLengthMinutes: 20,
+      minimumPeriodsPerPlayer: 2,
+    });
+
+    const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
+    expect(JSON.parse(options?.body ?? '{}')).toMatchObject({ minimumPeriodsPerPlayer: 2 });
   });
 });

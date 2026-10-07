@@ -8,7 +8,7 @@ interface PlayingModeModalProps {
   isOpen: boolean;
   onClose: () => void;
   playingModeToEdit?: PlayingMode | null;
-  onSave: (data: { name: string; numberOfPeriods: number; periodLengthMinutes: number }) => Promise<boolean>;
+  onSave: (data: { name: string; numberOfPeriods: number; periodLengthMinutes: number; minimumPeriodsPerPlayer: number }) => Promise<boolean>;
 }
 
 export default function PlayingModeModal({ isOpen, onClose, playingModeToEdit = null, onSave }: PlayingModeModalProps) {
@@ -16,6 +16,7 @@ export default function PlayingModeModal({ isOpen, onClose, playingModeToEdit = 
   const [name, setName] = useState('');
   const [numberOfPeriods, setNumberOfPeriods] = useState(4);
   const [periodLengthMinutes, setPeriodLengthMinutes] = useState(20);
+  const [minimumPeriodsPerPlayer, setMinimumPeriodsPerPlayer] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -27,6 +28,7 @@ export default function PlayingModeModal({ isOpen, onClose, playingModeToEdit = 
     setName(playingModeToEdit?.name ?? '');
     setNumberOfPeriods(playingModeToEdit?.numberOfPeriods ?? 4);
     setPeriodLengthMinutes(playingModeToEdit?.periodLengthMinutes ?? 20);
+    setMinimumPeriodsPerPlayer(playingModeToEdit?.minimumPeriodsPerPlayer ?? 0);
     setError(null);
   }, [isOpen, playingModeToEdit]);
 
@@ -49,11 +51,17 @@ export default function PlayingModeModal({ isOpen, onClose, playingModeToEdit = 
       return;
     }
 
+    if (minimumPeriodsPerPlayer < 0 || minimumPeriodsPerPlayer > numberOfPeriods) {
+      setError(t('playingModeModal.errors.minimumPeriodsRange', { total: numberOfPeriods }));
+      return;
+    }
+
     setIsSaving(true);
     const wasSaved = await onSave({
       name: name.trim(),
       numberOfPeriods,
       periodLengthMinutes,
+      minimumPeriodsPerPlayer,
     });
     setIsSaving(false);
 
@@ -112,6 +120,22 @@ export default function PlayingModeModal({ isOpen, onClose, playingModeToEdit = 
                 onChange={(e) => setPeriodLengthMinutes(parseInt(e.target.value) || 0)}
                 className="form-input"
               />
+            </div>
+
+            <div>
+              <label htmlFor="playing-mode-minimum-periods" className="form-label">
+                {t('playingModeModal.fields.minimumPeriodsPerPlayer')}
+              </label>
+              <input
+                id="playing-mode-minimum-periods"
+                type="number"
+                min={0}
+                max={numberOfPeriods}
+                value={minimumPeriodsPerPlayer}
+                onChange={(e) => setMinimumPeriodsPerPlayer(parseInt(e.target.value) || 0)}
+                className="form-input"
+              />
+              <p className="mt-1 text-xs text-gray-500">{t('playingModeModal.hints.minimumPeriodsPerPlayer')}</p>
             </div>
           </div>
         </ModalBody>

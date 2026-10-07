@@ -762,6 +762,7 @@
       "emptyState": "Noch keine Spielmodi. Füge einen hinzu, um zu starten.",
       "defaultBadge": "Standard",
       "summary": "{{periods}} Abschnitte x {{minutes}} Min.",
+      "minimumPeriods": "Minimum pro Spieler: {{count}} Abschnitte",
       "setDefault": "Als Standard festlegen",
       "deleteTitle": "Spielmodus löschen",
       "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
@@ -779,7 +780,11 @@
     "fields": {
       "name": "Name",
       "numberOfPeriods": "Anzahl Abschnitte",
-      "periodLengthMinutes": "Abschnittslänge (Minuten)"
+      "periodLengthMinutes": "Abschnittslänge (Minuten)",
+      "minimumPeriodsPerPlayer": "Mindestanzahl Abschnitte pro Spieler"
+    },
+    "hints": {
+      "minimumPeriodsPerPlayer": "Mit 0 wird keine Mindestanzahl vorausgesetzt."
     },
     "placeholders": {
       "name": "z.B. 4x20"
@@ -788,6 +793,7 @@
       "nameRequired": "Name ist erforderlich",
       "numberOfPeriodsMin": "Die Anzahl der Abschnitte muss mindestens 1 sein",
       "periodLengthMin": "Die Abschnittslänge muss mindestens 1 Minute betragen",
+      "minimumPeriodsRange": "Die Mindestanzahl pro Spieler muss zwischen 0 und {{total}} liegen.",
       "saveFailed": "Speichern des Spielmodus fehlgeschlagen. Bitte versuche es erneut."
     }
   },
@@ -843,6 +849,8 @@
     "benchLabel": "Bank",
     "unknownPlayer": "Unbekannter Spieler",
     "rosterMismatchWarning": "Einige zugewiesene Spieler sind nicht mehr im Kader dieses Teams. Bitte die Aufstellung vor dem Speichern prüfen.",
+    "minimumPeriodsViolationTitle": "Mindestspielzeit nicht erfüllt",
+    "minimumPeriodsViolation": "{{player}} ist für {{count}} von mindestens {{minimum}} Abschnitten eingeplant.",
     "slotsTitle": "Formation ({{formation}})",
     "emptySlot": "Leer",
     "selectPlayerForPosition": "Spieler für {{position}} auswählen",

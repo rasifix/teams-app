@@ -3,14 +3,16 @@
 ## Goal
 
 Allow a Group Manager to define, edit, and delete reusable Playing Modes
-(period count and length) for a group, and mark one as the group's default.
+(period count, length, and minimum periods per Player) for a group, and mark
+one as the group's default.
 
 ## Scope
 
 This use case covers:
 - viewing all Playing Modes of the active group,
 - creating a new Playing Mode,
-- editing a Playing Mode's name, number of periods, and period length,
+- editing a Playing Mode's name, number of periods, period length, and minimum
+  periods per Player,
 - marking a Playing Mode as the group's default,
 - deleting a Playing Mode.
 
@@ -45,13 +47,16 @@ Required for create/update:
 - `name` (non-empty string, e.g. "4x20")
 - `numberOfPeriods` (integer ≥ 1)
 - `periodLengthMinutes` (integer ≥ 1)
+- `minimumPeriodsPerPlayer` (integer from 0 to `numberOfPeriods`; 0 disables
+  the minimum-playing-time rule)
 
 ## Main Success Scenario - Create Playing Mode
 
 1. User opens Playing Modes section.
 2. System shows existing Playing Modes with their default marker.
 3. User presses Add.
-4. User enters name, number of periods, and period length.
+4. User enters name, number of periods, period length, and minimum periods per
+   Player.
 5. User confirms Create.
 6. System persists the new Playing Mode.
    - If this is the group's first Playing Mode, system marks it default
@@ -115,5 +120,7 @@ Failure:
 - `name`: required, non-empty string.
 - `numberOfPeriods`: required, integer, minimum 1.
 - `periodLengthMinutes`: required, integer, minimum 1.
+- `minimumPeriodsPerPlayer`: required, integer, minimum 0, and must not exceed
+  `numberOfPeriods`.
 - Delete is rejected while any Event in the group references the Playing
   Mode.

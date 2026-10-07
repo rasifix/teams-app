@@ -21,6 +21,13 @@ export interface LineupShirtNumberRow {
   shirtNumber: number | null;
 }
 
+export interface MinimumPeriodViolation {
+  playerId: string;
+  playerName: string | null;
+  plannedPeriods: number;
+  minimumPeriods: number;
+}
+
 export const POSITION_CODES: PositionCode[] = [
   'GK',
   'LB', 'CB', 'RB', 'LWB', 'RWB',
@@ -210,6 +217,35 @@ export function selectPlannedPeriodCounts(team: Team): Map<string, number> {
   return new Map(
     [...plannedPeriodsByPlayer].map(([playerId, periodNumbers]) => [playerId, periodNumbers.size])
   );
+}
+
+export function selectMinimumPeriodViolations(
+  team: Team,
+  players: Player[],
+  minimumPeriods: number | null | undefined
+): MinimumPeriodViolation[] {
+  if (!minimumPeriods || minimumPeriods < 1) return [];
+
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  const plannedPeriodCounts = selectPlannedPeriodCounts(team);
+
+  return (team.selectedPlayers ?? [])
+    .map((playerId) => {
+      const plannedPeriods = plannedPeriodCounts.get(playerId) ?? 0;
+      const player = playersById.get(playerId);
+      return {
+        playerId,
+        playerName: player ? `${player.firstName} ${player.lastName}` : null,
+        plannedPeriods,
+        minimumPeriods,
+      };
+    })
+    .filter((violation) => violation.plannedPeriods < minimumPeriods)
+    .sort((left, right) => (
+      left.plannedPeriods - right.plannedPeriods ||
+      (left.playerName ?? '').localeCompare(right.playerName ?? '') ||
+      left.playerId.localeCompare(right.playerId)
+    ));
 }
 
 export function selectLineupSummary(

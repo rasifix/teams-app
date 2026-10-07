@@ -10,6 +10,7 @@ import {
   selectBenchedPlayerIds,
   selectAssignablePlayersForSlot,
   selectPlannedPeriodCounts,
+  selectMinimumPeriodViolations,
   selectLineupSummary,
   selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
@@ -99,6 +100,11 @@ export default function TeamLineupPage() {
   const activePeriod = typeof activeTab === 'number' ? activeTab : 1;
   const benchedPlayerIds = selectBenchedPlayerIds(draftTeam, activePeriod);
   const plannedPeriodCounts = selectPlannedPeriodCounts(draftTeam);
+  const minimumPeriodViolations = selectMinimumPeriodViolations(
+    draftTeam,
+    players,
+    playingMode.minimumPeriodsPerPlayer
+  );
   const hasMismatch = hasLineupRosterMismatch(draftTeam, activePeriod);
   const lineupSummary = selectLineupSummary(draftTeam, formation, players, playingMode.numberOfPeriods);
   const shirtNumberRows = selectLineupShirtNumberRows(draftTeam, players);
@@ -210,6 +216,22 @@ export default function TeamLineupPage() {
               {t('teamLineup.printSummary')}
             </Button>
           </div>
+          {minimumPeriodViolations.length > 0 && (
+            <div className="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+              <div className="font-semibold">{t('teamLineup.minimumPeriodsViolationTitle')}</div>
+              <ul className="mt-1 list-disc pl-5">
+                {minimumPeriodViolations.map((violation) => (
+                  <li key={violation.playerId}>
+                    {t('teamLineup.minimumPeriodsViolation', {
+                      player: violation.playerName ?? t('teamLineup.unknownPlayer'),
+                      count: violation.plannedPeriods,
+                      minimum: violation.minimumPeriods,
+                    })}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="hidden print:block mb-5">
             <h1 className="text-2xl font-bold">{t('teamLineup.title', { team: team.name })}</h1>
             <p>{playingMode.name} · {formation.name}</p>

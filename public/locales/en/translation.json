@@ -762,6 +762,7 @@
       "emptyState": "No playing modes yet. Add one to get started.",
       "defaultBadge": "Default",
       "summary": "{{periods}} periods x {{minutes}} min",
+      "minimumPeriods": "Minimum per player: {{count}} periods",
       "setDefault": "Set as default",
       "deleteTitle": "Delete Playing Mode",
       "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
@@ -779,7 +780,11 @@
     "fields": {
       "name": "Name",
       "numberOfPeriods": "Number of Periods",
-      "periodLengthMinutes": "Period Length (minutes)"
+      "periodLengthMinutes": "Period Length (minutes)",
+      "minimumPeriodsPerPlayer": "Minimum periods per player"
+    },
+    "hints": {
+      "minimumPeriodsPerPlayer": "Use 0 when no minimum should be enforced."
     },
     "placeholders": {
       "name": "e.g. 4x20"
@@ -788,6 +793,7 @@
       "nameRequired": "Name is required",
       "numberOfPeriodsMin": "Number of periods must be at least 1",
       "periodLengthMin": "Period length must be at least 1 minute",
+      "minimumPeriodsRange": "Minimum periods per player must be between 0 and {{total}}.",
       "saveFailed": "Failed to save playing mode. Please try again."
     }
   },
@@ -843,6 +849,8 @@
     "benchLabel": "Bench",
     "unknownPlayer": "Unknown player",
     "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",
+    "minimumPeriodsViolationTitle": "Minimum playing-time rule not met",
+    "minimumPeriodsViolation": "{{player}} is planned for {{count}} of at least {{minimum}} periods.",
     "slotsTitle": "Formation ({{formation}})",
     "emptySlot": "Empty",
     "selectPlayerForPosition": "Select player for {{position}}",

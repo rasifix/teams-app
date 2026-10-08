@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Route, RouterProvider, Routes } from 'react-router-dom';
 import { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiErrorBoundary from './components/ApiErrorBoundary';
@@ -29,32 +29,15 @@ import ShirtSetsPage from './pages/ShirtSetsPage';
 import MatchPlanningPage from './pages/MatchPlanningPage';
 import GroupSelectionPage from './pages/GroupSelectionPage';
 
-function App() {
-  // API health check on startup
-  useEffect(() => {
-    // Add API health check instead of migrations
-    fetch('/health')
-      .then(response => {
-        if (!response.ok) {
-          console.warn('API not available, some features may not work');
-        }
-      })
-      .catch(error => {
-        console.warn('API connection failed:', error);
-      });
-  }, []);
-
+function AppRoutes() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppInitializer>
-            <div className="min-h-screen bg-gray-50">
-              <Header />
-              <ApiStatus />
-              <ApiErrorBoundary>
-                <main>
-                  <Routes>
+    <AppInitializer>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <ApiStatus />
+        <ApiErrorBoundary>
+          <main>
+            <Routes>
                     {/* Public routes */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -86,12 +69,37 @@ function App() {
                       <Route path="event-attendance" element={<EventAttendancePage />} />
                       <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
                     </Route>
-                  </Routes>
-                </main>
-              </ApiErrorBoundary>
-            </div>
-          </AppInitializer>
-        </Router>
+            </Routes>
+          </main>
+        </ApiErrorBoundary>
+      </div>
+    </AppInitializer>
+  );
+}
+
+const router = createBrowserRouter([
+  { path: '*', element: <AppRoutes /> },
+]);
+
+function App() {
+  // API health check on startup
+  useEffect(() => {
+    // Add API health check instead of migrations
+    fetch('/health')
+      .then(response => {
+        if (!response.ok) {
+          console.warn('API not available, some features may not work');
+        }
+      })
+      .catch(error => {
+        console.warn('API connection failed:', error);
+      });
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <RouterProvider router={router} />
       </AuthProvider>
     </ErrorBoundary>
   );

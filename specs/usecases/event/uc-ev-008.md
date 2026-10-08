@@ -23,6 +23,8 @@ This use case covers:
 - printing the lineup overview and the Player shirt-number list on separate
   pages,
 - copying or clearing assignments when moving between periods,
+- tracking whether the in-progress lineup differs from the last saved lineup,
+- protecting unsaved changes when leaving the lineup editor,
 - non-blocking validation warnings when assignment counts don't match the
   roster.
 
@@ -94,9 +96,11 @@ Derived (not user input):
    and save actions are excluded from the printed output. An explicit page
    break separates the lineup overview from the additional A4 page listing
    every selected Player and the assigned shirt number in a large font.
-9. User saves the lineup.
-10. System persists the Team's full `lineup` (all edited periods) via team
-   update.
+9. The Save action is enabled only while the in-progress lineup differs from
+   the last successfully saved lineup.
+10. User saves the lineup. System persists the Team's full `lineup` (all
+    edited periods) via team update, keeps the user on the current lineup
+    route, and disables Save again.
 
 ## Alternative Flows
 
@@ -133,6 +137,29 @@ Derived (not user input):
 1. Save request fails.
 2. System keeps the previously persisted `lineup` and shows an error; local
    in-progress edits remain available for retry.
+3. Save remains enabled because the draft is still different from the last
+   successful save.
+
+### A6 - Leave With Unsaved Changes
+
+1. User attempts to navigate outside the lineup editor while the draft has
+   unsaved changes.
+2. System blocks the navigation and asks the user to Save and leave, Discard
+   and leave, or Cancel.
+3. Save and leave persists the draft and continues the pending navigation only
+   after a successful save.
+4. Discard and leave continues the pending navigation without persisting the
+   draft.
+5. Cancel aborts the pending navigation and keeps the draft available.
+6. Browser reload or window close uses the browser's native unsaved-changes
+   warning.
+
+### A7 - Move Between Lineup Tabs With Unsaved Changes
+
+1. User changes to another period route or the Summary route while the draft
+   has unsaved changes.
+2. System changes the route without prompting because the user remains inside
+   the same lineup editor and the shared draft remains available.
 
 ## Postconditions
 
@@ -158,6 +185,9 @@ Failure:
   minimum disables this rule. Violations are advisory and do not block saving.
 - Period routes accept integers from 1 through the Playing Mode's
   `numberOfPeriods`. Missing or invalid route values fall back to period 1.
+- Dirty-state comparison is semantic: ordering differences between periods or
+  assignments alone do not count as lineup changes.
+- Only successful persistence updates the saved baseline and disables Save.
 - Only group admin or trainer roles may edit or save a Team's lineup.
 - The print action is available only on the lineup Summary tab, not on Team
   Detail.

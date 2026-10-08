@@ -856,6 +856,11 @@
     "emptySlot": "Empty",
     "selectPlayerForPosition": "Select player for {{position}}",
     "benchTitle": "Bench ({{count}})",
-    "noBenchedPlayers": "No players on the bench for this period."
+    "noBenchedPlayers": "No players on the bench for this period.",
+    "saveFailed": "Failed to save the lineup. Please try again.",
+    "unsavedChangesTitle": "Unsaved lineup changes",
+    "unsavedChangesMessage": "Do you want to save your lineup changes before leaving?",
+    "discardChanges": "Discard and leave",
+    "saveAndLeave": "Save and leave"
   }
 }

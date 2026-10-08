@@ -856,6 +856,11 @@
     "emptySlot": "Leer",
     "selectPlayerForPosition": "Spieler für {{position}} auswählen",
     "benchTitle": "Bank ({{count}})",
-    "noBenchedPlayers": "Keine Spieler auf der Bank für diesen Abschnitt."
+    "noBenchedPlayers": "Keine Spieler auf der Bank für diesen Abschnitt.",
+    "saveFailed": "Die Aufstellung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "unsavedChangesTitle": "Ungespeicherte Änderungen",
+    "unsavedChangesMessage": "Möchtest du die Änderungen an der Aufstellung vor dem Verlassen speichern?",
+    "discardChanges": "Verwerfen und verlassen",
+    "saveAndLeave": "Speichern und verlassen"
   }
 }

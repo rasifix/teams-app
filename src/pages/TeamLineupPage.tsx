@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEvents, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
+import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
 import {
   selectPlayingModeById,
   selectFormationById,
@@ -15,6 +16,7 @@ import {
   selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
   selectLineupRouteTab,
+  selectHasLineupChanges,
   hasLineupRosterMismatch,
   getPositionLabelKey,
 } from '../store/selectors/matchPlanningSelectors';
@@ -39,14 +41,39 @@ export default function TeamLineupPage() {
   const activeTab = selectLineupRouteTab(lineupTab, playingMode?.numberOfPeriods);
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
+  const [savedLineup, setSavedLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
 
   // Only reinitialize the draft when switching teams, not on every store refresh, to avoid clobbering in-progress edits.
   useEffect(() => {
-    setDraftLineup(team?.lineup ?? []);
+    const persistedLineup = team?.lineup ?? [];
+    setDraftLineup(persistedLineup);
+    setSavedLineup(persistedLineup);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team?.id]);
+
+  const hasChanges = selectHasLineupChanges(savedLineup, draftLineup);
+  const lineupPath = `/events/${eventId}/teams/${teamId}/lineup`;
+  const navigationBlocker = useBlocker(({ nextLocation }) => {
+    const remainsInLineup = nextLocation.pathname === lineupPath ||
+      nextLocation.pathname.startsWith(`${lineupPath}/`);
+    return hasChanges && !remainsInLineup;
+  });
+
+  useEffect(() => {
+    if (!hasChanges) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
 
   const draftTeam: Team | null = team ? { ...team, lineup: draftLineup } : null;
 
@@ -121,15 +148,29 @@ export default function TeamLineupPage() {
     setDraftLineup((current) => selectLineupWithCopiedPeriod(current, activePeriod - 1, activePeriod));
   };
 
-  const handleSave = async () => {
-    if (!eventId) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!eventId || !hasChanges) return false;
 
+    setIsSaving(true);
+    setSaveError(null);
     const updatedTeams = event.teams.map((t) =>
       t.id === teamId ? { ...t, lineup: draftLineup } : t
     );
 
-    await updateEvent(eventId, { teams: updatedTeams });
-    navigate(`/events/${eventId}/teams/${teamId}`);
+    const wasSaved = await updateEvent(eventId, { teams: updatedTeams });
+    setIsSaving(false);
+    if (!wasSaved) {
+      setSaveError(t('teamLineup.saveFailed'));
+      return false;
+    }
+
+    setSavedLineup(draftLineup);
+    return true;
+  };
+
+  const handleSaveAndLeave = async () => {
+    const wasSaved = await handleSave();
+    if (wasSaved && navigationBlocker.state === 'blocked') navigationBlocker.proceed();
   };
 
   return (
@@ -413,10 +454,18 @@ export default function TeamLineupPage() {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-        <Button variant="primary" onClick={handleSave} className="w-full">
+        {saveError && <p className="mb-2 text-center text-sm text-red-600" role="alert">{saveError}</p>}
+        <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving} className="w-full">
           {t('common.actions.save')}
         </Button>
       </div>
+      <UnsavedLineupDialog
+        isOpen={navigationBlocker.state === 'blocked'}
+        isSaving={isSaving}
+        onSave={handleSaveAndLeave}
+        onDiscard={() => navigationBlocker.state === 'blocked' && navigationBlocker.proceed()}
+        onCancel={() => navigationBlocker.state === 'blocked' && navigationBlocker.reset()}
+      />
       <style>{`@media print {
         @page { size: A4 portrait; margin: 8mm; }
         body * { visibility: hidden; }

@@ -14,6 +14,7 @@ import {
   selectMinimumPeriodViolations,
   selectLineupWithCopiedPeriod,
   selectLineupRouteTab,
+  selectHasLineupChanges,
   selectPitchCoordinates,
   selectPitchPlayerLabel,
   selectSlotDisplayIndexes,
@@ -103,6 +104,35 @@ describe('selectLineupRouteTab', () => {
 
   it('falls back safely while the playing mode is unavailable', () => {
     expect(selectLineupRouteTab('2', undefined)).toBe(1);
+  });
+});
+
+describe('selectHasLineupChanges', () => {
+  it('detects added, removed, and reassigned players', () => {
+    const saved = [{ periodNumber: 1, assignments: [{ slotId: 'gk', playerId: 'p1' }] }];
+
+    expect(selectHasLineupChanges(saved, [
+      { periodNumber: 1, assignments: [{ slotId: 'gk', playerId: 'p2' }] },
+    ])).toBe(true);
+    expect(selectHasLineupChanges(saved, [])).toBe(true);
+  });
+
+  it('ignores period and assignment ordering differences', () => {
+    const saved = [
+      { periodNumber: 1, assignments: [{ slotId: 'gk', playerId: 'p1' }, { slotId: 'cb', playerId: 'p2' }] },
+      { periodNumber: 2, assignments: [{ slotId: 'gk', playerId: 'p2' }] },
+    ];
+    const reordered = [
+      { periodNumber: 2, assignments: [{ slotId: 'gk', playerId: 'p2' }] },
+      { periodNumber: 1, assignments: [{ slotId: 'cb', playerId: 'p2' }, { slotId: 'gk', playerId: 'p1' }] },
+    ];
+
+    expect(selectHasLineupChanges(saved, reordered)).toBe(false);
+  });
+
+  it('treats missing lineups as empty fallbacks', () => {
+    expect(selectHasLineupChanges(undefined, [])).toBe(false);
+    expect(selectHasLineupChanges(null, undefined)).toBe(false);
   });
 });
 

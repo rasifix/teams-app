@@ -74,6 +74,27 @@ export function selectLineupRouteTab(
   return 1;
 }
 
+function normalizeLineupForComparison(lineup: TeamLineupPeriod[] | null | undefined) {
+  return (lineup ?? [])
+    .map((period) => ({
+      periodNumber: period.periodNumber,
+      assignments: period.assignments
+        .map((assignment) => ({ ...assignment }))
+        .sort((left, right) => (
+          left.slotId.localeCompare(right.slotId) || left.playerId.localeCompare(right.playerId)
+        )),
+    }))
+    .sort((left, right) => left.periodNumber - right.periodNumber);
+}
+
+export function selectHasLineupChanges(
+  savedLineup: TeamLineupPeriod[] | null | undefined,
+  draftLineup: TeamLineupPeriod[] | null | undefined
+): boolean {
+  return JSON.stringify(normalizeLineupForComparison(savedLineup)) !==
+    JSON.stringify(normalizeLineupForComparison(draftLineup));
+}
+
 // Slots sharing the same positionCode are distinguished by a 1-based index for display (e.g. "CB 1", "CB 2").
 export function selectSlotDisplayIndexes(slots: FormationSlot[]): Map<string, number | null> {
   const countByCode = new Map<PositionCode, number>();

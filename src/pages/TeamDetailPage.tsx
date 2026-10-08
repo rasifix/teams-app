@@ -263,7 +263,7 @@ export default function TeamDetailPage() {
               <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
               <div className="flex flex-wrap justify-end gap-2">
                 {event.playingModeId && team.formationId && (
-                  <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup`)}>
+                  <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
                     {t('teamDetail.planLineupAction')}
                   </Button>
                 )}

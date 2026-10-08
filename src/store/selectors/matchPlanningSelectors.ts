@@ -28,6 +28,8 @@ export interface MinimumPeriodViolation {
   minimumPeriods: number;
 }
 
+export type LineupRouteTab = number | 'summary';
+
 export const POSITION_CODES: PositionCode[] = [
   'GK',
   'LB', 'CB', 'RB', 'LWB', 'RWB',
@@ -52,6 +54,24 @@ export function selectPlayingModeById(playingModes: PlayingMode[], playingModeId
 export function selectFormationById(formations: Formation[], formationId: string | null | undefined): Formation | undefined {
   if (!formationId) return undefined;
   return formations.find((formation) => formation.id === formationId);
+}
+
+export function selectLineupRouteTab(
+  routeTab: string | undefined,
+  numberOfPeriods: number | undefined
+): LineupRouteTab {
+  if (routeTab === 'summary') return 'summary';
+
+  const periodNumber = Number(routeTab);
+  if (
+    Number.isInteger(periodNumber) &&
+    periodNumber >= 1 &&
+    periodNumber <= (numberOfPeriods ?? 0)
+  ) {
+    return periodNumber;
+  }
+
+  return 1;
 }
 
 // Slots sharing the same positionCode are distinguished by a 1-based index for display (e.g. "CB 1", "CB 2").

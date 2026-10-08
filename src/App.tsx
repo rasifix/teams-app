@@ -78,6 +78,7 @@ function App() {
                     <Route path="/events/:eventId/teams/:teamId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId/select-players" element={<ProtectedRoute><TeamPlayerSelectionPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId/lineup" element={<ProtectedRoute><TeamLineupPage /></ProtectedRoute>} />
+                    <Route path="/events/:eventId/teams/:teamId/lineup/:lineupTab" element={<ProtectedRoute><TeamLineupPage /></ProtectedRoute>} />
                     <Route path="/shirts" element={<ProtectedRoute><ShirtSetsPage /></ProtectedRoute>} />
                     <Route path="/match-planning" element={<ProtectedRoute><MatchPlanningPage /></ProtectedRoute>} />
                     <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>

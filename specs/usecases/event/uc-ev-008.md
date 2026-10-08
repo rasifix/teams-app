@@ -10,6 +10,7 @@ Playing Mode.
 
 This use case covers:
 - viewing the lineup editor for one period at a time,
+- opening an individual period or the Summary directly through its URL,
 - assigning a selected Player to a Formation slot for the current period,
 - leaving a selected Player unassigned (implicitly benched) for a period,
 - showing for every Player how many periods currently include a field
@@ -70,7 +71,8 @@ Derived (not user input):
 2. System shows a period selector (1 to `numberOfPeriods`) and, for the
    selected period, a graphical playing field with one selectable marker per
    Formation slot plus a bench list. Each Player is shown with the number of
-   periods in which they are currently planned.
+   periods in which they are currently planned. The selected period is encoded
+   in the route as `/lineup/{periodNumber}`.
 3. User assigns a selected Player by clicking a field slot and choosing an
    available Player. On desktop, the user may alternatively drag a Player
    from the bench onto a field slot.
@@ -87,6 +89,7 @@ Derived (not user input):
    implicitly benched Players for each period. If a configured minimum number
    of periods per Player is not met, the overview lists every violating Player
    with the planned and required period counts.
+   The Summary is directly reachable through `/lineup/summary`.
 8. User may print from the Summary tab. Navigation, editing controls,
    and save actions are excluded from the printed output. An explicit page
    break separates the lineup overview from the additional A4 page listing
@@ -153,6 +156,8 @@ Failure:
 - A minimum-period violation occurs when a selected Player's planned-period
   count is lower than `playingMode.minimumPeriodsPerPlayer`. A missing or zero
   minimum disables this rule. Violations are advisory and do not block saving.
+- Period routes accept integers from 1 through the Playing Mode's
+  `numberOfPeriods`. Missing or invalid route values fall back to period 1.
 - Only group admin or trainer roles may edit or save a Team's lineup.
 - The print action is available only on the lineup Summary tab, not on Team
   Detail.

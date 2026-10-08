@@ -13,6 +13,7 @@ import {
   selectLineupShirtNumberRows,
   selectMinimumPeriodViolations,
   selectLineupWithCopiedPeriod,
+  selectLineupRouteTab,
   selectPitchCoordinates,
   selectPitchPlayerLabel,
   selectSlotDisplayIndexes,
@@ -82,6 +83,26 @@ describe('getPositionLabelKey', () => {
   it('builds a namespaced i18n key from the position code', () => {
     expect(getPositionLabelKey('LB')).toBe('positions.LB');
     expect(getPositionLabelKey('GK')).toBe('positions.GK');
+  });
+});
+
+describe('selectLineupRouteTab', () => {
+  it('resolves valid period and summary routes', () => {
+    expect(selectLineupRouteTab('1', 4)).toBe(1);
+    expect(selectLineupRouteTab('4', 4)).toBe(4);
+    expect(selectLineupRouteTab('summary', 4)).toBe('summary');
+  });
+
+  it('falls back to period one for missing or invalid route values', () => {
+    expect(selectLineupRouteTab(undefined, 4)).toBe(1);
+    expect(selectLineupRouteTab('0', 4)).toBe(1);
+    expect(selectLineupRouteTab('5', 4)).toBe(1);
+    expect(selectLineupRouteTab('1.5', 4)).toBe(1);
+    expect(selectLineupRouteTab('period', 4)).toBe(1);
+  });
+
+  it('falls back safely while the playing mode is unavailable', () => {
+    expect(selectLineupRouteTab('2', undefined)).toBe(1);
   });
 });
 

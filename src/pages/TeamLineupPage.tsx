@@ -14,6 +14,7 @@ import {
   selectLineupSummary,
   selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
+  selectLineupRouteTab,
   hasLineupRosterMismatch,
   getPositionLabelKey,
 } from '../store/selectors/matchPlanningSelectors';
@@ -21,7 +22,7 @@ import type { Team, TeamLineupPeriod } from '../types';
 
 export default function TeamLineupPage() {
   const { t } = useTranslation();
-  const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
+  const { eventId, teamId, lineupTab } = useParams<{ eventId: string; teamId: string; lineupTab?: string }>();
   const navigate = useNavigate();
 
   const { getEventById, updateEvent } = useEvents();
@@ -35,9 +36,9 @@ export default function TeamLineupPage() {
 
   const playingMode = selectPlayingModeById(playingModes, event?.playingModeId);
   const formation = selectFormationById(formations, team?.formationId);
+  const activeTab = selectLineupRouteTab(lineupTab, playingMode?.numberOfPeriods);
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
-  const [activeTab, setActiveTab] = useState<number | 'summary'>(1);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
 
@@ -148,7 +149,7 @@ export default function TeamLineupPage() {
           <button
             key={periodNumber}
             onClick={() => {
-              setActiveTab(periodNumber);
+              navigate(`/events/${eventId}/teams/${teamId}/lineup/${periodNumber}`);
               setSelectingSlotId(null);
             }}
             className={`px-3 py-1.5 rounded-md text-sm font-medium border ${
@@ -162,7 +163,7 @@ export default function TeamLineupPage() {
         ))}
         <button
           onClick={() => {
-            setActiveTab('summary');
+            navigate(`/events/${eventId}/teams/${teamId}/lineup/summary`);
             setSelectingSlotId(null);
           }}
           className={`px-3 py-1.5 rounded-md text-sm font-medium border ${

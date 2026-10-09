@@ -11,7 +11,7 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'First',
     lastName: 'Last',
-    birthYear: 2014,
+    birthDate: '2014-06-15',
     level: 3,
     status: 'active',
     ...overrides,

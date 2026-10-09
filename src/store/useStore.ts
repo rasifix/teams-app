@@ -129,7 +129,7 @@ function dedupeGuardians(guardians: import('../types').Guardian[]): import('../t
   const seenKeys = new Set<string>();
 
   return guardians.filter((guardian) => {
-    const key = guardian.userId || guardian.id || `${(guardian.email || '').toLowerCase()}::${(guardian.firstName || '').toLowerCase()}::${(guardian.lastName || '').toLowerCase()}`;
+    const key = guardian.id || `${(guardian.email || '').toLowerCase()}::${(guardian.firstName || '').toLowerCase()}::${(guardian.lastName || '').toLowerCase()}`;
     if (seenKeys.has(key)) {
       return false;
     }
@@ -140,7 +140,7 @@ function dedupeGuardians(guardians: import('../types').Guardian[]): import('../t
 }
 
 function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: string): boolean {
-  return guardian.id === guardianId || guardian.userId === guardianId;
+  return guardian.id === guardianId;
 }
 
 function toGuardianIdentityKey(firstName: string | undefined, lastName: string | undefined, email: string | undefined): string {
@@ -170,7 +170,7 @@ function buildGuardianIdentityLookup(members: GroupMember[]): Map<string, string
         return;
       }
 
-      const guardianMemberId = guardian.userId || guardian.id;
+      const guardianMemberId = guardian.id;
       if (!guardianMemberId) {
         return;
       }
@@ -579,7 +579,6 @@ export const useStore = create<AppState>()(
             firstName: player.firstName,
             lastName: player.lastName,
             birthDate: player.birthDate,
-            birthYear: player.birthYear,
             level: player.level,
             status: player.status,
             guardians: player.guardians,
@@ -623,7 +622,6 @@ export const useStore = create<AppState>()(
                 firstName: sourceCandidate.firstName,
                 lastName: sourceCandidate.lastName,
                 birthDate: sourceCandidate.birthDate,
-                birthYear: sourceCandidate.birthYear,
                 level: sourceCandidate.level || 1,
                 status: sourceCandidate.status || 'active',
                 guardians: [],
@@ -935,7 +933,7 @@ export const useStore = create<AppState>()(
         if (!currentGroup) throw new Error('No group selected');
 
         try {
-          const existingGuardianId = guardianData.guardianId || guardianData.userId || guardianData.trainerId;
+          const existingGuardianId = guardianData.guardianId || guardianData.trainerId;
           let ensuredGuardianMember: GroupMember | null = null;
 
           let guardianIdToLink = existingGuardianId;
@@ -1383,13 +1381,12 @@ export const useStore = create<AppState>()(
             let workingPlayer = nextPlayers.find((entry) => entry.id === player.id) || player;
             const currentGuardiansForPlayer = workingPlayer.guardians || [];
             const hasTargetGuardian = currentGuardiansForPlayer.some(
-              (guardian) => guardian.id === targetTrainer.id || guardian.userId === targetTrainer.id
+              (guardian) => guardian.id === targetTrainer.id
             );
 
             if (!hasTargetGuardian) {
               const playerAfterAdd = await addGuardianToPlayerService(currentGroup.id, player.id, {
-                userId: targetTrainer.id,
-                trainerId: targetTrainer.id,
+                guardianId: targetTrainer.id,
               });
 
               nextPlayers = nextPlayers.map((entry) =>
@@ -1400,7 +1397,7 @@ export const useStore = create<AppState>()(
 
             const guardiansToRemove = (workingPlayer.guardians || [])
               .filter((guardian) => isMatchingGuardian(guardian, guardianId))
-              .filter((guardian) => guardian.id !== targetTrainer.id && guardian.userId !== targetTrainer.id);
+              .filter((guardian) => guardian.id !== targetTrainer.id);
 
             for (const guardian of guardiansToRemove) {
               const playerAfterRemove = await deleteGuardianFromPlayerService(currentGroup.id, player.id, guardian.id);
@@ -1430,7 +1427,7 @@ export const useStore = create<AppState>()(
                 return;
               }
 
-              const candidateTrainerId = guardian.userId || guardian.id;
+              const candidateTrainerId = guardian.id;
               if (
                 candidateTrainerId &&
                 candidateTrainerId !== trainerId &&

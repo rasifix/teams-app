@@ -2,6 +2,7 @@ import type { MouseEvent, TouchEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player } from '../types';
 import Level from './Level';
+import { getBirthYear } from '../utils/birthDate';
 
 interface PlayerCardProps {
   player: Player;
@@ -19,7 +20,7 @@ export default function PlayerCard({
   onDelete,
 }: PlayerCardProps) {
   const { t } = useTranslation();
-  const birthYear = new Date(player.birthDate!).getFullYear();
+  const birthYear = getBirthYear(player.birthDate);
   const playerStatus = player.status || 'active';
   const isInactive = playerStatus === 'inactive';
   const isTrial = playerStatus === 'trial';

@@ -13,7 +13,6 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'John',
     lastName: 'Doe',
-    birthYear: 2016,
     birthDate: '2016-01-01',
     level: 3,
     status: 'active',
@@ -39,7 +38,6 @@ function candidate(overrides: Partial<GroupImportCandidate>): GroupImportCandida
     firstName: 'Ari',
     lastName: 'Meyer',
     birthDate: '2016-02-03',
-    birthYear: 2016,
     ...overrides,
   };
 }
@@ -74,22 +72,6 @@ describe('member group import selectors', () => {
     expect(duplicate).toBe(true);
   });
 
-  it('detects duplicate player by birthYear when birthDate is missing', () => {
-    const duplicate = isDuplicateTargetMember(
-      candidate({
-        role: 'player',
-        firstName: 'Ari',
-        lastName: 'Meyer',
-        birthDate: undefined,
-        birthYear: 2016,
-      }),
-      [player({ id: 'p-1', firstName: 'Ari', lastName: 'Meyer', birthDate: undefined, birthYear: 2016 })],
-      []
-    );
-
-    expect(duplicate).toBe(true);
-  });
-
   it('detects duplicate trainer by name and email', () => {
     const duplicate = isDuplicateTargetMember(
       candidate({
@@ -107,8 +89,8 @@ describe('member group import selectors', () => {
 
   it('hides already existing members from importable list', () => {
     const sourcePlayers = [
-      player({ id: 'sp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03', birthYear: 2016 }),
-      player({ id: 'sp-2', firstName: 'Nia', lastName: 'Keller', birthDate: '2015-04-01', birthYear: 2015 }),
+      player({ id: 'sp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03' }),
+      player({ id: 'sp-2', firstName: 'Nia', lastName: 'Keller', birthDate: '2015-04-01' }),
     ];
     const sourceTrainers = [
       trainer({ id: 'st-1', firstName: 'Lia', lastName: 'Coach', email: 'lia@example.com' }),
@@ -116,7 +98,7 @@ describe('member group import selectors', () => {
     ];
 
     const targetPlayers = [
-      player({ id: 'tp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03', birthYear: 2016 }),
+      player({ id: 'tp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03' }),
     ];
     const targetTrainers = [
       trainer({ id: 'tt-1', firstName: 'Lia', lastName: 'Coach', email: 'lia@example.com' }),
@@ -140,8 +122,8 @@ describe('member group import selectors', () => {
 
   it('filters importable members by one or more selected birth years while keeping trainers visible', () => {
     const sourcePlayers = [
-      player({ id: 'sp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03', birthYear: 2016 }),
-      player({ id: 'sp-2', firstName: 'Nia', lastName: 'Meyer', birthDate: '2015-03-10', birthYear: 2015 }),
+      player({ id: 'sp-1', firstName: 'Ari', lastName: 'Meyer', birthDate: '2016-02-03' }),
+      player({ id: 'sp-2', firstName: 'Nia', lastName: 'Meyer', birthDate: '2015-03-10' }),
     ];
     const sourceTrainers = [trainer({ id: 'st-1', firstName: 'Lia', lastName: 'Coach', email: 'lia@example.com' })];
 

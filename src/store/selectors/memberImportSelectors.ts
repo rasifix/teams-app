@@ -22,7 +22,7 @@ export interface PlannedGuardianImport {
   firstName: string;
   lastName: string;
   email?: string;
-  trainerId?: string;
+  guardianId?: string;
 }
 
 export interface PlayerImportDiffRow {
@@ -95,7 +95,7 @@ function hasCompleteGuardianIdentity(firstName: string | undefined, lastName: st
 }
 
 function hasDuplicateGuardianMatch(
-  existingGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'userId' | 'id'>,
+  existingGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'id'>,
   candidateGuardian: PlannedGuardianImport
 ): boolean {
   if (!hasCompleteGuardianIdentity(existingGuardian.firstName, existingGuardian.lastName, existingGuardian.email)) {
@@ -167,11 +167,11 @@ function buildExistingGuardianLookup(players: Player[], trainers: Trainer[]): Ex
 
   players.forEach((player) => {
     (player.guardians || []).forEach((guardian) => {
-      if (guardian.isDocumentedOnly && !guardian.userId) {
+      if (guardian.isDocumentedOnly) {
         return;
       }
 
-      const id = guardian.userId || guardian.id;
+      const id = guardian.id;
       if (!id) {
         return;
       }
@@ -212,7 +212,7 @@ function createPlannedGuardian(
       firstName: matchingGuardianMember.firstName,
       lastName: matchingGuardianMember.lastName,
       email: matchingGuardianMember.email,
-      trainerId: matchingGuardianMember.id,
+      guardianId: matchingGuardianMember.id,
     };
   }
 
@@ -235,9 +235,8 @@ function dedupePlannedGuardians(
       hasDuplicateGuardianMatch(existingGuardian, guardian)
     ));
     const duplicateInPlanned = deduped.some((plannedGuardian) => {
-      const plannedAsGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'userId' | 'id'> = {
-        id: plannedGuardian.trainerId || plannedGuardian.id,
-        userId: plannedGuardian.trainerId,
+      const plannedAsGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'id'> = {
+        id: plannedGuardian.guardianId || plannedGuardian.id,
         firstName: plannedGuardian.firstName,
         lastName: plannedGuardian.lastName,
         email: plannedGuardian.email,
@@ -264,9 +263,8 @@ function dedupeGuardiansAcrossRows(rows: PlayerImportDiffRow[]): PlayerImportDif
     const alreadyPlanned = plannedByExistingPlayer.get(row.existingPlayerId) || [];
     const guardiansToAdd = row.guardiansToAdd.filter((guardian) => {
       return !alreadyPlanned.some((plannedGuardian) => {
-        const plannedAsGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'userId' | 'id'> = {
-          id: plannedGuardian.trainerId || plannedGuardian.id,
-          userId: plannedGuardian.trainerId,
+        const plannedAsGuardian: Pick<Guardian, 'firstName' | 'lastName' | 'email' | 'id'> = {
+          id: plannedGuardian.guardianId || plannedGuardian.id,
           firstName: plannedGuardian.firstName,
           lastName: plannedGuardian.lastName,
           email: plannedGuardian.email,
@@ -358,7 +356,6 @@ export function selectPlayerImportDiff(
             firstName: candidateFirstName,
             lastName: candidateLastName,
             birthDate: candidateBirthDate,
-            birthYear: new Date(candidateBirthDate).getFullYear(),
             level: defaults.level,
             status: defaults.status,
           }

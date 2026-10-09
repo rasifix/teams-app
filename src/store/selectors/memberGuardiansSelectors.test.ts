@@ -7,7 +7,6 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'Player',
     lastName: 'Default',
-    birthYear: 2016,
     birthDate: '2016-01-01',
     level: 3,
     status: 'active',
@@ -90,7 +89,7 @@ describe('member guardians selectors', () => {
         firstName: 'Luca',
         lastName: 'Bauer',
         guardians: [
-          { id: 'g-1', userId: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
+          { id: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
         ],
       }),
       player({
@@ -98,7 +97,7 @@ describe('member guardians selectors', () => {
         firstName: 'Nora',
         lastName: 'Zimmer',
         guardians: [
-          { id: 'g-2', userId: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
+          { id: 'm-1', firstName: 'Anna', lastName: 'Meier', email: 'anna@example.com' },
           { id: 'g-3', firstName: 'Ben', lastName: 'Aebi', email: 'ben@example.com' },
         ],
       }),
@@ -110,7 +109,7 @@ describe('member guardians selectors', () => {
     expect(result[0].guardian.lastName).toBe('Aebi');
     expect(result[0].playerRefs).toHaveLength(1);
 
-    const anna = result.find((entry) => (entry.guardian.userId || entry.guardian.id) === 'm-1');
+    const anna = result.find((entry) => entry.guardian.id === 'm-1');
     expect(anna).toBeDefined();
     expect(anna?.playerRefs.map((entry) => entry.playerId)).toEqual(['p-1', 'p-2']);
   });

@@ -28,7 +28,7 @@ function createPlayer(overrides: Partial<Player>): Player {
     id: 'p-1',
     firstName: 'Lina',
     lastName: 'Player',
-    birthYear: 2016,
+    birthDate: '2016-06-15',
     level: 2,
     status: 'active',
     guardians: [],
@@ -88,7 +88,6 @@ describe('useStore addGuardianToPlayer role sync', () => {
       guardians: [
         {
           id: 't-1',
-          userId: 't-1',
           firstName: 'Tom',
           lastName: 'Trainer',
           email: 'tom@example.com',
@@ -131,7 +130,6 @@ describe('useStore addGuardianToPlayer role sync', () => {
       guardians: [
         {
           id: 'g-target',
-          userId: 'g-target',
           firstName: 'Ana',
           lastName: 'Parent',
           email: 'ana@example.com',
@@ -172,7 +170,6 @@ describe('useStore addGuardianToPlayer role sync', () => {
         },
         {
           id: 'g-target',
-          userId: 'g-target',
           firstName: 'Ana',
           lastName: 'Parent',
           email: 'ana@example.com',
@@ -185,7 +182,6 @@ describe('useStore addGuardianToPlayer role sync', () => {
       guardians: [
         {
           id: 'g-target',
-          userId: 'g-target',
           firstName: 'Ana',
           lastName: 'Parent',
           email: 'ana@example.com',
@@ -200,7 +196,7 @@ describe('useStore addGuardianToPlayer role sync', () => {
     expect(memberServiceMocks.deleteGuardianFromPlayer).toHaveBeenCalledWith('group-1', 'p-1', 'g-source');
 
     const updatedPlayerOne = useStore.getState().getPlayerById('p-1');
-    expect(updatedPlayerOne?.guardians?.some((guardian) => guardian.id === 'g-source' || guardian.userId === 'g-source')).toBe(false);
-    expect(updatedPlayerOne?.guardians?.some((guardian) => guardian.id === 'g-target' || guardian.userId === 'g-target')).toBe(true);
+    expect(updatedPlayerOne?.guardians?.some((guardian) => guardian.id === 'g-source')).toBe(false);
+    expect(updatedPlayerOne?.guardians?.some((guardian) => guardian.id === 'g-target')).toBe(true);
   });
 });

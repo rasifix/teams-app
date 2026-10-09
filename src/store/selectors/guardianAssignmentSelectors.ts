@@ -13,10 +13,6 @@ function toComparableName(value: string | undefined): string {
 }
 
 function isLinkedGuardianUser(guardian: Guardian): boolean {
-  if (guardian.userId) {
-    return true;
-  }
-
   return !guardian.isDocumentedOnly;
 }
 
@@ -39,7 +35,7 @@ export function selectExistingGuardianUsers(players: Player[], trainers: Trainer
         return;
       }
 
-      const id = guardian.userId || guardian.id;
+      const id = guardian.id;
       const existing = byId.get(id);
 
       if (existing) {

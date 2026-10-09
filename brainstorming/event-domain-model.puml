@@ -21,24 +21,18 @@ package "Squad, people and authorization" {
   }
 
   class SfvCategory <<reference data>> {
-    id: string
     code: string
     name: string
+    activityType: match | tournament
   }
 
   class OfficialMatchFormat <<reference data>> {
-    id: string
     name: string
     playersOnField: integer
     minPlayersPerTeam: integer
     maxPlayersPerTeam: integer
     numberOfPeriods: integer
     periodLengthMinutes: integer
-  }
-
-  class SquadMembership {
-    id: string
-    roles: SquadRole[]
   }
 
   enum SquadRole {
@@ -52,6 +46,7 @@ package "Squad, people and authorization" {
     id: string
     firstName: string
     lastName: string
+    roles: SquadRole[]
     email?: string
     phone?: string
   }
@@ -85,28 +80,28 @@ package "Squad, people and authorization" {
     endDate: Date
   }
 
-  Squad "1" *-- "0..*" SquadMembership : members
-  SquadMembership "0..*" --> "1" Person : person
+  Squad "1" *-- "0..*" Person : members
   Person <|-- Player
   Person <|-- Guardian
-  Person "1" *-- "0..1" LoginAccount : optional login
+  Person "0..1" --> "0..1" LoginAccount : optional login
   Player "0..*" -- "0..*" Guardian : guardians
   Squad "1" *-- "0..*" Period : statistics periods
   Squad "0..*" --> "0..1" SfvCategory : category
-  SfvCategory "1" *-- "0..*" OfficialMatchFormat : official formats
+  SfvCategory "1" *-- "0..1" OfficialMatchFormat : official format
 }
 
-note right of SquadMembership
+note right of Person
   The Squad's `trainer` role is official Trainer
   authorization. It is distinct from a
   TrainingSession trainer or a Team's responsible
   person. A person may hold multiple Squad roles.
-  Persons are global, not owned by a Squad.
+  A Person belongs to exactly one Squad.
 end note
 
 note right of SfvCategory
   Chosen when a Squad is created. Its official
-  match formats are copied into the Squad's
+  match format (absent for tournament-only
+  categories) is copied into the Squad's
   MatchFormats.
 end note
 

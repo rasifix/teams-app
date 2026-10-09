@@ -12,6 +12,7 @@ import { selectPlayersFromMembers, selectTrainersFromMembers } from '../store/se
 import type { GroupMemberImportProgress, GroupMemberImportResult } from '../store/useStore';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import Button from './ui/Button';
+import { getBirthYear } from '../utils/birthDate';
 
 interface ImportMembersModalProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
     }
 
     return sourceAllCandidates.filter((candidate) => (
-      candidate.role === 'trainer' || selectedBirthYears.includes(candidate.birthYear || -1)
+      candidate.role === 'trainer' || selectedBirthYears.includes(getBirthYear(candidate.birthDate) ?? -1)
     ));
   }, [selectedBirthYears, sourceAllCandidates, sourceMembers]);
 

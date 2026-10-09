@@ -7,7 +7,6 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'Player',
     lastName: 'Default',
-    birthYear: 2016,
     birthDate: '2016-01-01',
     level: 3,
     status: 'active',
@@ -32,7 +31,7 @@ describe('guardian assignment selectors', () => {
       player({
         id: 'p-1',
         guardians: [
-          { id: 'g-1', userId: 'g-1', firstName: 'Gina', lastName: 'Archer', email: 'gina@example.com' },
+          { id: 'g-1', firstName: 'Gina', lastName: 'Archer', email: 'gina@example.com' },
         ],
       }),
     ];
@@ -52,8 +51,8 @@ describe('guardian assignment selectors', () => {
       player({
         id: 'p-1',
         guardians: [
-          { id: 't-1', userId: 't-1', firstName: 'Tom', lastName: 'Baker', email: 'tom@example.com' },
-          { id: 't-1', userId: 't-1', firstName: 'Tom', lastName: 'Baker' },
+          { id: 't-1', firstName: 'Tom', lastName: 'Baker', email: 'tom@example.com' },
+          { id: 't-1', firstName: 'Tom', lastName: 'Baker' },
         ],
       }),
     ];
@@ -67,7 +66,7 @@ describe('guardian assignment selectors', () => {
     ]);
   });
 
-  it('excludes documented-only guardians without linked user id', () => {
+  it('excludes documented-only guardians', () => {
     const players = [
       player({
         id: 'p-1',

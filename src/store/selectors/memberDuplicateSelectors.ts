@@ -13,7 +13,7 @@ export interface DuplicateGuardianEntry {
   firstName: string;
   lastName: string;
   email?: string;
-  userId?: string;
+  isDocumentedOnly?: boolean;
   playerIds: string[];
 }
 
@@ -76,7 +76,7 @@ function mergeGuardianEntries(existing: DuplicateGuardianEntry, guardian: Guardi
   return {
     ...existing,
     email: existing.email || guardian.email,
-    userId: existing.userId || guardian.userId,
+    isDocumentedOnly: Boolean(existing.isDocumentedOnly && guardian.isDocumentedOnly),
     playerIds,
   };
 }
@@ -126,7 +126,7 @@ export function selectDuplicateTrainerGuardianGroups(players: Player[], trainers
         firstName: guardian.firstName,
         lastName: guardian.lastName,
         email: guardian.email,
-        userId: guardian.userId,
+        isDocumentedOnly: guardian.isDocumentedOnly,
         playerIds: [player.id],
       });
       groupedGuardians.set(key, current);

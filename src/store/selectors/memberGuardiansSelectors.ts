@@ -61,7 +61,7 @@ export function selectUniqueMemberGuardians(players: Player[]): MemberGuardianCa
   const grouped = new Map<string, MemberGuardianCard>();
 
   selectMemberGuardians(players).forEach((row) => {
-    const guardianKey = row.guardian.userId || row.guardian.id;
+    const guardianKey = row.guardian.id;
     const existing = grouped.get(guardianKey);
 
     if (!existing) {

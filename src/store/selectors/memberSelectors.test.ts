@@ -7,7 +7,7 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'Mia',
     lastName: 'Player',
-    birthYear: 2016,
+    birthDate: '2016-06-15',
     level: 3,
     status: 'active',
     guardians: [],
@@ -71,7 +71,7 @@ describe('member selectors', () => {
 
   it('merges overlapping member ids and keeps player fields with combined roles', () => {
     const players = [
-      player({ id: 'm-1', firstName: 'Sam', lastName: 'Member', birthYear: 2013, level: 4, roles: ['player'] }),
+      player({ id: 'm-1', firstName: 'Sam', lastName: 'Member', birthDate: '2013-06-15', level: 4, roles: ['player'] }),
     ];
     const trainers = [
       trainer({ id: 'm-1', firstName: 'Sam', lastName: 'Member', roles: ['trainer'] }),

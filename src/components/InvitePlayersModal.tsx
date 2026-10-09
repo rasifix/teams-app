@@ -4,6 +4,7 @@ import type { Player, InvitationStatus } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import { selectInviteablePlayers } from '../store/selectors/eventInactivePlayerSelectors';
+import { getBirthYear } from '../utils/birthDate';
 
 interface InvitePlayersModalProps {
   isOpen: boolean;
@@ -176,7 +177,7 @@ export default function InvitePlayersModal({
                             <span className="font-medium text-gray-900">
                               {player.firstName} {player.lastName}
                             </span>
-                            <span className="text-sm text-gray-600">{player.birthYear}</span>
+                            <span className="text-sm text-gray-600">{getBirthYear(player.birthDate)}</span>
                           </div>
                           <div className="flex items-center gap-3 text-sm text-gray-600">
                             <Level level={player.level} />

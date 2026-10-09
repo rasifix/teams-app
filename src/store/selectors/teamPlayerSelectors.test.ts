@@ -3,7 +3,7 @@ import type { Player, Team } from '../../types';
 import { selectTeamPlayersByName } from './teamPlayerSelectors';
 
 function player(id: string, firstName: string, lastName: string): Player {
-  return { id, firstName, lastName, birthYear: 2015, level: 3, status: 'active' };
+  return { id, firstName, lastName, birthDate: '2015-06-15', level: 3, status: 'active' };
 }
 
 function team(selectedPlayers: string[] = []): Team {

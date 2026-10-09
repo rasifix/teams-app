@@ -11,7 +11,6 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'John',
     lastName: 'Doe',
-    birthYear: 2016,
     birthDate: '2016-01-01',
     level: 3,
     status: 'active',
@@ -62,7 +61,6 @@ describe('member import selectors', () => {
       level: 1,
       status: 'active',
       birthDate: '2016-03-31',
-      birthYear: 2016,
     });
     expect(result.rows[0].guardiansToAdd).toHaveLength(1);
     expect(result.summary.newPlayers).toBe(1);
@@ -75,7 +73,6 @@ describe('member import selectors', () => {
         firstName: 'Ali',
         lastName: 'Rahimi',
         birthDate: undefined,
-        birthYear: 2016,
       }),
     ];
 
@@ -101,7 +98,6 @@ describe('member import selectors', () => {
         firstName: 'Ali',
         lastName: 'Rahimi',
         birthDate: '2016-03-30',
-        birthYear: 2016,
       }),
     ];
 
@@ -155,7 +151,7 @@ describe('member import selectors', () => {
     const result = selectPlayerImportDiff(candidates, [], trainers);
 
     expect(result.rows[0].guardiansToAdd).toHaveLength(1);
-    expect(result.rows[0].guardiansToAdd[0].trainerId).toBe('t-1');
+    expect(result.rows[0].guardiansToAdd[0].guardianId).toBe('t-1');
     expect(result.rows[0].guardiansToAdd[0].firstName).toBe('Flurim');
   });
 
@@ -311,7 +307,6 @@ describe('member import selectors', () => {
         guardians: [
           {
             id: 'guardian-member-1',
-            userId: 'guardian-member-1',
             firstName: 'Max',
             lastName: 'Parent',
             email: 'max.parent@example.com',
@@ -338,7 +333,7 @@ describe('member import selectors', () => {
     const result = selectPlayerImportDiff(candidates, players, []);
 
     expect(result.rows[0].guardiansToAdd).toHaveLength(1);
-    expect(result.rows[0].guardiansToAdd[0].trainerId).toBe('guardian-member-1');
+    expect(result.rows[0].guardiansToAdd[0].guardianId).toBe('guardian-member-1');
   });
 
   it('reuses the same existing guardian member when imported for two players', () => {
@@ -350,7 +345,6 @@ describe('member import selectors', () => {
         guardians: [
           {
             id: 'guardian-member-1',
-            userId: 'guardian-member-1',
             firstName: 'Max',
             lastName: 'Parent',
             email: 'max.parent@example.com',
@@ -389,8 +383,8 @@ describe('member import selectors', () => {
     const result = selectPlayerImportDiff(candidates, players, []);
 
     expect(result.rows).toHaveLength(2);
-    expect(result.rows[0].guardiansToAdd[0].trainerId).toBe('guardian-member-1');
-    expect(result.rows[1].guardiansToAdd[0].trainerId).toBe('guardian-member-1');
+    expect(result.rows[0].guardiansToAdd[0].guardianId).toBe('guardian-member-1');
+    expect(result.rows[1].guardiansToAdd[0].guardianId).toBe('guardian-member-1');
   });
 
   it('dedupes guardian additions across duplicate rows for the same existing player', () => {
@@ -453,7 +447,6 @@ describe('member import selectors', () => {
         guardians: [
           {
             id: 'guardian-member-1',
-            userId: 'guardian-member-1',
             firstName: 'Max',
             lastName: 'Parent',
             email: 'shared@example.com',
@@ -480,7 +473,7 @@ describe('member import selectors', () => {
     const result = selectPlayerImportDiff(candidates, players, []);
 
     expect(result.rows[0].guardiansToAdd).toHaveLength(1);
-    expect(result.rows[0].guardiansToAdd[0].trainerId).toBeUndefined();
+    expect(result.rows[0].guardiansToAdd[0].guardianId).toBeUndefined();
   });
 
   it('does not match guardians by name alone when email differs', () => {
@@ -492,7 +485,6 @@ describe('member import selectors', () => {
         guardians: [
           {
             id: 'guardian-member-1',
-            userId: 'guardian-member-1',
             firstName: 'Max',
             lastName: 'Parent',
             email: 'first@example.com',
@@ -519,6 +511,6 @@ describe('member import selectors', () => {
     const result = selectPlayerImportDiff(candidates, players, []);
 
     expect(result.rows[0].guardiansToAdd).toHaveLength(1);
-    expect(result.rows[0].guardiansToAdd[0].trainerId).toBeUndefined();
+    expect(result.rows[0].guardiansToAdd[0].guardianId).toBeUndefined();
   });
 });

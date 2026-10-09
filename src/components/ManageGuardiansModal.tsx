@@ -21,7 +21,7 @@ type Mode = 'existing' | 'documented';
 export default function ManageGuardiansModal({ isOpen, onClose, guardians, existingUsers, onAssign, editingGuardian = null, onEdit }: ManageGuardiansModalProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('existing');
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedMemberId, setSelectedMemberId] = useState('');
   const [existingFirstName, setExistingFirstName] = useState('');
   const [existingLastName, setExistingLastName] = useState('');
   const [existingEmail, setExistingEmail] = useState('');
@@ -36,7 +36,6 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     const nonCurrentGuardians = guardians.filter((guardian) => guardian.id !== editingGuardian?.id);
     return existingUsers.filter((existingUser) => !hasDuplicateGuardian(nonCurrentGuardians, {
       id: existingUser.id,
-      userId: existingUser.id,
       firstName: existingUser.firstName,
       lastName: existingUser.lastName,
       email: existingUser.email,
@@ -52,7 +51,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     if (editingGuardian) {
       const nextMode: Mode = editingGuardian.email ? 'existing' : 'documented';
       setMode(nextMode);
-      setSelectedUserId(editingGuardian.userId || editingGuardian.id || '');
+      setSelectedMemberId(editingGuardian.id || '');
       setExistingFirstName(editingGuardian.firstName || '');
       setExistingLastName(editingGuardian.lastName || '');
       setExistingEmail(editingGuardian.email || '');
@@ -69,7 +68,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
   const reset = () => {
     setMode('existing');
-    setSelectedUserId('');
+    setSelectedMemberId('');
     setExistingFirstName('');
     setExistingLastName('');
     setExistingEmail('');
@@ -80,9 +79,9 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     setIsSubmitting(false);
   };
 
-  const handleSelectedExistingUserChange = (userId: string) => {
-    setSelectedUserId(userId);
-    const user = existingUsers.find((entry) => entry.id === userId);
+  const handleSelectedExistingUserChange = (memberId: string) => {
+    setSelectedMemberId(memberId);
+    const user = existingUsers.find((entry) => entry.id === memberId);
     if (!user) {
       setExistingFirstName('');
       setExistingLastName('');
@@ -105,12 +104,12 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     setError(null);
 
     if (mode === 'existing') {
-      if (!selectedUserId && !isEditMode) {
+      if (!selectedMemberId && !isEditMode) {
         setError(t('guardians.errors.selectExistingUser'));
         return;
       }
 
-      const selectedUser = existingUsers.find((entry) => entry.id === selectedUserId);
+      const selectedUser = existingUsers.find((entry) => entry.id === selectedMemberId);
 
       if (!isEditMode && !selectedUser) {
         setError(t('guardians.errors.selectExistingUser'));
@@ -118,8 +117,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
       }
 
       const guardian: Guardian = {
-        id: selectedUser?.id || selectedUserId || editingGuardian?.id || crypto.randomUUID(),
-        userId: selectedUser?.id || selectedUserId || editingGuardian?.userId,
+        id: selectedUser?.id || selectedMemberId || editingGuardian?.id || crypto.randomUUID(),
         firstName: isEditMode ? existingFirstName.trim() : (selectedUser?.firstName || existingFirstName.trim()),
         lastName: isEditMode ? existingLastName.trim() : (selectedUser?.lastName || existingLastName.trim()),
         email: isEditMode ? (existingEmail.trim() || undefined) : (selectedUser?.email || existingEmail.trim() || undefined),
@@ -134,7 +132,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
       setIsSubmitting(true);
       const success = isEditMode && editingGuardian && onEdit
-        ? await onEdit(editingGuardian.userId || editingGuardian.id, {
+        ? await onEdit(editingGuardian.id, {
             firstName: guardian.firstName,
             lastName: guardian.lastName,
             email: guardian.email,
@@ -169,7 +167,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
     setIsSubmitting(true);
     const success = isEditMode && editingGuardian && onEdit
-      ? await onEdit(editingGuardian.userId || editingGuardian.id, {
+      ? await onEdit(editingGuardian.id, {
           firstName: guardian.firstName,
           lastName: guardian.lastName,
           email: guardian.email,
@@ -225,7 +223,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                 <label htmlFor="guardian-existing" className="form-label">{t('guardians.existingUser')}</label>
                 <select
                   id="guardian-existing"
-                  value={selectedUserId}
+                  value={selectedMemberId}
                   onChange={(e) => handleSelectedExistingUserChange(e.target.value)}
                   className="form-select"
                   disabled={isEditMode}

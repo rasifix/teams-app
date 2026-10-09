@@ -5,6 +5,7 @@ import type { Player } from '../types';
 import Level from './Level';
 import { Card, CardBody } from './ui';
 import LevelRangeSelector from './LevelRangeSelector';
+import { getBirthYear } from '../utils/birthDate';
 
 interface PlayerStats {
   player: Player;
@@ -190,7 +191,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                     <td className="px-4 py-3 md:hidden" colSpan={6}>
                       <div className="text-sm font-medium text-gray-900 mb-1 text-center">
                         {stat.player.firstName} {stat.player.lastName}{' '}
-                        <span className="text-xs text-muted m-2">{stat.player.birthYear}</span>{' '}
+                        <span className="text-xs text-muted m-2">{getBirthYear(stat.player.birthDate)}</span>{' '}
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-xs">

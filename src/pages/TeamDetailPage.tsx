@@ -12,6 +12,7 @@ import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamAssigneeById, selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
+import { getBirthYear } from '../utils/birthDate';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -323,7 +324,7 @@ export default function TeamDetailPage() {
                             {player.firstName} {player.lastName}
                           </span>
                           <span className="text-gray-500">
-                            {player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear}
+                            {getBirthYear(player.birthDate)}
                           </span>
                         </div>
                         <Level level={player.level} />

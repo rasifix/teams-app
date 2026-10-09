@@ -20,17 +20,19 @@ extern dec owns(target: Reflection.ModelProperty);
  * users. It defines the official match formats of that category.
  */
 model SfvCategory {
-  id: string;
-
-  /** e.g. A, B, C, D9, D7, E, F, G, FF9, FF11, FF14, FF17. */
+  /** Identifier is the category code, e.g. A, B, C, D9, D7, E, F, G, FF9, FF11, FF14, FF17. */
   code: string;
   name: string;
-  officialMatchFormats: OfficialMatchFormat[];
+
+  /** Whether the category plays regular matches or only tournaments. */
+  activityType: "match" | "tournament";
+
+  /** Absent for tournament-only categories (e.g. E, F, G). */
+  officialMatchFormat?: OfficialMatchFormat;
 }
 
 /** Reference data defined by the SFV; the template for a Squad's MatchFormat. */
 model OfficialMatchFormat {
-  id: string;
   name: string;
 
   /** Players per team on the field, e.g. 7 for D7. */
@@ -50,15 +52,6 @@ model Period {
   endDate: plainDate;
 }
 
-/**
- * `trainer` is official Squad Trainer authorization. It is distinct from an
- * TrainingSession trainer or a Team's responsible person.
- */
-model SquadMembership {
-  id: string;
-  person: Person;
-  roles: SquadRole[];
-}
 
 /** Owns its activities: deleting a Squad deletes them. */
 model Squad {
@@ -79,7 +72,7 @@ model Squad {
   createdAt?: utcDateTime;
   updatedAt?: utcDateTime;
 
-  @owns members: SquadMembership[];
+  @owns members: Person[];
   @owns periods: Period[];
   @owns matchFormats: MatchFormat[];
   @owns formations: Formation[];
@@ -93,8 +86,8 @@ model LoginAccount {
 }
 
 /**
- * People are global entities referenced by Squad memberships, not owned by a
- * single Squad.
+ * A Person is a member record owned by exactly one Squad (the API stores
+ * members per squad; the same human in two squads is two Persons).
  */
 @discriminator("kind")
 model Person {
@@ -103,12 +96,22 @@ model Person {
   firstName: string;
   lastName: string;
 
+  /**
+   * `trainer` is official Squad Trainer authorization. It is distinct from a
+   * TrainingSession trainer or a Team's responsible person. A person may hold
+   * multiple roles.
+   */
+  roles: SquadRole[];
+
   /** Contact data; independent of the login. */
   email?: string;
   phone?: string;
 
-  /** A person does not necessarily have a login. */
-  @owns login?: LoginAccount;
+  /**
+   * A person does not necessarily have a login. The login is an independent
+   * account that is associated with the Person, not owned by it.
+   */
+  login?: LoginAccount;
 }
 
 model Player extends Person {

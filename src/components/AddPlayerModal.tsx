@@ -51,12 +51,10 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.firstName.trim() && formData.lastName.trim() && formData.birthDate) {
-      const birthYear = new Date(formData.birthDate).getFullYear();
       const parsedPreferredShirtNumber = parseInt(formData.preferredShirtNumber, 10);
       const playerData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        birthYear: birthYear,
         birthDate: formData.birthDate,
         level: formData.level,
         status: formData.status,

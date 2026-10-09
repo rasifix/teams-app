@@ -17,7 +17,7 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'Mia',
     lastName: 'Player',
-    birthYear: 2016,
+    birthDate: '2016-06-15',
     level: 3,
     status: 'active',
     guardians: [],
@@ -123,7 +123,7 @@ describe('member duplicate selectors', () => {
     const trainers = [trainer({ id: 'm-1', firstName: 'Ari', lastName: 'Keller' })];
     const players = [
       player({
-        guardians: [{ id: 'm-1', firstName: 'Ari', lastName: 'Keller', userId: 'm-1' }],
+        guardians: [{ id: 'm-1', firstName: 'Ari', lastName: 'Keller' }],
       }),
     ];
 

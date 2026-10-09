@@ -5,6 +5,7 @@ import MembersList from "../components/MembersList";
 import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
 import type { MembersOutletContext } from "./MembersPage";
+import { getBirthYear } from '../utils/birthDate';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
@@ -18,8 +19,10 @@ export default function MembersPlayersPage() {
   const availableYears = useMemo(() => {
     const years = new Set<number>();
     players.forEach((player) => {
-      const year = player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear;
-      years.add(year);
+      const year = getBirthYear(player.birthDate);
+      if (year !== undefined) {
+        years.add(year);
+      }
     });
     return Array.from(years).sort((a, b) => b - a);
   }, [players]);
@@ -31,7 +34,7 @@ export default function MembersPlayersPage() {
       }
 
       if (selectedYear !== null) {
-        const year = player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear;
+        const year = getBirthYear(player.birthDate);
         if (year !== selectedYear) {
           return false;
         }

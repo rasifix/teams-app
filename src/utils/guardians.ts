@@ -9,42 +9,26 @@ function toComparableName(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export function getPlayerAge(player: Pick<Player, 'birthDate' | 'birthYear'>, referenceDate: Date = new Date()): number {
-  if (player.birthDate) {
-    const birth = new Date(player.birthDate);
-    if (Number.isNaN(birth.getTime())) {
-      return referenceDate.getFullYear() - player.birthYear;
-    }
+export function getPlayerAge(player: Pick<Player, 'birthDate'>, referenceDate: Date = new Date()): number {
+  const birth = new Date(player.birthDate);
+  let age = referenceDate.getFullYear() - birth.getFullYear();
+  const monthDiff = referenceDate.getMonth() - birth.getMonth();
+  const dayDiff = referenceDate.getDate() - birth.getDate();
 
-    let age = referenceDate.getFullYear() - birth.getFullYear();
-    const monthDiff = referenceDate.getMonth() - birth.getMonth();
-    const dayDiff = referenceDate.getDate() - birth.getDate();
-
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-      age -= 1;
-    }
-
-    return age;
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age -= 1;
   }
 
-  return referenceDate.getFullYear() - player.birthYear;
+  return age;
 }
 
-export function isPlayerUnderage(player: Pick<Player, 'birthDate' | 'birthYear'>, ageLimit: number = DEFAULT_UNDERAGE_LIMIT): boolean {
+export function isPlayerUnderage(player: Pick<Player, 'birthDate'>, ageLimit: number = DEFAULT_UNDERAGE_LIMIT): boolean {
   return getPlayerAge(player) < ageLimit;
 }
 
-export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, candidate: Pick<Guardian, 'id' | 'firstName' | 'lastName' | 'email' | 'userId' | 'isDocumentedOnly'>): boolean {
+export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, candidate: Pick<Guardian, 'id' | 'firstName' | 'lastName' | 'email' | 'isDocumentedOnly'>): boolean {
   if (!existingGuardians || existingGuardians.length === 0) {
     return false;
-  }
-
-  if (candidate.userId) {
-    return existingGuardians.some((guardian) => (
-      guardian.userId === candidate.userId ||
-      guardian.id === candidate.userId ||
-      (!!candidate.email && !!guardian.email && guardian.email.toLowerCase() === candidate.email.toLowerCase())
-    ));
   }
 
   if (candidate.isDocumentedOnly) {
@@ -58,7 +42,10 @@ export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, 
     });
   }
 
-  return existingGuardians.some((guardian) => guardian.id === candidate.id);
+  return existingGuardians.some((guardian) => (
+    guardian.id === candidate.id ||
+    (!!candidate.email && !!guardian.email && guardian.email.toLowerCase() === candidate.email.toLowerCase())
+  ));
 }
 
 export function canManageGuardians(

@@ -3,13 +3,13 @@ import { canManageGuardians, getPlayerAge, hasDuplicateGuardian, isPlayerUnderag
 
 describe('guardians utils', () => {
   it('computes age from birthDate', () => {
-    const age = getPlayerAge({ birthDate: '2012-06-10', birthYear: 2012 }, new Date('2026-04-04'));
+    const age = getPlayerAge({ birthDate: '2012-06-10' }, new Date('2026-04-04'));
     expect(age).toBe(13);
   });
 
   it('identifies underage players', () => {
-    const underage = isPlayerUnderage({ birthDate: '2010-05-15', birthYear: 2010 });
-    const adult = isPlayerUnderage({ birthDate: '2000-05-15', birthYear: 2000 });
+    const underage = isPlayerUnderage({ birthDate: '2010-05-15' });
+    const adult = isPlayerUnderage({ birthDate: '2000-05-15' });
     expect(underage).toBe(true);
     expect(adult).toBe(false);
   });
@@ -20,6 +20,20 @@ describe('guardians utils', () => {
       { id: 'g2', firstName: ' jane ', lastName: 'DOE', isDocumentedOnly: true },
     );
     expect(duplicate).toBe(true);
+  });
+
+  it('identifies linked guardians by member id or login email', () => {
+    const existing = [{ id: 'm-1', firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com' }];
+
+    expect(hasDuplicateGuardian(existing, {
+      id: 'm-1', firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com',
+    })).toBe(true);
+    expect(hasDuplicateGuardian(existing, {
+      id: 'm-2', firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com',
+    })).toBe(true);
+    expect(hasDuplicateGuardian(existing, {
+      id: 'm-2', firstName: 'Jane', lastName: 'Doe', email: 'different@example.com',
+    })).toBe(false);
   });
 
   it('allows fallback authorization when no role data exists', () => {

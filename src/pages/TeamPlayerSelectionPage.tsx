@@ -5,6 +5,7 @@ import { useEvents, usePlayers } from '../store';
 import { Button } from '../components/ui';
 import Level from '../components/Level';
 import LevelRangeSelector from '../components/LevelRangeSelector';
+import { getBirthYear } from '../utils/birthDate';
 
 export default function TeamPlayerSelectionPage() {
   const { t } = useTranslation();
@@ -174,7 +175,7 @@ export default function TeamPlayerSelectionPage() {
                       {player.firstName} {player.lastName}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {player.birthDate ? new Date(player.birthDate).getFullYear() : player.birthYear}
+                      {getBirthYear(player.birthDate)}
                     </div>
                   </div>
                 </div>

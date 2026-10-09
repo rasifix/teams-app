@@ -7,7 +7,7 @@ function player(overrides: Partial<Player>): Player {
     id: 'p-default',
     firstName: 'Player',
     lastName: 'Default',
-    birthYear: 2016,
+    birthDate: '2016-06-15',
     level: 3,
     status: 'active',
     guardians: [],
@@ -24,7 +24,7 @@ describe('guardian duplicate selectors', () => {
       }),
       player({
         id: 'p-2',
-        guardians: [{ id: 'g-1', userId: 'g-1', firstName: 'Ana', lastName: 'Parent', email: 'ana@example.com' }],
+        guardians: [{ id: 'g-1', firstName: 'Ana', lastName: 'Parent', email: 'ana@example.com' }],
       }),
     ];
 
@@ -58,7 +58,7 @@ describe('guardian duplicate selectors', () => {
       }),
       player({
         id: 'p-2',
-        guardians: [{ id: 'any-id', userId: 'member-1', firstName: 'Ana', lastName: 'Parent', email: 'ana@example.com' }],
+        guardians: [{ id: 'member-1', firstName: 'Ana', lastName: 'Parent', email: 'ana@example.com' }],
       }),
     ];
 

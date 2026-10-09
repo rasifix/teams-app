@@ -1,4 +1,5 @@
 import type { Player, Trainer } from '../../types';
+import { getBirthYear } from '../../utils/birthDate';
 
 export type ImportMemberRole = 'player' | 'trainer';
 
@@ -9,7 +10,6 @@ export interface GroupImportCandidate {
   lastName: string;
   email?: string;
   birthDate?: string;
-  birthYear?: number;
   level?: number;
   status?: Player['status'];
   guardians?: Player['guardians'];
@@ -63,7 +63,7 @@ function compareByName(left: Pick<GroupImportCandidate, 'firstName' | 'lastName'
 
 function isDuplicatePlayer(candidate: GroupImportCandidate, targetPlayers: Player[]): boolean {
   const candidateBirthDate = toComparableBirthDate(candidate.birthDate);
-  const candidateBirthYear = candidate.birthYear || (candidateBirthDate ? new Date(candidateBirthDate).getFullYear() : undefined);
+  const candidateBirthYear = candidateBirthDate ? new Date(candidateBirthDate).getFullYear() : undefined;
 
   return targetPlayers.some((targetPlayer) => {
     if (
@@ -78,7 +78,7 @@ function isDuplicatePlayer(candidate: GroupImportCandidate, targetPlayers: Playe
       return candidateBirthDate === targetBirthDate;
     }
 
-    return candidateBirthYear === targetPlayer.birthYear;
+    return candidateBirthYear === getBirthYear(targetPlayer.birthDate);
   });
 }
 
@@ -114,7 +114,6 @@ export function selectSourceGroupCandidates(players: Player[], trainers: Trainer
     firstName: player.firstName,
     lastName: player.lastName,
     birthDate: player.birthDate,
-    birthYear: player.birthYear,
     level: player.level,
     status: player.status,
     guardians: player.guardians,
@@ -168,9 +167,7 @@ export function selectImportableGroupMembers(
       return false;
     }
 
-    const candidateBirthYear = candidate.birthDate
-      ? new Date(toComparableBirthDate(candidate.birthDate)).getFullYear()
-      : candidate.birthYear;
+    const candidateBirthYear = getBirthYear(candidate.birthDate);
 
     const matchesBirthYear =
       selectedBirthYearSet.size === 0

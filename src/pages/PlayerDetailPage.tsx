@@ -173,15 +173,14 @@ export default function PlayerDetailPage() {
 
   const handleAssignGuardian = async (guardian: Guardian): Promise<boolean> => {
     setGuardianActionError(null);
-    const guardianPayload = guardian.userId
+    const guardianPayload = guardian.isDocumentedOnly
       ? {
-          userId: guardian.userId,
-          trainerId: guardian.userId,
-        }
-      : {
           firstName: guardian.firstName,
           lastName: guardian.lastName,
           email: guardian.email,
+        }
+      : {
+          guardianId: guardian.id,
         };
 
     const success = await addGuardianToPlayer(player.id, guardianPayload);

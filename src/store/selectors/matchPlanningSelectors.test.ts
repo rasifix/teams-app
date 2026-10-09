@@ -52,7 +52,7 @@ function formation(overrides: Partial<Formation>): Formation {
 }
 
 function player(id: string, firstName: string): Player {
-  return { id, firstName, lastName: 'Player', birthYear: 2015, level: 3, status: 'active' };
+  return { id, firstName, lastName: 'Player', birthDate: '2015-06-15', level: 3, status: 'active' };
 }
 
 describe('pitch summary selectors', () => {

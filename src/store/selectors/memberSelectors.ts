@@ -27,7 +27,7 @@ function isPlayerMember(member: GroupMember): member is Player {
     return true;
   }
 
-  return 'birthYear' in member || 'level' in member || 'status' in member;
+  return 'birthDate' in member || 'level' in member || 'status' in member;
 }
 
 function isTrainerMember(member: GroupMember): member is Trainer {

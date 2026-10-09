@@ -17,7 +17,7 @@ const buildPlayer = (overrides: Partial<Player>): Player => ({
   id: 'player-default',
   firstName: 'First',
   lastName: 'Last',
-  birthYear: 2014,
+  birthDate: '2014-06-15',
   level: 3,
   status: 'active',
   guardians: [],
@@ -78,19 +78,19 @@ describe('home selectors', () => {
         id: 'p2',
         firstName: 'Ben',
         lastName: 'Meyer',
-        guardians: [{ id: 'g-1', firstName: 'G', lastName: 'One', userId: 'u-guardian' }],
+        guardians: [{ id: 'g-1', firstName: 'G', lastName: 'One', email: 'guardian@example.com' }],
       }),
       buildPlayer({
         id: 'p1',
         firstName: 'Anna',
         lastName: 'Meyer',
-        guardians: [{ id: 'g-2', firstName: 'G', lastName: 'One', userId: 'u-guardian' }],
+        guardians: [{ id: 'g-2', firstName: 'G', lastName: 'One', email: 'guardian@example.com' }],
       }),
       buildPlayer({
         id: 'p3',
         firstName: 'Chris',
         lastName: 'Other',
-        guardians: [{ id: 'g-3', firstName: 'X', lastName: 'Y', userId: 'u-other' }],
+        guardians: [{ id: 'g-3', firstName: 'X', lastName: 'Y', email: 'other@example.com' }],
       }),
     ];
 
@@ -167,11 +167,33 @@ describe('home selectors', () => {
     expect(result[1].invitations.map((entry) => entry.status)).toEqual(['open', 'accepted', 'declined']);
   });
 
+  it('matches a guardian by member id even when the email differs', () => {
+    const players: Player[] = [
+      buildPlayer({
+        id: 'p1',
+        guardians: [{ id: 'u-guardian', firstName: 'Guardian', lastName: 'Member', email: 'other@example.com' }],
+      }),
+    ];
+    const events: Event[] = [
+      buildEvent({
+        id: 'e1',
+        date: '2026-05-10',
+        invitations: [{ id: 'i1', playerId: 'p1', status: 'open' }],
+      }),
+    ];
+
+    const result = selectGuardianChildOpenInvitations(
+      players, events, { id: 'u-guardian', email: 'guardian@example.com', firstName: 'Guardian', lastName: 'User' }, new Date('2026-05-01T00:00:00Z')
+    );
+
+    expect(result.map((entry) => entry.playerId)).toEqual(['p1']);
+  });
+
   it('returns empty when user has no guardian-linked children', () => {
     const players: Player[] = [
       buildPlayer({
         id: 'p1',
-        guardians: [{ id: 'g-1', firstName: 'G', lastName: 'One', userId: 'u-someone-else' }],
+        guardians: [{ id: 'g-1', firstName: 'G', lastName: 'One', email: 'someone-else@example.com' }],
       }),
     ];
 
@@ -232,13 +254,13 @@ describe('home selectors', () => {
         id: 'p1',
         firstName: 'Anna',
         lastName: 'Meyer',
-        guardians: [{ id: 'g1', firstName: 'Simon', lastName: 'Raess', userId: 'u-guardian' }],
+        guardians: [{ id: 'g1', firstName: 'Simon', lastName: 'Raess', email: 'guardian@example.com' }],
       }),
       buildPlayer({
         id: 'p2',
         firstName: 'Ben',
         lastName: 'Meyer',
-        guardians: [{ id: 'g2', firstName: 'Simon', lastName: 'Raess', userId: 'u-guardian' }],
+        guardians: [{ id: 'g2', firstName: 'Simon', lastName: 'Raess', email: 'guardian@example.com' }],
       }),
     ];
 
@@ -290,7 +312,7 @@ describe('home selectors', () => {
         id: 'p3',
         firstName: 'Lea',
         lastName: 'Meyer',
-        guardians: [{ id: 'g3', firstName: 'Simon', lastName: 'Raess', userId: 'u-guardian' }],
+        guardians: [{ id: 'g3', firstName: 'Simon', lastName: 'Raess', email: 'guardian@example.com' }],
       }),
     ];
 

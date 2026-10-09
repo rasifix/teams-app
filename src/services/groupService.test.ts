@@ -17,7 +17,7 @@ describe('groupService', () => {
 
     await updateGroupCategory('group-1', 'Juniors', 'D7');
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/groups/group-1', {
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/group-1', {
       method: 'PUT',
       body: JSON.stringify({ name: 'Juniors', category: 'D7' }),
     });

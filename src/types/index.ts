@@ -70,8 +70,7 @@ export interface Player {
   roles?: GroupRole[];
   firstName: string;
   lastName: string;
-  birthYear: number;
-  birthDate?: string; // ISO date string
+  birthDate: string; // ISO date string
   level: number; // 1-5
   status: PlayerStatus;
   preferredShirtNumber?: number;
@@ -86,7 +85,6 @@ export interface Guardian {
   lastName: string;
   email?: string;
   phone?: string;
-  userId?: string;
   isDocumentedOnly?: boolean;
 }
 

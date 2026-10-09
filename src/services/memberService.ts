@@ -32,7 +32,7 @@ const isPlayerMember = (member: Member): member is Player => {
     return true;
   }
 
-  return 'birthYear' in member || 'level' in member || 'status' in member;
+  return 'birthDate' in member || 'level' in member || 'status' in member;
 };
 
 const isTrainerMember = (member: Member): member is Trainer => {
@@ -70,7 +70,6 @@ export interface MemberUpsertPayload {
   firstName: string;
   lastName: string;
   email?: string;
-  birthYear?: number;
   birthDate?: string;
   level?: number;
   status?: Player['status'];
@@ -172,7 +171,6 @@ export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>)
     lastName: playerData.lastName,
     level: playerData.level,
     status: playerData.status,
-    birthYear: playerData.birthYear,
     birthDate: playerData.birthDate,
     preferredShirtNumber: playerData.preferredShirtNumber,
     guardians: playerData.guardians,
@@ -217,12 +215,11 @@ export interface CreateGuardianPayload {
   firstName?: string;
   lastName?: string;
   email?: string;
-  userId?: string;
   trainerId?: string;
 }
 
 export async function addGuardianToPlayer(groupId: string, playerId: string, guardianData: CreateGuardianPayload): Promise<Player> {
-  const guardianId = guardianData.guardianId || guardianData.userId || guardianData.trainerId;
+  const guardianId = guardianData.guardianId || guardianData.trainerId;
   if (!guardianId) {
     throw new Error('guardianId is required to link guardian to player');
   }

@@ -61,7 +61,6 @@ function isGuardianOfPlayer(player: Player, user: User): boolean {
   const normalizedUserEmail = normalizeEmail(user.email);
 
   return (player.guardians || []).some((guardian) => (
-    guardian.userId === user.id ||
     guardian.id === user.id ||
     (normalizedUserEmail !== '' && normalizeEmail(guardian.email) === normalizedUserEmail)
   ));

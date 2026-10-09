@@ -5,7 +5,7 @@ export interface DuplicateGuardianEntry {
   firstName: string;
   lastName: string;
   email: string;
-  userId?: string;
+  isDocumentedOnly?: boolean;
   playerIds: string[];
 }
 
@@ -71,7 +71,7 @@ export function selectDuplicateGuardianGroups(players: Player[]): DuplicateGuard
       }
 
       const duplicateKey = toNameEmailKey(guardian.firstName, guardian.lastName, guardian.email);
-      const guardianId = guardian.userId || guardian.id;
+      const guardianId = guardian.id;
       const groupEntries = grouped.get(duplicateKey) || new Map<string, DuplicateGuardianEntry>();
       const existing = groupEntries.get(guardianId);
 
@@ -83,7 +83,7 @@ export function selectDuplicateGuardianGroups(players: Player[]): DuplicateGuard
           firstName: guardian.firstName,
           lastName: guardian.lastName,
           email: guardian.email,
-          userId: guardian.userId,
+          isDocumentedOnly: guardian.isDocumentedOnly,
           playerIds: [player.id],
         });
       }
@@ -101,8 +101,8 @@ export function selectDuplicateGuardianGroups(players: Player[]): DuplicateGuard
     }
 
     const sortedGuardians = [...guardians].sort((left, right) => {
-      if (Boolean(right.userId) !== Boolean(left.userId)) {
-        return Number(Boolean(right.userId)) - Number(Boolean(left.userId));
+      if (Boolean(right.isDocumentedOnly) !== Boolean(left.isDocumentedOnly)) {
+        return Number(Boolean(left.isDocumentedOnly)) - Number(Boolean(right.isDocumentedOnly));
       }
 
       if (right.playerIds.length !== left.playerIds.length) {

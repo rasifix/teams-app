@@ -152,7 +152,7 @@ export default function MembersGuardiansPage() {
             <div className="md:hidden space-y-3">
               {guardians.map((row) => (
                 <div
-                  key={row.guardian.userId || row.guardian.id}
+                  key={row.guardian.id}
                   className="rounded-lg border border-gray-200 bg-white p-3"
                 >
                   <p className="text-sm font-medium text-gray-900">
@@ -204,7 +204,7 @@ export default function MembersGuardiansPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {guardians.map((row) => (
-                    <tr key={row.guardian.userId || row.guardian.id}>
+                    <tr key={row.guardian.id}>
                       <td className="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
                         {row.guardian.firstName} {row.guardian.lastName}
                       </td>

@@ -13,7 +13,7 @@ describe('memberService', () => {
         id: 'player-1',
         firstName: 'Pat',
         lastName: 'Player',
-        birthYear: 2014,
+        birthDate: '2014-06-15',
         level: 3,
         status: 'active',
         roles: ['player'],
@@ -36,7 +36,7 @@ describe('memberService', () => {
 
     const trainers = await getTrainers('group-1');
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/groups/group-1/members');
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/group-1/members');
     expect(trainers).toEqual([
       {
         id: 'trainer-1',
@@ -55,7 +55,7 @@ describe('memberService', () => {
           id: 'player-1',
           firstName: 'Pat',
           lastName: 'Player',
-          birthYear: 2014,
+          birthDate: '2014-06-15',
           level: 3,
         },
       ],
@@ -77,7 +77,7 @@ describe('memberService', () => {
           id: 'player-1',
           firstName: 'Pat',
           lastName: 'Player',
-          birthYear: 2014,
+          birthDate: '2014-06-15',
           level: 3,
           status: 'active',
           roles: [],
@@ -125,7 +125,7 @@ describe('memberService', () => {
       lastName: 'Player',
       roles: ['player'],
       level: 3,
-      birthYear: 2014,
+      birthDate: '2014-06-15',
       status: 'active',
     });
 
@@ -148,7 +148,7 @@ describe('memberService', () => {
       lastName: 'Player',
       roles: ['player'],
       level: 3,
-      birthYear: 2014,
+      birthDate: '2014-06-15',
       status: 'active',
     });
 

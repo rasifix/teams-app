@@ -56,7 +56,6 @@ Required for assignment:
    - documented guardian identity/contact fields
 
 Optional for assignment (if model supports):
-- relationship (for example mother, father, legal guardian)
 - contact preference metadata
 - email (optional for documented-only guardian contacts)
 

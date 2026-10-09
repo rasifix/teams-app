@@ -86,7 +86,6 @@ export interface Guardian {
   lastName: string;
   email?: string;
   phone?: string;
-  relationship?: string;
   userId?: string;
   isDocumentedOnly?: boolean;
 }

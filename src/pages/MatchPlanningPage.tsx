@@ -1,18 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup, useMatchPlanning } from '../store';
+import { useGroup, useMatchPlanning, useSfvCatalog } from '../store';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ConfirmDialog';
-import PlayingModeModal from '../components/PlayingModeModal';
+import PlayingModeModal, { type PlayingModeFormData } from '../components/PlayingModeModal';
 import FormationModal from '../components/FormationModal';
 import { getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
 import type { Formation, GroupCategory, PlayingMode } from '../types';
-import { GROUP_CATEGORIES, selectOfficialPlayingModeForCategory } from '../store/selectors/groupCategorySelectors';
+import { GROUP_CATEGORIES } from '../store/selectors/groupCategorySelectors';
+import {
+  selectIsOfficialMatchFormat,
+  selectIsTournamentOnlyCategory,
+  selectOfficialMatchFormatForCategory,
+} from '../store/selectors/sfvCatalogSelectors';
 
 export default function MatchPlanningPage() {
   const { t } = useTranslation();
   const group = useGroup();
+  const sfvCatalog = useSfvCatalog();
+  const selectedOfficialFormat = (category: GroupCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
   const {
     matchPlanningEnabled,
     playingModes,
@@ -64,7 +71,7 @@ export default function MatchPlanningPage() {
     setIsTogglingEnabled(false);
   };
 
-  const handleSavePlayingMode = async (data: { name: string; numberOfPeriods: number; periodLengthMinutes: number; minimumPeriodsPerPlayer: number }) => {
+  const handleSavePlayingMode = async (data: PlayingModeFormData) => {
     if (editingPlayingMode) {
       return updatePlayingMode(editingPlayingMode.id, data);
     }
@@ -115,12 +122,15 @@ export default function MatchPlanningPage() {
           {categorySaveError && (
             <p className="mt-3 text-sm text-red-600" role="alert">{categorySaveError}</p>
           )}
-          {selectedCategory && selectOfficialPlayingModeForCategory(selectedCategory) && (
+          {selectedCategory && selectedOfficialFormat(selectedCategory) && (
             <p className="mt-3 text-sm text-orange-700">
               {t('matchPlanning.category.officialModeHint', {
-                mode: selectOfficialPlayingModeForCategory(selectedCategory)?.name,
+                mode: selectedOfficialFormat(selectedCategory)?.name,
               })}
             </p>
+          )}
+          {selectedCategory && selectIsTournamentOnlyCategory(sfvCatalog, selectedCategory) && (
+            <p className="mt-3 text-sm text-gray-600">{t('matchPlanning.category.tournamentOnlyHint')}</p>
           )}
           {selectedCategory === 'FF14' && (
             <p className="mt-3 text-sm text-gray-600">{t('matchPlanning.category.ff14Hint')}</p>
@@ -192,7 +202,21 @@ export default function MatchPlanningPage() {
                               {t('matchPlanning.playingModes.defaultBadge')}
                             </span>
                           )}
+                          {selectIsOfficialMatchFormat(playingMode) && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                              {t('matchPlanning.playingModes.officialBadge')}
+                            </span>
+                          )}
                         </div>
+                        {playingMode.playersOnField !== undefined && (
+                          <div className="text-sm text-gray-500">
+                            {t('matchPlanning.playingModes.players', {
+                              onField: playingMode.playersOnField,
+                              min: playingMode.minPlayersPerTeam ?? '-',
+                              max: playingMode.maxPlayersPerTeam ?? '-',
+                            })}
+                          </div>
+                        )}
                         <div className="text-sm text-gray-500">
                           {t('matchPlanning.playingModes.summary', {
                             periods: playingMode.numberOfPeriods,

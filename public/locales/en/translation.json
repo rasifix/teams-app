@@ -202,6 +202,8 @@
       "descriptionOptional": "Description (optional)"
     },
     "categoryHint": "For D7 through A, the official playing mode is created and set as default automatically.",
+    "officialFormatHint": "Official format: {{format}}, {{min}}–{{max}} players per team.",
+    "tournamentOnlyHint": "This category plays tournaments only; no official match format is created.",
     "placeholders": {
       "groupName": "Enter group name",
       "club": "Enter club",
@@ -756,12 +758,15 @@
       "saving": "Saving...",
       "saveFailed": "Failed to save the category. Please try again.",
       "officialModeHint": "The official {{mode}} playing mode will be created if needed and set as default.",
-      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its playing mode must be selected manually."
+      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its playing mode must be selected manually.",
+      "tournamentOnlyHint": "This category plays tournaments only and has no official match format."
     },
     "playingModes": {
       "title": "Playing Modes",
       "emptyState": "No playing modes yet. Add one to get started.",
       "defaultBadge": "Default",
+      "officialBadge": "Official",
+      "players": "{{onField}} on field, {{min}}–{{max}} players per team",
       "summary": "{{periods}} periods x {{minutes}} min",
       "minimumPeriods": "Minimum per player: {{count}} periods",
       "setDefault": "Set as default",
@@ -782,10 +787,15 @@
       "name": "Name",
       "numberOfPeriods": "Number of Periods",
       "periodLengthMinutes": "Period Length (minutes)",
-      "minimumPeriodsPerPlayer": "Minimum periods per player"
+      "minimumPeriodsPerPlayer": "Minimum periods per player",
+      "playersOnField": "Players on field (optional)",
+      "minPlayersPerTeam": "Min. players per team",
+      "maxPlayersPerTeam": "Max. players per team"
     },
+    "officialNotice": "This is an official SFV format. Changes only apply to your squad.",
     "hints": {
-      "minimumPeriodsPerPlayer": "Use 0 when no minimum should be enforced."
+      "minimumPeriodsPerPlayer": "Use 0 when no minimum should be enforced.",
+      "playerLimits": "Used as default player limits for matches with this format."
     },
     "placeholders": {
       "name": "e.g. 4x20"
@@ -795,6 +805,8 @@
       "numberOfPeriodsMin": "Number of periods must be at least 1",
       "periodLengthMin": "Period length must be at least 1 minute",
       "minimumPeriodsRange": "Minimum periods per player must be between 0 and {{total}}.",
+      "playersMin": "Player counts must be at least 1",
+      "playerLimitsRange": "Minimum players per team must not exceed the maximum.",
       "saveFailed": "Failed to save playing mode. Please try again."
     }
   },

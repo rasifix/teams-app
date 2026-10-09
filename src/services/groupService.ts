@@ -83,6 +83,9 @@ interface GroupPlayingModePayload {
   numberOfPeriods: number;
   periodLengthMinutes: number;
   minimumPeriodsPerPlayer?: number;
+  playersOnField?: number;
+  minPlayersPerTeam?: number;
+  maxPlayersPerTeam?: number;
 }
 
 export async function addGroupPlayingMode(groupId: string, data: GroupPlayingModePayload): Promise<PlayingMode> {

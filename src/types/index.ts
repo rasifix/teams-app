@@ -31,6 +31,28 @@ export interface PlayingMode {
   periodLengthMinutes: number;
   minimumPeriodsPerPlayer?: number; // 0 or omitted means no minimum playing-time rule
   isDefault?: boolean;
+  playersOnField?: number;
+  minPlayersPerTeam?: number;
+  maxPlayersPerTeam?: number;
+  /** Set when the format was created from the official SFV catalog. */
+  origin?: string;
+}
+
+export type SfvActivityType = 'match' | 'tournament';
+
+/** Official match format of an SFV category (template for a squad's format). */
+export type OfficialMatchFormat = Omit<PlayingMode, 'id' | 'isDefault' | 'origin'>;
+
+export interface SfvCategoryEntry {
+  activityType: SfvActivityType;
+  /** Absent for tournament-only categories. */
+  matchFormat?: OfficialMatchFormat;
+}
+
+export interface SfvCategoryCatalog {
+  version: string;
+  source: string;
+  categories: Partial<Record<GroupCategory, SfvCategoryEntry>>;
 }
 
 export interface Group {

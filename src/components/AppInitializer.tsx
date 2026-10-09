@@ -43,7 +43,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
-  const { selectGroup, initializeApp, loadGroups } = useStore();
+  const { selectGroup, initializeApp, loadGroups, loadSfvCatalog } = useStore();
   
   // Use ref to prevent duplicate initialization
   const initTriggered = useRef(false);
@@ -61,7 +61,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
       initTriggered.current = true;
 
       const initializeWithGroupSelection = async () => {
-        await loadGroups();
+        await Promise.all([loadGroups(), loadSfvCatalog()]);
 
         const groups = useStore.getState().groups;
         if (groups.length === 0) {

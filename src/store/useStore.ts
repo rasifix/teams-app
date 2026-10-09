@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode } from '../types';
+import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode, SfvCategoryCatalog } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import {
   getAllMembers,
@@ -30,7 +30,9 @@ import {
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
 import { selectEventMutationResult } from './selectors/eventMutationSelectors';
-import { selectMatchingPlayingMode, selectOfficialPlayingModeForCategory } from './selectors/groupCategorySelectors';
+import { selectMatchingPlayingMode } from './selectors/groupCategorySelectors';
+import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
+import { getSfvCategoryCatalog } from '../services/sfvService';
 
 export interface GroupMemberImportProgress {
   total: number;
@@ -242,8 +244,11 @@ interface AppState {
   
   // Initialization tracking
   isInitialized: boolean;
-  
-  // Actions
+
+  // SFV reference data (static, cached for the session)
+  sfvCatalog: SfvCategoryCatalog | null;
+  loadSfvCatalog: () => Promise<void>;
+
   loadGroups: () => Promise<void>;
   addGroup: (groupData: CreateGroupRequest) => Promise<Group | null>;
   configureGroupCategory: (category: GroupCategory | null) => Promise<boolean>;
@@ -340,6 +345,7 @@ export const useStore = create<AppState>()(
       events: [],
       shirtSets: [],
       isInitialized: false,
+      sfvCatalog: null,
       loading: {
         group: false,
         groups: false,
@@ -512,6 +518,20 @@ export const useStore = create<AppState>()(
         await loadData();
       },
       
+      loadSfvCatalog: async () => {
+        if (get().sfvCatalog) {
+          return;
+        }
+
+        try {
+          const sfvCatalog = await getSfvCategoryCatalog();
+          set({ sfvCatalog });
+        } catch (error) {
+          // The catalog only enriches category selection; the app works with the built-in fallback.
+          console.warn('Failed to load SFV category catalog:', error);
+        }
+      },
+
       clearAuthenticatedData: () => {
         clearSelectedGroupId();
         clearSelectedStatisticsPeriodId();
@@ -744,7 +764,7 @@ export const useStore = create<AppState>()(
 
         try {
           let updatedGroup = await updateGroupCategoryService(currentGroup.id, currentGroup.name, category);
-          const officialMode = selectOfficialPlayingModeForCategory(category);
+          const officialMode = selectOfficialMatchFormatForCategory(get().sfvCatalog, category);
 
           if (officialMode) {
             if (!updatedGroup.matchPlanningEnabled) {
@@ -1949,6 +1969,8 @@ export const useAppHasErrors = () => useStore((state) =>
 );
 
 export const useAppInitialized = () => useStore((state) => state.isInitialized);
+
+export const useSfvCatalog = () => useStore((state) => state.sfvCatalog);
 
 export const useGroup = () => useStore((state) => state.group);
 

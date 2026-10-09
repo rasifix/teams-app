@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateGroupRequest } from '../types';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
-import { GROUP_CATEGORIES } from '../store/selectors/groupCategorySelectors';
+import { useSfvCatalog } from '../store';
+import { selectSfvCategoryOptions } from '../store/selectors/sfvCatalogSelectors';
 
 interface AddGroupModalProps {
   isOpen: boolean;
@@ -21,12 +22,18 @@ export default function AddGroupModal({
   onSave,
 }: AddGroupModalProps) {
   const { t } = useTranslation();
+  const sfvCatalog = useSfvCatalog();
+  const categoryOptions = useMemo(() => selectSfvCategoryOptions(sfvCatalog), [sfvCatalog]);
   const [formData, setFormData] = useState<CreateGroupRequest>({
     name: '',
     description: '',
     club: '',
     category: null,
   });
+  const selectedOption = useMemo(
+    () => categoryOptions.find((option) => option.code === formData.category) ?? null,
+    [categoryOptions, formData.category]
+  );
   const [nameError, setNameError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -131,11 +138,23 @@ export default function AddGroupModal({
                 className="form-input"
               >
                 <option value="">{t('groupModal.fields.noCategory')}</option>
-                {GROUP_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>{category}</option>
+                {categoryOptions.map((option) => (
+                  <option key={option.code} value={option.code}>{option.code}</option>
                 ))}
               </select>
               <p className="mt-1 text-xs text-gray-500">{t('groupModal.categoryHint')}</p>
+              {selectedOption?.matchFormat && (
+                <p className="mt-1 text-xs text-orange-700">
+                  {t('groupModal.officialFormatHint', {
+                    format: selectedOption.matchFormat.name,
+                    min: selectedOption.matchFormat.minPlayersPerTeam ?? '-',
+                    max: selectedOption.matchFormat.maxPlayersPerTeam ?? '-',
+                  })}
+                </p>
+              )}
+              {selectedOption?.activityType === 'tournament' && !selectedOption.matchFormat && (
+                <p className="mt-1 text-xs text-gray-600">{t('groupModal.tournamentOnlyHint')}</p>
+              )}
             </div>
 
             <div>

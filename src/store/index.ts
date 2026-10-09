@@ -9,6 +9,7 @@ export {
   useAppErrors,
   useAppHasErrors,
   useAppInitialized,
+  useSfvCatalog,
   useGroup,
   useGroupPeriods,
   useGroups,

@@ -74,13 +74,13 @@ components, typecheck and tests green before ticking a task.
 
 ## Phase 2: SFV catalog and match formats
 
-- [ ] F2.1 Types for the catalog and extended match format fields (`playersOnField`, `minPlayersPerTeam`, `maxPlayersPerTeam`, `origin`)
-- [ ] F2.2 `sfvService` + store slice, loaded in `AppInitializer` (static data, cache for the session)
-- [ ] F2.3 Selector for category options and the suggested format/activity type of a category (tests: tournament-only category, unknown code, missing catalog)
-- [ ] F2.4 Squad creation modal: category picker driven by the catalog; hint that official formats are created for the chosen category; tournament-only categories explained
-- [ ] F2.5 Match format modal: new fields, "official" badge when `origin` is set, validation min ≤ max
-- [ ] F2.6 Selector for default activity limits from the chosen match format (fallbacks for legacy formats without the new fields)
-- [ ] F2.7 i18n en + de
+- [x] F2.1 Types for the catalog and extended match format fields (`playersOnField`, `minPlayersPerTeam`, `maxPlayersPerTeam`, `origin`)
+- [x] F2.2 `sfvService` + store slice, loaded in `AppInitializer` (static data, cache for the session)
+- [x] F2.3 Selector for category options and the suggested format/activity type of a category (tests: tournament-only category, unknown code, missing catalog)
+- [x] F2.4 Squad creation modal: category picker driven by the catalog; hint that official formats are created for the chosen category; tournament-only categories explained
+- [x] F2.5 Match format modal: new fields, "official" badge when `origin` is set, validation min ≤ max
+- [x] F2.6 Selector for default activity limits from the chosen match format (fallbacks for legacy formats without the new fields)
+- [x] F2.7 i18n en + de
 
 ## Phase 3: activities
 
@@ -160,3 +160,4 @@ Step B: migrate the model screen by screen to `Activity`
 | 2026-10-09 | Plan created against the expanded backend |
 | 2026-10-09 | F0.1/F0.3/F0.4, F1.1, F1.2 done; F1.3 deferred, F1.4 (manual) open |
 | 2026-10-09 | F0.2 done: model docs aligned with the API |
+| 2026-10-09 | F1.3 resolved (email is identity, `userId` removed); phase 2 done (F2.1–F2.7); F2.6 selector wired in phase 3 |

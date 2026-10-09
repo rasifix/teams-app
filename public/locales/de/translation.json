@@ -202,6 +202,8 @@
       "descriptionOptional": "Beschreibung (optional)"
     },
     "categoryHint": "Für D7 bis A wird der offizielle Spielmodus automatisch erstellt und als Standard festgelegt.",
+    "officialFormatHint": "Offizielles Format: {{format}}, {{min}}–{{max}} Spieler pro Team.",
+    "tournamentOnlyHint": "Diese Kategorie spielt nur Turniere; es wird kein offizielles Spielformat erstellt.",
     "placeholders": {
       "groupName": "Gruppenname eingeben",
       "club": "Verein eingeben",
@@ -756,12 +758,15 @@
       "saving": "Wird gespeichert...",
       "saveFailed": "Die Kategorie konnte nicht gespeichert werden. Bitte versuche es erneut.",
       "officialModeHint": "Der offizielle Spielmodus {{mode}} wird bei Bedarf erstellt und als Standard festgelegt.",
-      "ff14Hint": "Der SFV definiert FF14 sowohl für 7er- als auch für 9er-Fussball. Der Spielmodus muss deshalb manuell gewählt werden."
+      "ff14Hint": "Der SFV definiert FF14 sowohl für 7er- als auch für 9er-Fussball. Der Spielmodus muss deshalb manuell gewählt werden.",
+      "tournamentOnlyHint": "Diese Kategorie spielt nur Turniere und hat kein offizielles Spielformat."
     },
     "playingModes": {
       "title": "Spielmodi",
       "emptyState": "Noch keine Spielmodi. Füge einen hinzu, um zu starten.",
       "defaultBadge": "Standard",
+      "officialBadge": "Offiziell",
+      "players": "{{onField}} auf dem Feld, {{min}}–{{max}} Spieler pro Team",
       "summary": "{{periods}} Abschnitte x {{minutes}} Min.",
       "minimumPeriods": "Minimum pro Spieler: {{count}} Abschnitte",
       "setDefault": "Als Standard festlegen",
@@ -782,10 +787,15 @@
       "name": "Name",
       "numberOfPeriods": "Anzahl Abschnitte",
       "periodLengthMinutes": "Abschnittslänge (Minuten)",
-      "minimumPeriodsPerPlayer": "Mindestanzahl Abschnitte pro Spieler"
+      "minimumPeriodsPerPlayer": "Mindestanzahl Abschnitte pro Spieler",
+      "playersOnField": "Spieler auf dem Feld (optional)",
+      "minPlayersPerTeam": "Min. Spieler pro Team",
+      "maxPlayersPerTeam": "Max. Spieler pro Team"
     },
+    "officialNotice": "Dies ist ein offizielles SFV-Format. Änderungen gelten nur für dein Team.",
     "hints": {
-      "minimumPeriodsPerPlayer": "Mit 0 wird keine Mindestanzahl vorausgesetzt."
+      "minimumPeriodsPerPlayer": "Mit 0 wird keine Mindestanzahl vorausgesetzt.",
+      "playerLimits": "Wird als Standard-Spielerlimit für Spiele mit diesem Format verwendet."
     },
     "placeholders": {
       "name": "z.B. 4x20"
@@ -795,6 +805,8 @@
       "numberOfPeriodsMin": "Die Anzahl der Abschnitte muss mindestens 1 sein",
       "periodLengthMin": "Die Abschnittslänge muss mindestens 1 Minute betragen",
       "minimumPeriodsRange": "Die Mindestanzahl pro Spieler muss zwischen 0 und {{total}} liegen.",
+      "playersMin": "Spielerzahlen müssen mindestens 1 sein",
+      "playerLimitsRange": "Die minimale Spielerzahl darf die maximale nicht überschreiten.",
       "saveFailed": "Speichern des Spielmodus fehlgeschlagen. Bitte versuche es erneut."
     }
   },

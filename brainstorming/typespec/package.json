@@ -1,0 +1,11 @@
+{
+  "name": "teams-domain-typespec-trial",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "tsp compile main.tsp --no-emit"
+  },
+  "dependencies": {
+    "@typespec/compiler": "latest"
+  }
+}

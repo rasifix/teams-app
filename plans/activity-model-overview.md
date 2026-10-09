@@ -27,7 +27,7 @@ Legacy paths and fields are removed only in the contract phase, after the fronte
 | 1 | Aliases / transport switch, `birthDate` canonical | [x] | [ ] |
 | 2 | SFV catalog + extended MatchFormat | [x] | [ ] |
 | 3 | Activities (match/tournament), invitation split | [x] | [ ] |
-| 4 | Attendance | [x] | [ ] |
+| 4 | Attendance | [x] | [x] |
 | 5 | Tasks + signups | [x] | [ ] |
 | 6 | Training + social | [x] | [ ] |
 | 7 / C | Contract: renames, remove legacy paths and fields, specs | [ ] | [ ] |

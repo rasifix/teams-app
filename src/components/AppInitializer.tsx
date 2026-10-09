@@ -132,7 +132,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
           <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('appInitializer.failedToLoadApplication')}</h2>
           <div className="text-left text-sm text-gray-600 mb-4">
             {errors.players && <p>• {t('domain.players')}: {errors.players}</p>}
-            {errors.events && <p>• {t('domain.events')}: {errors.events}</p>}
+            {errors.activities && <p>• {t('domain.events')}: {errors.activities}</p>}
             {errors.trainers && <p>• {t('domain.trainers')}: {errors.trainers}</p>}
             {errors.shirtSets && <p>• {t('domain.shirtSets')}: {errors.shirtSets}</p>}
           </div>

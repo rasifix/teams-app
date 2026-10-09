@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEvents, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup, useAppInitialized } from '../store';
+import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
@@ -21,6 +21,7 @@ import {
   selectPlayerEventHistory,
 } from '../store/selectors/playerDetailSelectors';
 import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
+import { getActivityDate } from '../store/selectors/activitySelectors';
 
 export default function PlayerDetailPage() {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ export default function PlayerDetailPage() {
   const navigate = useNavigate();
   
   // Use store hooks
-  const { events } = useEvents();
+  const { activities: events } = useActivities();
   const { players, updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const group = useGroup();
@@ -392,7 +393,7 @@ export default function PlayerDetailPage() {
                   >
                     <div className="flex items-start gap-4">
                       {/* Date column */}
-                      <DateColumn date={event.date} />
+                      <DateColumn date={getActivityDate(event)} />
                       
                       {/* Content and status */}
                       <div className="flex justify-between items-center flex-1 min-w-0">

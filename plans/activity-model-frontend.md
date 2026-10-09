@@ -85,31 +85,31 @@ components, typecheck and tests green before ticking a task.
 ## Phase 3: activities
 
 Step A: transport and compatibility mapper (no UI change)
-- [ ] F3.1 Types: `Activity` (discriminated by `kind`), invitation (`response` + `declineReason`), attendance, task, training group/unit, team with `responsiblePersonIds`
-- [ ] F3.2 `activityService` for `/activities` (list, create, update, delete, invitations, selection, selection/sent, teams)
-- [ ] F3.3 Mapper `activityToEvent` and payload mapper back; decision on invitation status mapping (`declineReason ?? response`) so existing selectors keep working; tests for the mappers (incl. missing optional fields)
-- [ ] F3.4 Extract the events/activities slice out of `useStore.ts` into its own module; store reads/writes through `activityService` and exposes the same `Event` shape (match + tournament only; training/social are filtered out here)
-- [ ] F3.5 Verify all existing store, selector and page behavior unchanged (tests + manual flows at 375px)
+- [x] F3.1 Types: `Activity` (discriminated by `kind`), invitation (`response` + `declineReason`), attendance, task, training group/unit, team with `responsiblePersonIds`
+- [x] F3.2 `activityService` for `/activities` (list, create, update, delete, invitations, selection, selection/sent, teams)
+- [x] F3.3 Mapper `activityToEvent` and payload mapper back; decision on invitation status mapping (`declineReason ?? response`) so existing selectors keep working; tests for the mappers (incl. missing optional fields)
+- [x] F3.4 Extract the events/activities slice out of `useStore.ts` into its own module; store reads/writes through `activityService` and exposes the same `Event` shape (match + tournament only; training/social are filtered out here)
+- [ ] F3.5 Verify all existing store, selector and page behavior unchanged (tests + manual flows at 375px) (automated part green; manual flows at 375px still open)
 
 Step B: migrate the model screen by screen to `Activity`
-- [ ] F3.6 Store exposes `activities` (all kinds) sorted by `startsAt`; hook `useActivities`; selectors for upcoming/past (`isCompleted`), per kind, selection-sent state, invitation counts and decline reasons, player history rows (with tests)
-- [ ] F3.7 Create/edit modals: kind picker (match/tournament in this step), match asks opponent + format, tournament asks number of teams, limits prefilled from the format, start date + time instead of date only
-- [ ] F3.8 `EventsPage`, `EventCard`, `UpcomingEventCard`: kind, start time, location
-- [ ] F3.9 `EventDetailPage`: match shows its single team inline; tournament keeps the team list
-- [ ] F3.10 `TeamCard`, `EditTeamModal`: responsible persons (one or more, any squad member) instead of `trainerId`; start time and location as optional overrides, hidden for match
-- [ ] F3.11 Invitations: accept/decline with optional reason (sick/injured/unavailable); guardian flow unchanged (`InvitePlayersModal`, `PlayerInvitationsCard`)
-- [ ] F3.12 Selection and lineup (`TeamPlayerSelectionPage`, `TeamLineupPage`, `MatchPlanningPage`): lineup for match only; `selectionSentAt` replaces team status
-- [ ] F3.13 Shirts, print summary and statistics pages (`AssignShirtsModal`, `TeamPrintSummary`, `StatisticsPage`, `PlayerStatisticsPage`, `TeamSelectionStatisticsPage`) moved to `Activity`; selectors migrated with updated tests
-- [ ] F3.14 Remove the `activityToEvent` compatibility layer and the old `Event` type once nothing uses them
-- [ ] F3.15 i18n en + de; manual test of every flow at 375px
+- [x] F3.6 Store exposes `activities` (all kinds) sorted by `startsAt`; hook `useActivities`; selectors for upcoming/past (`isCompleted`), per kind, selection-sent state, invitation counts and decline reasons, player history rows (with tests)
+- [x] F3.7 Create/edit modals: kind picker (match/tournament in this step), match asks opponent + format, tournament asks number of teams, limits prefilled from the format, start date + time instead of date only
+- [x] F3.8 `EventsPage`, `EventCard`, `UpcomingEventCard`: kind, start time, location
+- [x] F3.9 `EventDetailPage`: match shows its single team inline; tournament keeps the team list
+- [x] F3.10 `TeamCard`, `EditTeamModal`: responsible persons (one or more, any squad member) instead of `trainerId`; start time and location as optional overrides, hidden for match
+- [x] F3.11 Invitations: accept/decline with optional reason (sick/injured/unavailable); guardian flow unchanged (`InvitePlayersModal`, `PlayerInvitationsCard`)
+- [x] F3.12 Selection and lineup (`TeamPlayerSelectionPage`, `TeamLineupPage`, `MatchPlanningPage`): lineup for match only; `selectionSentAt` replaces team status
+- [x] F3.13 Shirts, print summary and statistics pages (`AssignShirtsModal`, `TeamPrintSummary`, `StatisticsPage`, `PlayerStatisticsPage`, `TeamSelectionStatisticsPage`) moved to `Activity`; selectors migrated with updated tests
+- [x] F3.14 Remove the `activityToEvent` compatibility layer and the old `Event` type once nothing uses them
+- [ ] F3.15 i18n en + de; manual test of every flow at 375px (i18n done; manual 375px test still open)
 
 ## Phase 4: attendance (admin/trainer only)
 
-- [ ] F4.1 Store mutation and service call for `PUT /attendance` (bulk) and per person
-- [ ] F4.2 Selector for attendance rows and counts, available only after `startsAt` (tests)
-- [ ] F4.3 Attendance section on past activities (present/absent/excused per invitee); hidden for non-privileged roles
-- [ ] F4.4 Rename `EventAttendancePage` to avoid confusion (it shows invitations and selection, not actual attendance)
-- [ ] F4.5 i18n
+- [x] F4.1 Store mutation and service call for `PUT /attendance` (bulk) and per person
+- [x] F4.2 Selector for attendance rows and counts, available only after `startsAt` (tests)
+- [x] F4.3 Attendance section on past activities (present/absent/excused per invitee); hidden for non-privileged roles
+- [x] F4.4 Rename `EventAttendancePage` to avoid confusion (it shows invitations and selection, not actual attendance)
+- [x] F4.5 i18n
 
 ## Phase 5: tasks (admin/trainer manage, adult members sign up)
 
@@ -161,3 +161,6 @@ Step B: migrate the model screen by screen to `Activity`
 | 2026-10-09 | F0.1/F0.3/F0.4, F1.1, F1.2 done; F1.3 deferred, F1.4 (manual) open |
 | 2026-10-09 | F0.2 done: model docs aligned with the API |
 | 2026-10-09 | F1.3 resolved (email is identity, `userId` removed); phase 2 done (F2.1–F2.7); F2.6 selector wired in phase 3 |
+| 2026-10-09 | Phase 3 step A: F3.1–F3.4 done (`Activity` types, `activityService`, `activityMapper`, event-shaped `eventService` facade, `eventActions` module); F3.5 manual check open |
+| 2026-10-09 | Phase 3 step B: F3.6–F3.14 done (store holds `activities`, `Event` type and mapper removed, screens migrated, activity selectors with tests); Q6 assumed admin/trainer only, Q8 assumed fairness stats count match/tournament only; F3.5/F3.15 manual 375px checks open; no UI yet for `markActivitySelectionSent` |
+| 2026-10-09 | Phase 4: attendance recorded on Event Detail (admin/trainer, after start) with selector + tests; `PUT /teams` response fix; statistics "Event Attendance" renamed to "Event Participation"; specs updated (event, invitation, UC-EV-010, UC-ST-002); manual 375px check open |

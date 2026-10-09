@@ -68,6 +68,17 @@ Event level.
 - An Event can only reference a Playing Mode when its Group has match
 	planning enabled.
 
+## Attendance
+
+- An Event can carry one attendance record per Group member
+  (`present`, `absent` or `excused`), stored as `attendance` on the Event.
+- Attendance is independent of invitations and team selection: it records who
+  actually took part, so it may differ from who accepted or was selected.
+- Attendance can only be recorded after the Event has started.
+- Only admins and trainers can record or change attendance; guardians and
+  players neither see nor edit it.
+- Each recorded person must be a member of the Event's Group.
+
 ## Scope Boundaries
 
 The Event does:

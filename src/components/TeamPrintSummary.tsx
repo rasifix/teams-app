@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/dateFormatter';
-import type { Event, Team, Player, Trainer, ShirtSet } from '../types';
-import { selectTeamAssigneeMap } from '../store/selectors/teamTrainerSelectors';
+import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
+import { getActivityDate, getActivityTime } from '../store/selectors/activitySelectors';
+import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 
 interface TeamPrintSummaryProps {
-  event: Event;
+  event: Activity;
   teams: Team[];
   players: Player[];
   trainers: Trainer[];
@@ -28,11 +29,6 @@ export default function TeamPrintSummary({
 }: TeamPrintSummaryProps) {
   const { t } = useTranslation();
   const [format, setFormat] = useState<PrintFormat>('selection');
-  const assigneesById = useMemo(
-    () => selectTeamAssigneeMap(trainers, players),
-    [trainers, players]
-  );
-  
   if (!isOpen) return null;
 
   const formatBirthDate = (dateString: string): string => {
@@ -110,8 +106,8 @@ export default function TeamPrintSummary({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
-              const assignee = team.trainerId ? assigneesById.get(team.trainerId) : undefined;
-              const resolvedLocation = team.location?.trim() || event.location?.trim();
+              const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
+              const resolvedLocation = event.kind === 'match' ? event.location?.trim() : team.location?.trim() || event.location?.trim();
               const playersData = selectedPlayers
                 .map(playerId => players.find(p => p.id === playerId))
                 .filter(Boolean)
@@ -130,12 +126,12 @@ export default function TeamPrintSummary({
                       {format === 'organizer' && club ? `${club} - ` : ''} {team.name}
                     </h1>
                     <div className="text-sm text-gray-600">
-                      <p>📅 {formatDate(event.date)} {format === 'selection' && `🕐 ${team.startTime}`}</p>
+                      <p>📅 {formatDate(getActivityDate(event))} {format === 'selection' && `🕐 ${event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}`}</p>
                       {resolvedLocation && format === 'selection' && (
                         <p>📍 {resolvedLocation}</p>
                       )}
-                      {assignee && (
-                        <p className="text-blue-600 font-medium">👤 {assignee.firstName} {assignee.lastName}</p>
+                      {responsiblePeople.length > 0 && (
+                        <p className="text-blue-600 font-medium">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
                       )}
                     </div>
                   </div>

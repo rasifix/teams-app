@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, Invitation, Player, Team } from '../../types';
+import type { Activity, ActivityInvitation, Player, Team } from '../../types';
 import {
   isFutureEvent,
   selectInactiveFutureEventPlayerIds,
@@ -18,11 +18,11 @@ function player(overrides: Partial<Player>): Player {
   };
 }
 
-function invitation(overrides: Partial<Invitation>): Invitation {
+function invitation(overrides: Partial<ActivityInvitation>): ActivityInvitation {
   return {
     id: 'i-default',
     playerId: 'p-default',
-    status: 'open',
+    response: 'open',
     ...overrides,
   };
 }
@@ -38,11 +38,13 @@ function team(overrides: Partial<Team>): Team {
   };
 }
 
-function event(overrides: Partial<Event>): Event {
+function event(overrides: Partial<Activity>): Activity {
   return {
     id: 'e-default',
-    name: 'Event',
-    date: '2026-06-01',
+    squadId: 'squad-1',
+    kind: 'match',
+    name: 'Activity',
+    startsAt: '2026-06-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
     minPlayersPerTeam: 8,
     teams: [],
@@ -78,10 +80,10 @@ describe('event inactive player selectors', () => {
     ];
 
     const futureEvent = event({
-      date: '2026-06-10',
+      startsAt: '2026-06-10T10:00:00.000Z',
       invitations: [
-        invitation({ id: 'i1', playerId: 'p1', status: 'open' }),
-        invitation({ id: 'i2', playerId: 'p3', status: 'accepted' }),
+        invitation({ id: 'i1', playerId: 'p1', response: 'open' }),
+        invitation({ id: 'i2', playerId: 'p3', response: 'accepted' }),
       ],
       teams: [team({ id: 't1', selectedPlayers: ['p2', 'p3'] })],
     });
@@ -98,7 +100,7 @@ describe('event inactive player selectors', () => {
   it('returns empty set for non-future events', () => {
     const players: Player[] = [player({ id: 'p1', status: 'inactive' })];
     const pastOrTodayEvent = event({
-      date: '2026-05-01',
+      startsAt: '2026-05-01T10:00:00.000Z',
       invitations: [invitation({ id: 'i1', playerId: 'p1' })],
       teams: [team({ id: 't1', selectedPlayers: ['p1'] })],
     });

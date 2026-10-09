@@ -61,7 +61,8 @@
     "teamCount_one": "{{count}} Team",
     "teamCount_other": "{{count}} Teams",
     "playersMarkedAs": "Spieler mit Status {{status}}",
-    "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden"
+    "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden",
+    "invitationCounts": "Einladungszahlen"
   },
   "players": {
     "eventHistory": {
@@ -143,13 +144,14 @@
   },
   "teamModal": {
     "editTitle": "Team bearbeiten",
-    "noTrainerAssigned": "Kein Trainer zugewiesen",
+    "noTrainerAssigned": "Keine verantwortliche Person zugewiesen",
     "fields": {
       "teamName": "Teamname",
       "strength": "Stärke",
       "startTime": "Startzeit",
       "trainerAssignee": "Trainer / Erziehungsberechtigte",
-      "locationOptional": "Team-Standort (optional)"
+      "locationOptional": "Team-Standort (optional)",
+      "responsiblePeople": "Verantwortliche Personen"
     },
     "placeholders": {
       "teamName": "Teamname eingeben",
@@ -159,7 +161,9 @@
       "highest": "1 - Höchste 🔥🔥🔥",
       "medium": "2 - Mittel 🔥🔥",
       "lowest": "3 - Niedrigste 🔥"
-    }
+    },
+    "responsiblePeopleHint": "Die zuerst ausgewählte Person ist die Leitung.",
+    "leadPerson": "Leitung"
   },
   "assignShirts": {
     "title": "Trikots dem Team zuweisen",
@@ -526,7 +530,8 @@
     "inactiveIndicator": "INAKTIV",
     "inactiveIndicatorTooltip": "Inaktiver Spieler ist in diesem zukünftigen Termin noch zugewiesen.",
     "removePlayer": "Spieler entfernen",
-    "unknownPlayer": "Unbekannter Spieler"
+    "unknownPlayer": "Unbekannter Spieler",
+    "assignedShirtsCount": "{{count}} zugewiesen"
   },
   "invitePlayers": {
     "title": "Spieler einladen",
@@ -571,7 +576,7 @@
       "acceptanceRate": "Zusagequote",
       "selectionRate": "Selektionsquote"
     },
-    "eventAttendance": {
+    "eventParticipation": {
       "emptyState": "Keine Daten verfügbar. Füge Spieler und Termine hinzu, um die Teilnahmematrix zu sehen."
     },
     "teamSelections": {
@@ -622,7 +627,7 @@
     },
     "tabs": {
       "playerStatistics": "Spielerstatistiken",
-      "eventAttendance": "Event-Teilnahme",
+      "eventParticipation": "Event-Teilnahme",
       "teamSelections": "Teamauswahlen"
     }
   },
@@ -874,5 +879,38 @@
     "unsavedChangesMessage": "Möchtest du die Änderungen an der Aufstellung vor dem Verlassen speichern?",
     "discardChanges": "Verwerfen und verlassen",
     "saveAndLeave": "Speichern und verlassen"
+  },
+  "activity": {
+    "kinds": {
+      "match": "Spiel",
+      "tournament": "Turnier"
+    },
+    "fields": {
+      "kind": "Terminart",
+      "opponent": "Gegner",
+      "matchFormat": "Spielformat",
+      "startTime": "Startzeit",
+      "declineReason": "Absagegrund"
+    },
+    "declineReasons": {
+      "injured": "Verletzt",
+      "sick": "Krank",
+      "unavailable": "Abwesend",
+      "unspecified": "Kein Grund angegeben"
+    },
+    "declinedCount": "Abgesagt: {{count}}",
+    "selectPlayers": "Spieler auswählen",
+    "noTeamsLegacy": "Für diesen Termin sind keine Teams eingerichtet."
+  },
+  "attendance": {
+    "title": "Anwesenheit",
+    "notStarted": "Die Anwesenheit kann erfasst werden, sobald die Aktivität begonnen hat.",
+    "empty": "Keine Spieler für die Anwesenheitserfassung.",
+    "unrecorded": "Nicht erfasst",
+    "status": {
+      "present": "Anwesend",
+      "absent": "Abwesend",
+      "excused": "Entschuldigt"
+    }
   }
 }

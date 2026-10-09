@@ -1,227 +1,154 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMatchPlanning } from '../store';
+import { useGroupPlayingModes } from '../store';
+import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { selectDefaultPlayingMode } from '../store/selectors/matchPlanningSelectors';
+import { toStartsAt } from '../store/selectors/activitySelectors';
+import type { ActivityKind, ActivityPayload, Team } from '../types';
+import Button from './ui/Button';
+import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 
 interface AddEventModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (event: { name: string; date: string; startTime: string; numberOfTeams: number; maxPlayersPerTeam: number; minPlayersPerTeam: number; location?: string; playingModeId?: string | null }) => void;
+  onAdd: (activity: ActivityPayload) => void;
 }
+
+const initialKind: ActivityKind = 'match';
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
   const { t } = useTranslation();
-  const { matchPlanningEnabled, playingModes } = useMatchPlanning();
+  const playingModes = useGroupPlayingModes();
+  const defaultPlayingMode = selectDefaultPlayingMode(playingModes);
+  const defaultLimits = selectActivityFormConfiguration('match', playingModes, defaultPlayingMode?.id).defaultLimits;
+  const [kind, setKind] = useState<ActivityKind>(initialKind);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [location, setLocation] = useState('');
+  const [opponentName, setOpponentName] = useState('');
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(6);
-  const defaultPlayingMode = selectDefaultPlayingMode(playingModes);
-  const [playingModeId, setPlayingModeId] = useState<string>(defaultPlayingMode?.id ?? '');
+  const [playingModeId, setPlayingModeId] = useState(defaultPlayingMode?.id ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const config = selectActivityFormConfiguration(kind, playingModes, playingModeId);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (config.defaultLimits) {
+      setMinPlayersPerTeam(config.defaultLimits.minPlayersPerTeam);
+      setMaxPlayersPerTeam(config.defaultLimits.maxPlayersPerTeam);
+    }
+  // Only respond to an explicit selection change, not a newly allocated config object.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind, playingModeId]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const submittedPlayingModeId = new FormData(e.currentTarget).get('playingModeId');
-    
-    if (!name.trim() || !date || !startTime) {
+  useEffect(() => {
+    if (!isOpen) return;
+    setError(null);
+    setKind(initialKind);
+    setName('');
+    setDate('');
+    setStartTime('');
+    setLocation('');
+    setOpponentName('');
+    setNumberOfTeams(1);
+    setMinPlayersPerTeam(defaultLimits?.minPlayersPerTeam ?? 6);
+    setMaxPlayersPerTeam(defaultLimits?.maxPlayersPerTeam ?? 9);
+    setPlayingModeId(defaultPlayingMode?.id ?? '');
+  }, [isOpen, defaultPlayingMode, defaultLimits?.minPlayersPerTeam, defaultLimits?.maxPlayersPerTeam]);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    if (minPlayersPerTeam < 1 || minPlayersPerTeam > maxPlayersPerTeam) {
+      setError(t('editEventModal.errors.minGreaterThanMax'));
       return;
     }
+    const teamCount = config.fixedTeamCount ?? Math.max(1, numberOfTeams);
+    const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
+      id: crypto.randomUUID(),
+      name: `${t('domain.team')} ${index + 1}`,
+      strength: 2,
+      startTime,
+      selectedPlayers: [],
+    }));
 
     onAdd({
+      kind,
       name: name.trim(),
-      date,
-      startTime,
-      numberOfTeams,
-      maxPlayersPerTeam,
-      minPlayersPerTeam,
+      startsAt: toStartsAt(date, startTime),
       location: location.trim() || undefined,
-      playingModeId: matchPlanningEnabled
-        ? (typeof submittedPlayingModeId === 'string' && submittedPlayingModeId ? submittedPlayingModeId : null)
-        : undefined,
+      opponentName: config.showOpponent ? opponentName.trim() || undefined : undefined,
+      matchFormatId: config.showMatchFormat ? playingModeId || null : undefined,
+      minPlayersPerTeam,
+      maxPlayersPerTeam,
+      teams,
+      invitations: [],
     });
-
-    // Reset form
-    setName('');
-    setDate('');
-    setStartTime('');
-    setLocation('');
-    setNumberOfTeams(1);
-    setMaxPlayersPerTeam(9);
-    setMinPlayersPerTeam(6);
-    setPlayingModeId(defaultPlayingMode?.id ?? '');
-    onClose();
-  };
-
-  const handleClose = () => {
-    // Reset form
-    setName('');
-    setDate('');
-    setStartTime('');
-    setLocation('');
-    setNumberOfTeams(1);
-    setMaxPlayersPerTeam(9);
-    setMinPlayersPerTeam(6);
-    setPlayingModeId(defaultPlayingMode?.id ?? '');
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('eventModal.addTitle')}</h2>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="event-name" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.eventNameRequired')}
-                </label>
-                <input
-                  id="event-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder={t('eventModal.placeholders.eventName')}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="event-date" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.dateRequired')}
-                </label>
-                <input
-                  id="event-date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="event-time" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.startTimeRequired')}
-                </label>
-                <input
-                  id="event-time"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="event-location" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.location')}
-                </label>
-                <input
-                  id="event-location"
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder={t('eventModal.placeholders.location')}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="num-teams" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.numberOfTeamsRequired')}
-                </label>
-                <input
-                  id="num-teams"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={numberOfTeams}
-                  onChange={(e) => setNumberOfTeams(parseInt(e.target.value) || 1)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="max-players" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.maxPlayersPerTeamRequired')}
-                </label>
-                <input
-                  id="max-players"
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={maxPlayersPerTeam}
-                  onChange={(e) => setMaxPlayersPerTeam(parseInt(e.target.value) || 11)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="min-players" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('eventModal.fields.minPlayersPerTeamRequired')}
-                </label>
-                <input
-                  id="min-players"
-                  type="number"
-                  min="1"
-                  max={maxPlayersPerTeam}
-                  value={minPlayersPerTeam}
-                  onChange={(e) => setMinPlayersPerTeam(parseInt(e.target.value) || 7)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                />
-              </div>
-
-              {matchPlanningEnabled && (
-                <div>
-                  <label htmlFor="event-playing-mode" className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('eventModal.fields.playingMode')}
-                  </label>
-                  <select
-                    id="event-playing-mode"
-                    name="playingModeId"
-                    value={playingModeId}
-                    onChange={(e) => setPlayingModeId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="">{t('eventModal.fields.noPlayingMode')}</option>
-                    {playingModes.map((mode) => (
-                      <option key={mode.id} value={mode.id}>{mode.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalHeader><ModalTitle>{t('eventModal.addTitle')}</ModalTitle></ModalHeader>
+      <form onSubmit={handleSubmit}>
+        <ModalBody>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="activity-kind" className="form-label">{t('activity.fields.kind')}</label>
+              <select id="activity-kind" value={kind} onChange={(event) => setKind(event.target.value as ActivityKind)} className="form-input">
+                <option value="match">{t('activity.kinds.match')}</option>
+                <option value="tournament">{t('activity.kinds.tournament')}</option>
+              </select>
             </div>
-
-            <div className="mt-6 flex gap-3">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
-              >
-                {t('common.actions.cancel')}
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium"
-              >
-                {t('eventModal.createAction')}
-              </button>
+            <div>
+              <label htmlFor="event-name" className="form-label">{t('eventModal.fields.eventNameRequired')}</label>
+              <input id="event-name" type="text" value={name} onChange={(event) => setName(event.target.value)} className="form-input" required autoFocus />
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            {config.showOpponent && <div>
+              <label htmlFor="activity-opponent" className="form-label">{t('activity.fields.opponent')}</label>
+              <input id="activity-opponent" type="text" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} className="form-input" />
+            </div>}
+            {config.showMatchFormat && <div>
+              <label htmlFor="activity-format" className="form-label">{t('activity.fields.matchFormat')}</label>
+              <select id="activity-format" value={playingModeId} onChange={(event) => setPlayingModeId(event.target.value)} className="form-input">
+                <option value="">{t('eventModal.fields.noPlayingMode')}</option>
+                {playingModes.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
+              </select>
+            </div>}
+            {config.showTeamCount && <div>
+              <label htmlFor="activity-teams" className="form-label">{t('eventModal.fields.numberOfTeamsRequired')}</label>
+              <input id="activity-teams" type="number" min={1} value={numberOfTeams} onChange={(event) => setNumberOfTeams(Math.max(1, Number(event.target.value) || 1))} className="form-input" required />
+            </div>}
+            <div>
+              <label htmlFor="event-date" className="form-label">{t('eventModal.fields.dateRequired')}</label>
+              <input id="event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} className="form-input" required />
+            </div>
+            <div>
+              <label htmlFor="event-time" className="form-label">{t('activity.fields.startTime')}</label>
+              <input id="event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="form-input" required />
+            </div>
+            <div>
+              <label htmlFor="event-location" className="form-label">{t('eventModal.fields.location')}</label>
+              <input id="event-location" type="text" value={location} onChange={(event) => setLocation(event.target.value)} className="form-input" />
+            </div>
+            <div>
+              <label htmlFor="max-players" className="form-label">{t('eventModal.fields.maxPlayersPerTeamRequired')}</label>
+              <input id="max-players" type="number" min={1} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} className="form-input" required />
+            </div>
+            <div>
+              <label htmlFor="min-players" className="form-label">{t('eventModal.fields.minPlayersPerTeamRequired')}</label>
+              <input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} className="form-input" required />
+            </div>
+            {error && <div role="alert" className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button type="button" variant="secondary" onClick={onClose}>{t('common.actions.cancel')}</Button>
+          <Button type="submit" variant="primary">{t('common.actions.add')}</Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

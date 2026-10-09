@@ -1,6 +1,6 @@
-import type { Event } from '../../types';
-import type { InvitationStatus, Player } from '../../types';
+import type { Activity, InvitationStatus, Player } from '../../types';
 import type { User } from '../../services/authService';
+import { getActivityDate, getInvitationStatus } from './activitySelectors';
 
 export interface GuardianChildInvitationItem {
   eventId: string;
@@ -26,31 +26,26 @@ export interface GuardianEventInvitationAction {
   status: InvitationStatus;
 }
 
-export interface UpcomingEventWithGuardianInvitations extends Event {
+export interface UpcomingEventWithGuardianInvitations extends Activity {
   guardianInvitations: GuardianEventInvitationAction[];
 }
 
 export const selectUpcomingEvents = (
-  events: Event[],
+  activities: Activity[],
   now: Date = new Date(),
   limit?: number,
-): Event[] => {
+): Activity[] => {
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
-
-  const upcoming = events
-    .filter((event) => {
-      const eventDate = new Date(event.date);
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate >= today;
+  const upcoming = activities
+    .filter((activity) => {
+      const date = new Date(getActivityDate(activity));
+      date.setHours(0, 0, 0, 0);
+      return date >= today;
     })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime());
 
-  if (typeof limit === 'number' && limit >= 0) {
-    return upcoming.slice(0, limit);
-  }
-
-  return upcoming;
+  return typeof limit === 'number' && limit >= 0 ? upcoming.slice(0, limit) : upcoming;
 };
 
 function normalizeEmail(email: string | undefined): string {
@@ -59,21 +54,16 @@ function normalizeEmail(email: string | undefined): string {
 
 function isGuardianOfPlayer(player: Player, user: User): boolean {
   const normalizedUserEmail = normalizeEmail(user.email);
-
-  return (player.guardians || []).some((guardian) => (
-    guardian.id === user.id ||
-    (normalizedUserEmail !== '' && normalizeEmail(guardian.email) === normalizedUserEmail)
-  ));
+  return (player.guardians || []).some((guardian) =>
+    guardian.id === user.id || (normalizedUserEmail !== '' && normalizeEmail(guardian.email) === normalizedUserEmail));
 }
 
-function isFutureOrToday(eventDateString: string, now: Date): boolean {
+function isFutureOrToday(activity: Activity, now: Date): boolean {
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
-
-  const eventDate = new Date(eventDateString);
-  eventDate.setHours(0, 0, 0, 0);
-
-  return eventDate >= today;
+  const activityDate = new Date(getActivityDate(activity));
+  activityDate.setHours(0, 0, 0, 0);
+  return activityDate >= today;
 }
 
 function isGuardianActionableInvitationStatus(status: InvitationStatus): boolean {
@@ -82,67 +72,50 @@ function isGuardianActionableInvitationStatus(status: InvitationStatus): boolean
 
 export const selectGuardianChildOpenInvitations = (
   players: Player[],
-  events: Event[],
+  activities: Activity[],
   user: User | null | undefined,
   now: Date = new Date(),
 ): GuardianChildOpenInvitations[] => {
-  if (!user) {
-    return [];
-  }
+  if (!user) return [];
 
   const childPlayers = players
     .filter((player) => isGuardianOfPlayer(player, user))
-    .sort((a, b) => {
-      const lastNameCompare = a.lastName.localeCompare(b.lastName);
-      if (lastNameCompare !== 0) {
-        return lastNameCompare;
-      }
-      return a.firstName.localeCompare(b.firstName);
-    });
+    .sort((left, right) => left.lastName.localeCompare(right.lastName) || left.firstName.localeCompare(right.firstName));
 
   return childPlayers
     .map((player) => {
-      const invitations = events
-        .filter((event) => isFutureOrToday(event.date, now))
-        .flatMap((event) => {
-          const invitation = event.invitations.find(
-            (entry) => entry.playerId === player.id && isGuardianActionableInvitationStatus(entry.status)
-          );
-          if (!invitation) {
-            return [];
-          }
-
+      const invitations = activities
+        .filter((activity) => isFutureOrToday(activity, now))
+        .flatMap((activity) => {
+          const invitation = activity.invitations.find((entry) => {
+            if (entry.playerId !== player.id) return false;
+            return isGuardianActionableInvitationStatus(getInvitationStatus(entry));
+          });
+          if (!invitation) return [];
           return [{
-            eventId: event.id,
-            eventName: event.name,
-            eventDate: event.date,
+            eventId: activity.id,
+            eventName: activity.name,
+            eventDate: getActivityDate(activity),
             invitationId: invitation.id,
             playerId: invitation.playerId,
-            status: invitation.status,
+            status: getInvitationStatus(invitation),
           }];
         })
-        .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
-
-      return {
-        playerId: player.id,
-        playerFirstName: player.firstName,
-        playerLastName: player.lastName,
-        invitations,
-      };
+        .sort((left, right) => left.eventDate.localeCompare(right.eventDate));
+      return { playerId: player.id, playerFirstName: player.firstName, playerLastName: player.lastName, invitations };
     })
     .filter((entry) => entry.invitations.length > 0);
 };
 
 export const selectUpcomingEventsWithGuardianInvitations = (
-  events: Event[],
+  activities: Activity[],
   players: Player[],
   user: User | null | undefined,
   now: Date = new Date(),
   limit?: number,
 ): UpcomingEventWithGuardianInvitations[] => {
-  const upcomingEvents = selectUpcomingEvents(events, now);
-  const guardianUpcomingInvitations = selectGuardianChildOpenInvitations(players, events, user, now);
-
+  const upcomingEvents = selectUpcomingEvents(activities, now);
+  const guardianUpcomingInvitations = selectGuardianChildOpenInvitations(players, activities, user, now);
   const invitationActionsByEventId = guardianUpcomingInvitations
     .flatMap((child) => child.invitations.map((invitation) => ({
       eventId: invitation.eventId,
@@ -166,19 +139,14 @@ export const selectUpcomingEventsWithGuardianInvitations = (
     }, new Map());
 
   const invitationEventIds = new Set(invitationActionsByEventId.keys());
-
-  const invitationUpcomingEvents = upcomingEvents.filter((event) => invitationEventIds.has(event.id));
-  const regularUpcomingEvents = upcomingEvents.filter((event) => !invitationEventIds.has(event.id));
-
+  const invitationUpcomingEvents = upcomingEvents.filter((activity) => invitationEventIds.has(activity.id));
+  const regularUpcomingEvents = upcomingEvents.filter((activity) => !invitationEventIds.has(activity.id));
   const limitedUpcomingEvents = typeof limit === 'number' && limit >= 0
-    ? [
-      ...invitationUpcomingEvents,
-      ...regularUpcomingEvents.slice(0, Math.max(limit - invitationUpcomingEvents.length, 0)),
-    ]
+    ? [...invitationUpcomingEvents, ...regularUpcomingEvents.slice(0, Math.max(limit - invitationUpcomingEvents.length, 0))]
     : upcomingEvents;
 
-  return limitedUpcomingEvents.map((event) => ({
-    ...event,
-    guardianInvitations: invitationActionsByEventId.get(event.id) || [],
+  return limitedUpcomingEvents.map((activity) => ({
+    ...activity,
+    guardianInvitations: invitationActionsByEventId.get(activity.id) || [],
   }));
 };

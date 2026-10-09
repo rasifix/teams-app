@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Player, Team } from '../../types';
-import { selectTeamPlayersByName } from './teamPlayerSelectors';
+import type { Activity, Player, Team } from '../../types';
+import { selectAvailablePlayersForTeamSelection, selectTeamPlayersByName } from './teamPlayerSelectors';
 
 function player(id: string, firstName: string, lastName: string): Player {
   return { id, firstName, lastName, birthDate: '2015-06-15', level: 3, status: 'active' };
@@ -37,5 +37,28 @@ describe('selectTeamPlayersByName', () => {
       player('outside', 'Ben', 'Zulu'),
     ]).map((entry) => entry.id)).toEqual(['p1']);
     expect(selectTeamPlayersByName(team(), [])).toEqual([]);
+  });
+});
+
+
+describe('selectAvailablePlayersForTeamSelection', () => {
+  const makePlayer = (id: string, firstName: string, level = 3): Player => ({
+    id, firstName, lastName: 'Player', birthDate: '2015-01-01', level, status: 'active',
+  });
+  const activity: Activity = {
+    id: 'a1', squadId: 's1', kind: 'match', name: 'Match', startsAt: '2026-06-01T10:00:00.000Z',
+    invitations: [{ id: 'i1', playerId: 'p1', response: 'accepted' }, { id: 'i2', playerId: 'p2', response: 'open' }, { id: 'i3', playerId: 'p3', response: 'accepted' }],
+    teams: [{ id: 't1', name: 'A', strength: 2, selectedPlayers: ['p3'] }, { id: 't2', name: 'B', strength: 2, selectedPlayers: ['p4'] }],
+  };
+
+  it('returns accepted, unassigned players within the level range', () => {
+    const players = [makePlayer('p1', 'Zoe'), makePlayer('p2', 'Mia'), makePlayer('p3', 'Ana'), makePlayer('p4', 'Eli'), makePlayer('p5', 'Low', 1)];
+    expect(selectAvailablePlayersForTeamSelection(activity, 't1', players, [2, 4]).map((player) => player.id)).toEqual(['p1']);
+  });
+
+  it('returns no candidates when no invitations qualify, and filters an unknown team by assignment', () => {
+    const players = [makePlayer('p1', 'Zoe')];
+    expect(selectAvailablePlayersForTeamSelection(activity, 'missing', players, [1, 5])).toEqual(players);
+    expect(selectAvailablePlayersForTeamSelection({ ...activity, invitations: [] }, 't1', players, [1, 5])).toEqual([]);
   });
 });

@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Event, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode, SfvCategoryCatalog } from '../types';
+import type { Player, Activity, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode, SfvCategoryCatalog } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import {
   getAllMembers,
@@ -17,7 +17,9 @@ import {
   MEMBER_ROLE_GUARDIAN,
   MEMBER_ROLE_TRAINER,
 } from '../services/memberService';
-import { getEvents, addEvent as addEventService, updateEvent as updateEventService, deleteEvent as deleteEventService, updatePlayerInvitationStatus as updatePlayerInvitationStatusService } from '../services/eventService';
+import { getActivities, updateActivity as updateActivityService } from '../services/activityService';
+import { createActivityActions, type ActivityActions } from './activityActions';
+import { getActivityDate, getActivityStartTime, sortActivities } from './selectors/activitySelectors';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
 import { getGroups, getGroup, createGroup as createGroupService, updateGroupCategory as updateGroupCategoryService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addGroupPlayingMode as addGroupPlayingModeService, updateGroupPlayingMode as updateGroupPlayingModeService, deleteGroupPlayingMode as deleteGroupPlayingModeService, setDefaultGroupPlayingMode as setDefaultGroupPlayingModeService, addGroupFormation as addGroupFormationService, updateGroupFormation as updateGroupFormationService, deleteGroupFormation as deleteGroupFormationService } from '../services/groupService';
 import { authService } from '../services/authService';
@@ -26,10 +28,9 @@ import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../
 import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type GroupMember } from './selectors/memberSelectors';
 import { isDuplicateTargetMember, type GroupImportCandidate } from './selectors/memberGroupImportSelectors';
 import {
-  selectEventWithoutActiveInvitations,
+  selectActivityWithoutActiveInvitations,
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
-import { selectEventMutationResult } from './selectors/eventMutationSelectors';
 import { selectMatchingPlayingMode } from './selectors/groupCategorySelectors';
 import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
 import { getSfvCategoryCatalog } from '../services/sfvService';
@@ -55,13 +56,6 @@ const sortMembers = (members: GroupMember[]): GroupMember[] => {
     const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
     return nameA.localeCompare(nameB);
   });
-};
-
-// Helper function to sort events by date (earliest first)
-const sortEvents = (events: Event[]): Event[] => {
-  return [...events].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
 };
 
 function toMembers(players: Player[], trainers: Trainer[]): GroupMember[] {
@@ -213,13 +207,13 @@ function getUniqueRoles(roles: GroupRole[] | undefined): GroupRole[] {
   return Array.from(new Set(roles || []));
 }
 
-interface AppState {
+interface AppState extends ActivityActions {
   // Data
   group: Group | null;
   groups: Group[];
   selectedStatisticsPeriodId: string | null;
   members: GroupMember[];
-  events: Event[];
+  activities: Activity[];
   shirtSets: ShirtSet[];
   
   // Loading states
@@ -227,7 +221,7 @@ interface AppState {
     group: boolean;
     groups: boolean;
     players: boolean;
-    events: boolean;
+    activities: boolean;
     trainers: boolean;
     shirtSets: boolean;
   };
@@ -237,7 +231,7 @@ interface AppState {
     group: string | null;
     groups: string | null;
     players: string | null;
-    events: string | null;
+    activities: string | null;
     trainers: string | null;
     shirtSets: string | null;
   };
@@ -263,7 +257,7 @@ interface AppState {
     onProgress?: (progress: GroupMemberImportProgress) => void
   ) => Promise<GroupMemberImportResult>;
   setMembers: (members: GroupMember[]) => void;
-  setEvents: (events: Event[]) => void;
+  setActivities: (activities: Activity[]) => void;
   setShirtSets: (shirtSets: ShirtSet[]) => void;
   
   // Player mutations
@@ -279,12 +273,6 @@ interface AppState {
     previousGuardianData: Pick<import('../types').Guardian, 'firstName' | 'lastName' | 'email'>
   ) => Promise<boolean>;
   mergeGuardianDuplicates: (sourceGuardianId: string, targetGuardianId: string) => Promise<boolean>;
-  
-  // Event mutations
-  addEvent: (eventData: Omit<Event, 'id'>) => Promise<boolean>;
-  updateEvent: (id: string, eventData: Partial<Event>) => Promise<boolean>;
-  updateInvitationStatus: (eventId: string, playerId: string, status: import('../types').InvitationStatus) => Promise<boolean>;
-  deleteEvent: (id: string) => Promise<boolean>;
   
   // Trainer mutations
   addTrainer: (trainerData: Omit<Trainer, 'id'>) => Promise<boolean>;
@@ -318,10 +306,10 @@ interface AppState {
   
   // Selectors (computed values)
   getPlayerById: (id: string) => Player | undefined;
-  getEventById: (id: string) => Event | undefined;
+  getActivityById: (id: string) => Activity | undefined;
   getTrainerById: (id: string) => Trainer | undefined;
   getShirtSetById: (id: string) => ShirtSet | undefined;
-  getPlayerStats: (playerId: string, excludeEventId?: string) => ReturnType<typeof getPlayerStats>;
+  getPlayerStats: (playerId: string, excludeActivityId?: string) => ReturnType<typeof getPlayerStats>;
   getTrainerEventHistory: (trainerId: string) => Array<{
     eventId: string;
     eventName: string;
@@ -342,7 +330,7 @@ export const useStore = create<AppState>()(
       groups: [],
       selectedStatisticsPeriodId: null,
       members: [],
-      events: [],
+      activities: [],
       shirtSets: [],
       isInitialized: false,
       sfvCatalog: null,
@@ -350,7 +338,7 @@ export const useStore = create<AppState>()(
         group: false,
         groups: false,
         players: false,
-        events: false,
+        activities: false,
         trainers: false,
         shirtSets: false,
       },
@@ -358,7 +346,7 @@ export const useStore = create<AppState>()(
         group: null,
         groups: null,
         players: null,
-        events: null,
+        activities: null,
         trainers: null,
         shirtSets: null,
       },
@@ -387,7 +375,7 @@ export const useStore = create<AppState>()(
             group: true,
             groups: true,
             players: true,
-            events: true,
+            activities: true,
             trainers: true,
             shirtSets: false,
           },
@@ -395,7 +383,7 @@ export const useStore = create<AppState>()(
             group: null,
             groups: null,
             players: null,
-            events: null,
+            activities: null,
             trainers: null,
             shirtSets: null,
           },
@@ -406,7 +394,7 @@ export const useStore = create<AppState>()(
           const results = await Promise.allSettled([
             getGroup(currentGroup.id).then((group) => ({ type: 'group' as const, data: group })),
             getAllMembers(currentGroup.id).then((members) => ({ type: 'members' as const, data: members })),
-            getEvents(currentGroup.id).then((events: Event[]) => ({ type: 'events' as const, data: events })),
+            getActivities(currentGroup.id).then((activities: Activity[]) => ({ type: 'activities' as const, data: activities })),
           ]);
           
           const newState: {
@@ -416,14 +404,14 @@ export const useStore = create<AppState>()(
             groups: Group[];
             selectedStatisticsPeriodId: string | null;
             members: GroupMember[];
-            events: Event[];
+            activities: Activity[];
             shirtSets: ShirtSet[];
           } = {
             loading: {
               group: false,
               groups: false,
               players: false,
-              events: false,
+              activities: false,
               trainers: false,
               shirtSets: false,
             },
@@ -431,7 +419,7 @@ export const useStore = create<AppState>()(
               group: null,
               groups: null,
               players: null,
-              events: null,
+              activities: null,
               trainers: null,
               shirtSets: null,
             },
@@ -439,7 +427,7 @@ export const useStore = create<AppState>()(
             groups: state.groups,
             selectedStatisticsPeriodId: state.selectedStatisticsPeriodId,
             members: state.members,
-            events: state.events,
+            activities: state.activities,
             shirtSets: state.shirtSets,
           };
           
@@ -455,8 +443,8 @@ export const useStore = create<AppState>()(
               } else if (type === 'members') {
                 const membersData = result.value.data as { players: Player[], trainers: Trainer[] };
                 newState.members = toMembers(membersData.players, membersData.trainers);
-              } else if (type === 'events') {
-                newState.events = sortEvents(result.value.data);
+              } else if (type === 'activities') {
+                newState.activities = sortActivities(result.value.data);
               }
             } else {
               // Map index to appropriate error handling
@@ -470,7 +458,7 @@ export const useStore = create<AppState>()(
                 newState.errors.trainers = result.reason?.message || 'Failed to load members';
               } else if (index === 2) {
                 // Events call failed
-                newState.errors.events = result.reason?.message || 'Failed to load events';
+                newState.errors.activities = result.reason?.message || 'Failed to load activities';
               }
             }
           });
@@ -540,14 +528,14 @@ export const useStore = create<AppState>()(
           groups: [],
           selectedStatisticsPeriodId: null,
           members: [],
-          events: [],
+          activities: [],
           shirtSets: [],
           isInitialized: false,
           loading: {
             group: false,
             groups: false,
             players: false,
-            events: false,
+            activities: false,
             trainers: false,
             shirtSets: false,
           },
@@ -555,7 +543,7 @@ export const useStore = create<AppState>()(
             group: null,
             groups: null,
             players: null,
-            events: null,
+            activities: null,
             trainers: null,
             shirtSets: null,
           },
@@ -842,7 +830,7 @@ export const useStore = create<AppState>()(
       
       // Actions
       setMembers: (members) => set({ members: sortMembers(members) }),
-      setEvents: (events) => set({ events: sortEvents(events) }),
+      setActivities: (activities) => set({ activities: sortActivities(activities) }),
       setShirtSets: (shirtSets) => set({ shirtSets: sortShirtSets(shirtSets) }),
       
       // Player mutations
@@ -906,20 +894,20 @@ export const useStore = create<AppState>()(
             return false;
           }
 
-          const deletionImpact = selectPlayerDeletionImpact(get().events, id);
+          const deletionImpact = selectPlayerDeletionImpact(get().activities, id);
           if (deletionImpact.hasPastTeamAssignment) {
             throw new Error(PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT);
           }
 
-          let updatedEvents = get().events;
-          for (const event of deletionImpact.eventsWithActiveInvitations) {
-            const sanitizedEvent = selectEventWithoutActiveInvitations(event, id);
-            const persistedEvent = await updateEventService(currentGroup.id, event.id, {
-              invitations: sanitizedEvent.invitations,
+          let updatedActivities = get().activities;
+          for (const activity of deletionImpact.activitiesWithActiveInvitations) {
+            const sanitizedActivity = selectActivityWithoutActiveInvitations(activity, id);
+            const persistedActivity = await updateActivityService(currentGroup.id, activity.id, {
+              invitations: sanitizedActivity.invitations,
             });
 
-            updatedEvents = updatedEvents.map((entry) => (
-              entry.id === persistedEvent.id ? persistedEvent : entry
+            updatedActivities = updatedActivities.map((entry) => (
+              entry.id === persistedActivity.id ? persistedActivity : entry
             ));
           }
 
@@ -931,7 +919,7 @@ export const useStore = create<AppState>()(
 
           set({
             members: updatedMembers,
-            events: sortEvents(updatedEvents),
+            activities: sortActivities(updatedActivities),
           });
           return true;
         } catch (error) {
@@ -1199,75 +1187,8 @@ export const useStore = create<AppState>()(
         }
       },
       
-      // Event mutations
-      addEvent: async (eventData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
-        
-        try {
-          const responseEvent = await addEventService(currentGroup.id, eventData);
-          const newEvent = selectEventMutationResult(responseEvent, eventData);
-          const currentEvents = get().events;
-          const updatedEvents = [...currentEvents, newEvent];
-          set({ events: sortEvents(updatedEvents) });
-          return true;
-        } catch (error) {
-          console.error('Failed to add event:', error);
-          return false;
-        }
-      },
-      
-      updateEvent: async (id, eventData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
-        
-        try {
-          const responseEvent = await updateEventService(currentGroup.id, id, eventData);
-          const currentEvents = get().events;
-          const updatedEvents = currentEvents.map(event =>
-            event.id === id ? selectEventMutationResult(responseEvent, eventData, event) : event
-          );
-          set({ events: sortEvents(updatedEvents) });
-          return true;
-        } catch (error) {
-          console.error('Failed to update event:', error);
-          return false;
-        }
-      },
-
-      updateInvitationStatus: async (eventId, playerId, status) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
-
-        try {
-          const updatedEvent = await updatePlayerInvitationStatusService(currentGroup.id, eventId, playerId, status);
-          const currentEvents = get().events;
-          const updatedEvents = currentEvents.map((event) =>
-            event.id === eventId ? { ...event, ...updatedEvent } : event
-          );
-          set({ events: sortEvents(updatedEvents) });
-          return true;
-        } catch (error) {
-          console.error('Failed to update invitation status:', error);
-          return false;
-        }
-      },
-      
-      deleteEvent: async (id) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
-        
-        try {
-          await deleteEventService(currentGroup.id, id);
-          const currentEvents = get().events;
-          const filteredEvents = currentEvents.filter(event => event.id !== id);
-          set({ events: sortEvents(filteredEvents) });
-          return true;
-        } catch (error) {
-          console.error('Failed to delete event:', error);
-          return false;
-        }
-      },
+      // Activity mutations
+      ...createActivityActions({ get, set }),
       
       // Trainer mutations
       addTrainer: async (trainerData) => {
@@ -1884,29 +1805,19 @@ export const useStore = create<AppState>()(
       
       // Selectors
       getPlayerById: (id) => playersFromMembers(get().members).find((player) => player.id === id),
-      getEventById: (id) => get().events.find(e => e.id === id),
+      getActivityById: (id) => get().activities.find(e => e.id === id),
       getTrainerById: (id) => trainersFromMembers(get().members).find((trainer) => trainer.id === id),
       getShirtSetById: (id) => get().shirtSets.find(s => s.id === id),
       
-      getPlayerStats: (playerId, excludeEventId) => {
-        const events = excludeEventId 
-          ? get().events.filter(e => e.id !== excludeEventId)
-          : get().events;
-        return getPlayerStats(playerId, events);
+      getPlayerStats: (playerId, excludeActivityId) => {
+        const activities = excludeActivityId
+          ? get().activities.filter(e => e.id !== excludeActivityId)
+          : get().activities;
+        return getPlayerStats(playerId, activities);
       },
 
       getTrainerEventHistory: (trainerId) => {
-        const getEventStartTime = (event: Event): string | undefined => {
-          const startTimes = event.teams
-            .map((team) => team.startTime?.trim())
-            .filter((startTime): startTime is string => Boolean(startTime));
-
-          if (startTimes.length === 0) {
-            return undefined;
-          }
-
-          return startTimes.sort()[0];
-        };
+        const getEventStartTime = (activity: Activity): string => getActivityStartTime(activity);
 
         const getLocation = (teamLocation?: string, eventLocation?: string): string | undefined => {
           if (teamLocation?.trim()) {
@@ -1920,17 +1831,19 @@ export const useStore = create<AppState>()(
           return undefined;
         };
 
-        return get().events
-          .filter((event) => event.teams.some((team) => team.trainerId === trainerId))
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        const isResponsible = (team: Team) => (team.responsiblePersonIds || []).includes(trainerId);
+
+        return get().activities
+          .filter((event) => event.teams.some(isResponsible))
+          .sort((a, b) => new Date(b.startsAt).getTime() - new Date(a.startsAt).getTime())
           .map((event) => {
-            const team = event.teams.find((entry) => entry.trainerId === trainerId);
+            const team = event.teams.find(isResponsible);
             return {
               eventId: event.id,
               eventName: event.name,
-              eventDate: event.date,
-              startTime: team?.startTime || getEventStartTime(event),
-              location: getLocation(team?.location, event.location),
+              eventDate: getActivityDate(event),
+              startTime: event.kind === 'match' ? getEventStartTime(event) : team?.startTime || getEventStartTime(event),
+              location: event.kind === 'match' ? event.location : getLocation(team?.location, event.location),
               teamName: team?.name,
               teamStrength: team?.strength || 2,
             };
@@ -1959,13 +1872,13 @@ export const useStore = create<AppState>()(
 
 // Stable selectors to prevent infinite re-renders
 export const useAppLoading = () => useStore((state) => 
-  state.loading.group || state.loading.players || state.loading.events || state.loading.trainers || state.loading.shirtSets
+  state.loading.group || state.loading.players || state.loading.activities || state.loading.trainers || state.loading.shirtSets
 );
 
 export const useAppErrors = () => useStore((state) => state.errors);
 
 export const useAppHasErrors = () => useStore((state) => 
-  !!(state.errors.players || state.errors.events || state.errors.trainers || state.errors.shirtSets)
+  !!(state.errors.players || state.errors.activities || state.errors.trainers || state.errors.shirtSets)
 );
 
 export const useAppInitialized = () => useStore((state) => state.isInitialized);

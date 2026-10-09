@@ -1,26 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEvents } from '../hooks/useEvents';
+import { useActivities } from '../store';
 import { usePlayers } from '../hooks/usePlayers';
-import type { Event, Period, Player } from '../types';
+import type { Activity, Period, Player } from '../types';
+import { isTeamActivity } from '../store/selectors/activitySelectors';
+import { selectPlayerActivityStatistics } from '../store/selectors/statisticsSelectors';
 import { SummaryCard, SummaryCardContent } from '../components/ui';
 import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
 import { useSelectedStatisticsPeriod } from '../store';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
 
-interface PlayerStats {
-  player: Player;
-  invitedCount: number;
-  acceptedCount: number;
-  selectedCount: number;
-  acceptanceRate: number;
-  selectionRate: number;
-}
-
 interface StatisticsOutletContext {
-  filteredEvents: Event[];
+  filteredEvents: Activity[];
   statisticsPeriod: Period | null;
   statisticsPlayers: Player[];
 }
@@ -32,7 +25,7 @@ export default function StatisticsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { events } = useEvents();
+  const { activities } = useActivities();
   const { players } = usePlayers();
   const statisticsPlayers = useMemo(
     () => players.filter((player) => player.status !== 'trial'),
@@ -40,51 +33,14 @@ export default function StatisticsPage() {
   );
   const statisticsPeriod = useSelectedStatisticsPeriod();
   const filteredEvents = useMemo(
-    () => filterEventsByStatisticsPeriod(events, statisticsPeriod),
-    [events, statisticsPeriod]
+    () => filterEventsByStatisticsPeriod(activities.filter(isTeamActivity), statisticsPeriod),
+    [activities, statisticsPeriod]
   );
 
-  const playerStats = useMemo(() => {
-    const stats: PlayerStats[] = statisticsPlayers.map(player => {
-      // Count invitations
-      const invitedCount = filteredEvents.filter(event =>
-        event.invitations.some(inv => inv.playerId === player.id)
-      ).length;
-
-      // Count accepted invitations
-      const acceptedCount = filteredEvents.filter(event =>
-        event.invitations.some(inv => inv.playerId === player.id && inv.status === 'accepted')
-      ).length;
-
-      // Count selections (player assigned to a team)
-      const selectedCount = filteredEvents.filter(event =>
-        event.teams.some(team => (team.selectedPlayers || []).includes(player.id))
-      ).length;
-
-      const acceptanceRate = invitedCount > 0 ? (acceptedCount / invitedCount) * 100 : 0;
-      const selectionRate = acceptedCount > 0 ? (selectedCount / acceptedCount) * 100 : 0;
-
-      return {
-        player,
-        invitedCount,
-        acceptedCount,
-        selectedCount,
-        acceptanceRate,
-        selectionRate,
-      };
-    });
-
-    // Sort by last name, then first name
-    stats.sort((a, b) => {
-      const lastNameCompare = a.player.lastName.toLowerCase().localeCompare(b.player.lastName.toLowerCase());
-      if (lastNameCompare !== 0) {
-        return lastNameCompare;
-      }
-      return a.player.firstName.toLowerCase().localeCompare(b.player.firstName.toLowerCase());
-    });
-
-    return stats;
-  }, [statisticsPlayers, filteredEvents]);
+  const playerStats = useMemo(
+    () => selectPlayerActivityStatistics(filteredEvents, statisticsPlayers),
+    [filteredEvents, statisticsPlayers]
+  );
 
   // Redirect to player-statistics if on base /statistics route
   useEffect(() => {
@@ -161,14 +117,14 @@ export default function StatisticsPage() {
             {t('statistics.tabs.playerStatistics')}
           </NavLink>
           <NavLink
-            to="/statistics/event-attendance"
+            to="/statistics/event-participation"
             className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               isActive
                 ? 'border-orange-600 text-orange-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            {t('statistics.tabs.eventAttendance')}
+            {t('statistics.tabs.eventParticipation')}
           </NavLink>
           <NavLink
             to="/statistics/team-selections"

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import DateColumn from './DateColumn';
+import { getActivityDate, getActivityStartTime } from '../store/selectors/activitySelectors';
 import type { UpcomingEventWithGuardianInvitations } from '../store/selectors/homeSelectors';
 
 interface UpcomingEventCardProps {
@@ -27,9 +28,11 @@ export default function UpcomingEventCard({
         to={`/events/${event.id}`}
         className="flex items-start gap-4 rounded-md -m-1 p-1 hover:bg-orange-50"
       >
-        <DateColumn date={event.date} />
+        <DateColumn date={getActivityDate(event)} />
         <div className="pt-1">
           <p className="font-medium text-gray-900">{event.name}</p>
+          <p className="mt-1 text-sm text-gray-600">{t(`activity.kinds.${event.kind}`)} · {getActivityStartTime(event)}{event.location ? ` · ${event.location}` : ""}</p>
+          {event.kind === "match" && event.opponentName && <p className="mt-1 text-sm text-gray-600">{t("activity.fields.opponent")}: {event.opponentName}</p>}
         </div>
       </Link>
 
@@ -45,6 +48,7 @@ export default function UpcomingEventCard({
               >
                 <p className="text-sm font-medium text-gray-800">
                   {invitation.playerFirstName} {invitation.playerLastName}
+                  <span className="ml-2 text-xs text-gray-500">{t(`invitationStatus.${invitation.status}`)}</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {invitation.status !== 'accepted' && (
@@ -57,7 +61,7 @@ export default function UpcomingEventCard({
                       {t('home.openInvitations.accept', { defaultValue: 'Accept' })}
                     </button>
                   )}
-                  {invitation.status !== 'declined' && (
+                  {(invitation.status === 'open' || invitation.status === 'accepted') && (
                     <button
                       type="button"
                       disabled={isResponding}

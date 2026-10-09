@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEvents, usePlayers } from '../store';
+import { useActivities, usePlayers } from '../store';
+import { selectAvailablePlayersForTeamSelection } from '../store/selectors/teamPlayerSelectors';
 import { Button } from '../components/ui';
 import Level from '../components/Level';
 import LevelRangeSelector from '../components/LevelRangeSelector';
@@ -12,31 +13,19 @@ export default function TeamPlayerSelectionPage() {
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
-  const { getEventById, updateEvent } = useEvents();
+  const { getActivityById, updateActivitySelection } = useActivities();
   const { players } = usePlayers();
   
-  const event = eventId ? getEventById(eventId) : null;
+  const event = eventId ? getActivityById(eventId) : null;
   const team = event?.teams.find(t => t.id === teamId);
   
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   
-  // Get available players (invited and accepted, not already in any team)
-  const assignedPlayerIds = event?.teams.flatMap(t => t.selectedPlayers || []) || [];
-  const invitedAcceptedPlayerIds = event?.invitations
-    .filter(inv => inv.status === 'accepted')
-    .map(inv => inv.playerId) || [];
-  
-  const availablePlayers = useMemo(() => {
-    return players
-      .filter(p => 
-        invitedAcceptedPlayerIds.includes(p.id) &&
-        !assignedPlayerIds.includes(p.id) &&
-        p.level >= levelRange[0] &&
-        p.level <= levelRange[1]
-      )
-      .sort((a, b) => a.firstName.localeCompare(b.firstName));
-  }, [players, invitedAcceptedPlayerIds, assignedPlayerIds, levelRange]);
+  const availablePlayers = useMemo(() => event && team
+    ? selectAvailablePlayersForTeamSelection(event, team.id, players, levelRange)
+    : [], [event, team, players, levelRange]);
+  const maxPlayersPerTeam = event?.maxPlayersPerTeam ?? players.length;
   
   const handleTogglePlayer = (playerId: string) => {
     setSelectedPlayerIds(prev =>
@@ -48,7 +37,7 @@ export default function TeamPlayerSelectionPage() {
   
   const handleSelectAll = () => {
     const currentPlayerCount = team?.selectedPlayers?.length || 0;
-    const remainingSlots = event ? event.maxPlayersPerTeam - currentPlayerCount : 0;
+    const remainingSlots = event ? maxPlayersPerTeam - currentPlayerCount : 0;
     const playersToSelect = availablePlayers.slice(0, remainingSlots).map(p => p.id);
     setSelectedPlayerIds(playersToSelect);
   };
@@ -69,7 +58,7 @@ export default function TeamPlayerSelectionPage() {
         : t
     );
     
-    await updateEvent(eventId, { teams: updatedTeams });
+    await updateActivitySelection(eventId, updatedTeams);
     navigate(`/events/${eventId}/teams/${teamId}`);
   };
   
@@ -82,7 +71,7 @@ export default function TeamPlayerSelectionPage() {
   }
   
   const currentPlayerCount = team.selectedPlayers?.length || 0;
-  const remainingSlots = event.maxPlayersPerTeam - currentPlayerCount;
+  const remainingSlots = maxPlayersPerTeam - currentPlayerCount;
   const canAddMore = selectedPlayerIds.length <= remainingSlots;
   
   return (
@@ -99,7 +88,7 @@ export default function TeamPlayerSelectionPage() {
         <p className="text-sm text-gray-600 mt-1">
           {t('teamPlayerSelection.slotsSummary', {
             current: currentPlayerCount,
-            max: event.maxPlayersPerTeam,
+            max: maxPlayersPerTeam,
             remaining: remainingSlots,
           })}
         </p>

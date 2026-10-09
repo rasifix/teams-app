@@ -51,22 +51,30 @@ export const usePlayers = () => {
   };
 };
 
-// Hook specifically for events data and related selectors  
-export const useEvents = () => {
-  const events = useStore((state) => state.events);
-  const getEventById = useStore((state) => state.getEventById);
-  const addEvent = useStore((state) => state.addEvent);
-  const updateEvent = useStore((state) => state.updateEvent);
-  const updateInvitationStatus = useStore((state) => state.updateInvitationStatus);
-  const deleteEvent = useStore((state) => state.deleteEvent);
-  
+// Hook specifically for activities data and mutations
+export const useActivities = () => {
+  const activities = useStore((state) => state.activities);
+  const getActivityById = useStore((state) => state.getActivityById);
+  const addActivity = useStore((state) => state.addActivity);
+  const updateActivity = useStore((state) => state.updateActivity);
+  const updateActivityInvitation = useStore((state) => state.updateActivityInvitation);
+  const updateActivityTeams = useStore((state) => state.updateActivityTeams);
+  const updateActivitySelection = useStore((state) => state.updateActivitySelection);
+  const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
+  const updateActivityAttendance = useStore((state) => state.updateActivityAttendance);
+  const deleteActivity = useStore((state) => state.deleteActivity);
+
   return {
-    events,
-    getEventById,
-    addEvent,
-    updateEvent,
-    updateInvitationStatus,
-    deleteEvent,
+    activities,
+    getActivityById,
+    addActivity,
+    updateActivity,
+    updateActivityInvitation,
+    updateActivityTeams,
+    updateActivitySelection,
+    markActivitySelectionSent,
+    updateActivityAttendance,
+    deleteActivity,
   };
 };
 

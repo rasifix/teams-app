@@ -1,24 +1,25 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPlayerStats } from '../utils/playerStats';
-import type { Team, Player, Trainer, ShirtSet, Event } from '../types';
+import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
+import { getActivityTime } from '../store/selectors/activitySelectors';
 import Level from './Level';
 import Strength from './Strength';
-import { selectTeamAssigneeById } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 
 interface TeamCardProps {
   team: Team;
-  eventLocation?: string;
+  activity: Activity;
   inactiveFutureEventPlayerIds: Set<string>;
   players: Player[];
   trainers: Trainer[];
   shirtSets: ShirtSet[];
-  events: Event[];
+  activities: Activity[];
   maxPlayersPerTeam: number;
   isDragOver: boolean;
   dragOverPlayerId: string | null;
   onOpenTeam: (teamId: string) => void;
-  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string, currentTrainerId?: string, currentLocation?: string) => void;
+  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string | undefined, currentResponsiblePersonIds: string[], currentLocation?: string) => void;
   onDeleteTeam: (teamId: string) => void;
   onAssignShirts: (team: Team) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
@@ -31,12 +32,12 @@ interface TeamCardProps {
 
 export default function TeamCard({
   team,
-  eventLocation,
+  activity,
   inactiveFutureEventPlayerIds,
   players,
   trainers,
   shirtSets,
-  events,
+  activities,
   maxPlayersPerTeam,
   isDragOver,
   dragOverPlayerId,
@@ -63,9 +64,10 @@ export default function TeamCard({
         return sum + (player?.level || 0);
       }, 0) / selectedPlayers.length
     : 0;
-  const trainerAssignee = selectTeamAssigneeById(team.trainerId, trainers, players);
+  const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
   const shirtSet = team.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
-  const displayLocation = team.location || eventLocation;
+  const displayLocation = activity.kind === 'match' ? activity.location : team.location || activity.location;
+  const displayTime = activity.kind === 'match' ? getActivityTime(activity) : team.startTime || getActivityTime(activity);
 
   return (
     <div 
@@ -135,27 +137,27 @@ export default function TeamCard({
           <p className="text-sm text-gray-600">
             👥 {selectedPlayers.length}/{maxPlayersPerTeam} <span className="text-yellow-500">★</span> {averageLevel.toFixed(1)}
           </p>
-          <p className="text-sm text-gray-600">
-            🕐 {team.startTime}
-            {displayLocation && (
-              <span className="ml-3">📍{displayLocation}</span>
-            )}
-          </p>
-          {trainerAssignee && (
+          {(displayTime || displayLocation) && (
+            <p className="text-sm text-gray-600">
+              {displayTime && <>🕐 {displayTime}</>}
+              {displayLocation && <span className="ml-3">📍{displayLocation}</span>}
+            </p>
+          )}
+          {responsiblePeople.length > 0 && (
             <p className="text-sm text-blue-600">
-              👤 {trainerAssignee.firstName} {trainerAssignee.lastName}
+              👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}
             </p>
           )}
           {shirtSet && (
             <p className="text-sm text-gray-600">
-              👕 {shirtSet.sponsor} {team.shirtAssignments && team.shirtAssignments.length > 0 && `(${team.shirtAssignments.length} assigned)`}
+              👕 {shirtSet.sponsor} {team.shirtAssignments && team.shirtAssignments.length > 0 && '(' + t('teamCard.assignedShirtsCount', { count: team.shirtAssignments.length }) + ')'}
             </p>
           )}
           </div>
         </div>
         <div className="flex gap-2 self-start mr-1" onClick={(e) => e.stopPropagation()}>
           <button 
-            onClick={() => onEditTeam(team.id, team.name, team.strength || 2, team.startTime, team.trainerId, team.location)}
+            onClick={() => onEditTeam(team.id, team.name, team.strength || 2, activity.kind === 'match' ? undefined : team.startTime, team.responsiblePersonIds || [], activity.kind === 'match' ? undefined : team.location)}
             className="text-blue-600 hover:text-blue-700 text-sm"
           >
             {t('common.actions.edit')}
@@ -189,7 +191,7 @@ export default function TeamCard({
               })
               .map(({ playerId, player }) => {
               const isDragOverPlayer = dragOverPlayerId === playerId;
-              const stats = getPlayerStats(playerId, events);
+              const stats = getPlayerStats(playerId, activities);
               const hasInactiveFutureError = inactiveFutureEventPlayerIds.has(playerId);
               return player ? (
                 <div 

@@ -1,149 +1,47 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEvents } from '../hooks/useEvents';
-import { useStore, useTrainers } from '../store/useStore';
+import { useActivities } from '../hooks/useActivities';
 import EventsList from '../components/EventsList';
 import AddEventModal from '../components/AddEventModal';
-import type { Team } from '../types';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
-import { selectTeamAssigneeMap } from '../store/selectors/teamTrainerSelectors';
-import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
+import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities } from '../store/selectors/activitySelectors';
 
 export default function EventsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { events, loading, error, addEvent } = useEvents();
-  const members = useStore((state) => state.members);
-  const players = useMemo(() => selectPlayersFromMembers(members), [members]);
-  const trainers = useTrainers();
-  const trainerAssignees = useMemo(
-    () => selectTeamAssigneeMap(trainers, players),
-    [trainers, players]
-  );
+  const { activities, loading, error, addActivity } = useActivities();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Get current date for comparison
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
-
-  // Split events into future and past
-  const futureEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate >= today;
-  });
-
-  const pastEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate < today;
-  });
-
-  const handleAddEvent = async (eventData: { 
-    name: string; 
-    date: string; 
-    startTime: string; 
-    numberOfTeams: number; 
-    maxPlayersPerTeam: number;
-    minPlayersPerTeam: number;
-    location?: string;
-    playingModeId?: string | null;
-  }) => {
-    // Create teams for the event
-    const teams: Team[] = Array.from({ length: eventData.numberOfTeams }, (_, index) => ({
-      id: crypto.randomUUID(),
-      name: `${t('domain.team')} ${index + 1}`,
-      strength: 2, // Default strength
-      startTime: eventData.startTime, // All teams get the same start time initially
-      selectedPlayers: [], // Players will be assigned during selection
-    }));
-
-    const success = await addEvent({
-      name: eventData.name,
-      date: eventData.date,
-      maxPlayersPerTeam: eventData.maxPlayersPerTeam,
-      minPlayersPerTeam: eventData.minPlayersPerTeam,
-      location: eventData.location,
-      playingModeId: eventData.playingModeId,
-      teams,
-      invitations: [],
-    });
-
-    if (success) {
-      console.log('Event created successfully');
-    } else {
-      console.error('Failed to create event');
-    }
-  };
-
-  const handleEventClick = (eventId: string) => {
-    navigate(`/events/${eventId}`);
-  };
+  const teamActivities = selectActivitiesOfKinds(activities, ['match', 'tournament']);
+  const futureActivities = selectUpcomingActivities(teamActivities);
+  const pastActivities = selectPastActivities(teamActivities);
 
   if (loading) {
-    return (
-      <div className="page-container">
-        <div className="empty-state">
-          <p>{t('events.loading')}</p>
-        </div>
-      </div>
-    );
+    return <div className="page-container"><div className="empty-state"><p>{t('events.loading')}</p></div></div>;
   }
 
   return (
     <div className="page-container lg:px-4 px-0">
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
-          {error}
-        </div>
-      )}
-
+      {error && <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700 mx-4 lg:mx-0">{error}</div>}
       <div className="space-y-4 lg:space-y-6">
-        {/* Future Events Section */}
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
           <CardBody className="lg:p-6 p-4">
-            <div className="flex justify-between items-center mb-4">
-              <CardTitle>{t('events.futureTitle', { count: futureEvents.length })}</CardTitle>
-              <Button 
-                variant="primary"
-                size="sm"
-                onClick={() => setIsModalOpen(true)}
-              >
-                {t('common.actions.add')}
-              </Button>
+            <div className="mb-4 flex items-center justify-between">
+              <CardTitle>{t('events.futureTitle', { count: futureActivities.length })}</CardTitle>
+              <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>
             </div>
-            
-            <EventsList 
-              events={futureEvents} 
-              trainerAssignees={trainerAssignees}
-              onEventClick={handleEventClick}
-            />
+            <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
           </CardBody>
         </Card>
-
-        {/* Past Events Section */}
-        {pastEvents.length > 0 && (
-          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-            <CardBody className="lg:p-6 p-4">
-              <CardTitle>{t('events.pastTitle', { count: pastEvents.length })}</CardTitle>
-              
-              <EventsList 
-                events={pastEvents} 
-                trainerAssignees={trainerAssignees}
-                onEventClick={handleEventClick}
-              />
-            </CardBody>
-          </Card>
-        )}
+        {pastActivities.length > 0 && <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+          <CardBody className="lg:p-6 p-4">
+            <CardTitle>{t('events.pastTitle', { count: pastActivities.length })}</CardTitle>
+            <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
+          </CardBody>
+        </Card>}
       </div>
-
-      <AddEventModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAdd={handleAddEvent}
-      />
+      <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, Invitation, Team } from '../../types';
+import type { Activity, ActivityInvitation, Team } from '../../types';
 import {
-  selectEventWithoutActiveInvitations,
-  selectEventsWithActiveInvitations,
+  selectActivityWithoutActiveInvitations,
+  selectActivitiesWithActiveInvitations,
   selectHasPastTeamAssignment,
   selectPlayerDeletionImpact,
 } from './playerDeletionSelectors';
@@ -18,20 +18,22 @@ function team(overrides: Partial<Team>): Team {
   };
 }
 
-function invitation(overrides: Partial<Invitation>): Invitation {
+function invitation(overrides: Partial<ActivityInvitation>): ActivityInvitation {
   return {
     id: 'i-default',
     playerId: 'p-1',
-    status: 'open',
+    response: 'open',
     ...overrides,
   };
 }
 
-function event(overrides: Partial<Event>): Event {
+function event(overrides: Partial<Activity>): Activity {
   return {
     id: 'e-default',
-    name: 'Event',
-    date: '2026-01-01',
+    squadId: 'squad-1',
+    kind: 'match',
+    name: 'Activity',
+    startsAt: '2026-01-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
     minPlayersPerTeam: 8,
     teams: [],
@@ -42,15 +44,15 @@ function event(overrides: Partial<Event>): Event {
 
 describe('player deletion selectors', () => {
   it('returns true when player has a team assignment in a past event', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e-past',
-        date: '2026-05-01',
+        startsAt: '2026-05-01T10:00:00.000Z',
         teams: [team({ id: 't1', selectedPlayers: ['p-1'] })],
       }),
       event({
         id: 'e-future',
-        date: '2026-07-10',
+        startsAt: '2026-07-10T10:00:00.000Z',
         teams: [team({ id: 't2', selectedPlayers: ['p-1'] })],
       }),
     ];
@@ -61,10 +63,10 @@ describe('player deletion selectors', () => {
   });
 
   it('ignores future team assignments for deletion guard', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e-future',
-        date: '2026-08-01',
+        startsAt: '2026-08-01T10:00:00.000Z',
         teams: [team({ id: 't1', selectedPlayers: ['p-1'] })],
       }),
     ];
@@ -75,22 +77,22 @@ describe('player deletion selectors', () => {
   });
 
   it('selects only events with active invitations for the player', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e-open',
-        invitations: [invitation({ id: 'i1', playerId: 'p-1', status: 'open' })],
+        invitations: [invitation({ id: 'i1', playerId: 'p-1', response: 'open' })],
       }),
       event({
         id: 'e-accepted',
-        invitations: [invitation({ id: 'i2', playerId: 'p-1', status: 'accepted' })],
+        invitations: [invitation({ id: 'i2', playerId: 'p-1', response: 'accepted' })],
       }),
       event({
         id: 'e-other-player',
-        invitations: [invitation({ id: 'i3', playerId: 'p-2', status: 'open' })],
+        invitations: [invitation({ id: 'i3', playerId: 'p-2', response: 'open' })],
       }),
     ];
 
-    const result = selectEventsWithActiveInvitations(events, 'p-1');
+    const result = selectActivitiesWithActiveInvitations(events, 'p-1');
 
     expect(result.map((entry) => entry.id)).toEqual(['e-open']);
   });
@@ -98,13 +100,13 @@ describe('player deletion selectors', () => {
   it('removes only active invitations for the deleted player', () => {
     const sourceEvent = event({
       invitations: [
-        invitation({ id: 'i-open-target', playerId: 'p-1', status: 'open' }),
-        invitation({ id: 'i-accepted-target', playerId: 'p-1', status: 'accepted' }),
-        invitation({ id: 'i-open-other', playerId: 'p-2', status: 'open' }),
+        invitation({ id: 'i-open-target', playerId: 'p-1', response: 'open' }),
+        invitation({ id: 'i-accepted-target', playerId: 'p-1', response: 'accepted' }),
+        invitation({ id: 'i-open-other', playerId: 'p-2', response: 'open' }),
       ],
     });
 
-    const result = selectEventWithoutActiveInvitations(sourceEvent, 'p-1');
+    const result = selectActivityWithoutActiveInvitations(sourceEvent, 'p-1');
 
     expect(result.invitations.map((entry) => entry.id)).toEqual([
       'i-accepted-target',
@@ -113,22 +115,22 @@ describe('player deletion selectors', () => {
   });
 
   it('returns a combined deletion impact from selectors', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e-past-assignment',
-        date: '2026-05-01',
+        startsAt: '2026-05-01T10:00:00.000Z',
         teams: [team({ id: 't1', selectedPlayers: ['p-1'] })],
       }),
       event({
         id: 'e-open-invite',
-        date: '2026-07-01',
-        invitations: [invitation({ id: 'i-open', playerId: 'p-1', status: 'open' })],
+        startsAt: '2026-07-01T10:00:00.000Z',
+        invitations: [invitation({ id: 'i-open', playerId: 'p-1', response: 'open' })],
       }),
     ];
 
     const result = selectPlayerDeletionImpact(events, 'p-1', new Date('2026-06-05T00:00:00Z'));
 
     expect(result.hasPastTeamAssignment).toBe(true);
-    expect(result.eventsWithActiveInvitations.map((entry) => entry.id)).toEqual(['e-open-invite']);
+    expect(result.activitiesWithActiveInvitations.map((entry) => entry.id)).toEqual(['e-open-invite']);
   });
 });

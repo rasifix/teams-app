@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, Player, Trainer } from '../../types';
+import type { Activity, Player, Trainer } from '../../types';
 import { selectDuplicateTrainerGuardianGroups } from './memberDuplicateSelectors';
 
 function trainer(overrides: Partial<Trainer>): Trainer {
@@ -25,11 +25,13 @@ function player(overrides: Partial<Player>): Player {
   };
 }
 
-function event(overrides: Partial<Event>): Event {
+function event(overrides: Partial<Activity>): Activity {
   return {
     id: 'e-default',
-    name: 'Event',
-    date: '2026-01-01',
+    squadId: 'squad-1',
+    kind: 'match',
+    name: 'Activity',
+    startsAt: '2026-01-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
     minPlayersPerTeam: 8,
     teams: [],
@@ -81,8 +83,8 @@ describe('member duplicate selectors', () => {
       event({
         id: 'e-1',
         teams: [
-          { id: 'team-1', name: 'A', strength: 2, startTime: '10:00', selectedPlayers: [], trainerId: 't-2' },
-          { id: 'team-2', name: 'B', strength: 2, startTime: '11:00', selectedPlayers: [], trainerId: 't-2' },
+          { id: 'team-1', name: 'A', strength: 2, startTime: '10:00', selectedPlayers: [], responsiblePersonIds: ['t-2'] },
+          { id: 'team-2', name: 'B', strength: 2, startTime: '11:00', selectedPlayers: [], responsiblePersonIds: ['t-2'] },
         ],
       }),
     ];

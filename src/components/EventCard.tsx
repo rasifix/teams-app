@@ -1,125 +1,41 @@
-import type { Event } from '../types';
+import type { Activity, InvitationStatus } from '../types';
 import { useTranslation } from 'react-i18next';
-import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import Strength from './Strength';
+import { selectActivityCardSummary } from '../store/selectors/activityViewSelectors';
 import { DateColumn } from './ui';
-import type { TeamAssignee } from '../store/selectors/teamTrainerSelectors';
 
 interface EventCardProps {
-  event: Event;
-  trainerAssignees?: Map<string, TeamAssignee>;
-  onClick?: (eventId: string) => void;
+  activity: Activity;
+  onClick?: (activityId: string) => void;
 }
 
-export default function EventCard({ event, trainerAssignees, onClick }: EventCardProps) {
+const invitationStatuses: InvitationStatus[] = ['accepted', 'open', 'declined', 'injured', 'sick', 'unavailable'];
+
+export default function EventCard({ activity, onClick }: EventCardProps) {
   const { t } = useTranslation();
-  // Check if all teams meet the minimum player requirement
-  const allTeamsMeetMinimum = event.teams.every(
-    team => (team.selectedPlayers?.length || 0) >= (event.minPlayersPerTeam || 0)
-  );
-  
-  // Get earliest start time and total teams count
-  const earliestStartTime = event.teams.length > 0 
-    ? event.teams
-        .map(team => team.startTime)
-        .sort()[0] // Sort times and get the first (earliest)
-    : undefined;
-  const teamsCount = event.teams.length;
+  const summary = selectActivityCardSummary(activity);
 
-  // Calculate player counts
-  const selectedCount = event.teams.reduce((sum, team) => sum + (team.selectedPlayers?.length || 0), 0);
-  const statusCounts = invitationStatusOrder.reduce<Record<(typeof invitationStatusOrder)[number], number>>((counts, status) => {
-    counts[status] = event.invitations.filter(inv => inv.status === status).length;
-    return counts;
-  }, {
-    accepted: 0,
-    open: 0,
-    declined: 0,
-    injured: 0,
-    sick: 0,
-    unavailable: 0,
-  });
-
-  const handleClick = () => {
-    onClick?.(event.id);
-  };
-
-  return (
-    <div
-      onClick={handleClick}
-      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all cursor-pointer"
-    >
-      <div className="flex items-start gap-4">
-        {/* Date column */}
-        <DateColumn date={event.date} />
-        
-        {/* Content and status */}
-        <div className="flex justify-between items-start flex-1">
-          <div className="flex-1">
-            <h3 className="text-md font-semibold text-gray-900">{event.name}</h3>
-            <div className="mt-2 space-y-1">
-              {/* Mobile view - simplified */}
-              <div className="block sm:hidden">
-                {earliestStartTime && (
-                  <p className="text-sm text-gray-600">
-                    🕐 {earliestStartTime}
-                  </p>
-                )}
-                <p className="text-sm text-gray-600">
-                  👥 {t('events.teamCount', { count: teamsCount })}
-                </p>
-              </div>
-              
-              {/* Desktop view - detailed */}
-              <div className="hidden sm:block space-y-1">
-                {event.teams.map((team) => {
-                  const trainer = team.trainerId ? trainerAssignees?.get(team.trainerId) : undefined;
-                  return (
-                    <p key={team.id} className="text-sm text-gray-600 flex items-center gap-1">
-                      🕐 {team.startTime} 👥 {team.name} <Strength level={team.strength} className="text-xs" />
-                      {trainer && (
-                        <span className="text-sm text-gray-600">
-                          👤 {trainer.firstName} {trainer.lastName}
-                        </span>
-                      )}
-                    </p>
-                  );
-                })}
-                <div className="flex items-center gap-3 text-sm">
-                  {invitationStatusOrder.map((status) => (
-                    <div
-                      key={status}
-                      className="flex items-center gap-1"
-                      title={t('events.playersMarkedAs', { status: t(`invitationStatus.${status}`).toLowerCase() })}
-                    >
-                      <span className={`font-bold ${invitationStatusMeta[status].iconClassName}`}>{invitationStatusMeta[status].icon}</span>
-                      <span className="text-gray-600">{statusCounts[status]}</span>
-                    </div>
-                  ))}
-                  {/* Selected */}
-                  <div className="flex items-center gap-1" title={t('events.playersAssignedToTeams')}>
-                    <span className="text-green-600 font-bold">✓</span>
-                    <span className="text-gray-600">{selectedCount}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+  return <button type="button" onClick={() => onClick?.(activity.id)} className="w-full cursor-pointer rounded-lg border border-gray-200 p-4 text-left transition-all hover:shadow-md">
+    <div className="flex items-start gap-4">
+      <DateColumn date={summary.date} />
+      <div className="flex flex-1 items-start justify-between">
+        <div className="flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-md font-semibold text-gray-900">{activity.name}</h3>
+            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">{t(`activity.kinds.${activity.kind}`)}</span>
           </div>
-          <div className="ml-4 hidden sm:block">
-            {allTeamsMeetMinimum ? (
-              <div className="w-4 h-4 bg-green-600 rounded-full flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                {t('common.states.pending')}
-              </span>
-            )}
+          <div className="mt-2 space-y-1 text-sm text-gray-600">
+            <p>🕐 {summary.startTime}{activity.location ? ` · 📍 ${activity.location}` : ''}</p>
+            {activity.kind === 'match' && activity.opponentName && <p>{t('activity.fields.opponent')}: {activity.opponentName}</p>}
+            <p>{t('events.teamCount', { count: summary.teamCount })}</p>
+            {activity.invitations.length > 0 && <div className="flex flex-wrap items-center gap-3 pt-1" aria-label={t('events.invitationCounts')}>
+              {invitationStatuses.map((status) => <span key={status} title={t(`invitationStatus.${status}`)}>{t(`invitationStatus.${status}`)}: {summary.invitationStatusCounts[status]}</span>)}
+              <span title={t('events.playersAssignedToTeams')}>✓ {summary.selectedPlayerCount}</span>
+              {summary.invitationCounts.declined > 0 && <span>{t('activity.declinedCount', { count: summary.invitationCounts.declined })}</span>}
+            </div>}
           </div>
         </div>
+        <div className="ml-4 hidden sm:block">{summary.allTeamsMeetMinimum ? <span className="text-green-600">✓</span> : <span className="rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">{t('common.states.pending')}</span>}</div>
       </div>
     </div>
-  );
+  </button>;
 }

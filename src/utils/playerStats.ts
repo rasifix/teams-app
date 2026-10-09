@@ -1,32 +1,26 @@
-import type { Event } from '../types';
+import type { Activity } from '../types';
+import { isTeamActivity } from '../store/selectors/activitySelectors';
 
 export interface PlayerStats {
   acceptedCount: number;
   selectedCount: number;
 }
 
-export function getPlayerStats(playerId: string, events: Event[]): PlayerStats {
+export function getPlayerStats(playerId: string, activities: Activity[]): PlayerStats {
   let acceptedCount = 0;
   let selectedCount = 0;
 
-  events.forEach((event: Event) => {
-    // Check if player has accepted an invitation for this event
-    const invitation = event.invitations.find(inv => inv.playerId === playerId);
-    if (invitation && invitation.status === 'accepted') {
+  activities.filter(isTeamActivity).forEach((activity) => {
+    const invitation = activity.invitations.find((entry) => entry.playerId === playerId);
+    if (invitation?.response === 'accepted') {
       acceptedCount++;
     }
 
-    // Check if player has been selected for any team in this event
-    const isSelected = event.teams.some(team => 
-      team.selectedPlayers?.includes(playerId) || false
-    );
+    const isSelected = activity.teams.some((team) => team.selectedPlayers?.includes(playerId) || false);
     if (isSelected) {
       selectedCount++;
     }
   });
 
-  return {
-    acceptedCount,
-    selectedCount
-  };
+  return { acceptedCount, selectedCount };
 }

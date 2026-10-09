@@ -5,20 +5,20 @@ import MembersList from "../components/MembersList";
 import DuplicateMembersModal from "../components/DuplicateMembersModal";
 import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
-import { useEvents, useTrainers } from "../store";
+import { useActivities, useTrainers } from "../store";
 import { selectDuplicateTrainerGuardianGroups } from "../store/selectors/memberDuplicateSelectors";
 import type { MembersOutletContext } from "./MembersPage";
 
 export default function MembersTrainersPage() {
   const { t } = useTranslation();
   const { trainers, players, openAddTrainerModal, requestDeleteTrainer } = useOutletContext<MembersOutletContext>();
-  const { events } = useEvents();
+  const { activities } = useActivities();
   const { mergeGuardianIntoTrainer } = useTrainers();
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
 
   const duplicateGroups = useMemo(
-    () => selectDuplicateTrainerGuardianGroups(players, trainers, events),
-    [players, trainers, events]
+    () => selectDuplicateTrainerGuardianGroups(players, trainers, activities),
+    [players, trainers, activities]
   );
 
   const handleMergeDuplicate = async (guardianId: string, trainerId: string): Promise<boolean> => {

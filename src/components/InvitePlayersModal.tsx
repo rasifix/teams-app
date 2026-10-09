@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Player, InvitationStatus } from '../types';
+import type { Player, InvitationResponse } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import { selectInviteablePlayers } from '../store/selectors/eventInactivePlayerSelectors';
@@ -9,7 +9,7 @@ import { getBirthYear } from '../utils/birthDate';
 interface InvitePlayersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInvite: (playerIds: string[], status: InvitationStatus) => void;
+  onInvite: (playerIds: string[], status: InvitationResponse) => void;
   alreadyInvitedPlayerIds: string[];
   players: Player[];
 }
@@ -24,13 +24,13 @@ export default function InvitePlayersModal({
   const { t } = useTranslation();
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
-  const [invitationStatus, setInvitationStatus] = useState<InvitationStatus>('accepted');
+  const [invitationStatus, setInvitationResponse] = useState<InvitationResponse>('accepted');
 
   useEffect(() => {
     if (isOpen) {
       setSelectedPlayerIds(new Set());
       setLevelRange([1, 5]);
-      setInvitationStatus('accepted');
+      setInvitationResponse('accepted');
     }
   }, [isOpen]);
 
@@ -120,7 +120,7 @@ export default function InvitePlayersModal({
                         name="invitationStatus"
                         value="accepted"
                         checked={invitationStatus === 'accepted'}
-                        onChange={() => setInvitationStatus('accepted')}
+                        onChange={() => setInvitationResponse('accepted')}
                         className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
                       />
                       {t('invitationStatus.accepted')}
@@ -131,7 +131,7 @@ export default function InvitePlayersModal({
                         name="invitationStatus"
                         value="open"
                         checked={invitationStatus === 'open'}
-                        onChange={() => setInvitationStatus('open')}
+                        onChange={() => setInvitationResponse('open')}
                         className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
                       />
                       {t('invitationStatus.open')}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEvents, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
+import { useActivities, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
 import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
@@ -27,16 +27,16 @@ export default function TeamLineupPage() {
   const { eventId, teamId, lineupTab } = useParams<{ eventId: string; teamId: string; lineupTab?: string }>();
   const navigate = useNavigate();
 
-  const { getEventById, updateEvent } = useEvents();
+  const { getActivityById, updateActivityTeams } = useActivities();
   const { players } = usePlayers();
   const { playingModes, formations } = useMatchPlanning();
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
 
-  const event = eventId ? getEventById(eventId) : null;
+  const event = eventId ? getActivityById(eventId) : null;
   const team = event?.teams.find((t) => t.id === teamId);
 
-  const playingMode = selectPlayingModeById(playingModes, event?.playingModeId);
+  const playingMode = selectPlayingModeById(playingModes, event?.kind === 'match' ? event.matchFormatId : undefined);
   const formation = selectFormationById(formations, team?.formationId);
   const activeTab = selectLineupRouteTab(lineupTab, playingMode?.numberOfPeriods);
 
@@ -90,7 +90,7 @@ export default function TeamLineupPage() {
     );
   }
 
-  if (!event || !team) {
+  if (!event || event.kind !== 'match' || !team) {
     return (
       <div className="page-container">
         <div className="empty-state">{t('teamLineup.teamNotFound')}</div>
@@ -157,7 +157,7 @@ export default function TeamLineupPage() {
       t.id === teamId ? { ...t, lineup: draftLineup } : t
     );
 
-    const wasSaved = await updateEvent(eventId, { teams: updatedTeams });
+    const wasSaved = await updateActivityTeams(eventId, updatedTeams);
     setIsSaving(false);
     if (!wasSaved) {
       setSaveError(t('teamLineup.saveFailed'));

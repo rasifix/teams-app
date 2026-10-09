@@ -23,7 +23,7 @@ import TeamPlayerSelectionPage from './pages/TeamPlayerSelectionPage';
 import TeamLineupPage from './pages/TeamLineupPage';
 import StatisticsPage from './pages/StatisticsPage';
 import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
-import EventAttendancePage from './pages/EventAttendancePage';
+import EventParticipationPage from './pages/EventParticipationPage';
 import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
 import MatchPlanningPage from './pages/MatchPlanningPage';
@@ -66,7 +66,7 @@ function AppRoutes() {
                     <Route path="/match-planning" element={<ProtectedRoute><MatchPlanningPage /></ProtectedRoute>} />
                     <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>
                       <Route path="player-statistics" element={<PlayerStatisticsPage />} />
-                      <Route path="event-attendance" element={<EventAttendancePage />} />
+                      <Route path="event-participation" element={<EventParticipationPage />} />
                       <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
                     </Route>
             </Routes>

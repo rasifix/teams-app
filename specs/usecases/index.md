@@ -34,9 +34,10 @@ be described in files grouped in subfolders per category.
 * UC-EV-007 - select team formation
 * UC-EV-008 - plan per-period lineup
 * UC-EV-009 - assign team trainer
+* UC-EV-010 - record attendance after an activity
 
 ## Statistics
 
 * UC-ST-001 - Player Statistics
-* UC-ST-002 - Event Attendance Overview
+* UC-ST-002 - Event Participation Overview
 * UC-ST-003 - Team Selections

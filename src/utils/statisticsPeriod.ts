@@ -1,4 +1,5 @@
-import type { Event } from '../types';
+import type { Activity } from '../types';
+import { getActivityDate } from '../store/selectors/activitySelectors';
 import i18n from '../i18n/config';
 
 export interface StatisticsPeriod {
@@ -9,11 +10,7 @@ export interface StatisticsPeriod {
 
 const toComparableDate = (dateString: string): string | null => {
   if (!dateString) return null;
-
-  // Keep date-only values unchanged.
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    return dateString;
-  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
 
   const parsed = new Date(dateString);
   if (Number.isNaN(parsed.getTime())) return null;
@@ -29,17 +26,17 @@ export function isValidStatisticsPeriod(period: Partial<StatisticsPeriod> | null
   return period.startDate <= period.endDate;
 }
 
-export function filterEventsByStatisticsPeriod(events: Event[], period: StatisticsPeriod | null): Event[] {
-  if (!period) return events;
+export function filterEventsByStatisticsPeriod(activities: Activity[], period: StatisticsPeriod | null): Activity[] {
+  if (!period) return activities;
 
   const start = toComparableDate(period.startDate);
   const end = toComparableDate(period.endDate);
-  if (!start || !end) return events;
+  if (!start || !end) return activities;
 
-  return events.filter((event) => {
-    const eventDate = toComparableDate(event.date);
-    if (!eventDate) return false;
-    return eventDate >= start && eventDate <= end;
+  return activities.filter((activity) => {
+    const activityDate = toComparableDate(getActivityDate(activity));
+    if (!activityDate) return false;
+    return activityDate >= start && activityDate <= end;
   });
 }
 

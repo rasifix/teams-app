@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { Event, Player } from '../types';
+import type { Activity, Player } from '../types';
+import { selectTeamSelectionMatrixData, type SelectionEventDetail, type TeamSelectionMode } from '../store/selectors/statisticsSelectors';
 import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
@@ -10,155 +11,34 @@ import { Card, CardBody, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle 
 
 interface TeamSelectionMatrixProps {
   players: Player[];
-  events: Event[];
-}
-
-type GroupByMode = 'strength' | 'teamName';
-
-interface MatrixColumn {
-  key: string;
-  label: string;
-  strength?: number;
-}
-
-interface SelectionEventDetail {
-  eventId: string;
-  eventName: string;
-  eventDate: string;
-  teamId: string;
-  teamName: string;
-}
-
-interface TeamSelectionCell {
-  columnKey: string;
-  count: number;
-  events: SelectionEventDetail[];
-}
-
-interface TeamSelectionRow {
-  player: Player;
-  selectedCount: number;
-  acceptedCount: number;
-  cells: TeamSelectionCell[];
+  events: Activity[];
 }
 
 interface SelectedCell {
   player: Player;
   groupLabel: string;
-  mode: GroupByMode;
+  mode: TeamSelectionMode;
   events: SelectionEventDetail[];
 }
-
-const getTeamColumnKey = (teamName: string) => teamName.trim().toLocaleLowerCase();
-
-const getDisplayTeamName = (teamName: string, fallbackIndex: number, fallbackLabel: string) => {
-  const trimmedName = teamName.trim();
-  return trimmedName || `${fallbackLabel} ${fallbackIndex + 1}`;
-};
 
 export default function TeamSelectionMatrix({ players, events }: TeamSelectionMatrixProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
-  const [groupByMode, setGroupByMode] = useState<GroupByMode>('strength');
+  const [groupByMode, setGroupByMode] = useState<TeamSelectionMode>('strength');
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
 
-  const [minLevel, maxLevel] = levelRange;
-
-  const matrixColumns = useMemo(() => {
-    const columns = new Map<string, MatrixColumn>();
-
-    events.forEach((event) => {
-      event.teams.forEach((team, index) => {
-        if (groupByMode === 'strength') {
-          const key = `strength-${team.strength}`;
-
-          if (!columns.has(key)) {
-            columns.set(key, {
-              key,
-              label: t('statistics.teamSelections.strengthLabel', { level: team.strength }),
-              strength: team.strength,
-            });
-          }
-
-          return;
-        }
-
-        const displayName = getDisplayTeamName(team.name, index, t('domain.team'));
-        const key = getTeamColumnKey(displayName);
-
-        if (!columns.has(key)) {
-          columns.set(key, { key, label: displayName });
-        }
-      });
-    });
-
-    return Array.from(columns.values()).sort((left, right) => {
-      if (groupByMode === 'strength') {
-        return (left.strength ?? Number.MAX_SAFE_INTEGER) - (right.strength ?? Number.MAX_SAFE_INTEGER);
-      }
-
-      return left.label.localeCompare(right.label, undefined, { numeric: true, sensitivity: 'base' });
-    });
-  }, [events, groupByMode, t]);
-
-  const matrixRows = useMemo(() => {
-    const filteredPlayers = players.filter((player) => (
-      player.level >= minLevel && player.level <= maxLevel
-    ));
-
-    return filteredPlayers.map<TeamSelectionRow>((player) => {
-      const selectedCount = events.reduce((count, event) => {
-        const isSelectedInEvent = event.teams.some((team) => (team.selectedPlayers || []).includes(player.id));
-        return isSelectedInEvent ? count + 1 : count;
-      }, 0);
-
-      const acceptedCount = events.reduce((count, event) => {
-        const hasAcceptedInvitation = event.invitations.some((invitation) => (
-          invitation.playerId === player.id && invitation.status === 'accepted'
-        ));
-
-        return hasAcceptedInvitation ? count + 1 : count;
-      }, 0);
-
-      const cells = matrixColumns.map<TeamSelectionCell>((matrixColumn) => {
-        const selectedEvents = events.flatMap((event) => (
-          event.teams.flatMap((team, index) => {
-            const displayName = getDisplayTeamName(team.name, index, t('domain.team'));
-            const isMatchingGroup = groupByMode === 'strength'
-              ? team.strength === matrixColumn.strength
-              : getTeamColumnKey(displayName) === matrixColumn.key;
-            const isSelectedForTeam = (team.selectedPlayers || []).includes(player.id);
-
-            if (!isMatchingGroup || !isSelectedForTeam) {
-              return [];
-            }
-
-            return [{
-              eventId: event.id,
-              eventName: event.name,
-              eventDate: event.date,
-              teamId: team.id,
-              teamName: displayName,
-            }];
-          })
-        ));
-
-        return {
-          columnKey: matrixColumn.key,
-          count: selectedEvents.length,
-          events: selectedEvents,
-        };
-      });
-
-      return {
-        player,
-        selectedCount,
-        acceptedCount,
-        cells,
-      };
-    });
-  }, [events, groupByMode, matrixColumns, maxLevel, minLevel, players, t]);
+  const { columns: matrixColumns, rows: matrixRows } = useMemo(
+    () => selectTeamSelectionMatrixData(
+      players,
+      events,
+      levelRange,
+      groupByMode,
+      (strength) => t('statistics.teamSelections.strengthLabel', { level: strength }),
+      t('domain.team')
+    ),
+    [events, groupByMode, levelRange, players, t]
+  );
 
   const handlePlayerClick = (playerId: string) => {
     navigate(`/players/${playerId}`);

@@ -11,7 +11,7 @@ Event, and can they be considered for team selection?"
 ## Core Concept
 
 An Invitation is a per-event participation intent record. It is not membership
-(Group), not final attendance outcome (Statistics), and not team assignment
+(Group), not recorded attendance (Event, see Attendance) or participation statistics (Statistics), and not team assignment
 (Team). It is the decision bridge between planned participation and actual
 selection.
 

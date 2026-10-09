@@ -1,6 +1,6 @@
-import type { Guardian, Player, Trainer } from '../../types';
+import type { Player, Trainer } from '../../types';
 
-export type TeamAssigneeSource = 'trainer' | 'guardian';
+export type TeamAssigneeSource = 'player' | 'trainer';
 
 export interface TeamAssignee {
   id: string;
@@ -14,54 +14,33 @@ function toComparableName(value: string | undefined): string {
 }
 
 function compareByName(left: Pick<TeamAssignee, 'firstName' | 'lastName'>, right: Pick<TeamAssignee, 'firstName' | 'lastName'>): number {
-  const lastNameCompare = toComparableName(left.lastName)
-    .localeCompare(toComparableName(right.lastName));
-  if (lastNameCompare !== 0) {
-    return lastNameCompare;
-  }
-
-  return toComparableName(left.firstName)
-    .localeCompare(toComparableName(right.firstName));
-}
-
-function createGuardianAssignee(guardian: Guardian): TeamAssignee {
-  return {
-    id: guardian.id,
-    firstName: guardian.firstName,
-    lastName: guardian.lastName,
-    source: 'guardian',
-  };
-}
-
-function buildAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamAssignee> {
-  const assigneesById = new Map<string, TeamAssignee>();
-
-  trainers.forEach((trainer) => {
-    assigneesById.set(trainer.id, {
-      id: trainer.id,
-      firstName: trainer.firstName,
-      lastName: trainer.lastName,
-      source: 'trainer',
-    });
-  });
-
-  players.forEach((player) => {
-    (player.guardians || []).forEach((guardian) => {
-      if (!assigneesById.has(guardian.id)) {
-        assigneesById.set(guardian.id, createGuardianAssignee(guardian));
-      }
-    });
-  });
-
-  return assigneesById;
+  const lastNameCompare = toComparableName(left.lastName).localeCompare(toComparableName(right.lastName));
+  if (lastNameCompare !== 0) return lastNameCompare;
+  const firstNameCompare = toComparableName(left.firstName).localeCompare(toComparableName(right.firstName));
+  return firstNameCompare;
 }
 
 export function selectTeamAssigneeOptions(trainers: Trainer[], players: Player[]): TeamAssignee[] {
-  return Array.from(buildAssigneeMap(trainers, players).values()).sort(compareByName);
+  const membersById = new Map<string, TeamAssignee>();
+  trainers.forEach((trainer) => membersById.set(trainer.id, {
+    id: trainer.id,
+    firstName: trainer.firstName,
+    lastName: trainer.lastName,
+    source: 'trainer',
+  }));
+  players.forEach((player) => {
+    if (!membersById.has(player.id)) membersById.set(player.id, {
+      id: player.id,
+      firstName: player.firstName,
+      lastName: player.lastName,
+      source: 'player',
+    });
+  });
+  return Array.from(membersById.values()).sort(compareByName);
 }
 
 export function selectTeamAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamAssignee> {
-  return buildAssigneeMap(trainers, players);
+  return new Map(selectTeamAssigneeOptions(trainers, players).map((member) => [member.id, member]));
 }
 
 export function selectTeamAssigneeById(
@@ -69,17 +48,24 @@ export function selectTeamAssigneeById(
   trainers: Trainer[],
   players: Player[]
 ): TeamAssignee | null {
-  if (!assigneeId) {
-    return null;
-  }
-
-  return selectTeamAssigneeMap(trainers, players).get(assigneeId) || null;
+  return assigneeId ? selectTeamAssigneeMap(trainers, players).get(assigneeId) ?? null : null;
 }
 
-// Backward-compatible aliases; keep temporarily during migration.
+export function selectTeamResponsiblePeople(
+  responsiblePersonIds: string[] | undefined,
+  trainers: Trainer[],
+  players: Player[]
+): Array<TeamAssignee & { isLead: boolean }> {
+  const members = selectTeamAssigneeMap(trainers, players);
+  return (responsiblePersonIds ?? []).flatMap((id) => {
+    const member = members.get(id);
+    return member ? [member] : [];
+  }).map((member, index) => ({ ...member, isLead: index === 0 }));
+}
+
+// Compatibility names used while older call sites are migrated.
 export type TeamTrainerSource = TeamAssigneeSource;
 export type TeamTrainerAssignee = TeamAssignee;
-
 export const selectTeamTrainerOptions = selectTeamAssigneeOptions;
 export const selectTeamTrainerAssigneeMap = selectTeamAssigneeMap;
 export const selectTeamTrainerAssigneeById = selectTeamAssigneeById;

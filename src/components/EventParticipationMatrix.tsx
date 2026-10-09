@@ -1,25 +1,25 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { Player, Event } from '../types';
+import type { Activity, Player } from '../types';
+import { getActivityDate } from '../store/selectors/activitySelectors';
+import { selectEventParticipationRows } from '../store/selectors/statisticsSelectors';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
 import { Card, CardBody, DateColumn } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
 
-interface EventAttendanceMatrixProps {
+interface EventParticipationMatrixProps {
   players: Player[];
-  events: Event[];
+  events: Activity[];
 }
 
-export default function EventAttendanceMatrix({ players, events }: EventAttendanceMatrixProps) {
+export default function EventParticipationMatrix({ players, events }: EventParticipationMatrixProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const [minLevel, maxLevel] = levelRange;
 
   const handlePlayerClick = (playerId: string) => {
     navigate(`/players/${playerId}`);
@@ -30,46 +30,10 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
     navigate(`/events/${eventId}`);
   };
 
-  const attendanceData = useMemo(() => {
-    // Filter players by level range
-    const filteredPlayers = players.filter(player => 
-      player.level >= minLevel && player.level <= maxLevel
-    );
-
-    return filteredPlayers.map(player => {
-      const attendance = events.map(event => {
-        const invitation = event.invitations.find(inv => inv.playerId === player.id);
-        const isSelected = event.teams.some(team => 
-          (team.selectedPlayers || []).includes(player.id)
-        );
-
-        if (!invitation) {
-          return { status: 'not-invited', event };
-        }
-        if (isSelected) {
-          return { status: 'selected', event };
-        }
-        if (invitation.status === 'accepted') {
-          return { status: 'accepted', event };
-        }
-        if (invitation.status === 'injured') {
-          return { status: 'injured', event };
-        }
-        if (invitation.status === 'sick') {
-          return { status: 'sick', event };
-        }
-        if (invitation.status === 'unavailable') {
-          return { status: 'unavailable', event };
-        }
-        if (invitation.status === 'declined') {
-          return { status: 'declined', event };
-        }
-        return { status: 'open', event };
-      });
-
-      return { player, attendance };
-    });
-  }, [players, events, minLevel, maxLevel]);
+  const sortedData = useMemo(
+    () => selectEventParticipationRows(players, events, levelRange),
+    [players, events, levelRange]
+  );
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -92,13 +56,6 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
     }
   };
 
-  // Sort players by last name, then first name
-  const sortedData = [...attendanceData].sort((a, b) => {
-    const lastNameCompare = a.player.lastName.toLowerCase().localeCompare(b.player.lastName.toLowerCase());
-    if (lastNameCompare !== 0) return lastNameCompare;
-    return a.player.firstName.toLowerCase().localeCompare(b.player.firstName.toLowerCase());
-  });
-
   // Scroll to next upcoming event on mount
   useEffect(() => {
     if (events.length === 0 || players.length === 0) return;
@@ -109,7 +66,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
 
     // Find the index of the next upcoming event
     const nextEventIndex = events.findIndex(event => {
-      const eventDate = new Date(event.date);
+      const eventDate = new Date(getActivityDate(event));
       eventDate.setHours(0, 0, 0, 0);
       return eventDate >= today;
     });
@@ -145,7 +102,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
       <Card>
         <CardBody>
           <div className="empty-state">
-            <p>{t('statistics.eventAttendance.emptyState')}</p>
+            <p>{t('statistics.eventParticipation.emptyState')}</p>
           </div>
         </CardBody>
       </Card>
@@ -190,13 +147,13 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                   <th 
                     key={event.id} 
                     className="px-2 py-2 text-center text-sm font-medium text-gray-900 min-w-[50px]"
-                    title={`${event.name} - ${formatDate(event.date)}`}
+                    title={`${event.name} - ${formatDate(getActivityDate(event))}`}
                   >
                     <div 
                       className="flex justify-center cursor-pointer hover:opacity-70 transition-opacity"
                       onClick={(e) => handleEventClick(event.id, e)}
                     >
-                      <DateColumn date={event.date} />
+                      <DateColumn date={getActivityDate(event)} />
                     </div>
                   </th>
                 ))}
@@ -221,7 +178,7 @@ export default function EventAttendanceMatrix({ players, events }: EventAttendan
                       <td 
                         key={index}
                         className="px-3 py-2 text-center max-h-[40px]"
-                        title={`${event.name} - ${formatDate(event.date)}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
+                        title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
                       >
                         <div className={`inline-flex items-center justify-center w-7 h-7 rounded ${statusInfo.bg}`}>
                           <span className={`text-base font-bold ${statusInfo.color}`}>

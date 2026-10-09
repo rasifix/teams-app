@@ -124,10 +124,10 @@ export interface Team {
   id: string;
   name: string;
   strength: number; // 1 (highest) to 3 (lowest), default 2
-  startTime: string; // HH:MM format - each team can have different start times
+  startTime?: string; // HH:MM override; otherwise use the activity start time
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
-  trainerId?: string; // Assigned team lead member ID (trainer or guardian)
+  responsiblePersonIds?: string[]; // Members responsible for the team (any squad member, one or more)
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
   formationId?: string | null; // only settable while the Event has a playingModeId; fixed for the whole match
@@ -135,24 +135,6 @@ export interface Team {
 }
 
 export type InvitationStatus = 'open' | 'accepted' | 'declined' | 'injured' | 'sick' | 'unavailable';
-
-export interface Invitation {
-  id: string;
-  playerId: string;
-  status: InvitationStatus;
-}
-
-export interface Event {
-  id: string;
-  name: string;
-  date: string; // ISO date string
-  maxPlayersPerTeam: number; // Max players applies to all teams in this event
-  minPlayersPerTeam: number; // Minimum players required per team
-  location?: string; // Optional event location
-  playingModeId?: string | null; // only usable when the group has matchPlanningEnabled; always optional
-  teams: Team[]; // Teams are contained within the event
-  invitations: Invitation[];
-}
 
 export interface PlayerSelection {
   playerId: string;
@@ -162,7 +144,7 @@ export interface PlayerSelection {
 export interface PlayerEventHistoryItem {
   eventId: string;
   eventName: string;
-  eventDate: string; // ISO date string
+  eventDate: string; // YYYY-MM-DD
   invitationStatus: InvitationStatus;
   isSelected: boolean;
   teamName?: string;
@@ -206,3 +188,73 @@ export interface TeamForSelection {
 export interface SelectionResult {
   [playerId: string]: string; // Maps player ID to team ID
 }
+
+export type ActivityKind = 'match' | 'tournament' | 'training' | 'social';
+export type InvitationResponse = 'open' | 'accepted' | 'declined';
+export type InvitationDeclineReason = 'injured' | 'sick' | 'unavailable';
+
+export interface ActivityInvitation {
+  id: string;
+  playerId: string;
+  response: InvitationResponse;
+  declineReason?: InvitationDeclineReason;
+  respondedBy?: string;
+}
+
+export type AttendanceStatus = 'present' | 'absent' | 'excused';
+
+export interface ActivityAttendance {
+  personId: string;
+  status: AttendanceStatus;
+}
+
+export interface ActivityTaskSignup {
+  personId: string;
+  signedUpAt?: string;
+}
+
+export interface ActivityTask {
+  id: string;
+  name: string;
+  description?: string;
+  requiredPeople: number;
+  signups: ActivityTaskSignup[];
+  isFulfilled: boolean;
+}
+
+export interface TrainingUnit {
+  id: string;
+  name?: string;
+  plannedPlayerIds: string[];
+}
+
+export interface TrainingGroup {
+  id: string;
+  name?: string;
+  units: TrainingUnit[];
+}
+
+/** Wire model of `/squads/:id/activities`; replaces `Event` once the migration is complete. */
+export interface Activity {
+  id: string;
+  squadId: string;
+  kind: ActivityKind;
+  name: string;
+  startsAt: string; // ISO date-time
+  endsAt?: string;
+  location?: string;
+  matchFormatId?: string | null;
+  opponentName?: string;
+  maxPlayersPerTeam?: number;
+  minPlayersPerTeam?: number;
+  teams: Team[];
+  invitations: ActivityInvitation[];
+  selectionSentAt?: string;
+  attendance?: ActivityAttendance[];
+  tasks?: ActivityTask[];
+  trainerIds?: string[];
+  groups?: TrainingGroup[];
+}
+
+/** Body for creating or updating an activity (server owns `id` and `squadId`). */
+export type ActivityPayload = Omit<Activity, 'id' | 'squadId'>;

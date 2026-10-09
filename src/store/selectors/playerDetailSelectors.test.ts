@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, Invitation, Period, PlayerEventHistoryItem, Team } from '../../types';
+import type { Activity, ActivityInvitation, Period, PlayerEventHistoryItem, Team } from '../../types';
 import {
   selectFutureEventsWithoutInvitation,
   selectGroupedPlayerEventHistory,
@@ -17,20 +17,22 @@ function team(overrides: Partial<Team>): Team {
   };
 }
 
-function invitation(overrides: Partial<Invitation>): Invitation {
+function invitation(overrides: Partial<ActivityInvitation>): ActivityInvitation {
   return {
     id: 'i-default',
     playerId: 'p-default',
-    status: 'open',
+    response: 'open',
     ...overrides,
   };
 }
 
-function event(overrides: Partial<Event>): Event {
+function event(overrides: Partial<Activity>): Activity {
   return {
     id: 'e-default',
-    name: 'Event',
-    date: '2026-01-01',
+    squadId: 'squad-1',
+    kind: 'match',
+    name: 'Activity',
+    startsAt: '2026-01-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
     minPlayersPerTeam: 8,
     teams: [],
@@ -41,19 +43,19 @@ function event(overrides: Partial<Event>): Event {
 
 describe('player detail selectors', () => {
   it('builds player event history in chronological order', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e2',
         name: 'Second',
-        date: '2026-03-05',
-        invitations: [invitation({ id: 'i2', playerId: 'p1', status: 'accepted' })],
+        startsAt: '2026-03-05T10:00:00.000Z',
+        invitations: [invitation({ id: 'i2', playerId: 'p1', response: 'accepted' })],
         teams: [team({ id: 't2', name: 'Blue', selectedPlayers: ['p1'] })],
       }),
       event({
         id: 'e1',
         name: 'First',
-        date: '2026-01-01',
-        invitations: [invitation({ id: 'i1', playerId: 'p1', status: 'open' })],
+        startsAt: '2026-01-01T10:00:00.000Z',
+        invitations: [invitation({ id: 'i1', playerId: 'p1', response: 'open' })],
       }),
     ];
 
@@ -117,25 +119,25 @@ describe('player detail selectors', () => {
   });
 
   it('selects only future events where player is not invited, sorted soonest first', () => {
-    const events: Event[] = [
+    const events: Activity[] = [
       event({
         id: 'e2',
-        date: '2026-06-01',
+        startsAt: '2026-06-01T10:00:00.000Z',
         invitations: [],
       }),
       event({
         id: 'e1',
-        date: '2026-05-01',
+        startsAt: '2026-05-01T10:00:00.000Z',
         invitations: [],
       }),
       event({
         id: 'e3',
-        date: '2026-05-10',
-        invitations: [invitation({ id: 'i3', playerId: 'p1', status: 'open' })],
+        startsAt: '2026-05-10T10:00:00.000Z',
+        invitations: [invitation({ id: 'i3', playerId: 'p1', response: 'open' })],
       }),
       event({
         id: 'e0',
-        date: '2026-04-01',
+        startsAt: '2026-04-01T10:00:00.000Z',
         invitations: [],
       }),
     ];

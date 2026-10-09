@@ -1,9 +1,9 @@
 import { useOutletContext } from 'react-router-dom';
-import type { Event, Player } from '../types';
+import type { Activity, Player } from '../types';
 import TeamSelectionMatrix from '../components/TeamSelectionMatrix';
 
 interface StatisticsOutletContext {
-  filteredEvents: Event[];
+  filteredEvents: Activity[];
   statisticsPlayers: Player[];
 }
 

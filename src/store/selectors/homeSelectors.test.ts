@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Event, Player } from '../../types';
+import type { Activity, Player } from '../../types';
 import { selectGuardianChildOpenInvitations, selectUpcomingEvents, selectUpcomingEventsWithGuardianInvitations } from './homeSelectors';
 
-const buildEvent = (overrides: Partial<Event>): Event => ({
+const buildEvent = (overrides: Partial<Activity>): Activity => ({
   id: 'event-default',
-  name: 'Event',
-  date: '2026-01-01',
+  squadId: 'squad-1',
+  kind: 'match',
+  name: 'Activity',
+  startsAt: '2026-01-01T10:00:00.000Z',
   maxPlayersPerTeam: 12,
   minPlayersPerTeam: 8,
   teams: [],
@@ -26,10 +28,10 @@ const buildPlayer = (overrides: Partial<Player>): Player => ({
 
 describe('home selectors', () => {
   it('returns upcoming events sorted by date', () => {
-    const events: Event[] = [
-      buildEvent({ id: 'e3', date: '2026-06-01' }),
-      buildEvent({ id: 'e2', date: '2026-05-01' }),
-      buildEvent({ id: 'e1', date: '2026-04-10' }),
+    const events: Activity[] = [
+      buildEvent({ id: 'e3', startsAt: '2026-06-01T10:00:00.000Z' }),
+      buildEvent({ id: 'e2', startsAt: '2026-05-01T10:00:00.000Z' }),
+      buildEvent({ id: 'e1', startsAt: '2026-04-10T10:00:00.000Z' }),
     ];
 
     const result = selectUpcomingEvents(events, new Date('2026-04-10T12:00:00Z'));
@@ -38,10 +40,10 @@ describe('home selectors', () => {
   });
 
   it('excludes events before today', () => {
-    const events: Event[] = [
-      buildEvent({ id: 'past', date: '2026-04-09' }),
-      buildEvent({ id: 'today', date: '2026-04-10' }),
-      buildEvent({ id: 'future', date: '2026-04-11' }),
+    const events: Activity[] = [
+      buildEvent({ id: 'past', startsAt: '2026-04-09T10:00:00.000Z' }),
+      buildEvent({ id: 'today', startsAt: '2026-04-10T10:00:00.000Z' }),
+      buildEvent({ id: 'future', startsAt: '2026-04-11T10:00:00.000Z' }),
     ];
 
     const result = selectUpcomingEvents(events, new Date('2026-04-10T18:45:00Z'));
@@ -50,10 +52,10 @@ describe('home selectors', () => {
   });
 
   it('applies an optional item limit', () => {
-    const events: Event[] = [
-      buildEvent({ id: 'e1', date: '2026-05-01' }),
-      buildEvent({ id: 'e2', date: '2026-05-02' }),
-      buildEvent({ id: 'e3', date: '2026-05-03' }),
+    const events: Activity[] = [
+      buildEvent({ id: 'e1', startsAt: '2026-05-01T10:00:00.000Z' }),
+      buildEvent({ id: 'e2', startsAt: '2026-05-02T10:00:00.000Z' }),
+      buildEvent({ id: 'e3', startsAt: '2026-05-03T10:00:00.000Z' }),
     ];
 
     const result = selectUpcomingEvents(events, new Date('2026-05-01T00:00:00Z'), 2);
@@ -62,9 +64,9 @@ describe('home selectors', () => {
   });
 
   it('returns an empty list when no upcoming events exist', () => {
-    const events: Event[] = [
-      buildEvent({ id: 'e1', date: '2026-03-01' }),
-      buildEvent({ id: 'e2', date: '2026-03-15' }),
+    const events: Activity[] = [
+      buildEvent({ id: 'e1', startsAt: '2026-03-01T10:00:00.000Z' }),
+      buildEvent({ id: 'e2', startsAt: '2026-03-15T10:00:00.000Z' }),
     ];
 
     const result = selectUpcomingEvents(events, new Date('2026-04-01T00:00:00Z'));
@@ -94,54 +96,54 @@ describe('home selectors', () => {
       }),
     ];
 
-    const events: Event[] = [
+    const events: Activity[] = [
       buildEvent({
         id: 'e-later',
-        name: 'Later Event',
-        date: '2026-06-10',
+        name: 'Later Activity',
+        startsAt: '2026-06-10T10:00:00.000Z',
         invitations: [
-          { id: 'i-later', playerId: 'p1', status: 'open' },
+          { id: 'i-later', playerId: 'p1', response: 'open' },
         ],
       }),
       buildEvent({
         id: 'e-sooner-open',
-        name: 'Sooner Open Event',
-        date: '2026-05-10',
+        name: 'Sooner Open Activity',
+        startsAt: '2026-05-10T10:00:00.000Z',
         invitations: [
-          { id: 'i-sooner', playerId: 'p1', status: 'open' },
-          { id: 'i-open-ben', playerId: 'p2', status: 'open' },
+          { id: 'i-sooner', playerId: 'p1', response: 'open' },
+          { id: 'i-open-ben', playerId: 'p2', response: 'open' },
         ],
       }),
       buildEvent({
         id: 'e-accepted',
-        name: 'Accepted Event',
-        date: '2026-05-20',
+        name: 'Accepted Activity',
+        startsAt: '2026-05-20T10:00:00.000Z',
         invitations: [
-          { id: 'i-accepted', playerId: 'p2', status: 'accepted' },
+          { id: 'i-accepted', playerId: 'p2', response: 'accepted' },
         ],
       }),
       buildEvent({
         id: 'e-declined',
-        name: 'Declined Event',
-        date: '2026-05-25',
+        name: 'Declined Activity',
+        startsAt: '2026-05-25T10:00:00.000Z',
         invitations: [
-          { id: 'i-declined', playerId: 'p2', status: 'declined' },
+          { id: 'i-declined', playerId: 'p2', response: 'declined' },
         ],
       }),
       buildEvent({
         id: 'e-injured',
-        name: 'Injured Event',
-        date: '2026-05-28',
+        name: 'Injured Activity',
+        startsAt: '2026-05-28T10:00:00.000Z',
         invitations: [
-          { id: 'i-injured', playerId: 'p2', status: 'injured' },
+          { id: 'i-injured', playerId: 'p2', response: 'declined', declineReason: 'injured' },
         ],
       }),
       buildEvent({
         id: 'e-past',
-        name: 'Past Event',
-        date: '2026-04-01',
+        name: 'Past Activity',
+        startsAt: '2026-04-01T10:00:00.000Z',
         invitations: [
-          { id: 'i-past', playerId: 'p1', status: 'open' },
+          { id: 'i-past', playerId: 'p1', response: 'open' },
         ],
       }),
     ];
@@ -174,11 +176,11 @@ describe('home selectors', () => {
         guardians: [{ id: 'u-guardian', firstName: 'Guardian', lastName: 'Member', email: 'other@example.com' }],
       }),
     ];
-    const events: Event[] = [
+    const events: Activity[] = [
       buildEvent({
         id: 'e1',
-        date: '2026-05-10',
-        invitations: [{ id: 'i1', playerId: 'p1', status: 'open' }],
+        startsAt: '2026-05-10T10:00:00.000Z',
+        invitations: [{ id: 'i1', playerId: 'p1', response: 'open' }],
       }),
     ];
 
@@ -222,12 +224,12 @@ describe('home selectors', () => {
       }),
     ];
 
-    const events: Event[] = [
+    const events: Activity[] = [
       buildEvent({
         id: 'e1',
         name: 'Saturday Match',
-        date: '2026-05-10',
-        invitations: [{ id: 'i1', playerId: 'p1', status: 'open' }],
+        startsAt: '2026-05-10T10:00:00.000Z',
+        invitations: [{ id: 'i1', playerId: 'p1', response: 'open' }],
       }),
     ];
 
@@ -264,24 +266,24 @@ describe('home selectors', () => {
       }),
     ];
 
-    const events: Event[] = [
+    const events: Activity[] = [
       buildEvent({
         id: 'e2',
         name: 'Future B',
-        date: '2026-05-10',
-        invitations: [{ id: 'i2', playerId: 'p2', status: 'open' }],
+        startsAt: '2026-05-10T10:00:00.000Z',
+        invitations: [{ id: 'i2', playerId: 'p2', response: 'open' }],
       }),
       buildEvent({
         id: 'e1',
         name: 'Future A',
-        date: '2026-05-05',
-        invitations: [{ id: 'i1', playerId: 'p1', status: 'open' }],
+        startsAt: '2026-05-05T10:00:00.000Z',
+        invitations: [{ id: 'i1', playerId: 'p1', response: 'open' }],
       }),
       buildEvent({
         id: 'past',
         name: 'Past',
-        date: '2026-04-01',
-        invitations: [{ id: 'ip', playerId: 'p1', status: 'open' }],
+        startsAt: '2026-04-01T10:00:00.000Z',
+        invitations: [{ id: 'ip', playerId: 'p1', response: 'open' }],
       }),
     ];
 
@@ -316,13 +318,13 @@ describe('home selectors', () => {
       }),
     ];
 
-    const events: Event[] = [
-      buildEvent({ id: 'e1', date: '2026-05-01', invitations: [] }),
-      buildEvent({ id: 'e2', date: '2026-05-02', invitations: [] }),
+    const events: Activity[] = [
+      buildEvent({ id: 'e1', startsAt: '2026-05-01T10:00:00.000Z', invitations: [] }),
+      buildEvent({ id: 'e2', startsAt: '2026-05-02T10:00:00.000Z', invitations: [] }),
       buildEvent({
         id: 'e3',
-        date: '2026-05-03',
-        invitations: [{ id: 'i3', playerId: 'p3', status: 'open' }],
+        startsAt: '2026-05-03T10:00:00.000Z',
+        invitations: [{ id: 'i3', playerId: 'p3', response: 'open' }],
       }),
     ];
 

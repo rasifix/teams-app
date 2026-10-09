@@ -1,12 +1,13 @@
-import type { Event } from '../../types';
+import type { Activity } from '../../types';
+import { getActivityDate } from './activitySelectors';
 
 export interface PlayerDeletionImpact {
   hasPastTeamAssignment: boolean;
-  eventsWithActiveInvitations: Event[];
+  activitiesWithActiveInvitations: Activity[];
 }
 
-function isPastEvent(eventDate: string, now: Date): boolean {
-  const timestamp = new Date(eventDate).getTime();
+function isPastActivity(startsAt: string, now: Date): boolean {
+  const timestamp = new Date(getActivityDate({ startsAt })).getTime();
   if (Number.isNaN(timestamp)) {
     return false;
   }
@@ -15,41 +16,41 @@ function isPastEvent(eventDate: string, now: Date): boolean {
 }
 
 export function selectHasPastTeamAssignment(
-  events: Event[],
+  activities: Activity[],
   playerId: string,
   now: Date = new Date()
 ): boolean {
-  return events.some((event) => {
-    if (!isPastEvent(event.date, now)) {
+  return activities.some((activity) => {
+    if (!isPastActivity(activity.startsAt, now)) {
       return false;
     }
 
-    return event.teams.some((team) => (team.selectedPlayers || []).includes(playerId));
+    return activity.teams.some((team) => (team.selectedPlayers || []).includes(playerId));
   });
 }
 
-export function selectEventsWithActiveInvitations(events: Event[], playerId: string): Event[] {
-  return events.filter((event) => event.invitations.some((invitation) => (
-    invitation.playerId === playerId && invitation.status === 'open'
+export function selectActivitiesWithActiveInvitations(activities: Activity[], playerId: string): Activity[] {
+  return activities.filter((activity) => activity.invitations.some((invitation) => (
+    invitation.playerId === playerId && invitation.response === 'open'
   )));
 }
 
-export function selectEventWithoutActiveInvitations(event: Event, playerId: string): Event {
+export function selectActivityWithoutActiveInvitations(activity: Activity, playerId: string): Activity {
   return {
-    ...event,
-    invitations: event.invitations.filter((invitation) => (
-      invitation.playerId !== playerId || invitation.status !== 'open'
+    ...activity,
+    invitations: activity.invitations.filter((invitation) => (
+      invitation.playerId !== playerId || invitation.response !== 'open'
     )),
   };
 }
 
 export function selectPlayerDeletionImpact(
-  events: Event[],
+  activities: Activity[],
   playerId: string,
   now: Date = new Date()
 ): PlayerDeletionImpact {
   return {
-    hasPastTeamAssignment: selectHasPastTeamAssignment(events, playerId, now),
-    eventsWithActiveInvitations: selectEventsWithActiveInvitations(events, playerId),
+    hasPastTeamAssignment: selectHasPastTeamAssignment(activities, playerId, now),
+    activitiesWithActiveInvitations: selectActivitiesWithActiveInvitations(activities, playerId),
   };
 }

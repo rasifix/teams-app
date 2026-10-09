@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import AddGroupModal from '../components/AddGroupModal';
 import UpcomingEventCard from '../components/UpcomingEventCard';
 import { useGroup, useGroups, useGroupsError, useGroupsLoading, useStore } from '../store/useStore';
+import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEventsWithGuardianInvitations } from '../store/selectors/homeSelectors';
 import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
 import type { CreateGroupRequest } from '../types';
@@ -12,12 +13,12 @@ import type { CreateGroupRequest } from '../types';
 export default function HomePage() {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
-  const { addGroup, configureGroupCategory, selectGroup, initializeApp, loadGroups, updateInvitationStatus } = useStore();
+  const { addGroup, configureGroupCategory, selectGroup, initializeApp, loadGroups } = useStore();
   const group = useGroup();
   const groups = useGroups();
   const groupsLoading = useGroupsLoading();
   const groupsError = useGroupsError();
-  const events = useStore((state) => state.events);
+  const { activities, updateActivityInvitation } = useActivities();
   const members = useStore((state) => state.members);
   const players = useMemo(() => selectPlayersFromMembers(members), [members]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -27,7 +28,7 @@ export default function HomePage() {
   const [respondingInvitationId, setRespondingInvitationId] = useState<string | null>(null);
   const [invitationError, setInvitationError] = useState<string | null>(null);
 
-  const upcomingEvents = selectUpcomingEventsWithGuardianInvitations(events, players, user, new Date(), 5);
+  const upcomingEvents = selectUpcomingEventsWithGuardianInvitations(activities, players, user, new Date(), 5);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -76,7 +77,7 @@ export default function HomePage() {
     setRespondingInvitationId(invitationId);
     setInvitationError(null);
     try {
-      const success = await updateInvitationStatus(eventId, playerId, status);
+      const success = await updateActivityInvitation(eventId, playerId, { response: status });
       if (!success) {
         setInvitationError(t('home.openInvitations.updateError'));
       }

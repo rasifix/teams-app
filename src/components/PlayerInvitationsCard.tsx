@@ -1,350 +1,71 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPlayerStats } from '../utils/playerStats';
-import type { Invitation, Event, Player, InvitationStatus } from '../types';
-import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import Level from './Level';
-import LevelRangeSelector from './LevelRangeSelector';
+import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
+import { getInvitationStatus, selectInvitationCounts } from '../store/selectors/activitySelectors';
 
 interface PlayerInvitationsCardProps {
-  invitations: Invitation[];
-  currentEvent: Event;
+  invitations: ActivityInvitation[];
+  currentActivity: Activity;
   players: Player[];
-  events: Event[];
-  inactiveFutureEventPlayerIds: Set<string>;
   onInviteClick: () => void;
-  onStatusChange: (invitationId: string, newStatus: InvitationStatus) => void;
+  onStatusChange: (invitationId: string, response: InvitationResponse, declineReason?: InvitationDeclineReason) => void;
   onRemoveInvitation: (invitationId: string) => void;
   assignedPlayerIds?: string[];
 }
 
-type TabType = 'accepted' | 'open' | 'unavailable' | 'assigned';
-
-const unavailableStatuses: InvitationStatus[] = ['declined', 'injured', 'sick', 'unavailable'];
-
 export default function PlayerInvitationsCard({
   invitations,
-  currentEvent,
+  currentActivity,
   players,
-  events,
-  inactiveFutureEventPlayerIds,
   onInviteClick,
   onStatusChange,
   onRemoveInvitation,
   assignedPlayerIds = [],
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<TabType>('accepted');
-  const [swipedInvitationId, setSwipedInvitationId] = useState<string | null>(null);
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
+  const counts = selectInvitationCounts(currentActivity);
 
-  const handleTouchStartInvitation = (invitationId: string, e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    const startX = touch.clientX;
-    
-    const handleTouchMove = (moveEvent: TouchEvent) => {
-      const moveTouch = moveEvent.touches[0];
-      const diffX = startX - moveTouch.clientX;
-      
-      // If swiped left more than 50px, show delete button
-      if (diffX > 50 && swipedInvitationId !== invitationId) {
-        setSwipedInvitationId(invitationId);
-        document.removeEventListener('touchmove', handleTouchMove);
-        document.removeEventListener('touchend', handleTouchEnd);
-      }
-      // If swiped right more than 30px while delete button is showing, hide it
-      else if (diffX < -30 && swipedInvitationId === invitationId) {
-        setSwipedInvitationId(null);
-        document.removeEventListener('touchmove', handleTouchMove);
-        document.removeEventListener('touchend', handleTouchEnd);
-      }
-    };
-    
-    const handleTouchEnd = () => {
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-    
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
-  };
-
-  // Function to calculate real-time statistics including current event state
-  const getPlayerStatsWithCurrent = (playerId: string) => {
-    // Get historical stats from all events except current one
-    const historicalEvents = events.filter((e: Event) => e.id !== currentEvent.id);
-    const historicalStats = getPlayerStats(playerId, historicalEvents);
-
-    // Check current event status
-    const currentInvitation = currentEvent.invitations.find(inv => inv.playerId === playerId);
-    const isCurrentlySelected = currentEvent.teams.some(team =>
-      (team.selectedPlayers || []).includes(playerId)
-    );
-
-    // Add current event to stats
-    const acceptedCount = historicalStats.acceptedCount +
-      (currentInvitation?.status === 'accepted' ? 1 : 0);
-    const selectedCount = historicalStats.selectedCount +
-      (isCurrentlySelected ? 1 : 0);
-
-    return { acceptedCount, selectedCount };
-  };
-
-  const acceptedCount = invitations.filter(inv => inv.status === 'accepted').filter(inv => !assignedPlayerIds.includes(inv.playerId)).length;
-  const assignedCount = assignedPlayerIds.length;
-  const statusCounts = invitationStatusOrder.reduce<Record<InvitationStatus, number>>((counts, status) => {
-    counts[status] = invitations.filter(inv => inv.status === status).length;
-    return counts;
-  }, {
-    accepted: 0,
-    open: 0,
-    declined: 0,
-    injured: 0,
-    sick: 0,
-    unavailable: 0,
-  });
-
-  // Get invitations for the current tab
-  const tabInvitations = activeTab === 'assigned'
-    ? invitations.filter(inv => assignedPlayerIds.includes(inv.playerId))
-    : activeTab === 'unavailable'
-      ? invitations.filter(inv => unavailableStatuses.includes(inv.status) || inactiveFutureEventPlayerIds.has(inv.playerId))
-      : activeTab === 'accepted'
-      ? invitations.filter(inv => inv.status === 'accepted' && !inactiveFutureEventPlayerIds.has(inv.playerId))
-      : invitations.filter(inv => inv.status === activeTab);
-
-  const invitationTabs: Array<{ status: TabType; label: string; count: number; activeClassName: string; className?: string }> = [
-    {
-      status: 'assigned',
-      label: t('playerInvitations.tabs.assigned'),
-      count: assignedCount,
-      activeClassName: 'border-green-500 text-green-600',
-      className: 'lg:hidden',
-    },
-    {
-      status: 'accepted',
-      label: t('invitationStatus.accepted'),
-      count: acceptedCount,
-      activeClassName: invitationStatusMeta.accepted.tabActiveClassName,
-    },
-    {
-      status: 'open',
-      label: t('invitationStatus.open'),
-      count: statusCounts.open,
-      activeClassName: invitationStatusMeta.open.tabActiveClassName,
-    },
-    {
-      status: 'unavailable',
-      label: t('playerInvitations.tabs.unavailable'),
-      count: unavailableStatuses.reduce((sum, status) => sum + statusCounts[status], 0),
-      activeClassName: invitationStatusMeta.unavailable.tabActiveClassName,
-    },
-  ];
-
-  // Filter by availability only on accepted tab when toggle is enabled
-  const filteredInvitations = activeTab === 'accepted'
-    ? tabInvitations.filter(inv => {
-        const player = players.find(p => p.id === inv.playerId);
-        return !assignedPlayerIds.includes(inv.playerId) && 
-               player && 
-               player.level >= levelRange[0] && 
-               player.level <= levelRange[1];
-      })
-    : tabInvitations.filter(inv => {
-        const player = players.find(p => p.id === inv.playerId);
-        return player && 
-               player.level >= levelRange[0] && 
-               player.level <= levelRange[1];
-      });
-
-  return (
-    <div className="bg-white lg:shadow shadow-none lg:rounded-lg rounded-none lg:p-6 p-4 lg:border border-0">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onInviteClick}
-            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-          >
-            {t('playerInvitations.invite')}
-          </button>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-4">
-        <nav className="-mb-px flex space-x-4 lg:space-x-8 overflow-x-auto">
-          {invitationTabs.map((tab) => (
-            <button
-              key={tab.status}
-              onClick={() => setActiveTab(tab.status)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${tab.className || ''} ${activeTab === tab.status
-                  ? tab.activeClassName
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-            >
-              {tab.label} <span className="hidden lg:inline">({tab.count})</span>
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Level Range Selector - Desktop Only */}
-      <div className="hidden lg:block mb-4">
-        <LevelRangeSelector
-          minLevel={1}
-          maxLevel={5}
-          defaultRange={levelRange}
-          onChange={setLevelRange}
-          className="mt-0"
-        />
-      </div>
-
-      {filteredInvitations.length === 0 ? (
-        <div className="text-gray-500 text-center py-4">
-          {invitations.length === 0 ? (
-            <p>{t('playerInvitations.empty.noneSent')}</p>
-          ) : tabInvitations.length === 0 ? (
-            <p>{t('playerInvitations.empty.noneWithStatus', {
-              status: activeTab === 'assigned'
-                ? t('playerInvitations.empty.beenAssigned')
-                : activeTab === 'unavailable'
-                  ? t('playerInvitations.empty.beenMarkedUnavailable')
-                  : t(`playerInvitations.empty.status.${activeTab}`),
-            })}</p>
-          ) : activeTab === 'accepted' ? (
-            <p>{t('playerInvitations.empty.noAvailableAccepted')}</p>
-          ) : activeTab === 'assigned' ? (
-            <p>{t('playerInvitations.empty.noAssignedToTeams')}</p>
-          ) : (
-            <p>{t('playerInvitations.empty.noPlayersInCategory')}</p>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {[...filteredInvitations]
-            .sort((a, b) => {
-              const playerA = players.find(p => p.id === a.playerId);
-              const playerB = players.find(p => p.id === b.playerId);
-
-              if (!playerA || !playerB) return 0;
-
-              const lastNameCompare = playerA.lastName.toLowerCase().localeCompare(playerB.lastName.toLowerCase());
-              if (lastNameCompare !== 0) return lastNameCompare;
-
-              return playerA.firstName.toLowerCase().localeCompare(playerB.firstName.toLowerCase());
-            })
-            .map((invitation) => {
-              const player = players.find(p => p.id === invitation.playerId);
-              const isAccepted = invitation.status === 'accepted';
-              const isAssigned = assignedPlayerIds.includes(invitation.playerId);
-              // Only allow dragging if we're on the accepted tab, player is accepted, and not assigned
-              const isDraggable = activeTab === 'accepted' && isAccepted && !isAssigned;
-              // Only dim assigned players on the accepted tab since we have separate tabs now
-              const shouldDim = activeTab === 'accepted' && isAssigned;
-              const hasInactiveFutureError = inactiveFutureEventPlayerIds.has(invitation.playerId);
-
-              // Calculate player statistics including current event real-time state
-              const stats = getPlayerStatsWithCurrent(invitation.playerId);
-
-              return (
-                <div
-                  key={invitation.id}
-                  className="relative overflow-hidden"
-                >
-                  <div
-                    className={`border border-gray-200 rounded-lg p-3 transition-all ${isDraggable ? 'cursor-move hover:border-green-300 hover:bg-green-50' : ''
-                      } ${shouldDim ? 'opacity-40' : ''} ${
-                        swipedInvitationId === invitation.id ? '-translate-x-20 lg:translate-x-0 rounded-r-none lg:rounded-r-lg' : 'translate-x-0'
-                      }`}
-                    draggable={isDraggable}
-                    onDragStart={(e) => {
-                      if (isDraggable) {
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('playerId', invitation.playerId);
-                      }
-                    }}
-                    onTouchStart={activeTab === 'open' && !isAssigned ? (e) => handleTouchStartInvitation(invitation.id, e) : undefined}
-                  >
-                  <div className="flex justify-between items-center gap-3">
-                    <div className="flex items-center gap-2 flex-1">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          {isDraggable && (
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8" />
-                            </svg>
-                          )}
-                          <span className="text-sm text-gray-900">
-                            {player ? `${player.firstName} ${player.lastName}` : t('playerInvitations.playerIdFallback', { id: invitation.playerId })}
-                          </span>
-                          {hasInactiveFutureError && (
-                            <span className="text-xs text-red-700 bg-red-100 px-1.5 py-0.5 rounded font-medium" title={t('playerInvitations.inactiveIndicatorTooltip')}>
-                              {t('playerInvitations.inactiveIndicator')}
-                            </span>
-                          )}
-                          {player && <Level level={player.level} className="text-sm" />}
-                          <span className="text-xs text-gray-500 font-mono" title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}>
-                            {stats.selectedCount}/{stats.acceptedCount}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={invitation.status}
-                        onChange={(e) => onStatusChange(invitation.id, e.target.value as InvitationStatus)}
-                        className={`text-xs px-2 py-1 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 ${invitationStatusMeta[invitation.status].selectClassName}`}
-                      >
-                        {invitationStatusOrder.map((status) => (
-                          <option key={status} value={status}>{t(`invitationStatus.${status}`)}</option>
-                        ))}
-                      </select>
-                      {activeTab === 'open' && <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveInvitation(invitation.id);
-                          setSwipedInvitationId(null);
-                        }}
-                        disabled={isAssigned}
-                        className={`p-1 rounded transition-colors hidden lg:block ${isAssigned
-                            ? 'text-gray-300 cursor-not-allowed'
-                            : 'text-red-500 hover:text-red-700 hover:bg-red-50'
-                          }`}
-                        title={isAssigned ? t('playerInvitations.cannotRemoveAssigned') : t('playerInvitations.removeInvitation')}
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                      </button>
-                      }
-                    </div>
-                  </div>
-                  </div>
-
-                  {/* Delete button that appears on swipe (mobile only) */}
-                  {activeTab === 'open' && !isAssigned && (
-                    <div 
-                      className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 lg:hidden ${
-                        swipedInvitationId === invitation.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                      }`}
-                    >
-                      <button
-                        className="flex items-center justify-center w-full h-full text-white font-medium text-sm"
-                        onClick={() => {
-                          onRemoveInvitation(invitation.id);
-                          setSwipedInvitationId(null);
-                        }}
-                      >
-                        {t('playerInvitations.remove')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-      )}
+  return <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
+    <div className="mb-4 flex items-center justify-between">
+      <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
+      <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>
     </div>
-  );
+    <div className="mb-4 flex flex-wrap gap-3 text-sm text-gray-600">
+      <span>{t('invitationStatus.open')}: {counts.open}</span>
+      <span>{t('invitationStatus.accepted')}: {counts.accepted}</span>
+      <span>{t('invitationStatus.declined')}: {counts.declined}</span>
+      {(['injured', 'sick', 'unavailable', 'unspecified'] as const).map((reason) => counts.declineReasons[reason] > 0 && <span key={reason}>{t(`activity.declineReasons.${reason}`)}: {counts.declineReasons[reason]}</span>)}
+    </div>
+    {invitations.length === 0 ? <p className="py-4 text-center text-gray-500">{t('playerInvitations.empty.noneSent')}</p> : <div className="space-y-2">
+      {invitations.map((invitation) => {
+        const player = players.find((entry) => entry.id === invitation.playerId);
+        const status = getInvitationStatus(invitation);
+        const assigned = assignedPlayerIds.includes(invitation.playerId);
+        return <div key={invitation.id} className="flex flex-col gap-3 rounded-lg border border-gray-200 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-medium text-gray-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
+            <span className="text-xs text-gray-600">{t(`invitationStatus.${status}`)}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select aria-label={t('common.labels.status')} value={invitation.response} onChange={(event) => {
+              const response = event.target.value as InvitationResponse;
+              onStatusChange(invitation.id, response, response === 'declined' ? declineReasons[invitation.id] || undefined : undefined);
+            }} className="rounded border border-gray-300 px-2 py-1 text-sm">
+              {(['open', 'accepted', 'declined'] as const).map((response) => <option key={response} value={response}>{t(`invitationStatus.${response}`)}</option>)}
+            </select>
+            {invitation.response === 'declined' && <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+              const reason = event.target.value as InvitationDeclineReason | '';
+              setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
+              onStatusChange(invitation.id, 'declined', reason || undefined);
+            }} className="rounded border border-gray-300 px-2 py-1 text-sm">
+              <option value="">{t('activity.declineReasons.unspecified')}</option>
+              {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
+            </select>}
+            {!assigned && <button type="button" onClick={() => onRemoveInvitation(invitation.id)} className="text-sm text-red-600 hover:text-red-800">{t('playerInvitations.remove')}</button>}
+          </div>
+        </div>;
+      })}
+    </div>}
+  </section>;
 }

@@ -39,7 +39,7 @@ Authenticated User
 ## Preconditions
 
 - User is authenticated.
-- A group is selected and group data is loaded.
+- A squad is selected and squad data is loaded.
 - Players and events are available in application state (may be empty).
 - User can access the Statistics page.
 
@@ -50,7 +50,7 @@ The user opens Statistics and selects the Event Participation tab.
 ## Input Data
 
 User-controlled inputs:
-- selected statistics period (All events or one group period),
+- selected statistics period (All events or one squad period),
 - level range filter (`minLevel`, `maxLevel`) using the level-range selector,
 - click on a player row,
 - click on an event date header.

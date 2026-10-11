@@ -16,9 +16,10 @@ captured through Team assignments within Event scope.
 
 ## Relationships
 
-- A Trainer belongs to one or more Groups (depending on membership rules).
+- A Trainer belongs to one or more Squads (depending on membership rules).
 - A Trainer can be assigned to many Teams across Events.
 - A Team may have one assigned Trainer.
+- Trainers and Guardians can be responsible persons of a Team; Players cannot.
 - Trainer assignments contribute to operational history and staffing analysis.
 
 ## Key Responsibilities
@@ -31,7 +32,7 @@ captured through Team assignments within Event scope.
 ## Lifecycle
 
 1. A Trainer profile is created.
-2. The Trainer is assigned to one or more Groups.
+2. The Trainer is assigned to one or more Squads.
 3. Event planners assign the Trainer to Team(s) in an Event.
 4. Assignments can be adjusted until team finalization.
 5. Historical assignments are retained for audit and analysis.
@@ -63,7 +64,7 @@ The Trainer does not:
 
 ## Practical Example
 
-"Alex Meyer" is a Trainer in Group "U12". For Event "Saturday Training -
+"Alex Meyer" is a Trainer in Squad "U12". For Event "Saturday Training -
 2026-04-11", Alex is assigned to Team A while another Trainer is assigned to
 Team B. These assignments remain part of the Event record for future staffing
 analysis.

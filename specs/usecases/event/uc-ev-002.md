@@ -2,7 +2,7 @@
 
 ## Goal
 
-Allow an authenticated user with selected group context to invite players to an
+Allow an authenticated user with selected squad context to invite players to an
 existing event.
 
 ## Scope
@@ -34,9 +34,9 @@ Authenticated User with Role trainer
 ## Preconditions
 
 - User is authenticated.
-- A group is selected in app state.
+- A squad is selected in app state.
 - Target event exists and is accessible in Event Detail view.
-- At least one player exists in group members if invitations should be created.
+- At least one player exists in squad members if invitations should be created.
 
 ## Trigger
 
@@ -89,7 +89,7 @@ Allowed default invitation statuses in invite modal:
 
 ### A2 - No Available Players To Invite
 
-1. All players are already invited, or no players exist in group.
+1. All players are already invited, or no players exist in squad.
 2. Modal shows no players available message.
 3. User cannot create invitations until availability changes.
 
@@ -145,13 +145,13 @@ array.
 ## API Contract Used By Current Frontend
 
 Current frontend persistence path:
-- PUT /api/groups/{groupId}/events/{id}
+- PUT /api/squads/{squadId}/events/{id}
 - Request includes updated invitations array in event payload.
 
 Note:
 - OpenAPI also defines invitation-specific endpoints under
-  /api/groups/{groupId}/events/{id}/players and
-  /api/groups/{groupId}/events/{id}/players/{player_id}/status.
+  /api/squads/{squadId}/events/{id}/players and
+  /api/squads/{squadId}/events/{id}/players/{player_id}/status.
 - The current frontend invite flow does not call those invitation-specific
   endpoints.
 
@@ -173,5 +173,5 @@ Note:
 
 - This spec captures current implemented behavior in Event Detail and
   Invite Players modal.
-- Role-based authorization beyond authentication/group access is enforced by
+- Role-based authorization beyond authentication/squad access is enforced by
   backend policies, not by dedicated frontend role checks in this flow.

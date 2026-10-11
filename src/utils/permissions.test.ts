@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessRestrictedManagement, withResolvedGroupPermissions } from './permissions';
+import { canAccessRestrictedManagement, withResolvedSquadPermissions } from './permissions';
 
 describe('permissions utils', () => {
-  it('allows access for admin role on current group', () => {
+  it('allows access for admin role on current squad', () => {
     const allowed = canAccessRestrictedManagement(
       {
         id: 'u1',
@@ -11,9 +11,9 @@ describe('permissions utils', () => {
         lastName: 'User',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'u1', email: 'admin@example.com' }],
         },
@@ -23,7 +23,7 @@ describe('permissions utils', () => {
     expect(allowed).toBe(true);
   });
 
-  it('allows access for trainer role on current group', () => {
+  it('allows access for trainer role on current squad', () => {
     const allowed = canAccessRestrictedManagement(
       {
         id: 'u2',
@@ -32,9 +32,9 @@ describe('permissions utils', () => {
         lastName: 'User',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'u2', email: 'trainer@example.com' }],
         },
@@ -53,9 +53,9 @@ describe('permissions utils', () => {
         lastName: 'User',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'coach-1', email: 'coach@example.com' }],
         },
@@ -66,7 +66,7 @@ describe('permissions utils', () => {
   });
 
   it('denies access when no user is available', () => {
-    expect(canAccessRestrictedManagement(null, { group: { id: 'group-1', name: 'Group', periods: [] } })).toBe(false);
+    expect(canAccessRestrictedManagement(null, { squad: { id: 'squad-1', name: 'Squad', periods: [] } })).toBe(false);
   });
 
   it('denies restricted access for users without elevated membership', () => {
@@ -78,9 +78,9 @@ describe('permissions utils', () => {
         lastName: 'User',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'coach-1', email: 'coach@example.com' }],
         },
@@ -95,13 +95,13 @@ describe('permissions utils', () => {
       {
         id: 'u5',
         email: 'manager@example.com',
-        firstName: 'Group',
+        firstName: 'Squad',
         lastName: 'Manager',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'trainer-other-id', email: 'manager@example.com' }],
         },
@@ -111,21 +111,21 @@ describe('permissions utils', () => {
     expect(allowed).toBe(true);
   });
 
-  it('does not allow access when active group is missing', () => {
+  it('does not allow access when active squad is missing', () => {
     const allowed = canAccessRestrictedManagement(
       {
         id: 'u7',
         email: 'manager2@example.com',
-        firstName: 'Group',
+        firstName: 'Squad',
         lastName: 'Manager',
       },
-      { group: null },
+      { squad: null },
     );
 
     expect(allowed).toBe(false);
   });
 
-  it('allows access when current user is a group member with admin role', () => {
+  it('allows access when current user is a squad member with admin role', () => {
     const allowed = canAccessRestrictedManagement(
       {
         id: 'u10',
@@ -134,9 +134,9 @@ describe('permissions utils', () => {
         lastName: 'Admin',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [],
           members: [{ id: 'u10', email: 'member-admin@example.com', roles: ['admin'] }],
@@ -156,9 +156,9 @@ describe('permissions utils', () => {
         lastName: 'Guardian',
       },
       {
-        group: {
-          id: 'group-1',
-          name: 'Group',
+        squad: {
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [],
           members: [{ id: 'u11', email: 'member-guardian@example.com', roles: ['guardian'] }],
@@ -169,17 +169,17 @@ describe('permissions utils', () => {
     expect(allowed).toBe(false);
   });
 
-  it('preserves member roles from fallback group data when the fresh payload omits members', () => {
-    const resolved = withResolvedGroupPermissions(
+  it('preserves member roles from fallback squad data when the fresh payload omits members', () => {
+    const resolved = withResolvedSquadPermissions(
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
       },
       [
         {
-          id: 'group-1',
-          name: 'Group',
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           members: [{ id: 'u10', email: 'member-admin@example.com', roles: ['admin'] }],
         },
@@ -191,17 +191,17 @@ describe('permissions utils', () => {
     ]);
   });
 
-  it('preserves trainers from fallback group data when the fresh payload omits trainers', () => {
-    const resolved = withResolvedGroupPermissions(
+  it('preserves trainers from fallback squad data when the fresh payload omits trainers', () => {
+    const resolved = withResolvedSquadPermissions(
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
       },
       [
         {
-          id: 'group-1',
-          name: 'Group',
+          id: 'squad-1',
+          name: 'Squad',
           periods: [],
           trainers: [{ id: 'u2', email: 'trainer@example.com' }],
         },

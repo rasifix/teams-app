@@ -16,6 +16,7 @@
       "delete": "Delete",
       "add": "Add",
       "selectAll": "Select all",
+      "selectNone": "Select none",
       "deselectAll": "Deselect all",
       "clear": "Clear",
       "save": "Save"
@@ -163,6 +164,12 @@
       "lowest": "3 - Lowest 🔥"
     },
     "responsiblePeopleHint": "The first selected person is the lead.",
+    "filterPlaceholder": "Filter by name",
+    "noPersonsFound": "No matching persons",
+    "assigneeSource": {
+      "trainer": "Trainer",
+      "guardian": "Guardian"
+    },
     "leadPerson": "Lead"
   },
   "assignShirts": {
@@ -177,44 +184,44 @@
       "selectSetRequired": "Please select a shirt set"
     }
   },
-  "groups": {
-    "title": "Groups",
-    "loading": "Loading groups...",
-    "createNew": "Create a new group",
+  "squads": {
+    "title": "Squads",
+    "loading": "Loading squads...",
+    "createNew": "Create a new squad",
     "clubLabel": "Club: {{club}}",
     "categoryLabel": "Category: {{category}}",
-    "switching": "Switching group...",
-    "selectTitle": "Select Your Group",
-    "selectDescription": "Choose the group you want to work with",
+    "switching": "Switching squad...",
+    "selectTitle": "Select Your Squad",
+    "selectDescription": "Choose the squad you want to work with",
     "idLabel": "ID: {{id}}",
-    "noneAvailable": "No groups available",
+    "noneAvailable": "No squads available",
     "errors": {
-      "createFailed": "Failed to create group. Please try again.",
-      "loadFailedWithReason": "Failed to load groups: {{error}}",
-      "failedToLoadTitle": "Failed to Load Groups"
+      "createFailed": "Failed to create squad. Please try again.",
+      "loadFailedWithReason": "Failed to load squads: {{error}}",
+      "failedToLoadTitle": "Failed to Load Squads"
     }
   },
-  "groupModal": {
-    "title": "Create New Group",
-    "createAction": "Create Group",
+  "squadModal": {
+    "title": "Create New Squad",
+    "createAction": "Create Squad",
     "creating": "Creating...",
     "fields": {
-      "groupName": "Group Name",
+      "squadName": "Squad Name",
       "clubOptional": "Club (optional)",
       "categoryOptional": "SFV category (optional)",
       "noCategory": "No category",
       "descriptionOptional": "Description (optional)"
     },
-    "categoryHint": "For D7 through A, the official playing mode is created and set as default automatically.",
+    "categoryHint": "For D7 through A, the official match format is created and set as default automatically.",
     "officialFormatHint": "Official format: {{format}}, {{min}}–{{max}} players per team.",
     "tournamentOnlyHint": "This category plays tournaments only; no official match format is created.",
     "placeholders": {
-      "groupName": "Enter group name",
+      "squadName": "Enter squad name",
       "club": "Enter club",
       "description": "Add a short description"
     },
     "errors": {
-      "nameRequired": "Group name is required."
+      "nameRequired": "Squad name is required."
     }
   },
   "playerModal": {
@@ -253,6 +260,7 @@
     }
   },
   "eventModal": {
+    "invitePlayersAction": "Invite players",
     "addTitle": "Create New Event",
     "createAction": "Create Event",
     "fields": {
@@ -267,8 +275,8 @@
       "maxPlayersPerTeamRequired": "Max Players per Team *",
       "minPlayersPerTeam": "Min Players per Team",
       "minPlayersPerTeamRequired": "Min Players per Team *",
-      "playingMode": "Playing Mode",
-      "noPlayingMode": "No playing mode"
+      "matchFormat": "Match Format",
+      "noMatchFormat": "No match format"
     },
     "placeholders": {
       "eventName": "e.g., Saturday Morning Game",
@@ -382,26 +390,28 @@
   "membersImport": {
     "openAction": "Import",
     "title": "Import Members",
-    "description": "Select another group, choose members to import, and sync them into the current group.",
-    "sourceGroupLabel": "Source group",
-    "sourceGroupPlaceholder": "Select a source group",
-    "selectedSourceGroup": "Source group: {{name}}",
-    "noSourceGroups": "No other accessible groups are available for import.",
+    "description": "Select another squad, choose members to import, and sync them into the current squad.",
+    "sourceSquadLabel": "Source squad",
+    "sourceSquadPlaceholder": "Select a source squad",
+    "selectedSourceSquad": "Source squad: {{name}}",
+    "noSourceSquads": "No other accessible squads are available for import.",
     "loadingSourceMembers": "Loading source members...",
-    "noSourceMembers": "The selected source group has no members.",
-    "noImportableMembers": "All source members already exist in this group.",
+    "noSourceMembers": "The selected source squad has no members.",
+    "noImportableMembers": "All source members already exist in this squad.",
     "noEmail": "No email",
     "birthYearFilter": {
       "label": "Birth year filter",
       "all": "All years",
       "clear": "Clear filter",
-      "empty": "No birth years available in the selected source group."
+      "empty": "No birth years available in the selected source squad."
     },
     "completedTitle": "Import finished",
     "newImport": "Start new import",
     "selectAll": "Select all",
     "clearSelection": "Clear selection",
     "apply": "Apply import",
+    "managedFields": "Name, date, time, and location are managed by Spond.",
+    "managedResponse": "This response is managed by Spond.",
     "applying": "Applying...",
     "summary": {
       "totalSourceMembers": "Source members: {{count}}",
@@ -422,7 +432,7 @@
       "trainer": "Email: {{email}}"
     },
     "errors": {
-      "sourceMembersLoadFailed": "Failed to load members from the selected source group."
+      "sourceMembersLoadFailed": "Failed to load members from the selected source squad."
     },
     "result": {
       "processedMembers": "Processed members: {{count}}",
@@ -432,6 +442,9 @@
       "skippedMembers": "Skipped members: {{count}}",
       "failedMembers": "Failed members: {{count}}"
     }
+  },
+  "membersExport": {
+    "action": "Export CSV"
   },
   "levels": {
     "1": "1 - Beginner",
@@ -557,7 +570,7 @@
     "members": "Members",
     "events": "Events",
     "shirts": "Shirts",
-    "matchPlanning": "Match Planning",
+    "matchPlanning": "Group Settings",
     "statistics": "Statistics"
   },
   "statistics": {
@@ -601,17 +614,17 @@
       "selectorLabel": "Period: {{period}}",
       "selectPeriod": "Select period",
       "allEvents": "All events",
-      "allEventsDescription": "Use every event in the group.",
+      "allEventsDescription": "Use every event in the squad.",
       "rangeLabel": "{{startDate}} to {{endDate}}",
       "outsidePeriods": "Outside periods",
-      "noGroupPeriods": "No group periods yet.",
+      "noSquadPeriods": "No periods configured. Add them in Group Settings.",
       "addNewPeriod": "Add new period",
       "addPeriod": "Add period",
       "editPeriod": "Edit Period",
       "updatePeriod": "Update period",
-      "thisGroup": "this group",
-      "addDescription": "Create a new period for {{group}}.",
-      "editDescription": "Update the selected period for {{group}}.",
+      "thisSquad": "this squad",
+      "addDescription": "Create a new period for {{squad}}.",
+      "editDescription": "Update the selected period for {{squad}}.",
       "deleteTitle": "Delete Period",
       "deleteMessage": "Delete period \"{{period}}\"?",
       "placeholders": {
@@ -644,7 +657,7 @@
     "placeholderLastName": "Enter last name",
     "emailOptional": "Email (optional)",
     "placeholderEmail": "guardian@example.com",
-    "documentedHint": "New guardians are created as group members and can be linked to multiple children.",
+    "documentedHint": "New guardians are created as squad members and can be linked to multiple children.",
     "assignAction": "Assign",
     "errors": {
       "selectExistingUser": "Please select an existing user to assign.",
@@ -677,8 +690,8 @@
       "removeTitle": "Remove Guardian",
       "removeMessage": "Are you sure you want to remove {{firstName}} {{lastName}} from this player?",
       "empty": "No guardians assigned yet.",
-      "onlyManagers": "Only group managers can assign guardians.",
-      "onlyManagersManage": "Only group managers can assign or remove guardians.",
+      "onlyManagers": "Only squad managers can assign guardians.",
+      "onlyManagersManage": "Only squad managers can assign or remove guardians.",
       "onlyUnderage": "Guardian assignment is available only for underage players.",
       "assignFailed": "Failed to assign guardian. Please try again.",
       "editFailed": "Failed to edit guardian. Please try again.",
@@ -702,6 +715,12 @@
     "unknownTeam": "Unknown Team"
   },
   "eventDetail": {
+    "phases": {
+      "planning": "Planning",
+      "selectionSent": "Selection sent",
+      "started": "Started",
+      "recorded": "Attendance recorded"
+    },
     "loading": "Loading event...",
     "notFound": "Event not found.",
     "previousShort": "Prev",
@@ -751,31 +770,52 @@
     "addPlayersAction_one": "Add {{count}} Player",
     "addPlayersAction_other": "Add {{count}} Players"
   },
+  "groupSettings": {
+    "title": "Group Settings",
+    "description": "Manage the settings and integrations for this group.",
+    "spond": {
+      "title": "Spond Group",
+      "description": "Connect this group to Spond to import members and events.",
+      "openGroup": "Open Spond group",
+      "linkGroup": "Link Spond group",
+      "unlinkGroup": "Unlink Spond",
+      "unlinkTitle": "Unlink Spond group?",
+      "unlinkMessage": "This stops Spond synchronization for this group. Existing imported players and events remain unchanged.",
+      "unlinkFailed": "The Spond group could not be unlinked. Please try again."
+    },
+    "periods": {
+      "title": "Periods",
+      "description": "Define the date periods used to group and filter statistics.",
+      "add": "Add period",
+      "empty": "No periods have been configured yet.",
+      "range": "{{startDate}} to {{endDate}}"
+    }
+  },
   "matchPlanning": {
     "title": "Match Planning",
-    "description": "Enable playing modes and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
-    "disabledState": "Match planning is disabled for this group. Turn it on to define playing modes and formations.",
+    "description": "Enable match formats and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
+    "disabledState": "Match planning is disabled for this squad. Turn it on to define match formats and formations.",
     "category": {
       "title": "SFV category",
-      "description": "Assign the official Swiss Football Association category for this group.",
+      "description": "Assign the official Swiss Football Association category for this squad.",
       "label": "Category",
       "none": "No category",
       "saving": "Saving...",
       "saveFailed": "Failed to save the category. Please try again.",
-      "officialModeHint": "The official {{mode}} playing mode will be created if needed and set as default.",
-      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its playing mode must be selected manually.",
+      "officialModeHint": "The official {{mode}} match format will be created if needed and set as default.",
+      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its match format must be selected manually.",
       "tournamentOnlyHint": "This category plays tournaments only and has no official match format."
     },
-    "playingModes": {
-      "title": "Playing Modes",
-      "emptyState": "No playing modes yet. Add one to get started.",
+    "matchFormats": {
+      "title": "Match Formats",
+      "emptyState": "No match formats yet. Add one to get started.",
       "defaultBadge": "Default",
       "officialBadge": "Official",
       "players": "{{onField}} on field, {{min}}–{{max}} players per team",
       "summary": "{{periods}} periods x {{minutes}} min",
       "minimumPeriods": "Minimum per player: {{count}} periods",
       "setDefault": "Set as default",
-      "deleteTitle": "Delete Playing Mode",
+      "deleteTitle": "Delete Match Format",
       "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
     },
     "formations": {
@@ -785,9 +825,9 @@
       "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
     }
   },
-  "playingModeModal": {
-    "addTitle": "Add Playing Mode",
-    "editTitle": "Edit Playing Mode",
+  "matchFormatModal": {
+    "addTitle": "Add Match Format",
+    "editTitle": "Edit Match Format",
     "fields": {
       "name": "Name",
       "numberOfPeriods": "Number of Periods",
@@ -812,7 +852,7 @@
       "minimumPeriodsRange": "Minimum periods per player must be between 0 and {{total}}.",
       "playersMin": "Player counts must be at least 1",
       "playerLimitsRange": "Minimum players per team must not exceed the maximum.",
-      "saveFailed": "Failed to save playing mode. Please try again."
+      "saveFailed": "Failed to save match format. Please try again."
     }
   },
   "formationModal": {
@@ -854,7 +894,7 @@
   "teamLineup": {
     "loading": "Loading lineup...",
     "teamNotFound": "Team not found",
-    "notConfigured": "This team needs a playing mode and a formation before a lineup can be planned.",
+    "notConfigured": "This team needs a match format and a formation before a lineup can be planned.",
     "title": "Lineup - {{team}}",
     "periodLabel": "Period {{number}}",
     "copyPreviousPeriod": "Copy previous period",
@@ -883,7 +923,9 @@
   "activity": {
     "kinds": {
       "match": "Match",
-      "tournament": "Tournament"
+      "tournament": "Tournament",
+      "training": "Training",
+      "social": "Social event"
     },
     "fields": {
       "kind": "Activity type",
@@ -899,10 +941,21 @@
       "unspecified": "No reason given"
     },
     "declinedCount": "Declined: {{count}}",
-    "selectPlayers": "Select players",
     "noTeamsLegacy": "This activity has no teams configured."
   },
   "attendance": {
+    "reasons": {
+      "sick": "Sick",
+      "injured": "Injured",
+      "noShow": "No show",
+      "other": "Other"
+    },
+    "recordAction": "Record attendance",
+    "editAction": "Edit attendance",
+    "recordTitle": "Record attendance",
+    "noSelectedPlayers": "No players selected for this event.",
+    "reasonPlaceholder": "Reason (optional)",
+    "notRecorded": "Attendance has not been recorded yet.",
     "title": "Attendance",
     "notStarted": "Attendance can be recorded once the activity has started.",
     "empty": "No players to record attendance for.",
@@ -911,6 +964,160 @@
       "present": "Present",
       "absent": "Absent",
       "excused": "Excused"
+    }
+  },
+  "spondSync": {
+    "badge": "Spond",
+    "action": "Synchronize with Spond",
+    "playersAction": "Import from Spond",
+    "syncAction": "Sync",
+    "title": "Synchronize with Spond",
+    "eventsTitle": "Synchronize events with Spond",
+    "playersTitle": "Import players from Spond",
+    "description": "Sign in to Spond to load a temporary preview. Your credentials and access token are not saved.",
+    "wizard": {
+      "next": "Continue",
+      "progress": "Import progress",
+      "typesHelp": "Choose the data you want to review and import.",
+      "periodHelp": "Choose a configured period or enter the date range for the events to synchronize.",
+      "playerImportHelp": "Load the Spond group members to review which players should be linked or created.",
+      "playersHelp": "Name matches are linked automatically. Missing players are selected for import by default.",
+      "guardiansHelp": "Name matches are recognized automatically. Missing guardians are selected by default and attached to newly imported players.",
+      "guardianChildren_one": "Child: {{names}}",
+      "guardianChildren_other": "Children: {{names}}",
+      "guardianEmail": "Email: {{email}}",
+      "eventsHelp": "Existing activities on the same day are selected automatically. Missing events are selected for import.",
+      "noEventsToSync": "No events matching this filter need to be synchronized.",
+      "summaryHelp": "Review every change that will be made before starting the import.",
+      "noChanges": "Nothing is selected for import.",
+      "actions": {
+        "create": "Create",
+        "link": "Link",
+        "update": "Update"
+      },
+      "changedFields": {
+        "name": "name",
+        "birthDate": "birth date"
+      },
+      "preview": {
+        "player": {
+          "create": "Create a new player",
+          "link": "Link with existing player {{target}}",
+          "update": "Update from Spond: {{changes}}"
+        },
+        "guardian": {
+          "create": "Create as guardian for {{target}}",
+          "link": "Link guardian with {{target}}"
+        },
+        "event": {
+          "create": "Create a new activity",
+          "link": "Link with existing activity {{target}}"
+        }
+      },
+      "guardiansNeedPlayers": "Guardians are imported with their players. Select players to import guardians.",
+      "alreadyLinked": "Already linked to {{name}}",
+      "alreadyExists": "Already exists as {{name}}",
+      "steps": {
+        "credentials": "Enter credentials",
+        "group": "Select group",
+        "types": "Choose import types",
+        "period": "Choose sync period",
+        "playerImport": "Load Spond players",
+        "players": "Review players",
+        "guardians": "Review guardians",
+        "events": "Review events",
+        "summary": "Review import",
+        "done": "Import complete"
+      },
+      "importTypes": {
+        "players": "Players",
+        "guardians": "Guardians",
+        "events": "Events"
+      }
+    },
+    "email": "Spond email",
+    "password": "Spond password",
+    "connect": "Connect to Spond",
+    "group": "Spond group",
+    "period": "Period",
+    "customRange": "Custom date range",
+    "requiredFields": {
+      "selection": "Choose whether to import, link, or skip this item.",
+      "member": "Select an existing player.",
+      "birthDate": "Birth date is required.",
+      "level": "Select a valid player level.",
+      "activity": "Select an existing activity.",
+      "trainer": "Select a trainer.",
+      "team": "Team name is required.",
+      "summary": "Complete all required fields before importing."
+    },
+    "eventFilter": {
+      "label": "Event filter",
+      "all": "All events",
+      "training": "Training sessions",
+      "match": "Matches"
+    },
+    "selectGroup": "Select a group",
+    "loadPreview": "Load preview",
+    "membersTitle": "Member links",
+    "activitiesTitle": "Activity links",
+    "chooseAction": "Choose an action",
+    "linkExisting": "Link existing record",
+    "createPlayer": "Create player",
+    "createActivity": "Create activity",
+    "skip": "Skip",
+    "selectPlayer": "Select a player",
+    "selectActivity": "Select an activity",
+    "selectTrainer": "Select a trainer",
+    "suggested": "suggested",
+    "birthDate": "Birth date",
+    "level": "Level",
+    "levelValue": "Level {{level}}",
+    "importGuardian": "Import {{name}} as a documented guardian",
+    "teamName": "Team name",
+    "dateErrors": {
+      "missing": "Choose both dates.",
+      "order": "The end date must be after the start date.",
+      "too-long": "The synchronization period cannot exceed one year."
+    },
+    "summary": "Players: {{createdMembers}} new, {{linkedMembers}} linked. Activities: {{createdActivities}} new, {{linkedActivities}} linked.",
+    "apply": "Apply import",
+    "result": "Spond import completed: {{created}} created, {{updated}} updated, {{linked}} linked.",
+    "errors": {
+      "SPOND_AUTH_FAILED": "The Spond credentials were rejected.",
+      "SPOND_ACCESS_DENIED": "The Spond account cannot access this data.",
+      "SPOND_RATE_LIMITED": "Spond is temporarily limiting requests. Please try again later.",
+      "SPOND_GROUP_NOT_FOUND": "The selected Spond group is no longer available.",
+      "SPOND_LINKED_GROUP_NOT_FOUND": "The Spond account cannot access the group linked to this squad.",
+      "SPOND_GROUP_MISMATCH": "Spond returned an event from a different group.",
+      "SPOND_CONFLICTING_RESPONSES": "Spond returned conflicting responses for a member.",
+      "SPOND_UNKNOWN_RESPONSE_LIST": "Spond returned an unknown response status.",
+      "SPOND_INVALID_TIMESTAMP": "Spond returned an invalid activity time.",
+      "SPOND_INCOMPLETE_RESULTS": "The complete Spond event list could not be loaded.",
+      "SPOND_INVALID_RESPONSE": "Spond returned data in an unsupported format.",
+      "SPOND_REQUEST_FAILED": "The Spond request failed.",
+      "generic": "The Spond synchronization could not be completed."
+    }
+  },
+  "tasks": {
+    "title": "Helper tasks",
+    "add": "Add task",
+    "addTitle": "Add task",
+    "editTitle": "Edit task",
+    "empty": "No tasks yet. Add tasks such as kiosk or cake to find helpers.",
+    "fulfilled": "Enough helpers",
+    "needsMore": "Helpers needed",
+    "signedUpCount": "{{count}} of {{required}} signed up",
+    "overSubscribed": "over-subscribed",
+    "signUp": "Sign up",
+    "withdraw": "Withdraw",
+    "deleteTitle": "Delete task",
+    "deleteMessage": "Delete the task \"{{name}}\" and its sign-ups?",
+    "fields": {
+      "name": "Task",
+      "namePlaceholder": "e.g. Kiosk",
+      "description": "Description (optional)",
+      "requiredPeople": "People needed"
     }
   }
 }

@@ -108,7 +108,7 @@ describe('member duplicate selectors', () => {
     expect(result[0].guardians[0].playerIds).toEqual(['p-1', 'p-2']);
   });
 
-  it('does not return groups without both trainer and guardian members', () => {
+  it('does not return squads without both trainer and guardian members', () => {
     const trainers = [trainer({ id: 't-1', firstName: 'Only', lastName: 'Trainer' })];
     const players = [
       player({

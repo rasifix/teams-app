@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup, useGroups } from '../store';
+import { useSquad, useSquads } from '../store';
 import { useStore } from '../store/useStore';
 import {
-  selectImportableGroupMembers,
-  selectSourceGroupCandidates,
+  selectImportableSquadMembers,
+  selectSourceSquadCandidates,
   selectSourceMemberBirthYears,
-  type GroupImportCandidate,
-} from '../store/selectors/memberGroupImportSelectors';
+  type SquadImportCandidate,
+} from '../store/selectors/memberSquadImportSelectors';
 import { selectPlayersFromMembers, selectTrainersFromMembers } from '../store/selectors/memberSelectors';
-import type { GroupMemberImportProgress, GroupMemberImportResult } from '../store/useStore';
+import type { SquadMemberImportProgress, SquadMemberImportResult } from '../store/useStore';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import Button from './ui/Button';
 import { getBirthYear } from '../utils/birthDate';
@@ -21,26 +21,26 @@ interface ImportMembersModalProps {
 
 export default function ImportMembersModal({ isOpen, onClose }: ImportMembersModalProps) {
   const { t } = useTranslation();
-  const group = useGroup();
-  const groups = useGroups();
+  const squad = useSquad();
+  const squads = useSquads();
   const members = useStore((state) => state.members);
-  const loadGroups = useStore((state) => state.loadGroups);
-  const getMembersForGroup = useStore((state) => state.getMembersForGroup);
-  const importMembersFromGroup = useStore((state) => state.importMembersFromGroup);
+  const loadSquads = useStore((state) => state.loadSquads);
+  const getMembersForSquad = useStore((state) => state.getMembersForSquad);
+  const importMembersFromSquad = useStore((state) => state.importMembersFromSquad);
 
-  const [selectedSourceGroupId, setSelectedSourceGroupId] = useState('');
+  const [selectedSourceSquadId, setSelectedSourceSquadId] = useState('');
   const [sourceMembers, setSourceMembers] = useState<{ players: import('../types').Player[]; trainers: import('../types').Trainer[] } | null>(null);
   const [isLoadingSourceMembers, setIsLoadingSourceMembers] = useState(false);
   const [sourceMembersError, setSourceMembersError] = useState<string | null>(null);
   const [selectedBirthYears, setSelectedBirthYears] = useState<number[]>([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const [isApplying, setIsApplying] = useState(false);
-  const [importProgress, setImportProgress] = useState<GroupMemberImportProgress>({ total: 0, completed: 0 });
-  const [applyResult, setApplyResult] = useState<GroupMemberImportResult | null>(null);
+  const [importProgress, setImportProgress] = useState<SquadMemberImportProgress>({ total: 0, completed: 0 });
+  const [applyResult, setApplyResult] = useState<SquadMemberImportResult | null>(null);
 
-  const sourceGroups = useMemo(
-    () => groups.filter((entry) => entry.id !== group?.id),
-    [groups, group?.id]
+  const sourceSquads = useMemo(
+    () => squads.filter((entry) => entry.id !== squad?.id),
+    [squads, squad?.id]
   );
 
   const targetPlayers = useMemo(() => selectPlayersFromMembers(members), [members]);
@@ -50,7 +50,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
       return [];
     }
 
-    return selectSourceGroupCandidates(sourceMembers.players, sourceMembers.trainers);
+    return selectSourceSquadCandidates(sourceMembers.players, sourceMembers.trainers);
   }, [sourceMembers]);
 
   const sourceBirthYears = useMemo(
@@ -77,7 +77,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
       return [];
     }
 
-    return selectImportableGroupMembers(
+    return selectImportableSquadMembers(
       sourceMembers.players,
       sourceMembers.trainers,
       targetPlayers,
@@ -91,7 +91,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
   const isSummaryOnly = Boolean(applyResult) && !isApplying;
 
   const resetState = () => {
-    setSelectedSourceGroupId('');
+    setSelectedSourceSquadId('');
     setSourceMembers(null);
     setSourceMembersError(null);
     setSelectedBirthYears([]);
@@ -111,13 +111,13 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
       return;
     }
 
-    if (groups.length === 0) {
-      void loadGroups();
+    if (squads.length === 0) {
+      void loadSquads();
     }
-  }, [groups.length, isOpen, loadGroups]);
+  }, [squads.length, isOpen, loadSquads]);
 
   useEffect(() => {
-    if (!isOpen || !selectedSourceGroupId) {
+    if (!isOpen || !selectedSourceSquadId) {
       return;
     }
 
@@ -130,7 +130,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
       setSelectedBirthYears([]);
       setSelectedMemberIds(new Set());
 
-      const loadedMembers = await getMembersForGroup(selectedSourceGroupId);
+      const loadedMembers = await getMembersForSquad(selectedSourceSquadId);
       if (isCancelled) {
         return;
       }
@@ -150,7 +150,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
     return () => {
       isCancelled = true;
     };
-  }, [getMembersForGroup, isOpen, selectedSourceGroupId, t]);
+  }, [getMembersForSquad, isOpen, selectedSourceSquadId, t]);
 
   const toggleSelectedMember = (memberId: string) => {
     setSelectedMemberIds((previous) => {
@@ -173,7 +173,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
   };
 
   const applyImport = async () => {
-    if (!selectedSourceGroupId || selectedMemberIds.size === 0) {
+    if (!selectedSourceSquadId || selectedMemberIds.size === 0) {
       return;
     }
 
@@ -181,8 +181,8 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
     setApplyResult(null);
     setImportProgress({ total: selectedMemberIds.size, completed: 0 });
 
-    const result = await importMembersFromGroup(
-      selectedSourceGroupId,
+    const result = await importMembersFromSquad(
+      selectedSourceSquadId,
       Array.from(selectedMemberIds),
       (progress) => setImportProgress(progress)
     );
@@ -192,7 +192,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
   };
 
   const startNewImport = () => {
-    setSelectedSourceGroupId('');
+    setSelectedSourceSquadId('');
     setSourceMembers(null);
     setSourceMembersError(null);
     setSelectedBirthYears([]);
@@ -201,11 +201,11 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
     setImportProgress({ total: 0, completed: 0 });
   };
 
-  const selectedSourceGroup = sourceGroups.find((entry) => entry.id === selectedSourceGroupId);
+  const selectedSourceSquad = sourceSquads.find((entry) => entry.id === selectedSourceSquadId);
 
   const selectedCount = selectedMemberIds.size;
 
-  const renderCandidateMeta = (candidate: GroupImportCandidate): string => {
+  const renderCandidateMeta = (candidate: SquadImportCandidate): string => {
     if (candidate.role === 'player') {
       return t('membersImport.memberMeta.player', {
         level: candidate.level || 1,
@@ -243,31 +243,31 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
 
             <div>
               <label htmlFor="source-group" className="block text-sm font-medium text-gray-700 mb-1">
-                {t('membersImport.sourceGroupLabel')}
+                {t('membersImport.sourceSquadLabel')}
               </label>
               <select
-                id="source-group"
+                id="source-squad"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
-                value={selectedSourceGroupId}
+                value={selectedSourceSquadId}
                 disabled={isApplying}
-                onChange={(event) => setSelectedSourceGroupId(event.target.value)}
+                onChange={(event) => setSelectedSourceSquadId(event.target.value)}
               >
-                <option value="">{t('membersImport.sourceGroupPlaceholder')}</option>
-                {sourceGroups.map((entry) => (
+                <option value="">{t('membersImport.sourceSquadPlaceholder')}</option>
+                {sourceSquads.map((entry) => (
                   <option key={entry.id} value={entry.id}>{entry.name}</option>
                 ))}
               </select>
             </div>
 
-            {sourceGroups.length === 0 && (
+            {sourceSquads.length === 0 && (
               <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                {t('membersImport.noSourceGroups')}
+                {t('membersImport.noSourceSquads')}
               </div>
             )}
 
-            {selectedSourceGroup && (
+            {selectedSourceSquad && (
               <p className="text-xs text-gray-600">
-                {t('membersImport.selectedSourceGroup', { name: selectedSourceGroup.name })}
+                {t('membersImport.selectedSourceSquad', { name: selectedSourceSquad.name })}
               </p>
             )}
 
@@ -283,7 +283,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
               </div>
             )}
 
-            {!isLoadingSourceMembers && selectedSourceGroupId && sourceMembers && (
+            {!isLoadingSourceMembers && selectedSourceSquadId && sourceMembers && (
               <div className="space-y-3">
                 <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">
                   <p>{t('membersImport.summary.totalSourceMembers', { count: visibleSourceCandidates.length })}</p>
@@ -454,7 +454,7 @@ export default function ImportMembersModal({ isOpen, onClose }: ImportMembersMod
               type="button"
               variant="primary"
               onClick={() => void applyImport()}
-              disabled={!selectedSourceGroupId || selectedCount === 0 || isApplying || isLoadingSourceMembers}
+              disabled={!selectedSourceSquadId || selectedCount === 0 || isApplying || isLoadingSourceMembers}
             >
               {isApplying ? t('membersImport.applying') : t('membersImport.apply')}
             </Button>

@@ -40,8 +40,8 @@ describe('guardians utils', () => {
     const allowed = canManageGuardians(
       { id: 'u1', email: 'a@a.com', firstName: 'A', lastName: 'B' },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'u1', email: 'a@a.com' }],
       }
@@ -58,8 +58,8 @@ describe('guardians utils', () => {
         lastName: 'D',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'another-user', email: 'x@y.com' }],
       },
@@ -72,8 +72,8 @@ describe('guardians utils', () => {
         lastName: 'F',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'u3', email: 'c@c.com' }],
       },
@@ -83,7 +83,7 @@ describe('guardians utils', () => {
     expect(allowed).toBe(true);
   });
 
-  it('allows guardian management for elevated group member roles', () => {
+  it('allows guardian management for elevated squad member roles', () => {
     const allowed = canManageGuardians(
       {
         id: 'u-admin',
@@ -92,8 +92,8 @@ describe('guardians utils', () => {
         lastName: 'User',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [],
         members: [{ id: 'u-admin', email: 'admin@example.com', roles: ['group_manager'] }],

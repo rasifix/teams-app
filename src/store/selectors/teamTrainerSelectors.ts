@@ -1,6 +1,6 @@
 import type { Player, Trainer } from '../../types';
 
-export type TeamAssigneeSource = 'player' | 'trainer';
+export type TeamAssigneeSource = 'trainer' | 'guardian';
 
 export interface TeamAssignee {
   id: string;
@@ -20,33 +20,44 @@ function compareByName(left: Pick<TeamAssignee, 'firstName' | 'lastName'>, right
   return firstNameCompare;
 }
 
-export function selectTeamAssigneeOptions(trainers: Trainer[], players: Player[]): TeamAssignee[] {
-  const membersById = new Map<string, TeamAssignee>();
-  trainers.forEach((trainer) => membersById.set(trainer.id, {
+// Only trainers and guardians can be responsible for a team; players never are.
+// A person that is both trainer and guardian is listed once, as trainer.
+export function selectTeamAssigneeOptions(trainers: Trainer[], players: Player[] = []): TeamAssignee[] {
+  const byId = new Map<string, TeamAssignee>();
+  trainers.forEach((trainer) => byId.set(trainer.id, {
     id: trainer.id,
     firstName: trainer.firstName,
     lastName: trainer.lastName,
     source: 'trainer',
   }));
-  players.forEach((player) => {
-    if (!membersById.has(player.id)) membersById.set(player.id, {
-      id: player.id,
-      firstName: player.firstName,
-      lastName: player.lastName,
-      source: 'player',
+  players.forEach((player) => (player.guardians ?? []).forEach((guardian) => {
+    if (!byId.has(guardian.id)) byId.set(guardian.id, {
+      id: guardian.id,
+      firstName: guardian.firstName,
+      lastName: guardian.lastName,
+      source: 'guardian',
     });
-  });
-  return Array.from(membersById.values()).sort(compareByName);
+  }));
+  return Array.from(byId.values()).sort(compareByName);
 }
 
-export function selectTeamAssigneeMap(trainers: Trainer[], players: Player[]): Map<string, TeamAssignee> {
+export function filterTeamAssignees(options: TeamAssignee[], query: string): TeamAssignee[] {
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) return options;
+  return options.filter((option) => {
+    const name = `${option.firstName} ${option.lastName}`.toLowerCase();
+    return terms.every((term) => name.includes(term));
+  });
+}
+
+export function selectTeamAssigneeMap(trainers: Trainer[], players: Player[] = []): Map<string, TeamAssignee> {
   return new Map(selectTeamAssigneeOptions(trainers, players).map((member) => [member.id, member]));
 }
 
 export function selectTeamAssigneeById(
   assigneeId: string | undefined,
   trainers: Trainer[],
-  players: Player[]
+  players: Player[] = []
 ): TeamAssignee | null {
   return assigneeId ? selectTeamAssigneeMap(trainers, players).get(assigneeId) ?? null : null;
 }
@@ -54,7 +65,7 @@ export function selectTeamAssigneeById(
 export function selectTeamResponsiblePeople(
   responsiblePersonIds: string[] | undefined,
   trainers: Trainer[],
-  players: Player[]
+  players: Player[] = []
 ): Array<TeamAssignee & { isLead: boolean }> {
   const members = selectTeamAssigneeMap(trainers, players);
   return (responsiblePersonIds ?? []).flatMap((id) => {

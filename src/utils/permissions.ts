@@ -1,13 +1,13 @@
 import type { User } from '../services/authService';
 import type { Trainer } from '../types';
-import type { Group } from '../types';
+import type { Squad } from '../types';
 
 const ELEVATED_GROUP_ROLES = new Set(['admin', 'trainer', 'group_manager', 'coach']);
 
 function logPermissionDebug(payload: {
   check: 'restricted-management';
   user: User | null | undefined;
-  group: Group | null | undefined;
+  squad: Squad | null | undefined;
   trainers: Array<Pick<Trainer, 'id' | 'email'>>;
   trainerMatches: Array<{ by: 'id' | 'email'; value: string }>;
   allowed: boolean;
@@ -15,7 +15,7 @@ function logPermissionDebug(payload: {
   const {
     check,
     user,
-    group,
+    squad,
     trainers,
     trainerMatches,
     allowed,
@@ -26,12 +26,12 @@ function logPermissionDebug(payload: {
     allowed,
     userId: user?.id,
     email: user?.email,
-    groupId: group?.id,
-    groupTrainerIds: (group?.trainers || []).map((trainer) => trainer.id),
-    groupTrainerEmails: (group?.trainers || []).map((trainer) => trainer.email).filter(Boolean),
+    squadId: squad?.id,
+    squadTrainerIds: (squad?.trainers || []).map((trainer) => trainer.id),
+    squadTrainerEmails: (squad?.trainers || []).map((trainer) => trainer.email).filter(Boolean),
     loadedTrainerIds: trainers.map((trainer) => trainer.id),
     loadedTrainerEmails: trainers.map((trainer) => trainer.email).filter(Boolean),
-    groupMembers: (group?.members || []).map((member) => ({
+    squadMembers: (squad?.members || []).map((member) => ({
       id: member.id,
       email: member.email,
       roles: member.roles || [],
@@ -52,30 +52,30 @@ function hasEntries<T>(value: T[] | undefined): value is T[] {
   return Array.isArray(value) && value.length > 0;
 }
 
-export function withResolvedGroupPermissions(
-  group: Group | null | undefined,
-  fallbacks: Array<Group | null | undefined>,
-): Group | null | undefined {
-  if (!group) {
-    return group;
+export function withResolvedSquadPermissions(
+  squad: Squad | null | undefined,
+  fallbacks: Array<Squad | null | undefined>,
+): Squad | null | undefined {
+  if (!squad) {
+    return squad;
   }
 
   const fallbackWithTrainers = fallbacks.find((candidate) => hasEntries(candidate?.trainers));
   const fallbackWithMembers = fallbacks.find((candidate) => hasEntries(candidate?.members));
 
-  const trainers = hasEntries(group.trainers)
-    ? group.trainers
-    : fallbackWithTrainers?.trainers ?? group.trainers;
-  const members = hasEntries(group.members)
-    ? group.members
-    : fallbackWithMembers?.members ?? group.members;
+  const trainers = hasEntries(squad.trainers)
+    ? squad.trainers
+    : fallbackWithTrainers?.trainers ?? squad.trainers;
+  const members = hasEntries(squad.members)
+    ? squad.members
+    : fallbackWithMembers?.members ?? squad.members;
 
-  if (trainers === group.trainers && members === group.members) {
-    return group;
+  if (trainers === squad.trainers && members === squad.members) {
+    return squad;
   }
 
   return {
-    ...group,
+    ...squad,
     trainers,
     members,
   };
@@ -106,14 +106,14 @@ function getTrainerMatches(
   });
 }
 
-function getMemberRoleMatches(user: User, group: Group | null | undefined): Array<{ by: 'id' | 'email'; value: string; role: string }> {
-  if (!group?.members?.length) {
+function getMemberRoleMatches(user: User, squad: Squad | null | undefined): Array<{ by: 'id' | 'email'; value: string; role: string }> {
+  if (!squad?.members?.length) {
     return [];
   }
 
   const normalizedEmail = normalizeEmail(user.email);
 
-  return group.members.flatMap((member) => {
+  return squad.members.flatMap((member) => {
     const normalizedRoles = (member.roles || []).map(normalizeRole);
     const elevatedRoles = normalizedRoles.filter((role) => ELEVATED_GROUP_ROLES.has(role));
     if (elevatedRoles.length === 0) {
@@ -141,17 +141,17 @@ function getMemberRoleMatches(user: User, group: Group | null | undefined): Arra
 export function canAccessRestrictedManagement(
   user: User | null | undefined,
   options: {
-    group?: Group | null;
+    squad?: Squad | null;
     trainers?: Array<Pick<Trainer, 'id' | 'email'>>;
   },
 ): boolean {
-  const { group, trainers = [] } = options;
+  const { squad, trainers = [] } = options;
 
   if (!user) {
     logPermissionDebug({
       check: 'restricted-management',
       user,
-      group,
+      squad,
       trainers,
       trainerMatches: [],
       allowed: false,
@@ -161,15 +161,15 @@ export function canAccessRestrictedManagement(
 
   const trainerMatches = [
     ...getTrainerMatches(user, trainers),
-    ...getTrainerMatches(user, group?.trainers || []),
+    ...getTrainerMatches(user, squad?.trainers || []),
   ];
-  const memberRoleMatches = getMemberRoleMatches(user, group);
+  const memberRoleMatches = getMemberRoleMatches(user, squad);
   const allowed = trainerMatches.length > 0 || memberRoleMatches.length > 0;
 
   logPermissionDebug({
     check: 'restricted-management',
     user,
-    group,
+    squad,
     trainers,
     trainerMatches: [
       ...trainerMatches,

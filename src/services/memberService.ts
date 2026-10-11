@@ -1,10 +1,10 @@
 import { apiClient } from './apiClient';
-import type { Guardian, GroupRole, Player, Trainer } from '../types';
+import type { Guardian, SquadRole, Player, Trainer } from '../types';
 
 export const MEMBER_ROLE_PLAYER = 'player' as const;
 export const MEMBER_ROLE_TRAINER = 'trainer' as const;
 export const MEMBER_ROLE_GUARDIAN = 'guardian' as const;
-export const REVOCABLE_MEMBER_ROLES: ReadonlyArray<Exclude<GroupRole, 'player'>> = ['admin', 'trainer', 'guardian'];
+export const REVOCABLE_MEMBER_ROLES: ReadonlyArray<Exclude<SquadRole, 'player'>> = ['admin', 'trainer', 'guardian'];
 
 export interface MembersResponse {
   players: Player[];
@@ -67,6 +67,7 @@ const normalizeMembersResponse = (response: MembersApiResponse): MembersResponse
 };
 
 export interface MemberUpsertPayload {
+  spondId?: string | null;
   firstName: string;
   lastName: string;
   email?: string;
@@ -75,7 +76,7 @@ export interface MemberUpsertPayload {
   status?: Player['status'];
   preferredShirtNumber?: number;
   guardians?: Guardian[];
-  roles: GroupRole[];
+  roles: SquadRole[];
 }
 
 const sanitizeMemberPayload = <T extends Partial<MemberUpsertPayload>>(payload: T): T => {
@@ -94,10 +95,10 @@ const sanitizeMemberPayload = <T extends Partial<MemberUpsertPayload>>(payload: 
   return sanitized;
 };
 
-export async function addMember(groupId: string, memberData: MemberUpsertPayload): Promise<Player | Trainer> {
+export async function addMember(squadId: string, memberData: MemberUpsertPayload): Promise<Player | Trainer> {
   const payload = sanitizeMemberPayload(memberData);
   return apiClient.request<Player | Trainer>(
-    apiClient.getGroupEndpoint(groupId, '/members'),
+    apiClient.getSquadEndpoint(squadId, '/members'),
     {
       method: 'POST',
       body: JSON.stringify(payload)
@@ -105,10 +106,10 @@ export async function addMember(groupId: string, memberData: MemberUpsertPayload
   );
 }
 
-export async function updateMember(groupId: string, id: string, memberData: Partial<MemberUpsertPayload>): Promise<Player | Trainer> {
+export async function updateMember(squadId: string, id: string, memberData: Partial<MemberUpsertPayload>): Promise<Player | Trainer> {
   const payload = sanitizeMemberPayload(memberData);
   return apiClient.request<Player | Trainer>(
-    apiClient.getGroupEndpoint(groupId, `/members/${id}`),
+    apiClient.getSquadEndpoint(squadId, `/members/${id}`),
     {
       method: 'PUT',
       body: JSON.stringify(payload)
@@ -116,10 +117,10 @@ export async function updateMember(groupId: string, id: string, memberData: Part
   );
 }
 
-export async function getMemberById(groupId: string, id: string): Promise<Player | Trainer | null> {
+export async function getMemberById(squadId: string, id: string): Promise<Player | Trainer | null> {
   try {
     const member = await apiClient.request<Player | Trainer>(
-      apiClient.getGroupEndpoint(groupId, `/members/${id}`)
+      apiClient.getSquadEndpoint(squadId, `/members/${id}`)
     );
 
     const roles = member.roles || [];
@@ -136,35 +137,35 @@ export async function getMemberById(groupId: string, id: string): Promise<Player
   }
 }
 
-export async function deleteMember(groupId: string, id: string): Promise<void> {
+export async function deleteMember(squadId: string, id: string): Promise<void> {
   return apiClient.request<void>(
-    apiClient.getGroupEndpoint(groupId, `/members/${id}`),
+    apiClient.getSquadEndpoint(squadId, `/members/${id}`),
     { method: 'DELETE' }
   );
 }
 
 export async function revokeMemberRole(
-  groupId: string,
+  squadId: string,
   id: string,
-  role: Exclude<GroupRole, 'player'>
+  role: Exclude<SquadRole, 'player'>
 ): Promise<Player | Trainer> {
   return apiClient.request<Player | Trainer>(
-    apiClient.getGroupEndpoint(groupId, `/members/${id}/roles/${role}`),
+    apiClient.getSquadEndpoint(squadId, `/members/${id}/roles/${role}`),
     { method: 'DELETE' }
   );
 }
 
 // Get all members (players and trainers) in one call
-export async function getAllMembers(groupId: string): Promise<MembersResponse> {
+export async function getAllMembers(squadId: string): Promise<MembersResponse> {
   const response = await apiClient.request<MembersApiResponse>(
-    apiClient.getGroupEndpoint(groupId, '/members')
+    apiClient.getSquadEndpoint(squadId, '/members')
   );
 
   return normalizeMembersResponse(response);
 }
 
-export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>): Promise<Player> {
-  const member = await addMember(groupId, {
+export async function addPlayer(squadId: string, playerData: Omit<Player, 'id'>): Promise<Player> {
+  const member = await addMember(squadId, {
     ...playerData,
     roles: Array.from(new Set([...(playerData.roles || []), 'player'])),
     firstName: playerData.firstName,
@@ -181,8 +182,8 @@ export async function addPlayer(groupId: string, playerData: Omit<Player, 'id'>)
   return normalizePlayer(member as Player);
 }
 
-export async function updatePlayer(groupId: string, id: string, playerData: Partial<Player>): Promise<Player> {
-  const member = await updateMember(groupId, id, {
+export async function updatePlayer(squadId: string, id: string, playerData: Partial<Player>): Promise<Player> {
+  const member = await updateMember(squadId, id, {
     ...playerData,
     roles: playerData.roles,
   });
@@ -190,14 +191,14 @@ export async function updatePlayer(groupId: string, id: string, playerData: Part
   return normalizePlayer(member as Player);
 }
 
-export async function deletePlayer(groupId: string, id: string): Promise<void> {
-  return deleteMember(groupId, id);
+export async function deletePlayer(squadId: string, id: string): Promise<void> {
+  return deleteMember(squadId, id);
 }
 
-export async function getPlayerById(groupId: string, id: string): Promise<Player | null> {
+export async function getPlayerById(squadId: string, id: string): Promise<Player | null> {
   try {
     const player = await apiClient.request<Player>(
-      apiClient.getGroupEndpoint(groupId, `/members/${id}`)
+      apiClient.getSquadEndpoint(squadId, `/members/${id}`)
     );
 
     return normalizePlayer(player);
@@ -218,14 +219,14 @@ export interface CreateGuardianPayload {
   trainerId?: string;
 }
 
-export async function addGuardianToPlayer(groupId: string, playerId: string, guardianData: CreateGuardianPayload): Promise<Player> {
+export async function addGuardianToPlayer(squadId: string, playerId: string, guardianData: CreateGuardianPayload): Promise<Player> {
   const guardianId = guardianData.guardianId || guardianData.trainerId;
   if (!guardianId) {
     throw new Error('guardianId is required to link guardian to player');
   }
 
   return apiClient.request<Player>(
-    apiClient.getGroupEndpoint(groupId, `/members/${playerId}/guardians`),
+    apiClient.getSquadEndpoint(squadId, `/members/${playerId}/guardians`),
     {
       method: 'POST',
       body: JSON.stringify({ guardianId }),
@@ -233,9 +234,9 @@ export async function addGuardianToPlayer(groupId: string, playerId: string, gua
   );
 }
 
-export async function deleteGuardianFromPlayer(groupId: string, playerId: string, guardianId: string): Promise<Player> {
+export async function deleteGuardianFromPlayer(squadId: string, playerId: string, guardianId: string): Promise<Player> {
   return apiClient.request<Player>(
-    apiClient.getGroupEndpoint(groupId, `/members/${playerId}/guardians/${guardianId}`),
+    apiClient.getSquadEndpoint(squadId, `/members/${playerId}/guardians/${guardianId}`),
     {
       method: 'DELETE',
     }
@@ -243,14 +244,14 @@ export async function deleteGuardianFromPlayer(groupId: string, playerId: string
 }
 
 // Trainer-specific operations
-export async function getTrainers(groupId: string): Promise<Trainer[]> {
-  const members = await getAllMembers(groupId);
+export async function getTrainers(squadId: string): Promise<Trainer[]> {
+  const members = await getAllMembers(squadId);
 
   return members.trainers;
 }
 
-export async function addTrainer(groupId: string, trainerData: Omit<Trainer, 'id'>): Promise<Trainer> {
-  const member = await addMember(groupId, {
+export async function addTrainer(squadId: string, trainerData: Omit<Trainer, 'id'>): Promise<Trainer> {
+  const member = await addMember(squadId, {
     ...trainerData,
     roles: Array.from(new Set([...(trainerData.roles || []), 'trainer'])),
     firstName: trainerData.firstName,
@@ -260,8 +261,8 @@ export async function addTrainer(groupId: string, trainerData: Omit<Trainer, 'id
   return normalizeTrainer(member as Trainer);
 }
 
-export async function updateTrainer(groupId: string, id: string, trainerData: Partial<Trainer>): Promise<Trainer> {
-  const member = await updateMember(groupId, id, {
+export async function updateTrainer(squadId: string, id: string, trainerData: Partial<Trainer>): Promise<Trainer> {
+  const member = await updateMember(squadId, id, {
     ...trainerData,
     roles: trainerData.roles,
   });
@@ -269,14 +270,14 @@ export async function updateTrainer(groupId: string, id: string, trainerData: Pa
   return normalizeTrainer(member as Trainer);
 }
 
-export async function deleteTrainer(groupId: string, id: string): Promise<void> {
-  return deleteMember(groupId, id);
+export async function deleteTrainer(squadId: string, id: string): Promise<void> {
+  return deleteMember(squadId, id);
 }
 
-export async function getTrainerById(groupId: string, id: string): Promise<Trainer | null> {
+export async function getTrainerById(squadId: string, id: string): Promise<Trainer | null> {
   try {
     const trainer = await apiClient.request<Trainer>(
-      apiClient.getGroupEndpoint(groupId, `/members/${id}`)
+      apiClient.getSquadEndpoint(squadId, `/members/${id}`)
     );
 
     return normalizeTrainer(trainer);

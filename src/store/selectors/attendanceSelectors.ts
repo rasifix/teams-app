@@ -1,4 +1,5 @@
-import type { Activity, AttendanceStatus, Player } from '../../types';
+import type { Activity, ActivityAttendance, AttendanceReason, AttendanceStatus, Player } from '../../types';
+import { selectSelectedPlayerIds } from './activitySelectors';
 
 export interface ActivityAttendanceRow {
   playerId: string;
@@ -33,4 +34,65 @@ export function selectActivityAttendance(activity: Activity, players: Player[], 
   const counts = { present: 0, absent: 0, excused: 0, unrecorded: 0 };
   rows.forEach((row) => { counts[row.status ?? 'unrecorded'] += 1; });
   return { isAvailable: hasActivityStarted(activity, now), rows, counts };
+}
+
+export const ATTENDANCE_REASONS: AttendanceReason[] = ['sick', 'injured', 'noShow', 'other'];
+
+export type RecordableAttendanceStatus = Extract<AttendanceStatus, 'present' | 'excused'>;
+
+export interface AttendanceDialogRow {
+  playerId: string;
+  name: string;
+  status: RecordableAttendanceStatus;
+  reason: AttendanceReason | '';
+}
+
+/** Only selected players are listed; they default to present unless excused was recorded. */
+export function selectAttendanceDialogRows(activity: Activity, players: Player[]): AttendanceDialogRow[] {
+  const selectedIds = selectSelectedPlayerIds(activity);
+  const recorded = new Map((activity.attendance ?? []).map((record) => [record.personId, record]));
+  return players
+    .filter((player) => selectedIds.has(player.id))
+    .map((player) => {
+      const record = recorded.get(player.id);
+      const isExcused = record?.status === 'excused';
+      return {
+        playerId: player.id,
+        name: `${player.firstName} ${player.lastName}`,
+        status: isExcused ? 'excused' as const : 'present' as const,
+        reason: (isExcused ? record?.reason ?? '' : '') as AttendanceDialogRow['reason'],
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function toAttendanceRecords(rows: AttendanceDialogRow[]): ActivityAttendance[] {
+  return rows.map((row) => (
+    row.status === 'excused' && row.reason
+      ? { personId: row.playerId, status: row.status, reason: row.reason }
+      : { personId: row.playerId, status: row.status }
+  ));
+}
+
+export interface AttendanceSummary {
+  isRecorded: boolean;
+  present: number;
+  excused: number;
+  excusedWithReason: Array<{ playerId: string; name: string; reason?: AttendanceReason }>;
+}
+
+/** Summary of recorded attendance restricted to selected players. */
+export function selectAttendanceSummary(activity: Activity, players: Player[]): AttendanceSummary {
+  const selectedIds = selectSelectedPlayerIds(activity);
+  const records = (activity.attendance ?? []).filter((record) => selectedIds.has(record.personId));
+  const namesById = new Map(players.map((player) => [player.id, `${player.firstName} ${player.lastName}`]));
+  const excused = records.filter((record) => record.status === 'excused');
+  return {
+    isRecorded: records.length > 0,
+    present: records.filter((record) => record.status === 'present').length,
+    excused: excused.length,
+    excusedWithReason: excused
+      .map((record) => ({ playerId: record.personId, name: namesById.get(record.personId) ?? record.personId, reason: record.reason }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  };
 }

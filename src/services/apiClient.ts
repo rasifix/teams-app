@@ -1,6 +1,6 @@
 import { API_CONFIG } from '../config/api';
 
-/** Squad-scoped API base path (`/api/groups` remains a deprecated backend alias). */
+/** Squad-scoped API base path (`/api/squads` remains a deprecated backend alias). */
 export const SQUADS_PATH = '/api/squads';
 
 class ApiClient {
@@ -72,8 +72,8 @@ class ApiClient {
     }
   }
 
-  getGroupEndpoint(groupId: string, path = ''): string {
-    return `${SQUADS_PATH}/${groupId}${path}`;
+  getSquadEndpoint(squadId: string, path = ''): string {
+    return `${SQUADS_PATH}/${squadId}${path}`;
   }
 }
 

@@ -11,7 +11,7 @@ Event, and can they be considered for team selection?"
 ## Core Concept
 
 An Invitation is a per-event participation intent record. It is not membership
-(Group), not recorded attendance (Event, see Attendance) or participation statistics (Statistics), and not team assignment
+(Squad), not recorded attendance (Event, see Attendance) or participation statistics (Statistics), and not team assignment
 (Team). It is the decision bridge between planned participation and actual
 selection.
 
@@ -19,7 +19,7 @@ selection.
 
 - An Invitation belongs to one Event.
 - An Invitation belongs to one Player.
-- An Invitation is scoped by the Event's Group context.
+- An Invitation is scoped by the Event's Squad context.
 - Invitation status influences team selection eligibility in the Event.
 
 ## Key Responsibilities
@@ -61,7 +61,7 @@ Status semantics:
 
 - Invitation uniqueness should be enforced per (eventId, playerId).
 - Invitation must reference existing Event and Player records.
-- Invitation should only be created for Players in scope of the Event's Group,
+- Invitation should only be created for Players in scope of the Event's Squad,
   unless explicit guest rules are defined.
 - Only accepted invitations should be considered selectable by default.
 - Status changes near or after team finalization should trigger selection
@@ -79,7 +79,7 @@ The Invitation does not:
 
 - assign the player to a Team,
 - determine final attendance metrics on its own,
-- alter Group membership.
+- alter Squad membership.
 
 ## Practical Example
 

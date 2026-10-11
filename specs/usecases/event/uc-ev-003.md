@@ -18,7 +18,7 @@ This use case covers:
 
 - User is authenticated and may manage the Event.
 - The Event and target Team exist.
-- Players are available in the active group.
+- Players are available in the active squad.
 
 ## Main Success Scenario
 

@@ -9,7 +9,7 @@ Detail using the same row-and-modal interaction as shirt assignment.
 
 - User is authenticated and may manage the Event.
 - The Event and target Team exist.
-- The active group contains an eligible Trainer or guardian assignee when an
+- The active squad contains an eligible Trainer or guardian assignee when an
   assignment should be made.
 
 ## Main Success Scenario

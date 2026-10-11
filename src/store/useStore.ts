@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Player, Activity, Trainer, ShirtSet, Team, Group, Period, CreateGroupRequest, GroupRole, GroupCategory, PlayingMode, Formation, PositionCode, SfvCategoryCatalog } from '../types';
+import type { Player, Activity, Trainer, ShirtSet, Team, Squad, Period, CreateSquadRequest, SquadRole, SquadCategory, MatchFormat, Formation, PositionCode, SfvCategoryCatalog } from '../types';
 import { getPlayerStats } from '../utils/playerStats';
 import {
   getAllMembers,
@@ -21,26 +21,26 @@ import { getActivities, updateActivity as updateActivityService } from '../servi
 import { createActivityActions, type ActivityActions } from './activityActions';
 import { getActivityDate, getActivityStartTime, sortActivities } from './selectors/activitySelectors';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getGroups, getGroup, createGroup as createGroupService, updateGroupCategory as updateGroupCategoryService, addGroupPeriod as addGroupPeriodService, updateGroupPeriod as updateGroupPeriodService, deleteGroupPeriod as deleteGroupPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addGroupPlayingMode as addGroupPlayingModeService, updateGroupPlayingMode as updateGroupPlayingModeService, deleteGroupPlayingMode as deleteGroupPlayingModeService, setDefaultGroupPlayingMode as setDefaultGroupPlayingModeService, addGroupFormation as addGroupFormationService, updateGroupFormation as updateGroupFormationService, deleteGroupFormation as deleteGroupFormationService } from '../services/groupService';
+import { getSquads, getSquad, createSquad as createSquadService, updateSquadCategory as updateSquadCategoryService, addSquadPeriod as addSquadPeriodService, updateSquadPeriod as updateSquadPeriodService, deleteSquadPeriod as deleteSquadPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addSquadMatchFormat as addSquadMatchFormatService, updateSquadMatchFormat as updateSquadMatchFormatService, deleteSquadMatchFormat as deleteSquadMatchFormatService, setDefaultSquadMatchFormat as setDefaultSquadMatchFormatService, addSquadFormation as addSquadFormationService, updateSquadFormation as updateSquadFormationService, deleteSquadFormation as deleteSquadFormationService } from '../services/squadService';
 import { authService } from '../services/authService';
-import { setSelectedGroupId, clearSelectedGroupId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
-import { canAccessRestrictedManagement, withResolvedGroupPermissions } from '../utils/permissions';
-import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type GroupMember } from './selectors/memberSelectors';
-import { isDuplicateTargetMember, type GroupImportCandidate } from './selectors/memberGroupImportSelectors';
+import { setSelectedSquadId, clearSelectedSquadId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
+import { canAccessRestrictedManagement, withResolvedSquadPermissions } from '../utils/permissions';
+import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './selectors/memberSelectors';
+import { isDuplicateTargetMember, type SquadImportCandidate } from './selectors/memberSquadImportSelectors';
 import {
   selectActivityWithoutActiveInvitations,
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
-import { selectMatchingPlayingMode } from './selectors/groupCategorySelectors';
+import { selectMatchingMatchFormat } from './selectors/squadCategorySelectors';
 import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
 import { getSfvCategoryCatalog } from '../services/sfvService';
 
-export interface GroupMemberImportProgress {
+export interface SquadMemberImportProgress {
   total: number;
   completed: number;
 }
 
-export interface GroupMemberImportResult {
+export interface SquadMemberImportResult {
   processedMembers: number;
   importedPlayers: number;
   importedTrainers: number;
@@ -50,7 +50,7 @@ export interface GroupMemberImportResult {
 }
 
 // Helper function to sort members alphabetically by lastName + firstName
-const sortMembers = (members: GroupMember[]): GroupMember[] => {
+const sortMembers = (members: SquadMember[]): SquadMember[] => {
   return [...members].sort((a, b) => {
     const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
     const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
@@ -58,19 +58,19 @@ const sortMembers = (members: GroupMember[]): GroupMember[] => {
   });
 };
 
-function toMembers(players: Player[], trainers: Trainer[]): GroupMember[] {
+function toMembers(players: Player[], trainers: Trainer[]): SquadMember[] {
   return sortMembers(mergeMembersFromCollections(players, trainers));
 }
 
-function playersFromMembers(members: GroupMember[]): Player[] {
+function playersFromMembers(members: SquadMember[]): Player[] {
   return selectPlayersFromMembers(members);
 }
 
-function trainersFromMembers(members: GroupMember[]): Trainer[] {
+function trainersFromMembers(members: SquadMember[]): Trainer[] {
   return selectTrainersFromMembers(members);
 }
 
-function upsertMember(members: GroupMember[], member: GroupMember): GroupMember[] {
+function upsertMember(members: SquadMember[], member: SquadMember): SquadMember[] {
   const withoutMember = members.filter((entry) => entry.id !== member.id);
   const nextPlayers = playersFromMembers(withoutMember);
   const nextTrainers = trainersFromMembers(withoutMember);
@@ -115,8 +115,8 @@ const sortPeriods = (periods: Period[]): Period[] => {
   });
 };
 
-const sortGroups = (groups: Group[]): Group[] => {
-  return [...groups].sort((a, b) => a.name.localeCompare(b.name));
+const sortSquads = (squads: Squad[]): Squad[] => {
+  return [...squads].sort((a, b) => a.name.localeCompare(b.name));
 };
 
 const EMPTY_PERIODS: Period[] = [];
@@ -147,7 +147,7 @@ function hasCompleteGuardianIdentity(firstName: string | undefined, lastName: st
   return Boolean((firstName || '').trim()) && Boolean((lastName || '').trim()) && Boolean((email || '').trim());
 }
 
-function buildGuardianIdentityLookup(members: GroupMember[]): Map<string, string> {
+function buildGuardianIdentityLookup(members: SquadMember[]): Map<string, string> {
   const lookup = new Map<string, string>();
   const players = playersFromMembers(members);
   const trainers = trainersFromMembers(members);
@@ -178,9 +178,9 @@ function buildGuardianIdentityLookup(members: GroupMember[]): Map<string, string
   return lookup;
 }
 
-function mergeGroupMember(group: Group | null, member: GroupMember | null): Group | null {
-  if (!group || !member) {
-    return group;
+function mergeSquadMember(squad: Squad | null, member: SquadMember | null): Squad | null {
+  if (!squad || !member) {
+    return squad;
   }
 
   const nextMember = {
@@ -190,9 +190,9 @@ function mergeGroupMember(group: Group | null, member: GroupMember | null): Grou
   };
 
   return {
-    ...group,
+    ...squad,
     members: [
-      ...(group.members || []).filter((existingMember) => existingMember.id !== member.id),
+      ...(squad.members || []).filter((existingMember) => existingMember.id !== member.id),
       nextMember,
     ],
   };
@@ -203,23 +203,23 @@ export const PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE = PLAYER_DELETE_ROLE_CO
 const PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT = 'PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT';
 export const PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE = PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT;
 
-function getUniqueRoles(roles: GroupRole[] | undefined): GroupRole[] {
+function getUniqueRoles(roles: SquadRole[] | undefined): SquadRole[] {
   return Array.from(new Set(roles || []));
 }
 
 interface AppState extends ActivityActions {
   // Data
-  group: Group | null;
-  groups: Group[];
+  squad: Squad | null;
+  squads: Squad[];
   selectedStatisticsPeriodId: string | null;
-  members: GroupMember[];
+  members: SquadMember[];
   activities: Activity[];
   shirtSets: ShirtSet[];
   
   // Loading states
   loading: {
-    group: boolean;
-    groups: boolean;
+    squad: boolean;
+    squads: boolean;
     players: boolean;
     activities: boolean;
     trainers: boolean;
@@ -228,8 +228,8 @@ interface AppState extends ActivityActions {
   
   // Error states
   errors: {
-    group: string | null;
-    groups: string | null;
+    squad: string | null;
+    squads: string | null;
     players: string | null;
     activities: string | null;
     trainers: string | null;
@@ -243,20 +243,20 @@ interface AppState extends ActivityActions {
   sfvCatalog: SfvCategoryCatalog | null;
   loadSfvCatalog: () => Promise<void>;
 
-  loadGroups: () => Promise<void>;
-  addGroup: (groupData: CreateGroupRequest) => Promise<Group | null>;
-  configureGroupCategory: (category: GroupCategory | null) => Promise<boolean>;
-  selectGroup: (groupId: string) => Promise<void>;
+  loadSquads: () => Promise<void>;
+  addSquad: (squadData: CreateSquadRequest) => Promise<Squad | null>;
+  configureSquadCategory: (category: SquadCategory | null) => Promise<boolean>;
+  selectSquad: (squadId: string) => Promise<void>;
   selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
   clearAuthenticatedData: () => void;
-  getMembersForGroup: (groupId: string) => Promise<{ players: Player[]; trainers: Trainer[] } | null>;
-  importMembersFromGroup: (
-    sourceGroupId: string,
+  getMembersForSquad: (squadId: string) => Promise<{ players: Player[]; trainers: Trainer[] } | null>;
+  importMembersFromSquad: (
+    sourceSquadId: string,
     memberIds: string[],
-    onProgress?: (progress: GroupMemberImportProgress) => void
-  ) => Promise<GroupMemberImportResult>;
-  setMembers: (members: GroupMember[]) => void;
+    onProgress?: (progress: SquadMemberImportProgress) => void
+  ) => Promise<SquadMemberImportResult>;
+  setMembers: (members: SquadMember[]) => void;
   setActivities: (activities: Activity[]) => void;
   setShirtSets: (shirtSets: ShirtSet[]) => void;
   
@@ -289,17 +289,17 @@ interface AppState extends ActivityActions {
   removeShirtFromSet: (shirtSetId: string, shirtNumber: number) => Promise<boolean>;
   updateShirt: (shirtSetId: string, updatedShirt: import('../types').Shirt) => Promise<boolean>;
 
-  // Group period mutations
-  addGroupPeriod: (periodData: Omit<Period, 'id'>) => Promise<Period | null>;
-  updateGroupPeriod: (periodId: string, periodData: Omit<Period, 'id'>) => Promise<boolean>;
-  deleteGroupPeriod: (periodId: string) => Promise<boolean>;
+  // Squad period mutations
+  addSquadPeriod: (periodData: Omit<Period, 'id'>) => Promise<Period | null>;
+  updateSquadPeriod: (periodId: string, periodData: Omit<Period, 'id'>) => Promise<boolean>;
+  deleteSquadPeriod: (periodId: string) => Promise<boolean>;
 
   // Match planning mutations
   setMatchPlanningEnabled: (enabled: boolean) => Promise<boolean>;
-  addPlayingMode: (data: Omit<PlayingMode, 'id' | 'isDefault'>) => Promise<PlayingMode | null>;
-  updatePlayingMode: (playingModeId: string, data: Omit<PlayingMode, 'id' | 'isDefault'>) => Promise<boolean>;
-  deletePlayingMode: (playingModeId: string) => Promise<boolean>;
-  setDefaultPlayingMode: (playingModeId: string) => Promise<boolean>;
+  addMatchFormat: (data: Omit<MatchFormat, 'id' | 'isDefault'>) => Promise<MatchFormat | null>;
+  updateMatchFormat: (matchFormatId: string, data: Omit<MatchFormat, 'id' | 'isDefault'>) => Promise<boolean>;
+  deleteMatchFormat: (matchFormatId: string) => Promise<boolean>;
+  setDefaultMatchFormat: (matchFormatId: string) => Promise<boolean>;
   addFormation: (data: { name: string; slots: Array<{ positionCode: PositionCode }> }) => Promise<Formation | null>;
   updateFormation: (formationId: string, data: { name: string; slots: Array<{ id?: string; positionCode: PositionCode }> }) => Promise<boolean>;
   deleteFormation: (formationId: string) => Promise<boolean>;
@@ -326,8 +326,8 @@ export const useStore = create<AppState>()(
   devtools(
     (set, get) => ({
       // Initial state
-      group: null,
-      groups: [],
+      squad: null,
+      squads: [],
       selectedStatisticsPeriodId: null,
       members: [],
       activities: [],
@@ -335,16 +335,16 @@ export const useStore = create<AppState>()(
       isInitialized: false,
       sfvCatalog: null,
       loading: {
-        group: false,
-        groups: false,
+        squad: false,
+        squads: false,
         players: false,
         activities: false,
         trainers: false,
         shirtSets: false,
       },
       errors: {
-        group: null,
-        groups: null,
+        squad: null,
+        squads: null,
         players: null,
         activities: null,
         trainers: null,
@@ -354,13 +354,13 @@ export const useStore = create<AppState>()(
       // Actions
       initializeApp: async () => {
         const state = get();
-        const selectedGroup = get().group;
+        const selectedSquad = get().squad;
 
-        if (!selectedGroup) {
-          throw new Error('No group selected');
+        if (!selectedSquad) {
+          throw new Error('No squad selected');
         }
 
-        const currentGroup = selectedGroup;
+        const currentSquad = selectedSquad;
 
         let currentUser: import('../services/authService').User | null = null;
         try {
@@ -372,16 +372,16 @@ export const useStore = create<AppState>()(
         // Set all loading states
         set({
           loading: {
-            group: true,
-            groups: true,
+            squad: true,
+            squads: true,
             players: true,
             activities: true,
             trainers: true,
             shirtSets: false,
           },
           errors: {
-            group: null,
-            groups: null,
+            squad: null,
+            squads: null,
             players: null,
             activities: null,
             trainers: null,
@@ -392,39 +392,39 @@ export const useStore = create<AppState>()(
         // Load all data in parallel
         const loadData = async () => {
           const results = await Promise.allSettled([
-            getGroup(currentGroup.id).then((group) => ({ type: 'group' as const, data: group })),
-            getAllMembers(currentGroup.id).then((members) => ({ type: 'members' as const, data: members })),
-            getActivities(currentGroup.id).then((activities: Activity[]) => ({ type: 'activities' as const, data: activities })),
+            getSquad(currentSquad.id).then((squad) => ({ type: 'squad' as const, data: squad })),
+            getAllMembers(currentSquad.id).then((members) => ({ type: 'members' as const, data: members })),
+            getActivities(currentSquad.id).then((activities: Activity[]) => ({ type: 'activities' as const, data: activities })),
           ]);
           
           const newState: {
             loading: AppState['loading'];
             errors: AppState['errors'];
-            group: Group | null;
-            groups: Group[];
+            squad: Squad | null;
+            squads: Squad[];
             selectedStatisticsPeriodId: string | null;
-            members: GroupMember[];
+            members: SquadMember[];
             activities: Activity[];
             shirtSets: ShirtSet[];
           } = {
             loading: {
-              group: false,
-              groups: false,
+              squad: false,
+              squads: false,
               players: false,
               activities: false,
               trainers: false,
               shirtSets: false,
             },
             errors: {
-              group: null,
-              groups: null,
+              squad: null,
+              squads: null,
               players: null,
               activities: null,
               trainers: null,
               shirtSets: null,
             },
-            group: state.group,
-            groups: state.groups,
+            squad: state.squad,
+            squads: state.squads,
             selectedStatisticsPeriodId: state.selectedStatisticsPeriodId,
             members: state.members,
             activities: state.activities,
@@ -434,11 +434,11 @@ export const useStore = create<AppState>()(
           results.forEach((result, index) => {
             if (result.status === 'fulfilled') {
               const { type } = result.value;
-              if (type === 'group') {
-                const resolvedGroup = withResolvedGroupPermissions(result.value.data, [get().group, newState.group]) || result.value.data;
-                newState.group = {
-                  ...resolvedGroup,
-                  periods: sortPeriods(resolvedGroup?.periods ?? []),
+              if (type === 'squad') {
+                const resolvedSquad = withResolvedSquadPermissions(result.value.data, [get().squad, newState.squad]) || result.value.data;
+                newState.squad = {
+                  ...resolvedSquad,
+                  periods: sortPeriods(resolvedSquad?.periods ?? []),
                 };
               } else if (type === 'members') {
                 const membersData = result.value.data as { players: Player[], trainers: Trainer[] };
@@ -449,9 +449,9 @@ export const useStore = create<AppState>()(
             } else {
               // Map index to appropriate error handling
               if (index === 0) {
-                // Group call failed - log warning but don't treat as fatal error
-                console.warn('Failed to load group:', result.reason?.message || 'Unknown error');
-                newState.errors.group = result.reason?.message || 'Failed to load group';
+                // Squad call failed - log warning but don't treat as fatal error
+                console.warn('Failed to load squad:', result.reason?.message || 'Unknown error');
+                newState.errors.squad = result.reason?.message || 'Failed to load squad';
               } else if (index === 1) {
                 // Members call failed - set error for both players and trainers
                 newState.errors.players = result.reason?.message || 'Failed to load members';
@@ -463,17 +463,17 @@ export const useStore = create<AppState>()(
             }
           });
 
-          if (currentUser && newState.group) {
+          if (currentUser && newState.squad) {
             try {
-              const currentUserMember = await getMemberByIdService(newState.group.id, currentUser.id);
-              newState.group = mergeGroupMember(newState.group, currentUserMember);
+              const currentUserMember = await getMemberByIdService(newState.squad.id, currentUser.id);
+              newState.squad = mergeSquadMember(newState.squad, currentUserMember);
             } catch (error) {
               console.warn('Failed to load current user member for permissions:', error);
             }
           }
 
           const shouldLoadShirtSets = canAccessRestrictedManagement(currentUser, {
-            group: newState.group,
+            squad: newState.squad,
             trainers: trainersFromMembers(newState.members),
           });
 
@@ -486,7 +486,7 @@ export const useStore = create<AppState>()(
             });
 
             try {
-              const shirtSets = await getShirtSets(currentGroup.id);
+              const shirtSets = await getShirtSets(currentSquad.id);
               newState.shirtSets = sortShirtSets(shirtSets);
             } catch (error) {
               newState.errors.shirtSets = error instanceof Error ? error.message : 'Failed to load shirt sets';
@@ -495,7 +495,7 @@ export const useStore = create<AppState>()(
 
           if (
             newState.selectedStatisticsPeriodId &&
-            !newState.group?.periods.some((period) => period.id === newState.selectedStatisticsPeriodId)
+            !newState.squad?.periods.some((period) => period.id === newState.selectedStatisticsPeriodId)
           ) {
             newState.selectedStatisticsPeriodId = null;
           }
@@ -521,27 +521,27 @@ export const useStore = create<AppState>()(
       },
 
       clearAuthenticatedData: () => {
-        clearSelectedGroupId();
+        clearSelectedSquadId();
         clearSelectedStatisticsPeriodId();
         set({
-          group: null,
-          groups: [],
+          squad: null,
+          squads: [],
           selectedStatisticsPeriodId: null,
           members: [],
           activities: [],
           shirtSets: [],
           isInitialized: false,
           loading: {
-            group: false,
-            groups: false,
+            squad: false,
+            squads: false,
             players: false,
             activities: false,
             trainers: false,
             shirtSets: false,
           },
           errors: {
-            group: null,
-            groups: null,
+            squad: null,
+            squads: null,
             players: null,
             activities: null,
             trainers: null,
@@ -550,23 +550,23 @@ export const useStore = create<AppState>()(
         });
       },
 
-      getMembersForGroup: async (groupId: string) => {
+      getMembersForSquad: async (squadId: string) => {
         try {
-          return await getAllMembers(groupId);
+          return await getAllMembers(squadId);
         } catch (error) {
-          console.error('Failed to load members for group:', error);
+          console.error('Failed to load members for squad:', error);
           return null;
         }
       },
 
-      importMembersFromGroup: async (sourceGroupId, memberIds, onProgress) => {
-        const targetGroup = get().group;
-        if (!targetGroup) {
-          throw new Error('No group selected');
+      importMembersFromSquad: async (sourceSquadId, memberIds, onProgress) => {
+        const targetSquad = get().squad;
+        if (!targetSquad) {
+          throw new Error('No squad selected');
         }
 
         const uniqueMemberIds = Array.from(new Set(memberIds));
-        const result: GroupMemberImportResult = {
+        const result: SquadMemberImportResult = {
           processedMembers: 0,
           importedPlayers: 0,
           importedTrainers: 0,
@@ -577,8 +577,8 @@ export const useStore = create<AppState>()(
 
         onProgress?.({ total: uniqueMemberIds.length, completed: 0 });
 
-        const sourceMembers = await getAllMembers(sourceGroupId);
-        const sourceCandidatesById = new Map<string, GroupImportCandidate>();
+        const sourceMembers = await getAllMembers(sourceSquadId);
+        const sourceCandidatesById = new Map<string, SquadImportCandidate>();
 
         sourceMembers.players.forEach((player) => {
           sourceCandidatesById.set(player.id, {
@@ -626,7 +626,7 @@ export const useStore = create<AppState>()(
 
           if (sourceCandidate.role === 'player') {
             try {
-              const createdPlayer = await addMemberService(targetGroup.id, {
+              const createdPlayer = await addMemberService(targetSquad.id, {
                 firstName: sourceCandidate.firstName,
                 lastName: sourceCandidate.lastName,
                 birthDate: sourceCandidate.birthDate,
@@ -680,12 +680,12 @@ export const useStore = create<AppState>()(
                 }
               }
             } catch (error) {
-              console.error('Failed to import player from source group:', error);
+              console.error('Failed to import player from source squad:', error);
               memberFailed = true;
             }
           } else {
             try {
-              const createdTrainer = await addMemberService(targetGroup.id, {
+              const createdTrainer = await addMemberService(targetSquad.id, {
                 firstName: sourceCandidate.firstName,
                 lastName: sourceCandidate.lastName,
                 email: sourceCandidate.email,
@@ -695,7 +695,7 @@ export const useStore = create<AppState>()(
               set({ members: upsertMember(get().members, createdTrainer) });
               result.importedTrainers += 1;
             } catch (error) {
-              console.error('Failed to import trainer from source group:', error);
+              console.error('Failed to import trainer from source squad:', error);
               memberFailed = true;
             }
           }
@@ -710,117 +710,117 @@ export const useStore = create<AppState>()(
         return result;
       },
       
-      loadGroups: async () => {
-        set({ loading: { ...get().loading, groups: true }, errors: { ...get().errors, groups: null } });
+      loadSquads: async () => {
+        set({ loading: { ...get().loading, squads: true }, errors: { ...get().errors, squads: null } });
         
         try {
-          const groups = await getGroups();
-          set({ groups: sortGroups(groups), loading: { ...get().loading, groups: false } });
+          const squads = await getSquads();
+          set({ squads: sortSquads(squads), loading: { ...get().loading, squads: false } });
         } catch (error) {
-          console.error('Failed to load groups:', error);
+          console.error('Failed to load squads:', error);
           set({ 
-            loading: { ...get().loading, groups: false }, 
-            errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to load groups' }
+            loading: { ...get().loading, squads: false }, 
+            errors: { ...get().errors, squads: error instanceof Error ? error.message : 'Failed to load squads' }
           });
         }
       },
 
-      addGroup: async (groupData) => {
-        set({ loading: { ...get().loading, groups: true }, errors: { ...get().errors, groups: null } });
+      addSquad: async (squadData) => {
+        set({ loading: { ...get().loading, squads: true }, errors: { ...get().errors, squads: null } });
 
         try {
-          const newGroup = await createGroupService(groupData);
-          const updatedGroups = sortGroups([...get().groups, newGroup]);
+          const newSquad = await createSquadService(squadData);
+          const updatedSquads = sortSquads([...get().squads, newSquad]);
           set({
-            groups: updatedGroups,
-            loading: { ...get().loading, groups: false },
+            squads: updatedSquads,
+            loading: { ...get().loading, squads: false },
           });
-          return newGroup;
+          return newSquad;
         } catch (error) {
-          console.error('Failed to add group:', error);
+          console.error('Failed to add squad:', error);
           set({
-            loading: { ...get().loading, groups: false },
-            errors: { ...get().errors, groups: error instanceof Error ? error.message : 'Failed to add group' },
+            loading: { ...get().loading, squads: false },
+            errors: { ...get().errors, squads: error instanceof Error ? error.message : 'Failed to add squad' },
           });
           return null;
         }
       },
 
-      configureGroupCategory: async (category) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      configureSquadCategory: async (category) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          let updatedGroup = await updateGroupCategoryService(currentGroup.id, currentGroup.name, category);
+          let updatedSquad = await updateSquadCategoryService(currentSquad.id, currentSquad.name, category);
           const officialMode = selectOfficialMatchFormatForCategory(get().sfvCatalog, category);
 
           if (officialMode) {
-            if (!updatedGroup.matchPlanningEnabled) {
-              updatedGroup = await setMatchPlanningEnabledService(currentGroup.id, true);
+            if (!updatedSquad.matchPlanningEnabled) {
+              updatedSquad = await setMatchPlanningEnabledService(currentSquad.id, true);
             }
 
-            const availableModes = updatedGroup.playingModes ?? currentGroup.playingModes ?? [];
-            let matchingMode = selectMatchingPlayingMode(availableModes, officialMode);
+            const availableModes = updatedSquad.matchFormats ?? currentSquad.matchFormats ?? [];
+            let matchingMode = selectMatchingMatchFormat(availableModes, officialMode);
             if (!matchingMode) {
-              matchingMode = await addGroupPlayingModeService(currentGroup.id, officialMode);
+              matchingMode = await addSquadMatchFormatService(currentSquad.id, officialMode);
             }
 
-            await setDefaultGroupPlayingModeService(currentGroup.id, matchingMode.id);
-            const playingModes = [
+            await setDefaultSquadMatchFormatService(currentSquad.id, matchingMode.id);
+            const matchFormats = [
               ...availableModes.filter((mode) => mode.id !== matchingMode.id),
               matchingMode,
             ].map((mode) => ({ ...mode, isDefault: mode.id === matchingMode.id }));
 
-            updatedGroup = {
-              ...updatedGroup,
+            updatedSquad = {
+              ...updatedSquad,
               category,
               matchPlanningEnabled: true,
-              playingModes,
+              matchFormats,
             };
           }
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => group.id === updatedGroup.id ? updatedGroup : group),
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => squad.id === updatedSquad.id ? updatedSquad : squad),
           }));
           return true;
         } catch (error) {
-          console.error('Failed to configure group category:', error);
+          console.error('Failed to configure squad category:', error);
           return false;
         }
       },
       
-      selectGroup: async (groupId: string) => {
-        const groups = get().groups;
-        const selectedGroup = groups.find(g => g.id === groupId);
+      selectSquad: async (squadId: string) => {
+        const squads = get().squads;
+        const selectedSquad = squads.find(g => g.id === squadId);
         
-        let group: Group;
+        let squad: Squad;
         try {
-          group = await getGroup(groupId);
+          squad = await getSquad(squadId);
         } catch (error) {
-          console.error('Failed to fetch group:', error);
-          if (selectedGroup) {
-            group = selectedGroup;
+          console.error('Failed to fetch squad:', error);
+          if (selectedSquad) {
+            squad = selectedSquad;
           } else {
-            // Fallback to minimal group object
-            group = { id: groupId, name: `Group ${groupId}`, periods: [] };
+            // Fallback to minimal squad object
+            squad = { id: squadId, name: `Squad ${squadId}`, periods: [] };
           }
         }
         
-        const sortedPeriods = sortPeriods(group.periods ?? []);
+        const sortedPeriods = sortPeriods(squad.periods ?? []);
         const savedPeriodId = getSelectedStatisticsPeriodId();
         const isValidSavedPeriod = savedPeriodId && sortedPeriods.some((period) => period.id === savedPeriodId);
         
-        const resolvedGroup = withResolvedGroupPermissions(group, [selectedGroup, get().group]) || group;
+        const resolvedSquad = withResolvedSquadPermissions(squad, [selectedSquad, get().squad]) || squad;
 
         set({
-          group: {
-            ...resolvedGroup,
+          squad: {
+            ...resolvedSquad,
             periods: sortedPeriods,
           },
           selectedStatisticsPeriodId: isValidSavedPeriod ? savedPeriodId : null,
         });
-        setSelectedGroupId(groupId);
+        setSelectedSquadId(squadId);
       },
 
       selectStatisticsPeriod: (periodId) => {
@@ -835,11 +835,11 @@ export const useStore = create<AppState>()(
       
       // Player mutations
       addPlayer: async (playerData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const newPlayer = await addMemberService(currentGroup.id, {
+          const newPlayer = await addMemberService(currentSquad.id, {
             ...playerData,
             roles: Array.from(new Set([...(playerData.roles || []), 'player'])),
             firstName: playerData.firstName,
@@ -855,12 +855,12 @@ export const useStore = create<AppState>()(
       },
       
       updatePlayer: async (id, playerData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
           const currentPlayer = playersFromMembers(get().members).find((player) => player.id === id);
-          const updatedPlayer = await updateMemberService(currentGroup.id, id, {
+          const updatedPlayer = await updateMemberService(currentSquad.id, id, {
             ...playerData,
             roles: Array.from(new Set([...(currentPlayer?.roles || []), ...(playerData.roles || []), 'player'])),
           }) as Player;
@@ -874,11 +874,11 @@ export const useStore = create<AppState>()(
       },
       
       deletePlayer: async (id) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const member = await getMemberByIdService(currentGroup.id, id);
+          const member = await getMemberByIdService(currentSquad.id, id);
           if (!member) {
             return false;
           }
@@ -902,7 +902,7 @@ export const useStore = create<AppState>()(
           let updatedActivities = get().activities;
           for (const activity of deletionImpact.activitiesWithActiveInvitations) {
             const sanitizedActivity = selectActivityWithoutActiveInvitations(activity, id);
-            const persistedActivity = await updateActivityService(currentGroup.id, activity.id, {
+            const persistedActivity = await updateActivityService(currentSquad.id, activity.id, {
               invitations: sanitizedActivity.invitations,
             });
 
@@ -911,7 +911,7 @@ export const useStore = create<AppState>()(
             ));
           }
 
-          await deleteMemberService(currentGroup.id, id);
+          await deleteMemberService(currentSquad.id, id);
 
           const updatedMembers = sortMembers(
             get().members.filter((entry) => entry.id !== id)
@@ -937,12 +937,12 @@ export const useStore = create<AppState>()(
       },
 
       addGuardianToPlayer: async (playerId, guardianData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
           const existingGuardianId = guardianData.guardianId || guardianData.trainerId;
-          let ensuredGuardianMember: GroupMember | null = null;
+          let ensuredGuardianMember: SquadMember | null = null;
 
           let guardianIdToLink = existingGuardianId;
           if (!guardianIdToLink) {
@@ -950,7 +950,7 @@ export const useStore = create<AppState>()(
               throw new Error('firstName and lastName are required to create a new guardian');
             }
 
-            const newGuardianMember = await addMemberService(currentGroup.id, {
+            const newGuardianMember = await addMemberService(currentSquad.id, {
               firstName: guardianData.firstName,
               lastName: guardianData.lastName,
               email: guardianData.email,
@@ -959,23 +959,23 @@ export const useStore = create<AppState>()(
 
             guardianIdToLink = newGuardianMember.id;
           } else {
-            const existingGuardianMember = await getMemberByIdService(currentGroup.id, guardianIdToLink);
+            const existingGuardianMember = await getMemberByIdService(currentSquad.id, guardianIdToLink);
             if (!existingGuardianMember) {
               return false;
             }
 
             const existingRoles = getUniqueRoles(existingGuardianMember.roles);
             if (!existingRoles.includes(MEMBER_ROLE_GUARDIAN)) {
-              ensuredGuardianMember = await updateMemberService(currentGroup.id, guardianIdToLink, {
+              ensuredGuardianMember = await updateMemberService(currentSquad.id, guardianIdToLink, {
                 ...existingGuardianMember,
-                roles: Array.from(new Set<GroupRole>([...existingRoles, MEMBER_ROLE_GUARDIAN])),
-              }) as GroupMember;
+                roles: Array.from(new Set<SquadRole>([...existingRoles, MEMBER_ROLE_GUARDIAN])),
+              }) as SquadMember;
             } else {
-              ensuredGuardianMember = existingGuardianMember as GroupMember;
+              ensuredGuardianMember = existingGuardianMember as SquadMember;
             }
           }
 
-          const updatedPlayer = await addGuardianToPlayerService(currentGroup.id, playerId, {
+          const updatedPlayer = await addGuardianToPlayerService(currentSquad.id, playerId, {
             guardianId: guardianIdToLink,
           });
 
@@ -985,7 +985,7 @@ export const useStore = create<AppState>()(
           );
 
           if (!existingGuardianId) {
-            const refreshedMembers = await getAllMembers(currentGroup.id);
+            const refreshedMembers = await getAllMembers(currentSquad.id);
             const mergedMembers = toMembers(updatedPlayers, refreshedMembers.trainers);
             set({ members: mergedMembers });
             return true;
@@ -997,7 +997,7 @@ export const useStore = create<AppState>()(
             : toMembers(updatedPlayers, currentTrainers);
           set({
             members: nextMembers,
-            group: mergeGroupMember(get().group, ensuredGuardianMember),
+            squad: mergeSquadMember(get().squad, ensuredGuardianMember),
           });
           return true;
         } catch (error) {
@@ -1007,11 +1007,11 @@ export const useStore = create<AppState>()(
       },
 
       deleteGuardianFromPlayer: async (playerId, guardianId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const updatedPlayer = await deleteGuardianFromPlayerService(currentGroup.id, playerId, guardianId);
+          const updatedPlayer = await deleteGuardianFromPlayerService(currentSquad.id, playerId, guardianId);
           const currentPlayers = playersFromMembers(get().members);
           const updatedPlayers = currentPlayers.map((player) =>
             player.id === playerId
@@ -1028,11 +1028,11 @@ export const useStore = create<AppState>()(
               : player
           );
 
-          const guardianMember = await getMemberByIdService(currentGroup.id, guardianId);
+          const guardianMember = await getMemberByIdService(currentSquad.id, guardianId);
           const guardianRoles = getUniqueRoles(guardianMember?.roles);
           if (guardianMember && guardianRoles.length === 0) {
-            await deleteMemberService(currentGroup.id, guardianId);
-            const refreshedMembers = await getAllMembers(currentGroup.id);
+            await deleteMemberService(currentSquad.id, guardianId);
+            const refreshedMembers = await getAllMembers(currentSquad.id);
             set({ members: toMembers(refreshedMembers.players, refreshedMembers.trainers) });
             return true;
           }
@@ -1047,17 +1047,17 @@ export const useStore = create<AppState>()(
       },
 
       editGuardianForPlayer: async (playerId, guardianId, guardianData, previousGuardianData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const existingGuardianMember = await getMemberByIdService(currentGroup.id, guardianId);
+          const existingGuardianMember = await getMemberByIdService(currentSquad.id, guardianId);
           if (!existingGuardianMember) {
             return false;
           }
 
-          const nextRoles = Array.from(new Set<GroupRole>([...(existingGuardianMember.roles || []), 'guardian']));
-          await updateMemberService(currentGroup.id, guardianId, {
+          const nextRoles = Array.from(new Set<SquadRole>([...(existingGuardianMember.roles || []), 'guardian']));
+          await updateMemberService(currentSquad.id, guardianId, {
             ...existingGuardianMember,
             firstName: guardianData.firstName,
             lastName: guardianData.lastName,
@@ -1065,7 +1065,7 @@ export const useStore = create<AppState>()(
             roles: nextRoles,
           });
 
-          const refreshedMembers = await getAllMembers(currentGroup.id);
+          const refreshedMembers = await getAllMembers(currentSquad.id);
           set({ members: toMembers(refreshedMembers.players, refreshedMembers.trainers) });
           return true;
         } catch (error) {
@@ -1075,8 +1075,8 @@ export const useStore = create<AppState>()(
       },
 
       mergeGuardianDuplicates: async (sourceGuardianId, targetGuardianId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         if (sourceGuardianId === targetGuardianId) {
           return true;
@@ -1094,12 +1094,12 @@ export const useStore = create<AppState>()(
         }
 
         let targetGuardianIdToUse = targetGuardianId;
-        let ensuredTargetMember: GroupMember | null = null;
+        let ensuredTargetMember: SquadMember | null = null;
 
         try {
-          const targetMember = await getMemberByIdService(currentGroup.id, targetGuardianId);
+          const targetMember = await getMemberByIdService(currentSquad.id, targetGuardianId);
           if (!targetMember) {
-            const createdTargetGuardian = await addMemberService(currentGroup.id, {
+            const createdTargetGuardian = await addMemberService(currentSquad.id, {
               firstName: targetGuardianTemplate.firstName,
               lastName: targetGuardianTemplate.lastName,
               email: targetGuardianTemplate.email,
@@ -1107,16 +1107,16 @@ export const useStore = create<AppState>()(
             });
 
             targetGuardianIdToUse = createdTargetGuardian.id;
-            ensuredTargetMember = createdTargetGuardian as GroupMember;
+            ensuredTargetMember = createdTargetGuardian as SquadMember;
           } else {
             const targetRoles = getUniqueRoles(targetMember.roles);
             if (!targetRoles.includes(MEMBER_ROLE_GUARDIAN)) {
-              ensuredTargetMember = await updateMemberService(currentGroup.id, targetGuardianId, {
+              ensuredTargetMember = await updateMemberService(currentSquad.id, targetGuardianId, {
                 ...targetMember,
-                roles: Array.from(new Set<GroupRole>([...targetRoles, MEMBER_ROLE_GUARDIAN])),
-              }) as GroupMember;
+                roles: Array.from(new Set<SquadRole>([...targetRoles, MEMBER_ROLE_GUARDIAN])),
+              }) as SquadMember;
             } else {
-              ensuredTargetMember = targetMember as GroupMember;
+              ensuredTargetMember = targetMember as SquadMember;
             }
           }
 
@@ -1138,7 +1138,7 @@ export const useStore = create<AppState>()(
             );
 
             if (!hasTargetGuardian) {
-              const playerAfterAdd = await addGuardianToPlayerService(currentGroup.id, player.id, {
+              const playerAfterAdd = await addGuardianToPlayerService(currentSquad.id, player.id, {
                 guardianId: targetGuardianIdToUse,
               });
 
@@ -1153,7 +1153,7 @@ export const useStore = create<AppState>()(
               .filter((guardian) => !isMatchingGuardian(guardian, targetGuardianIdToUse));
 
             for (const guardian of guardiansToRemove) {
-              const playerAfterRemove = await deleteGuardianFromPlayerService(currentGroup.id, player.id, guardian.id);
+              const playerAfterRemove = await deleteGuardianFromPlayerService(currentSquad.id, player.id, guardian.id);
               nextPlayers = nextPlayers.map((entry) =>
                 entry.id === player.id ? { ...entry, ...playerAfterRemove } : entry
               );
@@ -1177,7 +1177,7 @@ export const useStore = create<AppState>()(
 
           set({
             members: nextMembers,
-            group: mergeGroupMember(get().group, ensuredTargetMember),
+            squad: mergeSquadMember(get().squad, ensuredTargetMember),
           });
 
           return true;
@@ -1192,11 +1192,11 @@ export const useStore = create<AppState>()(
       
       // Trainer mutations
       addTrainer: async (trainerData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const newTrainer = await addMemberService(currentGroup.id, {
+          const newTrainer = await addMemberService(currentSquad.id, {
             ...trainerData,
             roles: Array.from(new Set([...(trainerData.roles || []), 'trainer'])),
             firstName: trainerData.firstName,
@@ -1212,12 +1212,12 @@ export const useStore = create<AppState>()(
       },
       
       updateTrainer: async (id, trainerData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
           const currentTrainer = trainersFromMembers(get().members).find((trainer) => trainer.id === id);
-          const updatedTrainer = await updateMemberService(currentGroup.id, id, {
+          const updatedTrainer = await updateMemberService(currentSquad.id, id, {
             ...trainerData,
             roles: Array.from(new Set([...(currentTrainer?.roles || []), ...(trainerData.roles || []), 'trainer'])),
           }) as Trainer;
@@ -1231,11 +1231,11 @@ export const useStore = create<AppState>()(
       },
 
       deleteTrainer: async (id) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const member = await getMemberByIdService(currentGroup.id, id);
+          const member = await getMemberByIdService(currentSquad.id, id);
           if (!member) {
             return false;
           }
@@ -1251,12 +1251,12 @@ export const useStore = create<AppState>()(
           );
 
           if (roles.length === 1 && !isAssignedAsGuardian) {
-            await deleteMemberService(currentGroup.id, id);
+            await deleteMemberService(currentSquad.id, id);
           } else {
-            await revokeMemberRoleService(currentGroup.id, id, MEMBER_ROLE_TRAINER);
+            await revokeMemberRoleService(currentSquad.id, id, MEMBER_ROLE_TRAINER);
           }
 
-          const refreshedMembers = await getAllMembers(currentGroup.id);
+          const refreshedMembers = await getAllMembers(currentSquad.id);
           set({ members: toMembers(refreshedMembers.players, refreshedMembers.trainers) });
           return true;
         } catch (error) {
@@ -1266,11 +1266,11 @@ export const useStore = create<AppState>()(
       },
 
       assignTrainerRole: async (id) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const member = await getMemberByIdService(currentGroup.id, id);
+          const member = await getMemberByIdService(currentSquad.id, id);
           if (!member) {
             return false;
           }
@@ -1280,12 +1280,12 @@ export const useStore = create<AppState>()(
             return true;
           }
 
-          await updateMemberService(currentGroup.id, id, {
+          await updateMemberService(currentSquad.id, id, {
             ...member,
-            roles: Array.from(new Set<GroupRole>([...roles, MEMBER_ROLE_TRAINER])),
+            roles: Array.from(new Set<SquadRole>([...roles, MEMBER_ROLE_TRAINER])),
           });
 
-          const refreshedMembers = await getAllMembers(currentGroup.id);
+          const refreshedMembers = await getAllMembers(currentSquad.id);
           set({ members: toMembers(refreshedMembers.players, refreshedMembers.trainers) });
           return true;
         } catch (error) {
@@ -1295,8 +1295,8 @@ export const useStore = create<AppState>()(
       },
 
       mergeGuardianIntoTrainer: async (guardianId, trainerId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         const currentMembers = get().members;
         const currentTrainers = trainersFromMembers(currentMembers);
@@ -1326,7 +1326,7 @@ export const useStore = create<AppState>()(
             );
 
             if (!hasTargetGuardian) {
-              const playerAfterAdd = await addGuardianToPlayerService(currentGroup.id, player.id, {
+              const playerAfterAdd = await addGuardianToPlayerService(currentSquad.id, player.id, {
                 guardianId: targetTrainer.id,
               });
 
@@ -1341,7 +1341,7 @@ export const useStore = create<AppState>()(
               .filter((guardian) => guardian.id !== targetTrainer.id);
 
             for (const guardian of guardiansToRemove) {
-              const playerAfterRemove = await deleteGuardianFromPlayerService(currentGroup.id, player.id, guardian.id);
+              const playerAfterRemove = await deleteGuardianFromPlayerService(currentSquad.id, player.id, guardian.id);
               nextPlayers = nextPlayers.map((entry) =>
                 entry.id === player.id ? { ...entry, ...playerAfterRemove } : entry
               );
@@ -1380,7 +1380,7 @@ export const useStore = create<AppState>()(
           });
 
           for (const duplicateTrainerId of trainerIdsToDelete) {
-            await deleteMemberService(currentGroup.id, duplicateTrainerId);
+            await deleteMemberService(currentSquad.id, duplicateTrainerId);
           }
 
           const nextTrainers =
@@ -1397,11 +1397,11 @@ export const useStore = create<AppState>()(
       
       // Shirt set mutations
       addShirtSet: async (shirtSetData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const newShirtSet = await addShirtSetService(currentGroup.id, shirtSetData);
+          const newShirtSet = await addShirtSetService(currentSquad.id, shirtSetData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = [...currentShirtSets, newShirtSet];
           set({ shirtSets: sortShirtSets(updatedShirtSets) });
@@ -1413,11 +1413,11 @@ export const useStore = create<AppState>()(
       },
       
       updateShirtSet: async (id, shirtSetData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          await updateShirtSetService(currentGroup.id, id, shirtSetData);
+          await updateShirtSetService(currentSquad.id, id, shirtSetData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === id ? { ...shirtSet, ...shirtSetData } : shirtSet
@@ -1431,11 +1431,11 @@ export const useStore = create<AppState>()(
       },
       
       deleteShirtSet: async (id) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          await deleteShirtSetService(currentGroup.id, id);
+          await deleteShirtSetService(currentSquad.id, id);
           const currentShirtSets = get().shirtSets;
           const filteredShirtSets = currentShirtSets.filter(shirtSet => shirtSet.id !== id);
           set({ shirtSets: sortShirtSets(filteredShirtSets) });
@@ -1447,11 +1447,11 @@ export const useStore = create<AppState>()(
       },
       
       addShirtToSet: async (shirtSetId, shirtData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          const newShirt = await addShirtToSetService(currentGroup.id, shirtSetId, shirtData);
+          const newShirt = await addShirtToSetService(currentSquad.id, shirtSetId, shirtData);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 
@@ -1467,11 +1467,11 @@ export const useStore = create<AppState>()(
       },
       
       removeShirtFromSet: async (shirtSetId, shirtNumber) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          await removeShirtFromSetService(currentGroup.id, shirtSetId, shirtNumber);
+          await removeShirtFromSetService(currentSquad.id, shirtSetId, shirtNumber);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 
@@ -1487,11 +1487,11 @@ export const useStore = create<AppState>()(
       },
       
       updateShirt: async (shirtSetId, updatedShirt) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
         
         try {
-          await updateShirtService(currentGroup.id, shirtSetId, updatedShirt);
+          await updateShirtService(currentSquad.id, shirtSetId, updatedShirt);
           const currentShirtSets = get().shirtSets;
           const updatedShirtSets = currentShirtSets.map(shirtSet => 
             shirtSet.id === shirtSetId 
@@ -1511,78 +1511,78 @@ export const useStore = create<AppState>()(
         }
       },
 
-      addGroupPeriod: async (periodData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      addSquadPeriod: async (periodData) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const newPeriod = await addGroupPeriodService(currentGroup.id, periodData);
-          const updatedGroup = {
-            ...currentGroup,
-            periods: sortPeriods([...(currentGroup.periods ?? []), newPeriod]),
+          const newPeriod = await addSquadPeriodService(currentSquad.id, periodData);
+          const updatedSquad = {
+            ...currentSquad,
+            periods: sortPeriods([...(currentSquad.periods ?? []), newPeriod]),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
           return newPeriod;
         } catch (error) {
-          console.error('Failed to add group period:', error);
+          console.error('Failed to add squad period:', error);
           return null;
         }
       },
 
-      updateGroupPeriod: async (periodId, periodData) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      updateSquadPeriod: async (periodId, periodData) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const updatedPeriod = await updateGroupPeriodService(currentGroup.id, periodId, periodData);
-          const updatedGroup = {
-            ...currentGroup,
+          const updatedPeriod = await updateSquadPeriodService(currentSquad.id, periodId, periodData);
+          const updatedSquad = {
+            ...currentSquad,
             periods: sortPeriods(
-              (currentGroup.periods ?? []).map((period) => (
+              (currentSquad.periods ?? []).map((period) => (
                 period.id === periodId ? updatedPeriod : period
               ))
             ),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
           return true;
         } catch (error) {
-          console.error('Failed to update group period:', error);
+          console.error('Failed to update squad period:', error);
           return false;
         }
       },
 
-      deleteGroupPeriod: async (periodId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      deleteSquadPeriod: async (periodId) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          await deleteGroupPeriodService(currentGroup.id, periodId);
+          await deleteSquadPeriodService(currentSquad.id, periodId);
 
-          const updatedGroup = {
-            ...currentGroup,
-            periods: (currentGroup.periods ?? []).filter((period) => period.id !== periodId),
+          const updatedSquad = {
+            ...currentSquad,
+            periods: (currentSquad.periods ?? []).filter((period) => period.id !== periodId),
           };
 
           const isDeletedPeriodSelected = get().selectedStatisticsPeriodId === periodId;
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
             selectedStatisticsPeriodId: isDeletedPeriodSelected
               ? null
@@ -1595,22 +1595,22 @@ export const useStore = create<AppState>()(
 
           return true;
         } catch (error) {
-          console.error('Failed to delete group period:', error);
+          console.error('Failed to delete squad period:', error);
           return false;
         }
       },
 
       setMatchPlanningEnabled: async (enabled) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const updatedGroup = await setMatchPlanningEnabledService(currentGroup.id, enabled);
+          const updatedSquad = await setMatchPlanningEnabledService(currentSquad.id, enabled);
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1621,48 +1621,48 @@ export const useStore = create<AppState>()(
         }
       },
 
-      addPlayingMode: async (data) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      addMatchFormat: async (data) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const newPlayingMode = await addGroupPlayingModeService(currentGroup.id, data);
-          const updatedGroup = {
-            ...currentGroup,
-            playingModes: [...(currentGroup.playingModes ?? []), newPlayingMode],
+          const newMatchFormat = await addSquadMatchFormatService(currentSquad.id, data);
+          const updatedSquad = {
+            ...currentSquad,
+            matchFormats: [...(currentSquad.matchFormats ?? []), newMatchFormat],
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
-          return newPlayingMode;
+          return newMatchFormat;
         } catch (error) {
           console.error('Failed to add playing mode:', error);
           return null;
         }
       },
 
-      updatePlayingMode: async (playingModeId, data) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      updateMatchFormat: async (matchFormatId, data) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const updatedPlayingMode = await updateGroupPlayingModeService(currentGroup.id, playingModeId, data);
-          const updatedGroup = {
-            ...currentGroup,
-            playingModes: (currentGroup.playingModes ?? []).map((mode) => (
-              mode.id === playingModeId ? updatedPlayingMode : mode
+          const updatedMatchFormat = await updateSquadMatchFormatService(currentSquad.id, matchFormatId, data);
+          const updatedSquad = {
+            ...currentSquad,
+            matchFormats: (currentSquad.matchFormats ?? []).map((mode) => (
+              mode.id === matchFormatId ? updatedMatchFormat : mode
             )),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1673,21 +1673,21 @@ export const useStore = create<AppState>()(
         }
       },
 
-      deletePlayingMode: async (playingModeId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      deleteMatchFormat: async (matchFormatId) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          await deleteGroupPlayingModeService(currentGroup.id, playingModeId);
-          const updatedGroup = {
-            ...currentGroup,
-            playingModes: (currentGroup.playingModes ?? []).filter((mode) => mode.id !== playingModeId),
+          await deleteSquadMatchFormatService(currentSquad.id, matchFormatId);
+          const updatedSquad = {
+            ...currentSquad,
+            matchFormats: (currentSquad.matchFormats ?? []).filter((mode) => mode.id !== matchFormatId),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1698,24 +1698,24 @@ export const useStore = create<AppState>()(
         }
       },
 
-      setDefaultPlayingMode: async (playingModeId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+      setDefaultMatchFormat: async (matchFormatId) => {
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          await setDefaultGroupPlayingModeService(currentGroup.id, playingModeId);
-          const updatedGroup = {
-            ...currentGroup,
-            playingModes: (currentGroup.playingModes ?? []).map((mode) => ({
+          await setDefaultSquadMatchFormatService(currentSquad.id, matchFormatId);
+          const updatedSquad = {
+            ...currentSquad,
+            matchFormats: (currentSquad.matchFormats ?? []).map((mode) => ({
               ...mode,
-              isDefault: mode.id === playingModeId,
+              isDefault: mode.id === matchFormatId,
             })),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1727,20 +1727,20 @@ export const useStore = create<AppState>()(
       },
 
       addFormation: async (data) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const newFormation = await addGroupFormationService(currentGroup.id, data);
-          const updatedGroup = {
-            ...currentGroup,
-            formations: [...(currentGroup.formations ?? []), newFormation],
+          const newFormation = await addSquadFormationService(currentSquad.id, data);
+          const updatedSquad = {
+            ...currentSquad,
+            formations: [...(currentSquad.formations ?? []), newFormation],
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1752,22 +1752,22 @@ export const useStore = create<AppState>()(
       },
 
       updateFormation: async (formationId, data) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          const updatedFormation = await updateGroupFormationService(currentGroup.id, formationId, data);
-          const updatedGroup = {
-            ...currentGroup,
-            formations: (currentGroup.formations ?? []).map((formation) => (
+          const updatedFormation = await updateSquadFormationService(currentSquad.id, formationId, data);
+          const updatedSquad = {
+            ...currentSquad,
+            formations: (currentSquad.formations ?? []).map((formation) => (
               formation.id === formationId ? updatedFormation : formation
             )),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1779,20 +1779,20 @@ export const useStore = create<AppState>()(
       },
 
       deleteFormation: async (formationId) => {
-        const currentGroup = get().group;
-        if (!currentGroup) throw new Error('No group selected');
+        const currentSquad = get().squad;
+        if (!currentSquad) throw new Error('No squad selected');
 
         try {
-          await deleteGroupFormationService(currentGroup.id, formationId);
-          const updatedGroup = {
-            ...currentGroup,
-            formations: (currentGroup.formations ?? []).filter((formation) => formation.id !== formationId),
+          await deleteSquadFormationService(currentSquad.id, formationId);
+          const updatedSquad = {
+            ...currentSquad,
+            formations: (currentSquad.formations ?? []).filter((formation) => formation.id !== formationId),
           };
 
           set((state) => ({
-            group: updatedGroup,
-            groups: state.groups.map((group) => (
-              group.id === currentGroup.id ? updatedGroup : group
+            squad: updatedSquad,
+            squads: state.squads.map((squad) => (
+              squad.id === currentSquad.id ? updatedSquad : squad
             )),
           }));
 
@@ -1872,7 +1872,7 @@ export const useStore = create<AppState>()(
 
 // Stable selectors to prevent infinite re-renders
 export const useAppLoading = () => useStore((state) => 
-  state.loading.group || state.loading.players || state.loading.activities || state.loading.trainers || state.loading.shirtSets
+  state.loading.squad || state.loading.players || state.loading.activities || state.loading.trainers || state.loading.shirtSets
 );
 
 export const useAppErrors = () => useStore((state) => state.errors);
@@ -1885,32 +1885,32 @@ export const useAppInitialized = () => useStore((state) => state.isInitialized);
 
 export const useSfvCatalog = () => useStore((state) => state.sfvCatalog);
 
-export const useGroup = () => useStore((state) => state.group);
+export const useSquad = () => useStore((state) => state.squad);
 
-export const useGroups = () => useStore((state) => state.groups);
+export const useSquads = () => useStore((state) => state.squads);
 
-export const useGroupPeriods = () => useStore((state) => state.group?.periods ?? EMPTY_PERIODS);
+export const useSquadPeriods = () => useStore((state) => state.squad?.periods ?? EMPTY_PERIODS);
 
-const EMPTY_PLAYING_MODES: PlayingMode[] = [];
+const EMPTY_PLAYING_MODES: MatchFormat[] = [];
 const EMPTY_FORMATIONS: Formation[] = [];
 
-export const useMatchPlanningEnabled = () => useStore((state) => state.group?.matchPlanningEnabled ?? false);
+export const useMatchPlanningEnabled = () => useStore((state) => state.squad?.matchPlanningEnabled ?? false);
 
-export const useGroupPlayingModes = () => useStore((state) => state.group?.playingModes ?? EMPTY_PLAYING_MODES);
+export const useSquadMatchFormats = () => useStore((state) => state.squad?.matchFormats ?? EMPTY_PLAYING_MODES);
 
-export const useGroupFormations = () => useStore((state) => state.group?.formations ?? EMPTY_FORMATIONS);
+export const useSquadFormations = () => useStore((state) => state.squad?.formations ?? EMPTY_FORMATIONS);
 
 export const useSelectedStatisticsPeriod = () => useStore((state) => {
   if (!state.selectedStatisticsPeriodId) return null;
 
-  return (state.group?.periods ?? EMPTY_PERIODS).find(
+  return (state.squad?.periods ?? EMPTY_PERIODS).find(
     (period) => period.id === state.selectedStatisticsPeriodId
   ) ?? null;
 });
 
-export const useGroupsLoading = () => useStore((state) => state.loading.groups);
+export const useSquadsLoading = () => useStore((state) => state.loading.squads);
 
-export const useGroupsError = () => useStore((state) => state.errors.groups);
+export const useSquadsError = () => useStore((state) => state.errors.squads);
 
 export const useTrainers = () => {
   const members = useStore((state) => state.members);

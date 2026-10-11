@@ -2,6 +2,7 @@ import type { Activity, InvitationStatus } from '../types';
 import { useTranslation } from 'react-i18next';
 import { selectActivityCardSummary } from '../store/selectors/activityViewSelectors';
 import { DateColumn } from './ui';
+import SpondBadge from './SpondBadge';
 
 interface EventCardProps {
   activity: Activity;
@@ -21,6 +22,7 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-md font-semibold text-gray-900">{activity.name}</h3>
+            {activity.spondId && <SpondBadge />}
             <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">{t(`activity.kinds.${activity.kind}`)}</span>
           </div>
           <div className="mt-2 space-y-1 text-sm text-gray-600">

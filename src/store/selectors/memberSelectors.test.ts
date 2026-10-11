@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Trainer } from '../../types';
-import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type GroupMember } from './memberSelectors';
+import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './memberSelectors';
 
 function player(overrides: Partial<Player>): Player {
   return {
@@ -29,7 +29,7 @@ function trainer(overrides: Partial<Trainer>): Trainer {
 
 describe('member selectors', () => {
   it('extracts players and trainers from members', () => {
-    const members: GroupMember[] = [
+    const members: SquadMember[] = [
       player({ id: 'p-1', firstName: 'Lia' }),
       trainer({ id: 't-1', firstName: 'Noah' }),
     ];
@@ -44,7 +44,7 @@ describe('member selectors', () => {
   });
 
   it('sorts extracted members by last name then first name', () => {
-    const members: GroupMember[] = [
+    const members: SquadMember[] = [
       trainer({ id: 't-2', firstName: 'Zed', lastName: 'Coach' }),
       trainer({ id: 't-1', firstName: 'Anna', lastName: 'Coach' }),
       player({ id: 'p-2', firstName: 'Nora', lastName: 'Blue' }),

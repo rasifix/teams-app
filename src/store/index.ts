@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore, useGroupPlayingModes, useGroupFormations } from './useStore';
+import { useStore, useSquadMatchFormats, useSquadFormations } from './useStore';
 import { selectPlayersFromMembers, selectTrainersFromMembers } from './selectors/memberSelectors';
 
 // Re-export store hooks for easier imports
@@ -10,15 +10,15 @@ export {
   useAppHasErrors,
   useAppInitialized,
   useSfvCatalog,
-  useGroup,
-  useGroupPeriods,
-  useGroups,
+  useSquad,
+  useSquadPeriods,
+  useSquads,
   useSelectedStatisticsPeriod,
-  useGroupsLoading,
-  useGroupsError,
+  useSquadsLoading,
+  useSquadsError,
   useMatchPlanningEnabled,
-  useGroupPlayingModes,
-  useGroupFormations,
+  useSquadMatchFormats,
+  useSquadFormations,
 } from './useStore';
 
 // Individual entity hooks for convenience
@@ -62,6 +62,11 @@ export const useActivities = () => {
   const updateActivitySelection = useStore((state) => state.updateActivitySelection);
   const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
   const updateActivityAttendance = useStore((state) => state.updateActivityAttendance);
+  const addActivityTask = useStore((state) => state.addActivityTask);
+  const updateActivityTask = useStore((state) => state.updateActivityTask);
+  const deleteActivityTask = useStore((state) => state.deleteActivityTask);
+  const signUpForActivityTask = useStore((state) => state.signUpForActivityTask);
+  const withdrawFromActivityTask = useStore((state) => state.withdrawFromActivityTask);
   const deleteActivity = useStore((state) => state.deleteActivity);
 
   return {
@@ -74,6 +79,11 @@ export const useActivities = () => {
     updateActivitySelection,
     markActivitySelectionSent,
     updateActivityAttendance,
+    addActivityTask,
+    updateActivityTask,
+    deleteActivityTask,
+    signUpForActivityTask,
+    withdrawFromActivityTask,
     deleteActivity,
   };
 };
@@ -127,29 +137,29 @@ export const useShirtSets = () => {
 
 // Hook for match planning: matchPlanningEnabled toggle, playing modes, and formations
 export const useMatchPlanning = () => {
-  const matchPlanningEnabled = useStore((state) => state.group?.matchPlanningEnabled ?? false);
-  const playingModes = useGroupPlayingModes();
-  const formations = useGroupFormations();
+  const matchPlanningEnabled = useStore((state) => state.squad?.matchPlanningEnabled ?? false);
+  const matchFormats = useSquadMatchFormats();
+  const formations = useSquadFormations();
   const setMatchPlanningEnabled = useStore((state) => state.setMatchPlanningEnabled);
-  const configureGroupCategory = useStore((state) => state.configureGroupCategory);
-  const addPlayingMode = useStore((state) => state.addPlayingMode);
-  const updatePlayingMode = useStore((state) => state.updatePlayingMode);
-  const deletePlayingMode = useStore((state) => state.deletePlayingMode);
-  const setDefaultPlayingMode = useStore((state) => state.setDefaultPlayingMode);
+  const configureSquadCategory = useStore((state) => state.configureSquadCategory);
+  const addMatchFormat = useStore((state) => state.addMatchFormat);
+  const updateMatchFormat = useStore((state) => state.updateMatchFormat);
+  const deleteMatchFormat = useStore((state) => state.deleteMatchFormat);
+  const setDefaultMatchFormat = useStore((state) => state.setDefaultMatchFormat);
   const addFormation = useStore((state) => state.addFormation);
   const updateFormation = useStore((state) => state.updateFormation);
   const deleteFormation = useStore((state) => state.deleteFormation);
 
   return {
     matchPlanningEnabled,
-    playingModes,
+    matchFormats,
     formations,
     setMatchPlanningEnabled,
-    configureGroupCategory,
-    addPlayingMode,
-    updatePlayingMode,
-    deletePlayingMode,
-    setDefaultPlayingMode,
+    configureSquadCategory,
+    addMatchFormat,
+    updateMatchFormat,
+    deleteMatchFormat,
+    setDefaultMatchFormat,
     addFormation,
     updateFormation,
     deleteFormation,

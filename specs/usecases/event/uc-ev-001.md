@@ -2,7 +2,7 @@
 
 ## Goal
 
-Allow an authenticated user with a selected group context to create a new event
+Allow an authenticated user with a selected squad context to create a new event
 from the Events page.
 
 ## Scope
@@ -11,7 +11,7 @@ This use case covers:
 - opening the create-event modal from the Events page,
 - entering event setup data,
 - creating default teams for the event,
-- persisting the event through the group events API,
+- persisting the event through the squad events API,
 - updating in-memory store state so the event appears in the Events UI.
 
 This use case does not cover:
@@ -33,7 +33,7 @@ Authenticated User with Role trainer
 ## Preconditions
 
 - User is authenticated.
-- A group is selected in app state.
+- A squad is selected in app state.
 - Events page is reachable.
 
 ## Trigger
@@ -71,7 +71,7 @@ Default values when modal opens:
    - strength = 2,
    - startTime from modal,
    - selectedPlayers as empty list.
-7. System sends POST request to the group events endpoint with:
+7. System sends POST request to the squad events endpoint with:
    - name, date, maxPlayersPerTeam, minPlayersPerTeam, optional location,
    - teams,
    - invitations as empty list.
@@ -92,7 +92,7 @@ Default values when modal opens:
 ### A2 - API Or Network Failure During Create
 
 1. API request fails (for example network issue, 4xx, or 5xx).
-2. Store addEvent operation returns false (or throws if no selected group).
+2. Store addEvent operation returns false (or throws if no selected squad).
 3. Failure is logged to console.
 4. Current implementation closes and resets the modal regardless.
 5. No new event is added to store.
@@ -106,7 +106,7 @@ Default values when modal opens:
 ## Postconditions
 
 Success:
-- Event is persisted in backend for current group.
+- Event is persisted in backend for current squad.
 - Event exists in frontend store and is date-sorted with existing events.
 - Event has zero invitations initially.
 - Event has pre-created teams based on numberOfTeams.
@@ -135,7 +135,7 @@ Failure:
 
 ## API Contract Used
 
-- Endpoint: POST /api/groups/{groupId}/events
+- Endpoint: POST /api/squads/{squadId}/events
 - Request body fields used by UI:
   - name
   - date
@@ -148,7 +148,7 @@ Failure:
 
 ## Acceptance Criteria
 
-1. Given an authenticated user with selected group, when valid event data is
+1. Given an authenticated user with selected squad, when valid event data is
    submitted, then an event is created and appears in Events UI.
 2. Given valid numberOfTeams N, when submitted, then exactly N default teams
    are created in the new event.
@@ -164,4 +164,4 @@ Failure:
 - This spec intentionally documents current behavior, including the lack of
   inline modal error feedback on create failure.
 - Role-based restriction for event creation is not enforced in the current
-  frontend flow beyond authentication and group context.
+  frontend flow beyond authentication and squad context.

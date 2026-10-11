@@ -1,0 +1,75 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { apiClient } from './apiClient';
+import { addSquadMatchFormat, unlinkSquadFromSpond, updateSquadCategory } from './squadService';
+
+describe('squadService', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('includes the current squad name when updating the category', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1',
+      name: 'Juniors',
+      category: 'D7',
+      periods: [],
+    });
+
+    await updateSquadCategory('squad-1', 'Juniors', 'D7');
+
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1', {
+      method: 'PUT',
+      body: JSON.stringify({ name: 'Juniors', category: 'D7' }),
+    });
+  });
+
+  it('includes the current squad name when clearing the category', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1',
+      name: 'Juniors',
+      category: null,
+      periods: [],
+    });
+
+    await updateSquadCategory('squad-1', 'Juniors', null);
+
+    const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
+    expect(JSON.parse(options?.body ?? '{}')).toEqual({ name: 'Juniors', category: null });
+  });
+
+  it('unlinks Spond while preserving the required squad name', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1',
+      name: 'Juniors',
+      spondId: null,
+      periods: [],
+    });
+
+    await unlinkSquadFromSpond('squad-1', 'Juniors');
+
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1', {
+      method: 'PUT',
+      body: JSON.stringify({ name: 'Juniors', spondId: null }),
+    });
+  });
+
+  it('persists the minimum periods per player with a playing mode', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'mode-1',
+      name: '4x20',
+      numberOfPeriods: 4,
+      periodLengthMinutes: 20,
+      minimumPeriodsPerPlayer: 2,
+    });
+
+    await addSquadMatchFormat('squad-1', {
+      name: '4x20',
+      numberOfPeriods: 4,
+      periodLengthMinutes: 20,
+      minimumPeriodsPerPlayer: 2,
+    });
+
+    const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
+    expect(JSON.parse(options?.body ?? '{}')).toMatchObject({ minimumPeriodsPerPlayer: 2 });
+  });
+});

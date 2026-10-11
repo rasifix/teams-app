@@ -4,7 +4,7 @@
 
 Allow an authenticated user to assign each of a Team's selected Players to a
 Formation slot or the bench, independently for each period of the Event's
-Playing Mode.
+Match Format.
 
 ## Scope
 
@@ -18,7 +18,7 @@ This use case covers:
 - reviewing and printing a summary of all periods, position assignments, and
   benched Players,
 - identifying selected Players who are planned for fewer periods than the
-  Playing Mode's configured minimum,
+  Match Format's configured minimum,
 - starting the print flow from the lineup Summary tab,
 - printing the lineup overview and the Player shirt-number list on separate
   pages,
@@ -30,7 +30,7 @@ This use case covers:
 
 This use case does not cover:
 - selecting the Team's Formation (UC-EV-007, a precondition here),
-- assigning the Event's Playing Mode (UC-EV-006, a precondition here),
+- assigning the Event's Match Format (UC-EV-006, a precondition here),
 - selecting players into the Team (UC-EV-003).
 
 ## Primary Actor
@@ -45,9 +45,9 @@ Authenticated User with Role admin or trainer
 
 ## Preconditions
 
-- User is authenticated and has admin or trainer role in the active group.
-- Active group has `matchPlanningEnabled: true`.
-- Target Team's Event has a non-null `playingModeId`.
+- User is authenticated and has admin or trainer role in the active squad.
+- Active squad has `matchPlanningEnabled: true`.
+- Target Team's Event has a non-null `matchFormatId`.
 - Target Team has a non-null `formationId`.
 - Target Team has at least one selected Player.
 
@@ -58,7 +58,7 @@ The user opens the per-period lineup editor on a Team in Team Detail.
 ## Input Data
 
 Required per period being edited:
-- `periodNumber` (integer, 1 to the Playing Mode's `numberOfPeriods`)
+- `periodNumber` (integer, 1 to the Match Format's `numberOfPeriods`)
 - `assignments`: list of `{ slotId, playerId }` pairs for Players placed on
   the field for that period
 
@@ -68,7 +68,7 @@ Derived (not user input):
 
 ## Main Success Scenario
 
-1. User opens the lineup editor for a Team with a Formation and Playing Mode
+1. User opens the lineup editor for a Team with a Formation and Match Format
    assigned.
 2. System shows a period selector (1 to `numberOfPeriods`) and, for the
    selected period, a graphical playing field with one selectable marker per
@@ -128,7 +128,7 @@ Derived (not user input):
 ### A4 - Period Number Out Of Range
 
 1. Client attempts to save a lineup entry with `periodNumber` greater than
-   the Playing Mode's `numberOfPeriods`, or less than 1.
+   the Match Format's `numberOfPeriods`, or less than 1.
 2. System rejects the save request with a validation error.
 3. Team's persisted `lineup` remains unchanged.
 
@@ -181,14 +181,14 @@ Failure:
   containing a field assignment for that Player. It is derived from the
   current in-progress lineup and updates immediately when assignments change.
 - A minimum-period violation occurs when a selected Player's planned-period
-  count is lower than `playingMode.minimumPeriodsPerPlayer`. A missing or zero
+  count is lower than `matchFormat.minimumPeriodsPerPlayer`. A missing or zero
   minimum disables this rule. Violations are advisory and do not block saving.
-- Period routes accept integers from 1 through the Playing Mode's
+- Period routes accept integers from 1 through the Match Format's
   `numberOfPeriods`. Missing or invalid route values fall back to period 1.
 - Dirty-state comparison is semantic: ordering differences between periods or
   assignments alone do not count as lineup changes.
 - Only successful persistence updates the saved baseline and disables Save.
-- Only group admin or trainer roles may edit or save a Team's lineup.
+- Only squad admin or trainer roles may edit or save a Team's lineup.
 - The print action is available only on the lineup Summary tab, not on Team
   Detail.
 - The printed lineup overview and Player shirt-number list must be separated
@@ -203,6 +203,6 @@ Failure:
 - `assignments[].slotId` must exist in the Team's selected Formation's
   `slots`.
 - No duplicate `playerId` within the same period's `assignments`.
-- `periodNumber` must be within `1..playingMode.numberOfPeriods`.
+- `periodNumber` must be within `1..matchFormat.numberOfPeriods`.
 - Mismatch between filled-slot count plus benched count and
   `selectedPlayers.length` is a warning only, not a blocking error.

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import ConfirmDialog from './ConfirmDialog';
-import { useGroup, useStore } from '../store';
+import { useSquad, useStore } from '../store';
 
 interface StatisticsPeriodModalProps {
   isOpen: boolean;
@@ -21,8 +21,8 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
   const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
   const [deletingPeriod, setDeletingPeriod] = useState<Period | null>(null);
 
-  const group = useGroup();
-  const { addGroupPeriod, updateGroupPeriod, deleteGroupPeriod } = useStore();
+  const squad = useSquad();
+  const { addSquadPeriod, updateSquadPeriod, deleteSquadPeriod } = useStore();
 
   const resetPeriodForm = () => {
     setEditingPeriodId(null);
@@ -79,8 +79,8 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     };
 
     const wasSaved = isEditing
-      ? await updateGroupPeriod(editingPeriodId, nextPeriod)
-      : await addGroupPeriod(nextPeriod);
+      ? await updateSquadPeriod(editingPeriodId, nextPeriod)
+      : await addSquadPeriod(nextPeriod);
 
     setIsSavingPeriod(false);
 
@@ -100,7 +100,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
   const handleDeletePeriod = async () => {
     if (!deletingPeriod) return;
 
-    const wasDeleted = await deleteGroupPeriod(deletingPeriod.id);
+    const wasDeleted = await deleteSquadPeriod(deletingPeriod.id);
     if (!wasDeleted) {
       setPeriodError(t('statistics.period.errors.deleteFailed'));
       return;
@@ -122,8 +122,8 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
         <ModalBody>
           <p className="text-sm text-gray-600 mb-4">
             {editingPeriodId
-              ? t('statistics.period.editDescription', { group: group?.name ?? t('statistics.period.thisGroup') })
-              : t('statistics.period.addDescription', { group: group?.name ?? t('statistics.period.thisGroup') })}
+              ? t('statistics.period.editDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })
+              : t('statistics.period.addDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })}
           </p>
           <div className="rounded-lg border border-gray-200 p-4 space-y-4">
             <div>

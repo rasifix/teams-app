@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroupPlayingModes } from '../store';
+import { usePlayers, useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
-import { selectDefaultPlayingMode } from '../store/selectors/matchPlanningSelectors';
+import { selectDefaultMatchFormat } from '../store/selectors/matchPlanningSelectors';
 import { toStartsAt } from '../store/selectors/activitySelectors';
-import type { ActivityKind, ActivityPayload, Team } from '../types';
+import type { ActivityKind, ActivityPayload, InvitationResponse, Team } from '../types';
 import Button from './ui/Button';
+import InvitePlayersModal from './InvitePlayersModal';
 import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 
 interface AddEventModalProps {
@@ -18,9 +19,10 @@ const initialKind: ActivityKind = 'match';
 
 export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
   const { t } = useTranslation();
-  const playingModes = useGroupPlayingModes();
-  const defaultPlayingMode = selectDefaultPlayingMode(playingModes);
-  const defaultLimits = selectActivityFormConfiguration('match', playingModes, defaultPlayingMode?.id).defaultLimits;
+  const matchFormats = useSquadMatchFormats();
+  const { players } = usePlayers();
+  const defaultMatchFormat = selectDefaultMatchFormat(matchFormats);
+  const defaultLimits = selectActivityFormConfiguration('match', matchFormats, defaultMatchFormat?.id).defaultLimits;
   const [kind, setKind] = useState<ActivityKind>(initialKind);
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
@@ -30,9 +32,12 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const [numberOfTeams, setNumberOfTeams] = useState(1);
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(6);
-  const [playingModeId, setPlayingModeId] = useState(defaultPlayingMode?.id ?? '');
+  const [matchFormatId, setMatchFormatId] = useState(defaultMatchFormat?.id ?? '');
+  const [invitedPlayerIds, setInvitedPlayerIds] = useState<string[]>([]);
+  const [invitationResponse, setInvitationResponse] = useState<InvitationResponse>('accepted');
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const config = selectActivityFormConfiguration(kind, playingModes, playingModeId);
+  const config = selectActivityFormConfiguration(kind, matchFormats, matchFormatId);
 
   useEffect(() => {
     if (config.defaultLimits) {
@@ -41,7 +46,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     }
   // Only respond to an explicit selection change, not a newly allocated config object.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, playingModeId]);
+  }, [kind, matchFormatId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -55,8 +60,10 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setNumberOfTeams(1);
     setMinPlayersPerTeam(defaultLimits?.minPlayersPerTeam ?? 6);
     setMaxPlayersPerTeam(defaultLimits?.maxPlayersPerTeam ?? 9);
-    setPlayingModeId(defaultPlayingMode?.id ?? '');
-  }, [isOpen, defaultPlayingMode, defaultLimits?.minPlayersPerTeam, defaultLimits?.maxPlayersPerTeam]);
+    setMatchFormatId(defaultMatchFormat?.id ?? '');
+    setInvitedPlayerIds([]);
+    setIsInviteOpen(false);
+  }, [isOpen, defaultMatchFormat, defaultLimits?.minPlayersPerTeam, defaultLimits?.maxPlayersPerTeam]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -80,11 +87,11 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       startsAt: toStartsAt(date, startTime),
       location: location.trim() || undefined,
       opponentName: config.showOpponent ? opponentName.trim() || undefined : undefined,
-      matchFormatId: config.showMatchFormat ? playingModeId || null : undefined,
+      matchFormatId: config.showMatchFormat ? matchFormatId || null : undefined,
       minPlayersPerTeam,
       maxPlayersPerTeam,
       teams,
-      invitations: [],
+      invitations: invitedPlayerIds.map((playerId) => ({ id: crypto.randomUUID(), playerId, response: invitationResponse })),
     });
     onClose();
   };
@@ -112,9 +119,9 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
             </div>}
             {config.showMatchFormat && <div>
               <label htmlFor="activity-format" className="form-label">{t('activity.fields.matchFormat')}</label>
-              <select id="activity-format" value={playingModeId} onChange={(event) => setPlayingModeId(event.target.value)} className="form-input">
-                <option value="">{t('eventModal.fields.noPlayingMode')}</option>
-                {playingModes.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
+              <select id="activity-format" value={matchFormatId} onChange={(event) => setMatchFormatId(event.target.value)} className="form-input">
+                <option value="">{t('eventModal.fields.noMatchFormat')}</option>
+                {matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
               </select>
             </div>}
             {config.showTeamCount && <div>
@@ -141,6 +148,10 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
               <label htmlFor="min-players" className="form-label">{t('eventModal.fields.minPlayersPerTeamRequired')}</label>
               <input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} className="form-input" required />
             </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-gray-700" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
+              <Button type="button" variant="secondary" className="btn-sm" onClick={() => setIsInviteOpen(true)}>{t('eventModal.invitePlayersAction')}</Button>
+            </div>
             {error && <div role="alert" className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
           </div>
         </ModalBody>
@@ -149,6 +160,13 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
           <Button type="submit" variant="primary">{t('common.actions.add')}</Button>
         </ModalFooter>
       </form>
+      <InvitePlayersModal
+        isOpen={isInviteOpen}
+        onClose={() => setIsInviteOpen(false)}
+        onInvite={(playerIds, response) => { setInvitedPlayerIds(playerIds); setInvitationResponse(response); }}
+        alreadyInvitedPlayerIds={[]}
+        players={players}
+      />
     </Modal>
   );
 }

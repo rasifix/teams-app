@@ -12,7 +12,7 @@ This use case covers:
 - applying the selected statistics period to event data,
 - switching grouping mode between team name and team strength,
 - filtering players by level range,
-- rendering a player-by-group selection matrix,
+- rendering a player-by-squad selection matrix,
 - opening selection details for a matrix cell,
 - navigating from selection details to a concrete team detail page.
 
@@ -36,7 +36,7 @@ Authenticated User
 ## Preconditions
 
 - User is authenticated.
-- A group is selected and group data is loaded.
+- A squad is selected and squad data is loaded.
 - Players and events are available in application state (may be empty).
 - User can access the Statistics page.
 
@@ -47,7 +47,7 @@ The user opens Statistics and selects the Team Selections tab.
 ## Input Data
 
 User-controlled inputs:
-- selected statistics period (All events or one group period),
+- selected statistics period (All events or one squad period),
 - grouping mode switch (`teamName` or `teamStrength`),
 - level range filter (`minLevel`, `maxLevel`) using the level-range selector,
 - matrix-cell selection (player/team intersection),
@@ -55,7 +55,7 @@ User-controlled inputs:
 
 Derived data used by the screen:
 - filtered events from selected statistics period,
-- group columns derived from all teams in filtered events based on selected
+- squad columns derived from all teams in filtered events based on selected
    grouping mode,
 - player rows derived from players filtered by level range.
 
@@ -67,23 +67,23 @@ Derived data used by the screen:
 3. System loads players from store, initializes level range to 1..5, and sets
    default grouping mode to team strength.
 4. User can toggle grouping mode:
-   - team name: group columns represent normalized team names across events,
-   - team strength: group columns represent strength buckets (1..3).
-5. System derives group columns from filtered events according to grouping mode.
+   - team name: squad columns represent normalized team names across events,
+   - team strength: squad columns represent strength buckets (1..3).
+5. System derives squad columns from filtered events according to grouping mode.
 6. System filters players by level range.
 7. For each filtered player, system computes:
    - `selectedCount`: number of filtered events where the player is in any
      team's `selectedPlayers`,
    - `acceptedCount`: number of filtered events where the player's invitation
      status is `accepted`,
-   - per-group cell counts and event references for matching group column.
+   - per-squad cell counts and event references for matching squad column.
 8. System renders the matrix with:
    - sticky player column,
-   - one column per derived group,
-   - one clickable count button per player/group cell,
+   - one column per derived squad,
+   - one clickable count button per player/squad cell,
    - player row summary badge `selectedCount / acceptedCount`.
 9. User clicks a non-zero or zero cell count.
-10. System opens selection-details modal for that player/group intersection and
+10. System opens selection-details modal for that player/squad intersection and
    lists matching events (event name + date).
 11. User presses Open team for an event entry.
 12. System navigates to `/events/{eventId}/teams/{teamId}` and closes modal.
@@ -109,7 +109,7 @@ Derived data used by the screen:
 
 1. User changes level range so no players qualify.
 2. System shows message: `No players match the selected level range.`
-3. Group columns remain defined; matrix body is replaced by empty state.
+3. Squad columns remain defined; matrix body is replaced by empty state.
 
 ### A4 - Selected Cell Has No Matching Events
 
@@ -140,15 +140,15 @@ Failure or empty-data outcomes:
 
 - Team Selections operates only on events visible in selected statistics period.
 - Grouping mode controls how matrix columns are built:
-   - team name mode groups by normalized team name,
-   - team strength mode groups by numeric strength bucket.
+   - team name mode squads by normalized team name,
+   - team strength mode squads by numeric strength bucket.
 - Team strength is the default selected grouping mode when the screen opens.
 - Player rows can be constrained by level range and default to 1..5.
 - In team name mode, columns are consolidated by normalized team name across
    events.
 - In team strength mode, columns represent strength values 1, 2, and 3.
 - Selection count for a cell is event-based occurrences of player assignment to
-   teams matching that group column.
+   teams matching that squad column.
 - Player row summary displays selected-versus-accepted ratio as
   `selectedCount / acceptedCount`.
 - Clicking any cell always opens details modal, including count `0` cells.

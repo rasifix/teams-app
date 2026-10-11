@@ -34,9 +34,9 @@ describe('memberService', () => {
       },
     ]);
 
-    const trainers = await getTrainers('group-1');
+    const trainers = await getTrainers('squad-1');
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/squads/group-1/members');
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/members');
     expect(trainers).toEqual([
       {
         id: 'trainer-1',
@@ -69,7 +69,7 @@ describe('memberService', () => {
       ],
     });
 
-    const members = await getAllMembers('group-1');
+    const members = await getAllMembers('squad-1');
 
     expect(members).toEqual({
       players: [
@@ -105,7 +105,7 @@ describe('memberService', () => {
       },
     ]);
 
-    const trainers = await getTrainers('group-1');
+    const trainers = await getTrainers('squad-1');
 
     expect(trainers).toEqual([
       {
@@ -129,7 +129,7 @@ describe('memberService', () => {
       status: 'active',
     });
 
-    await addMember('group-1', {
+    await addMember('squad-1', {
       firstName: 'Pat',
       lastName: 'Player',
       roles: ['player'],
@@ -152,7 +152,7 @@ describe('memberService', () => {
       status: 'active',
     });
 
-    await updateMember('group-1', 'player-1', {
+    await updateMember('squad-1', 'player-1', {
       preferredShirtNumber: 10.5,
     });
 

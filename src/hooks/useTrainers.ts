@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Trainer } from '../types';
 import * as memberService from '../services/memberService';
-import { useGroup } from '../store/useStore';
+import { useSquad } from '../store/useStore';
 
 // Helper function to sort trainers by lastName, then by firstName
 function sortTrainers(trainers: Trainer[]): Trainer[] {
@@ -17,18 +17,18 @@ function sortTrainers(trainers: Trainer[]): Trainer[] {
 }
 
 export function useTrainers() {
-  const group = useGroup();
+  const squad = useSquad();
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load trainers from service on mount
   const loadTrainers = useCallback(async () => {
-    if (!group) return;
+    if (!squad) return;
     
     try {
       setLoading(true);
-      const apiTrainers = await memberService.getTrainers(group.id);
+      const apiTrainers = await memberService.getTrainers(squad.id);
       setTrainers(sortTrainers(apiTrainers));
       setError(null);
     } catch (err) {
@@ -37,17 +37,17 @@ export function useTrainers() {
     } finally {
       setLoading(false);
     }
-  }, [group]);
+  }, [squad]);
 
   useEffect(() => {
     loadTrainers();
   }, [loadTrainers]);
 
   const handleAddTrainer = async (trainerData: Omit<Trainer, 'id'>): Promise<boolean> => {
-    if (!group) return false;
+    if (!squad) return false;
     
     try {
-      await memberService.addTrainer(group.id, trainerData);
+      await memberService.addTrainer(squad.id, trainerData);
       await loadTrainers(); // Refresh from API
       setError(null);
       return true;
@@ -59,10 +59,10 @@ export function useTrainers() {
   };
 
   const handleUpdateTrainer = async (trainerId: string, updates: Partial<Omit<Trainer, 'id'>>): Promise<boolean> => {
-    if (!group) return false;
+    if (!squad) return false;
     
     try {
-      await memberService.updateTrainer(group.id, trainerId, updates);
+      await memberService.updateTrainer(squad.id, trainerId, updates);
       await loadTrainers(); // Refresh from API
       setError(null);
       return true;
@@ -74,10 +74,10 @@ export function useTrainers() {
   };
 
   const handleDeleteTrainer = async (trainerId: string): Promise<boolean> => {
-    if (!group) return false;
+    if (!squad) return false;
     
     try {
-      await memberService.deleteTrainer(group.id, trainerId);
+      await memberService.deleteTrainer(squad.id, trainerId);
       await loadTrainers(); // Refresh from API
       setError(null);
       return true;

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Formation, FormationSlot, Player, PlayingMode, Team } from '../../types';
+import type { Formation, FormationSlot, Player, MatchFormat, Team } from '../../types';
 import {
   hasLineupRosterMismatch,
   selectAssignmentsForPeriod,
   selectAssignablePlayersForSlot,
   selectBenchedPlayerIds,
-  selectDefaultPlayingMode,
+  selectDefaultMatchFormat,
   selectFormationById,
-  selectPlayingModeById,
+  selectMatchFormatById,
   selectPlannedPeriodCounts,
   selectLineupSummary,
   selectLineupShirtNumberRows,
@@ -33,7 +33,7 @@ function team(overrides: Partial<Team>): Team {
   };
 }
 
-function playingMode(overrides: Partial<PlayingMode>): PlayingMode {
+function matchFormat(overrides: Partial<MatchFormat>): MatchFormat {
   return {
     id: 'pm-default',
     name: '4x20',
@@ -56,7 +56,7 @@ function player(id: string, firstName: string): Player {
 }
 
 describe('pitch summary selectors', () => {
-  it('places position groups in their tactical areas and spreads duplicate positions', () => {
+  it('places position squads in their tactical areas and spreads duplicate positions', () => {
     const coordinates = selectPitchCoordinates([
       slot({ id: 'gk', positionCode: 'GK' }),
       slot({ id: 'cb-1', positionCode: 'CB' }),
@@ -341,36 +341,36 @@ describe('selectLineupWithCopiedPeriod', () => {
   });
 });
 
-describe('selectDefaultPlayingMode', () => {
+describe('selectDefaultMatchFormat', () => {
   it('returns the mode marked as default', () => {
-    const modes = [playingMode({ id: 'a', isDefault: false }), playingMode({ id: 'b', isDefault: true })];
-    expect(selectDefaultPlayingMode(modes)?.id).toBe('b');
+    const modes = [matchFormat({ id: 'a', isDefault: false }), matchFormat({ id: 'b', isDefault: true })];
+    expect(selectDefaultMatchFormat(modes)?.id).toBe('b');
   });
 
   it('returns null when no mode is marked default', () => {
-    const modes = [playingMode({ id: 'a', isDefault: false })];
-    expect(selectDefaultPlayingMode(modes)).toBeNull();
+    const modes = [matchFormat({ id: 'a', isDefault: false })];
+    expect(selectDefaultMatchFormat(modes)).toBeNull();
   });
 
   it('returns null for an empty list', () => {
-    expect(selectDefaultPlayingMode([])).toBeNull();
+    expect(selectDefaultMatchFormat([])).toBeNull();
   });
 });
 
-describe('selectPlayingModeById', () => {
-  const modes = [playingMode({ id: 'a' }), playingMode({ id: 'b' })];
+describe('selectMatchFormatById', () => {
+  const modes = [matchFormat({ id: 'a' }), matchFormat({ id: 'b' })];
 
   it('finds a mode by id', () => {
-    expect(selectPlayingModeById(modes, 'b')?.id).toBe('b');
+    expect(selectMatchFormatById(modes, 'b')?.id).toBe('b');
   });
 
   it('returns undefined for a missing id', () => {
-    expect(selectPlayingModeById(modes, 'missing')).toBeUndefined();
+    expect(selectMatchFormatById(modes, 'missing')).toBeUndefined();
   });
 
   it('returns undefined for null/undefined id', () => {
-    expect(selectPlayingModeById(modes, null)).toBeUndefined();
-    expect(selectPlayingModeById(modes, undefined)).toBeUndefined();
+    expect(selectMatchFormatById(modes, null)).toBeUndefined();
+    expect(selectMatchFormatById(modes, undefined)).toBeUndefined();
   });
 });
 

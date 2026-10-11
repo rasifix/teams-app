@@ -17,6 +17,7 @@ import MembersGuardiansPage from './pages/MembersGuardiansPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import TrainerDetailPage from './pages/TrainerDetailPage';
 import EventsPage from './pages/EventsPage';
+import SpondImportPage from './pages/SpondImportPage';
 import EventDetailPage from './pages/EventDetailPage';
 import TeamDetailPage from './pages/TeamDetailPage';
 import TeamPlayerSelectionPage from './pages/TeamPlayerSelectionPage';
@@ -27,7 +28,7 @@ import EventParticipationPage from './pages/EventParticipationPage';
 import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
 import MatchPlanningPage from './pages/MatchPlanningPage';
-import GroupSelectionPage from './pages/GroupSelectionPage';
+import SquadSelectionPage from './pages/SquadSelectionPage';
 
 function AppRoutes() {
   return (
@@ -44,7 +45,8 @@ function AppRoutes() {
                     <Route path="/" element={<HomePage />} />
                     
                     {/* Protected routes */}
-                    <Route path="/groups" element={<ProtectedRoute><GroupSelectionPage /></ProtectedRoute>} />
+                    <Route path="/squads" element={<ProtectedRoute><SquadSelectionPage /></ProtectedRoute>} />
+                    <Route path="/groups" element={<Navigate to="/squads" replace />} />
                     {/* Members routes */}
                     <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>}>
                       <Route index element={<Navigate to="players" replace />} />
@@ -57,6 +59,7 @@ function AppRoutes() {
                     {/* Trainer detail route */}
                     <Route path="/trainers/:id" element={<ProtectedRoute><TrainerDetailPage /></ProtectedRoute>} />
                     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+                    <Route path="/spond-import" element={<ProtectedRoute><SpondImportPage /></ProtectedRoute>} />
                     <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />
                     <Route path="/events/:eventId/teams/:teamId/select-players" element={<ProtectedRoute><TeamPlayerSelectionPage /></ProtectedRoute>} />

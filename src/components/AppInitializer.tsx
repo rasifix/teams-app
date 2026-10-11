@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
-import { getSelectedGroupId } from '../utils/localStorage';
+import { getSelectedSquadId } from '../utils/localStorage';
 import { 
   useStore, 
   useAppInitialized, 
@@ -9,31 +9,31 @@ import {
   useAppHasErrors, 
   useAppErrors
 } from '../store/useStore';
-import type { Group } from '../types';
+import type { Squad } from '../types';
 
 interface AppInitializerProps {
   children: ReactNode;
 }
 
-function getNewestGroup(groups: Group[]): Group | null {
-  if (groups.length === 0) {
+function getNewestSquad(squads: Squad[]): Squad | null {
+  if (squads.length === 0) {
     return null;
   }
 
-  const withTimestamp = groups
-    .map((group) => ({
-      group,
-      timestamp: Date.parse(group.createdAt ?? group.updatedAt ?? ''),
+  const withTimestamp = squads
+    .map((squad) => ({
+      squad,
+      timestamp: Date.parse(squad.createdAt ?? squad.updatedAt ?? ''),
     }))
     .filter((item) => !Number.isNaN(item.timestamp));
 
   if (withTimestamp.length === 0) {
-    return groups[groups.length - 1];
+    return squads[squads.length - 1];
   }
 
   return withTimestamp.reduce((latest, current) => (
     current.timestamp > latest.timestamp ? current : latest
-  )).group;
+  )).squad;
 }
 
 export default function AppInitializer({ children }: AppInitializerProps) {
@@ -43,7 +43,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
-  const { selectGroup, initializeApp, loadGroups, loadSfvCatalog } = useStore();
+  const { selectSquad, initializeApp, loadSquads, loadSfvCatalog } = useStore();
   
   // Use ref to prevent duplicate initialization
   const initTriggered = useRef(false);
@@ -56,36 +56,36 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    // Load groups, resolve selection, and initialize app when authenticated
+    // Load squads, resolve selection, and initialize app when authenticated
     if (isAuthenticated && !isInitialized && !isLoading && !initTriggered.current) {
       initTriggered.current = true;
 
-      const initializeWithGroupSelection = async () => {
-        await Promise.all([loadGroups(), loadSfvCatalog()]);
+      const initializeWithSquadSelection = async () => {
+        await Promise.all([loadSquads(), loadSfvCatalog()]);
 
-        const groups = useStore.getState().groups;
-        if (groups.length === 0) {
+        const squads = useStore.getState().squads;
+        if (squads.length === 0) {
           return;
         }
 
-        const savedGroupId = getSelectedGroupId();
-        const savedGroupExists = !!savedGroupId && groups.some((group) => group.id === savedGroupId);
+        const savedSquadId = getSelectedSquadId();
+        const savedSquadExists = !!savedSquadId && squads.some((squad) => squad.id === savedSquadId);
 
-        let groupToSelect: Group;
-        if (groups.length === 1) {
-          groupToSelect = groups[0];
-        } else if (savedGroupExists) {
-          groupToSelect = groups.find((group) => group.id === savedGroupId)!;
+        let squadToSelect: Squad;
+        if (squads.length === 1) {
+          squadToSelect = squads[0];
+        } else if (savedSquadExists) {
+          squadToSelect = squads.find((squad) => squad.id === savedSquadId)!;
         } else {
-          groupToSelect = getNewestGroup(groups) ?? groups[0];
+          squadToSelect = getNewestSquad(squads) ?? squads[0];
         }
 
-        await selectGroup(groupToSelect.id);
+        await selectSquad(squadToSelect.id);
         await initializeApp();
       };
 
-      initializeWithGroupSelection().catch((error) => {
-        console.error('Failed to initialize app with group selection:', error);
+      initializeWithSquadSelection().catch((error) => {
+        console.error('Failed to initialize app with squad selection:', error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

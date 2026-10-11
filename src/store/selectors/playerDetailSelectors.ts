@@ -48,11 +48,11 @@ export const selectPlayerEventHistory = (activities: Activity[], playerId: strin
     });
 
 export const selectGroupedPlayerEventHistory = (
-  groupPeriods: Period[],
+  squadPeriods: Period[],
   playerEventHistory: PlayerEventHistoryItem[],
   outsidePeriodsTitle: string
 ): GroupedPlayerEventHistory[] | null => {
-  const validPeriods = groupPeriods.filter(isValidPeriod);
+  const validPeriods = squadPeriods.filter(isValidPeriod);
   if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) return null;
 
   const groupedByPeriod: GroupedPlayerEventHistory[] = validPeriods.map((period) => ({
@@ -73,9 +73,9 @@ export const selectGroupedPlayerEventHistory = (
     else outsidePeriods.push(historyItem);
   });
 
-  const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
-  if (outsidePeriods.length > 0) nonEmptyGroups.push({ id: 'outside-periods', title: outsidePeriodsTitle, eventHistory: outsidePeriods });
-  return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
+  const nonEmptySquads = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
+  if (outsidePeriods.length > 0) nonEmptySquads.push({ id: 'outside-periods', title: outsidePeriodsTitle, eventHistory: outsidePeriods });
+  return nonEmptySquads.length > 0 ? nonEmptySquads.reverse() : null;
 };
 
 export const selectFutureEventsWithoutInvitation = (activities: Activity[], playerId: string, now: Date = new Date()): Activity[] => {

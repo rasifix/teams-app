@@ -6,7 +6,7 @@ import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
 import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
 import {
-  selectPlayingModeById,
+  selectMatchFormatById,
   selectFormationById,
   selectBenchedPlayerIds,
   selectAssignablePlayersForSlot,
@@ -29,16 +29,16 @@ export default function TeamLineupPage() {
 
   const { getActivityById, updateActivityTeams } = useActivities();
   const { players } = usePlayers();
-  const { playingModes, formations } = useMatchPlanning();
+  const { matchFormats, formations } = useMatchPlanning();
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
 
   const event = eventId ? getActivityById(eventId) : null;
   const team = event?.teams.find((t) => t.id === teamId);
 
-  const playingMode = selectPlayingModeById(playingModes, event?.kind === 'match' ? event.matchFormatId : undefined);
+  const matchFormat = selectMatchFormatById(matchFormats, event?.kind === 'match' ? event.matchFormatId : undefined);
   const formation = selectFormationById(formations, team?.formationId);
-  const activeTab = selectLineupRouteTab(lineupTab, playingMode?.numberOfPeriods);
+  const activeTab = selectLineupRouteTab(lineupTab, matchFormat?.numberOfPeriods);
 
   const [draftLineup, setDraftLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
   const [savedLineup, setSavedLineup] = useState<TeamLineupPeriod[]>(team?.lineup ?? []);
@@ -98,7 +98,7 @@ export default function TeamLineupPage() {
     );
   }
 
-  if (!playingMode || !formation || !draftTeam) {
+  if (!matchFormat || !formation || !draftTeam) {
     return (
       <div className="page-container">
         <div className="empty-state">{t('teamLineup.notConfigured')}</div>
@@ -112,10 +112,10 @@ export default function TeamLineupPage() {
   const minimumPeriodViolations = selectMinimumPeriodViolations(
     draftTeam,
     players,
-    playingMode.minimumPeriodsPerPlayer
+    matchFormat.minimumPeriodsPerPlayer
   );
   const hasMismatch = hasLineupRosterMismatch(draftTeam, activePeriod);
-  const lineupSummary = selectLineupSummary(draftTeam, formation, players, playingMode.numberOfPeriods);
+  const lineupSummary = selectLineupSummary(draftTeam, formation, players, matchFormat.numberOfPeriods);
   const shirtNumberRows = selectLineupShirtNumberRows(draftTeam, players);
   const currentPeriodSummary = lineupSummary.find((period) => period.periodNumber === activePeriod);
   const selectingAssignment = currentPeriodSummary?.assignments.find((assignment) => assignment.slotId === selectingSlotId);
@@ -186,7 +186,7 @@ export default function TeamLineupPage() {
       </div>
 
       <div className="flex gap-2 mb-4 overflow-x-auto">
-        {Array.from({ length: playingMode.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
+        {Array.from({ length: matchFormat.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
           <button
             key={periodNumber}
             onClick={() => {
@@ -257,7 +257,7 @@ export default function TeamLineupPage() {
           )}
           <div className="hidden print:block mb-5">
             <h1 className="text-2xl font-bold">{t('teamLineup.title', { team: team.name })}</h1>
-            <p>{playingMode.name} · {formation.name}</p>
+            <p>{matchFormat.name} · {formation.name}</p>
           </div>
           <div className="lineup-summary-grid grid grid-cols-1 md:grid-cols-2 gap-3">
             {lineupSummary.map((period) => (
@@ -439,7 +439,7 @@ export default function TeamLineupPage() {
                       <span className="text-xs text-gray-500">
                         {t('teamLineup.plannedPeriods', {
                           count: plannedPeriodCounts.get(player.id) ?? 0,
-                          total: playingMode.numberOfPeriods,
+                          total: matchFormat.numberOfPeriods,
                         })}
                       </span>
                       <Level level={player.level} />

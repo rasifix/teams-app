@@ -1,15 +1,15 @@
 const SELECTED_GROUP_KEY = 'selectedGroupId';
 const SELECTED_STATISTICS_PERIOD_KEY = 'selectedStatisticsPeriodId';
 
-export function getSelectedGroupId(): string | null {
+export function getSelectedSquadId(): string | null {
   return localStorage.getItem(SELECTED_GROUP_KEY);
 }
 
-export function setSelectedGroupId(groupId: string): void {
-  localStorage.setItem(SELECTED_GROUP_KEY, groupId);
+export function setSelectedSquadId(squadId: string): void {
+  localStorage.setItem(SELECTED_GROUP_KEY, squadId);
 }
 
-export function clearSelectedGroupId(): void {
+export function clearSelectedSquadId(): void {
   localStorage.removeItem(SELECTED_GROUP_KEY);
 }
 

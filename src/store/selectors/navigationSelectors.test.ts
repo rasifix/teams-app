@@ -11,8 +11,8 @@ describe('navigation selectors', () => {
         lastName: 'User',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'u-admin', email: 'admin@example.com' }],
       },
@@ -30,8 +30,8 @@ describe('navigation selectors', () => {
         lastName: 'User',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'u-trainer', email: 'trainer@example.com' }],
       },
@@ -49,8 +49,8 @@ describe('navigation selectors', () => {
         lastName: 'User',
       },
       {
-        id: 'group-1',
-        name: 'Group',
+        id: 'squad-1',
+        name: 'Squad',
         periods: [],
         trainers: [{ id: 'u-trainer', email: 'trainer@example.com' }],
       },

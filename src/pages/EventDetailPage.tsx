@@ -3,29 +3,34 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import { useAuth } from '../hooks/useAuth';
-import { useGroup, useTrainers } from '../store/useStore';
+import { useSquad, useTrainers } from '../store/useStore';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
-import type { ActivityInvitation, AttendanceStatus, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
+import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
+import ActivityTasksCard from '../components/ActivityTasksCard';
+import { canSignUpForTasks, selectCurrentMember } from '../store/selectors/taskSelectors';
 import ConfirmDialog from '../components/ConfirmDialog';
+import SpondBadge from '../components/SpondBadge';
 import { formatDate } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, sortActivities } from '../store/selectors/activitySelectors';
+import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 
 export default function EventDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivityAttendance, deleteActivity } = useActivities();
+  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivityAttendance, addActivityTask, updateActivityTask, deleteActivityTask, signUpForActivityTask, withdrawFromActivityTask, deleteActivity } = useActivities();
   const { players } = usePlayers();
   const { user } = useAuth();
-  const group = useGroup();
+  const squad = useSquad();
   const trainers = useTrainers();
-  const canManage = canAccessRestrictedManagement(user, { group, trainers });
+  const currentMember = selectCurrentMember(user?.email, squad);
+  const canManage = canAccessRestrictedManagement(user, { squad, trainers });
   const loading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -74,8 +79,8 @@ export default function EventDetailPage() {
     }]);
   };
 
-  const handleAttendanceChange = async (playerId: string, status: AttendanceStatus) => {
-    if (activity) await updateActivityAttendance(activity.id, [{ personId: playerId, status }]);
+  const handleRecordAttendance = async (attendance: ActivityAttendance[]) => {
+    if (activity) await updateActivityAttendance(activity.id, attendance);
   };
 
   const handleDeleteActivity = async () => {
@@ -86,6 +91,8 @@ export default function EventDetailPage() {
   if (error) return <div className="page-container"><div className="empty-state"><p className="text-red-600">{error}</p></div></div>;
   if (!activity) return <div className="page-container"><div className="empty-state"><p>{t('eventDetail.notFound')}</p></div></div>;
 
+  const phase = selectActivityPhase(activity);
+  const sections = selectActivityPhaseSections(phase);
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const renderTeam = (team: Team) => {
@@ -101,7 +108,6 @@ export default function EventDetailPage() {
             <span>{player ? `${player.firstName} ${player.lastName}` : playerId}</span>
           </div>;
         })}
-        <button type="button" onClick={() => navigate('/events/' + activity.id + '/teams/' + team.id + '/select-players')} className="btn-secondary btn-sm">{t('activity.selectPlayers')}</button>
       </div>
     </article>;
   };
@@ -116,7 +122,7 @@ export default function EventDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="page-subtitle">📅 {formatDate(getActivityDate(activity))} · 🕐 {getActivityStartTime(activity)}{activity.location && <span className="ml-3">📍 {activity.location}</span>}</p>
-          <p className="mt-2 text-sm text-gray-700"><span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium">{t(`activity.kinds.${activity.kind}`)}</span>{activity.kind === 'match' && activity.opponentName && <span className="ml-2">{t('activity.fields.opponent')}: {activity.opponentName}</span>}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-700"><span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium">{t(`activity.kinds.${activity.kind}`)}</span>{activity.spondId && <SpondBadge />}{activity.kind === 'match' && activity.opponentName && <span>{t('activity.fields.opponent')}: {activity.opponentName}</span>}<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800" data-testid="activity-phase">{t(`eventDetail.phases.${phase}`)}</span></div>
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={() => setIsEditOpen(true)} className="text-sm font-medium text-blue-600">{t('common.actions.edit')}</button>
@@ -132,7 +138,7 @@ export default function EventDetailPage() {
           {activity.kind === 'match' ? renderTeam(activity.teams[0]) : activity.teams.map(renderTeam)}
         </div>}
       </section>
-      <PlayerInvitationsCard
+      {sections.invitations && <PlayerInvitationsCard
         invitations={activity.invitations}
         currentActivity={activity}
         players={players}
@@ -140,8 +146,19 @@ export default function EventDetailPage() {
         onStatusChange={handleInvitationStatusChange}
         onRemoveInvitation={handleRemoveInvitation}
         assignedPlayerIds={assignedIds}
-      />
-      {canManage && <ActivityAttendanceCard activity={activity} players={players} onChange={handleAttendanceChange} />}
+      />}
+      {sections.tasks && <ActivityTasksCard
+        tasks={activity.tasks}
+        currentPersonId={currentMember?.id}
+        canManage={canManage}
+        canSignUp={canSignUpForTasks(currentMember)}
+        onAdd={(task) => addActivityTask(activity.id, task)}
+        onUpdate={(taskId, task) => updateActivityTask(activity.id, taskId, task)}
+        onDelete={(taskId) => deleteActivityTask(activity.id, taskId)}
+        onSignUp={(taskId) => signUpForActivityTask(activity.id, taskId)}
+        onWithdraw={(taskId) => withdrawFromActivityTask(activity.id, taskId)}
+      />}
+      {canManage && sections.attendance && <ActivityAttendanceCard activity={activity} players={players} onSave={handleRecordAttendance} />}
     </div>
 
     <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />

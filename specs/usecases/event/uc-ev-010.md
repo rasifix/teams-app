@@ -7,7 +7,7 @@ started.
 
 ## Preconditions
 
-- User is authenticated with the admin or trainer role in the active group.
+- User is authenticated with the admin or trainer role in the active squad.
 - The Event has started (its start time is in the past).
 
 ## Main Success Scenario

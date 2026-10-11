@@ -1,4 +1,4 @@
-import type { Formation, FormationSlot, LineupPositionAssignment, Player, PlayingMode, PositionCode, Team, TeamLineupPeriod } from '../../types';
+import type { Formation, FormationSlot, LineupPositionAssignment, Player, MatchFormat, PositionCode, Team, TeamLineupPeriod } from '../../types';
 
 export interface LineupSummaryPeriod {
   periodNumber: number;
@@ -42,13 +42,13 @@ export function getPositionLabelKey(code: PositionCode): string {
   return `positions.${code}`;
 }
 
-export function selectDefaultPlayingMode(playingModes: PlayingMode[]): PlayingMode | null {
-  return playingModes.find((mode) => mode.isDefault) ?? null;
+export function selectDefaultMatchFormat(matchFormats: MatchFormat[]): MatchFormat | null {
+  return matchFormats.find((mode) => mode.isDefault) ?? null;
 }
 
-export function selectPlayingModeById(playingModes: PlayingMode[], playingModeId: string | null | undefined): PlayingMode | undefined {
-  if (!playingModeId) return undefined;
-  return playingModes.find((mode) => mode.id === playingModeId);
+export function selectMatchFormatById(matchFormats: MatchFormat[], matchFormatId: string | null | undefined): MatchFormat | undefined {
+  if (!matchFormatId) return undefined;
+  return matchFormats.find((mode) => mode.id === matchFormatId);
 }
 
 export function selectFormationById(formations: Formation[], formationId: string | null | undefined): Formation | undefined {

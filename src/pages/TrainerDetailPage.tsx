@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useAppInitialized } from '../store';
+import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
 import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
@@ -75,7 +75,7 @@ export default function TrainerDetailPage() {
 
   // Use store hooks
   const { updateTrainer, deleteTrainer, getTrainerById, getTrainerEventHistory } = useTrainers();
-  const groupPeriods = useGroupPeriods();
+  const squadPeriods = useSquadPeriods();
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -99,7 +99,7 @@ export default function TrainerDetailPage() {
       return null;
     }
 
-    const validPeriods = groupPeriods.filter(isValidPeriod);
+    const validPeriods = squadPeriods.filter(isValidPeriod);
 
     if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
       return null;
@@ -131,18 +131,18 @@ export default function TrainerDetailPage() {
       }
     });
 
-    const nonEmptyGroups = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
+    const nonEmptySquads = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
 
     if (outsidePeriods.length > 0) {
-      nonEmptyGroups.push({
+      nonEmptySquads.push({
         id: 'outside-periods',
         title: t('statistics.period.outsidePeriods'),
         eventHistory: outsidePeriods,
       });
     }
 
-    return nonEmptyGroups.length > 0 ? nonEmptyGroups.reverse() : null;
-  }, [groupPeriods, t, trainer, trainerEventHistory]);
+    return nonEmptySquads.length > 0 ? nonEmptySquads.reverse() : null;
+  }, [squadPeriods, t, trainer, trainerEventHistory]);
 
   // Determine loading and error states
   const loading = isLoading;

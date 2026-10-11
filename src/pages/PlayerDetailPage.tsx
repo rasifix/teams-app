@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroupPeriods, useGroup, useAppInitialized } from '../store';
+import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useSquad, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
@@ -9,6 +9,7 @@ import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
+import SpondBadge from '../components/SpondBadge';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
 import {
@@ -32,10 +33,10 @@ export default function PlayerDetailPage() {
   const { activities: events } = useActivities();
   const { players, updatePlayer, deletePlayer, getPlayerById, addGuardianToPlayer, deleteGuardianFromPlayer, editGuardianForPlayer } = usePlayers();
   const { trainers } = useTrainers();
-  const group = useGroup();
+  const squad = useSquad();
   const isInitialized = useAppInitialized();
   const { user } = useAuth();
-  const groupPeriods = useGroupPeriods();
+  const squadPeriods = useSquadPeriods();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
@@ -64,7 +65,7 @@ export default function PlayerDetailPage() {
   }, [isInitialized, loading, id, player, navigate]);
 
   const guardians = player?.guardians || [];
-  const canManagePlayerGuardians = canManageGuardians(user, group, trainers);
+  const canManagePlayerGuardians = canManageGuardians(user, squad, trainers);
   const underageForGuardianAssignment = player ? isPlayerUnderage(player) : false;
   const playerStatus = player?.status || 'active';
   const playerStatusBadgeClassName = playerStatus === 'active'
@@ -80,8 +81,8 @@ export default function PlayerDetailPage() {
   );
 
   const groupedPlayerEventHistory = useMemo(
-    () => selectGroupedPlayerEventHistory(groupPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
-    [groupPeriods, playerEventHistory, t]
+    () => selectGroupedPlayerEventHistory(squadPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
+    [squadPeriods, playerEventHistory, t]
   );
 
   const futureEventsWithoutInvitation = useMemo(
@@ -275,6 +276,7 @@ export default function PlayerDetailPage() {
       )}
 
       <div className="px-4 lg:px-0 mb-4 flex items-center gap-3">
+        {player.spondId && <SpondBadge />}
         <span className={`text-sm px-2 py-1 rounded ${playerStatusBadgeClassName}`}>
           {playerStatusLabel}
         </span>

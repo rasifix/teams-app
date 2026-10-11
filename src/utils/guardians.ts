@@ -1,6 +1,6 @@
 import type { Guardian, Player } from '../types';
 import type { User } from '../services/authService';
-import type { Group, Trainer } from '../types';
+import type { Squad, Trainer } from '../types';
 import { canAccessRestrictedManagement } from './permissions';
 
 const DEFAULT_UNDERAGE_LIMIT = 18;
@@ -50,11 +50,11 @@ export function hasDuplicateGuardian(existingGuardians: Guardian[] | undefined, 
 
 export function canManageGuardians(
   user: User | null | undefined,
-  group: Group | null | undefined,
+  squad: Squad | null | undefined,
   trainers: Array<Pick<Trainer, 'id' | 'email'>> = [],
 ): boolean {
   return canAccessRestrictedManagement(user, {
-    group,
+    squad,
     trainers,
   });
 }

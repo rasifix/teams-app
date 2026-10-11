@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { PlayingMode } from '../../types';
+import type { MatchFormat } from '../../types';
 import { selectActivityFormConfiguration } from './activityFormSelectors';
 
-const formats: PlayingMode[] = [
+const formats: MatchFormat[] = [
   { id: 'small', name: '4x20', numberOfPeriods: 4, periodLengthMinutes: 20, minPlayersPerTeam: 7, maxPlayersPerTeam: 12 },
   { id: 'legacy', name: 'Legacy', numberOfPeriods: 2, periodLengthMinutes: 15 },
 ];
@@ -14,7 +14,7 @@ describe('selectActivityFormConfiguration', () => {
       showMatchFormat: true,
       showTeamCount: false,
       fixedTeamCount: 1,
-      selectedPlayingMode: formats[0],
+      selectedMatchFormat: formats[0],
       defaultLimits: { minPlayersPerTeam: 7, maxPlayersPerTeam: 12 },
     });
   });
@@ -25,7 +25,7 @@ describe('selectActivityFormConfiguration', () => {
       showMatchFormat: true,
       showTeamCount: false,
       fixedTeamCount: 1,
-      selectedPlayingMode: null,
+      selectedMatchFormat: null,
       defaultLimits: null,
     });
   });
@@ -36,7 +36,7 @@ describe('selectActivityFormConfiguration', () => {
       showMatchFormat: false,
       showTeamCount: true,
       fixedTeamCount: null,
-      selectedPlayingMode: null,
+      selectedMatchFormat: null,
       defaultLimits: null,
     });
   });

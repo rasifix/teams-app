@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../store';
@@ -7,7 +7,6 @@ import type { Activity, Period, Player } from '../types';
 import { isTeamActivity } from '../store/selectors/activitySelectors';
 import { selectPlayerActivityStatistics } from '../store/selectors/statisticsSelectors';
 import { SummaryCard, SummaryCardContent } from '../components/ui';
-import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
 import { useSelectedStatisticsPeriod } from '../store';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
@@ -20,8 +19,6 @@ interface StatisticsOutletContext {
 
 export default function StatisticsPage() {
   const { t } = useTranslation();
-  const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
-  const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -58,30 +55,12 @@ export default function StatisticsPage() {
     ? playerStats.reduce((sum, stat) => sum + stat.selectedCount, 0) / totalPlayers
     : 0;
 
-  const handleAddPeriod = () => {
-    setPeriodToEdit(null);
-    setIsPeriodModalOpen(true);
-  };
-
-  const handleEditPeriod = (period: Period) => {
-    setPeriodToEdit(period);
-    setIsPeriodModalOpen(true);
-  };
-
-  const handleClosePeriodModal = () => {
-    setIsPeriodModalOpen(false);
-    setPeriodToEdit(null);
-  };
-
   return (
     <div className="page-container">
       <div className="page-header">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h1 className="page-title">{t('statistics.title')}</h1>
-          <StatisticsPeriodSelector
-            onAddPeriod={handleAddPeriod}
-            onEditPeriod={handleEditPeriod}
-          />
+          <StatisticsPeriodSelector />
         </div>
       </div>
 
@@ -145,12 +124,6 @@ export default function StatisticsPage() {
         statisticsPeriod,
         statisticsPlayers,
       } satisfies StatisticsOutletContext} />
-
-      <StatisticsPeriodModal
-        isOpen={isPeriodModalOpen}
-        onClose={handleClosePeriodModal}
-        periodToEdit={periodToEdit}
-      />
     </div>
   );
 }

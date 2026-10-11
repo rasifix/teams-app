@@ -113,11 +113,11 @@ Step B: migrate the model screen by screen to `Activity`
 
 ## Phase 5: tasks (admin/trainer manage, adult members sign up)
 
-- [ ] F5.1 Service and store mutations for tasks and signups (sign up, withdraw)
-- [ ] F5.2 Selector `selectActivityTasks`: open slots, `isFulfilled`, my signups, over-subscription (tests)
-- [ ] F5.3 Components in their own files: `ActivityTasksCard`, `AddActivityTaskModal`, sign-up button; management actions only for admin/trainer; no sign-up button for guardians-on-behalf
-- [ ] F5.4 Shown on all activity kinds
-- [ ] F5.5 i18n
+- [x] F5.1 Service and store mutations for tasks and signups (sign up, withdraw)
+- [x] F5.2 Selector `selectActivityTasks`: open slots, `isFulfilled`, my signups, over-subscription (tests)
+- [x] F5.3 Components in their own files: `ActivityTasksCard`, `AddActivityTaskModal`, sign-up button; management actions only for admin/trainer; no sign-up button for guardians-on-behalf
+- [x] F5.4 Shown on all activity kinds
+- [x] F5.5 i18n
 
 ## Phase 6: training and social
 
@@ -130,18 +130,18 @@ Step B: migrate the model screen by screen to `Activity`
 
 ## Phase 7: renames and cleanup (mechanical, last)
 
-- [ ] F7.1 Rename identifiers: `Group`→`Squad`, `GroupRole`→`SquadRole`, `PlayingMode`→`MatchFormat`, `playingModeId`→`matchFormatId`, `groupService`→`squadService`, store keys (`currentGroup`, `groupId`), routes `/groups/...`→`/squads/...` with redirects
-- [ ] F7.2 i18n keys and wording in en + de (needs Q4)
-- [ ] F7.3 Remove legacy usage: `/events` calls, `trainerId`, invitation status values injured/sick/unavailable as statuses, `playingModes` alias reads
-- [ ] F7.4 Update `specs/domain`, `specs/usecases` (`uc-ev-*` → activity use cases; add tasks, attendance, training, SFV categories), sync OpenAPI
-- [ ] F7.5 Remove dead i18n keys; full typecheck, lint and test run
+- [x] F7.1 Rename identifiers: `Group`→`Squad`, `GroupRole`→`SquadRole`, `PlayingMode`→`MatchFormat`, `playingModeId`→`matchFormatId`, `groupService`→`squadService`, store keys (`currentGroup`, `groupId`), routes `/groups/...`→`/squads/...` with redirects
+- [x] F7.2 i18n keys and wording in en + de (de: Mannschaft, Spielformat)
+- [x] F7.3 Remove legacy usage: no `/events` calls or `trainerId` left; `playingModes` read only as a fallback in `normalizeSquad`; the injured/sick/unavailable values stay in `InvitationStatus` because the UI still uses them (not removed)
+- [x] F7.4 Update `specs/domain`, `specs/usecases` (`uc-ev-*` → activity use cases; add tasks, attendance, training, SFV categories), sync OpenAPI
+- [x] F7.5 Full typecheck, lint (2 baseline errors), test and build run; dead-key scan not done
 - [ ] F7.6 Tell the backend when `/events` and `/groups` traffic has stopped (unblocks backend contract phase BC.1)
 
 ## Open questions
 
 | # | Question | Needed by | Status |
 |---|---|---|---|
-| Q4 | German wording for Squad and MatchFormat | F7.2 | [ ] |
+| Q4 | German wording for Squad and MatchFormat | F7.2 | [x] Mannschaft / Spielformat |
 | Q6 | Which role may create each activity kind and edit responsible persons (squad `trainer`/`admin` only?) | F3.7 | [ ] |
 | Q7 | Zero-team legacy events: how are they shown/handled in the UI? | F3.9 | [ ] |
 | Q8 | Statistics: do training/social activities count toward fairness metrics, or are they excluded? | F3.13, F6 | [ ] |
@@ -164,3 +164,5 @@ Step B: migrate the model screen by screen to `Activity`
 | 2026-10-09 | Phase 3 step A: F3.1–F3.4 done (`Activity` types, `activityService`, `activityMapper`, event-shaped `eventService` facade, `eventActions` module); F3.5 manual check open |
 | 2026-10-09 | Phase 3 step B: F3.6–F3.14 done (store holds `activities`, `Event` type and mapper removed, screens migrated, activity selectors with tests); Q6 assumed admin/trainer only, Q8 assumed fairness stats count match/tournament only; F3.5/F3.15 manual 375px checks open; no UI yet for `markActivitySelectionSent` |
 | 2026-10-09 | Phase 4: attendance recorded on Event Detail (admin/trainer, after start) with selector + tests; `PUT /teams` response fix; statistics "Event Attendance" renamed to "Event Participation"; specs updated (event, invitation, UC-EV-010, UC-ST-002); manual 375px check open |
+| 2026-10-09 | Phase 5: helper tasks on Event Detail (all kinds): service, store actions, `taskSelectors` + tests, `ActivityTasksCard`, `AddActivityTaskModal`; specs updated (event.md, UC-EV-011); sign-up identifies the user by email via group members; manual check open |
+| 2026-10-09 | Phase 7: Group→Squad and PlayingMode→MatchFormat renamed in code, files, routes (`/groups` redirects to `/squads`), i18n (en/de) and specs (`squad.md`, `match-format.md`, `usecases/squad`); UC ids `UC-GR-*` kept; localStorage key kept; F7.6 open until `/events` and `/groups` traffic stops |

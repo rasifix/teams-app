@@ -4,6 +4,7 @@ import type {
   ActivityKind,
   InvitationDeclineReason,
   InvitationStatus,
+  Player,
 } from '../../types';
 
 /*
@@ -53,6 +54,11 @@ export const getInvitationStatus = (invitation: ActivityInvitation): InvitationS
 
 export const isSelectionSent = (activity: Pick<Activity, 'selectionSentAt'>): boolean =>
   Boolean(activity.selectionSentAt);
+
+export const isSpondManagedInvitation = (
+  activity: Pick<Activity, 'spondId'>,
+  player: Pick<Player, 'spondId'> | undefined,
+): boolean => Boolean(activity.spondId && player?.spondId);
 
 export interface InvitationCounts {
   total: number;

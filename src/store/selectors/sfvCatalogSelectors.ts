@@ -1,8 +1,8 @@
-import type { GroupCategory, OfficialMatchFormat, PlayingMode, SfvActivityType, SfvCategoryCatalog } from '../../types';
-import { GROUP_CATEGORIES, selectOfficialPlayingModeForCategory } from './groupCategorySelectors';
+import type { SquadCategory, OfficialMatchFormat, MatchFormat, SfvActivityType, SfvCategoryCatalog } from '../../types';
+import { GROUP_CATEGORIES, selectLegacyOfficialMatchFormat } from './squadCategorySelectors';
 
 export interface SfvCategoryOption {
-  code: GroupCategory;
+  code: SquadCategory;
   activityType: SfvActivityType | null;
   matchFormat: OfficialMatchFormat | null;
 }
@@ -26,7 +26,7 @@ export function selectSfvCategoryOptions(catalog: SfvCategoryCatalog | null): Sf
 
 export function selectSfvCategoryOption(
   catalog: SfvCategoryCatalog | null,
-  code: GroupCategory | null | undefined
+  code: SquadCategory | null | undefined
 ): SfvCategoryOption | null {
   if (!code) {
     return null;
@@ -38,26 +38,26 @@ export function selectSfvCategoryOption(
 /** Official format of a category; falls back to the built-in table when the catalog is not loaded. */
 export function selectOfficialMatchFormatForCategory(
   catalog: SfvCategoryCatalog | null,
-  code: GroupCategory | null | undefined
+  code: SquadCategory | null | undefined
 ): OfficialMatchFormat | null {
   return selectSfvCategoryOption(catalog, code)?.matchFormat ?? null;
 }
 
 export function selectIsTournamentOnlyCategory(
   catalog: SfvCategoryCatalog | null,
-  code: GroupCategory | null | undefined
+  code: SquadCategory | null | undefined
 ): boolean {
   const option = selectSfvCategoryOption(catalog, code);
   return option?.activityType === 'tournament' && !option.matchFormat;
 }
 
-export function selectIsOfficialMatchFormat(format: Pick<PlayingMode, 'origin'>): boolean {
+export function selectIsOfficialMatchFormat(format: Pick<MatchFormat, 'origin'>): boolean {
   return Boolean(format.origin);
 }
 
 /** Default activity player limits from a format; null when the (legacy) format carries no limits. */
 export function selectDefaultActivityLimits(
-  format: Pick<PlayingMode, 'minPlayersPerTeam' | 'maxPlayersPerTeam'> | null | undefined
+  format: Pick<MatchFormat, 'minPlayersPerTeam' | 'maxPlayersPerTeam'> | null | undefined
 ): ActivityLimits | null {
   if (!format) {
     return null;
@@ -73,7 +73,7 @@ export function selectDefaultActivityLimits(
   return { minPlayersPerTeam: Math.min(min, max), maxPlayersPerTeam: Math.max(min, max) };
 }
 
-function toLegacyFormat(code: GroupCategory): OfficialMatchFormat | null {
-  const legacy = selectOfficialPlayingModeForCategory(code);
+function toLegacyFormat(code: SquadCategory): OfficialMatchFormat | null {
+  const legacy = selectLegacyOfficialMatchFormat(code);
   return legacy ? { ...legacy, minimumPeriodsPerPlayer: 0 } : null;
 }

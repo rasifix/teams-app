@@ -5,7 +5,7 @@ export interface Period {
   endDate: string;
 }
 
-export type GroupCategory = 'A' | 'B' | 'C' | 'D9' | 'D7' | 'E' | 'F' | 'G' | 'FF9' | 'FF11' | 'FF14' | 'FF17';
+export type SquadCategory = 'A' | 'B' | 'C' | 'D9' | 'D7' | 'E' | 'F' | 'G' | 'FF9' | 'FF11' | 'FF14' | 'FF17';
 
 export type PositionCode =
   | 'GK'
@@ -24,7 +24,7 @@ export interface Formation {
   slots: FormationSlot[]; // exactly one slot must have positionCode GK
 }
 
-export interface PlayingMode {
+export interface MatchFormat {
   id: string;
   name: string; // e.g. "4x20"
   numberOfPeriods: number;
@@ -41,7 +41,7 @@ export interface PlayingMode {
 export type SfvActivityType = 'match' | 'tournament';
 
 /** Official match format of an SFV category (template for a squad's format). */
-export type OfficialMatchFormat = Omit<PlayingMode, 'id' | 'isDefault' | 'origin'>;
+export type OfficialMatchFormat = Omit<MatchFormat, 'id' | 'isDefault' | 'origin'>;
 
 export interface SfvCategoryEntry {
   activityType: SfvActivityType;
@@ -52,15 +52,16 @@ export interface SfvCategoryEntry {
 export interface SfvCategoryCatalog {
   version: string;
   source: string;
-  categories: Partial<Record<GroupCategory, SfvCategoryEntry>>;
+  categories: Partial<Record<SquadCategory, SfvCategoryEntry>>;
 }
 
-export interface Group {
+export interface Squad {
   id: string;
+  spondId?: string | null;
   name: string;
   club?: string;
   description?: string;
-  category?: GroupCategory | null;
+  category?: SquadCategory | null;
   trainers?: Array<{
     id: string;
     email?: string;
@@ -72,24 +73,26 @@ export interface Group {
   }>;
   periods: Period[];
   matchPlanningEnabled?: boolean;
-  playingModes?: PlayingMode[]; // group-scoped only, never shared across groups
-  formations?: Formation[]; // group-scoped only, never shared across groups
+  matchFormats?: MatchFormat[]; // squad-scoped only, never shared across squads
+  formations?: Formation[]; // squad-scoped only, never shared across squads
   createdAt?: string;
   updatedAt?: string;
 }
 
-export interface CreateGroupRequest {
+export interface CreateSquadRequest {
   name: string;
+  spondId?: string | null;
   club?: string;
   description?: string;
-  category?: GroupCategory | null;
+  category?: SquadCategory | null;
 }
 
-export type GroupRole = 'admin' | 'trainer' | 'guardian' | 'player';
+export type SquadRole = 'admin' | 'trainer' | 'guardian' | 'player';
 
 export interface Player {
   id: string;
-  roles?: GroupRole[];
+  spondId?: string | null;
+  roles?: SquadRole[];
   firstName: string;
   lastName: string;
   birthDate: string; // ISO date string
@@ -103,6 +106,7 @@ export type PlayerStatus = 'active' | 'trial' | 'inactive';
 
 export interface Guardian {
   id: string;
+  spondId?: string | null;
   firstName: string;
   lastName: string;
   email?: string;
@@ -127,10 +131,10 @@ export interface Team {
   startTime?: string; // HH:MM override; otherwise use the activity start time
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
-  responsiblePersonIds?: string[]; // Members responsible for the team (any squad member, one or more)
+  responsiblePersonIds?: string[]; // Members responsible for the team (trainers or guardians, one or more; players are never responsible)
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
-  formationId?: string | null; // only settable while the Event has a playingModeId; fixed for the whole match
+  formationId?: string | null; // only settable while the Event has a matchFormatId; fixed for the whole match
   lineup?: TeamLineupPeriod[]; // one entry per planned period
 }
 
@@ -166,7 +170,8 @@ export interface ShirtSet {
 
 export interface Trainer {
   id: string;
-  roles?: GroupRole[];
+  spondId?: string | null;
+  roles?: SquadRole[];
   firstName: string;
   lastName: string;
   email?: string;
@@ -203,9 +208,12 @@ export interface ActivityInvitation {
 
 export type AttendanceStatus = 'present' | 'absent' | 'excused';
 
+export type AttendanceReason = 'sick' | 'injured' | 'noShow' | 'other';
+
 export interface ActivityAttendance {
   personId: string;
   status: AttendanceStatus;
+  reason?: AttendanceReason; // optional, used for excused
 }
 
 export interface ActivityTaskSignup {
@@ -237,6 +245,7 @@ export interface TrainingGroup {
 /** Wire model of `/squads/:id/activities`; replaces `Event` once the migration is complete. */
 export interface Activity {
   id: string;
+  spondId?: string | null;
   squadId: string;
   kind: ActivityKind;
   name: string;
@@ -253,7 +262,7 @@ export interface Activity {
   attendance?: ActivityAttendance[];
   tasks?: ActivityTask[];
   trainerIds?: string[];
-  groups?: TrainingGroup[];
+  squads?: TrainingGroup[];
 }
 
 /** Body for creating or updating an activity (server owns `id` and `squadId`). */

@@ -6,7 +6,7 @@ import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ImportMembersModal from "../components/ImportMembersModal";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
-import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useGroup } from "../store";
+import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquad } from "../store";
 import {
   PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE,
   PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE,
@@ -22,6 +22,8 @@ export interface MembersOutletContext {
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
   openImportModal: () => void;
+  canImportFromSpond: boolean;
+  canExportMembers: boolean;
   requestDeletePlayer: (player: Player) => void;
   requestDeleteTrainer: (trainer: Trainer) => void;
 }
@@ -32,7 +34,7 @@ export default function MembersPage() {
   // Store hooks
   const { players, addPlayer: addPlayerToStore, deletePlayer } = usePlayers();
   const { trainers, addTrainer, deleteTrainer } = useTrainers();
-  const group = useGroup();
+  const squad = useSquad();
   const { user } = useAuth();
   
   // Use individual selectors for loading/error states
@@ -56,8 +58,8 @@ export default function MembersPage() {
   );
 
   const isAdmin = useMemo(() => {
-    return canManageGuardians(user, group, trainers);
-  }, [user, group, trainers]);
+    return canManageGuardians(user, squad, trainers);
+  }, [user, squad, trainers]);
 
   // Player handlers
   const handleAddPlayer = async (playerData: Omit<Player, "id">) => {
@@ -143,6 +145,8 @@ export default function MembersPage() {
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
     openImportModal: () => setIsImportModalOpen(true),
+    canImportFromSpond: isAdmin && Boolean(squad?.spondId?.trim()),
+    canExportMembers: isAdmin,
     requestDeletePlayer: handleDeletePlayer,
     requestDeleteTrainer: handleDeleteTrainer,
   };

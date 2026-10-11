@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Activity, ActivityInvitation } from '../../types';
+import type { Activity, ActivityInvitation, Player } from '../../types';
 import {
   getActivityDate,
   getActivityStartTime,
@@ -7,6 +7,7 @@ import {
   getInvitationStatus,
   isActivityCompleted,
   isSelectionSent,
+  isSpondManagedInvitation,
   isTeamActivity,
   selectAcceptedPlayerIds,
   selectActivitiesOfKinds,
@@ -34,6 +35,10 @@ const invitation = (overrides: Partial<ActivityInvitation>): ActivityInvitation 
   playerId: 'p',
   response: 'open',
   ...overrides,
+});
+
+const player = (overrides: Partial<Player> = {}): Player => ({
+  id: 'p', firstName: 'A', lastName: 'Player', birthDate: '2014-01-01', level: 3, status: 'active', ...overrides,
 });
 
 describe('activity time helpers', () => {
@@ -137,5 +142,12 @@ describe('invitations', () => {
   it('reports whether the selection was sent', () => {
     expect(isSelectionSent(activity())).toBe(false);
     expect(isSelectionSent(activity({ selectionSentAt: '2026-05-01T10:00:00.000Z' }))).toBe(true);
+  });
+
+  it('marks only invitations linked on both sides as Spond-managed', () => {
+    expect(isSpondManagedInvitation(activity({ spondId: 'event-1' }), player({ spondId: 'member-1' }))).toBe(true);
+    expect(isSpondManagedInvitation(activity({ spondId: 'event-1' }), player())).toBe(false);
+    expect(isSpondManagedInvitation(activity(), player({ spondId: 'member-1' }))).toBe(false);
+    expect(isSpondManagedInvitation(activity({ spondId: 'event-1' }), undefined)).toBe(false);
   });
 });

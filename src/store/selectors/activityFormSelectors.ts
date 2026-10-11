@@ -1,4 +1,4 @@
-import type { ActivityKind, PlayingMode } from '../../types';
+import type { ActivityKind, MatchFormat } from '../../types';
 import { selectDefaultActivityLimits, type ActivityLimits } from './sfvCatalogSelectors';
 
 export interface ActivityFormConfiguration {
@@ -6,18 +6,18 @@ export interface ActivityFormConfiguration {
   showMatchFormat: boolean;
   showTeamCount: boolean;
   fixedTeamCount: number | null;
-  selectedPlayingMode: PlayingMode | null;
+  selectedMatchFormat: MatchFormat | null;
   defaultLimits: ActivityLimits | null;
 }
 
 /** Derives the fields and defaults that belong to an activity kind and selected squad format. */
 export function selectActivityFormConfiguration(
   kind: ActivityKind,
-  playingModes: PlayingMode[],
-  playingModeId?: string | null,
+  matchFormats: MatchFormat[],
+  matchFormatId?: string | null,
 ): ActivityFormConfiguration {
-  const selectedPlayingMode = kind === 'match'
-    ? playingModes.find((mode) => mode.id === playingModeId) ?? null
+  const selectedMatchFormat = kind === 'match'
+    ? matchFormats.find((mode) => mode.id === matchFormatId) ?? null
     : null;
 
   return {
@@ -25,7 +25,7 @@ export function selectActivityFormConfiguration(
     showMatchFormat: kind === 'match',
     showTeamCount: kind === 'tournament',
     fixedTeamCount: kind === 'match' ? 1 : null,
-    selectedPlayingMode,
-    defaultLimits: selectDefaultActivityLimits(selectedPlayingMode),
+    selectedMatchFormat,
+    defaultLimits: selectDefaultActivityLimits(selectedMatchFormat),
   };
 }

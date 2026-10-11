@@ -1,0 +1,179 @@
+import type { Player, Trainer } from '../../types';
+import { getBirthYear } from '../../utils/birthDate';
+
+export type ImportMemberRole = 'player' | 'trainer';
+
+export interface SquadImportCandidate {
+  id: string;
+  role: ImportMemberRole;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  birthDate?: string;
+  level?: number;
+  status?: Player['status'];
+  guardians?: Player['guardians'];
+}
+
+function toComparableBirthDate(value: string | undefined): string {
+  if (!value) {
+    return '';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return '';
+  }
+
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function selectSourceMemberBirthYears(players: Player[]): number[] {
+  return Array.from(new Set(
+    players
+      .map((player) => toComparableBirthDate(player.birthDate))
+      .filter((birthDate) => Boolean(birthDate))
+      .map((birthDate) => new Date(birthDate).getFullYear())
+  )).sort((left, right) => left - right);
+}
+
+function normalizeName(value: string | undefined): string {
+  return (value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function normalizeEmail(value: string | undefined): string {
+  return (value || '').trim().toLowerCase();
+}
+
+function compareByName(left: Pick<SquadImportCandidate, 'firstName' | 'lastName'>, right: Pick<SquadImportCandidate, 'firstName' | 'lastName'>): number {
+  const lastNameCompare = normalizeName(left.lastName).localeCompare(normalizeName(right.lastName));
+  if (lastNameCompare !== 0) {
+    return lastNameCompare;
+  }
+
+  return normalizeName(left.firstName).localeCompare(normalizeName(right.firstName));
+}
+
+function isDuplicatePlayer(candidate: SquadImportCandidate, targetPlayers: Player[]): boolean {
+  const candidateBirthDate = toComparableBirthDate(candidate.birthDate);
+  const candidateBirthYear = candidateBirthDate ? new Date(candidateBirthDate).getFullYear() : undefined;
+
+  return targetPlayers.some((targetPlayer) => {
+    if (
+      normalizeName(targetPlayer.firstName) !== normalizeName(candidate.firstName)
+      || normalizeName(targetPlayer.lastName) !== normalizeName(candidate.lastName)
+    ) {
+      return false;
+    }
+
+    const targetBirthDate = toComparableBirthDate(targetPlayer.birthDate);
+    if (candidateBirthDate && targetBirthDate) {
+      return candidateBirthDate === targetBirthDate;
+    }
+
+    return candidateBirthYear === getBirthYear(targetPlayer.birthDate);
+  });
+}
+
+function isDuplicateTrainer(candidate: SquadImportCandidate, targetTrainers: Trainer[]): boolean {
+  const candidateEmail = normalizeEmail(candidate.email);
+
+  return targetTrainers.some((targetTrainer) => {
+    if (
+      normalizeName(targetTrainer.firstName) !== normalizeName(candidate.firstName)
+      || normalizeName(targetTrainer.lastName) !== normalizeName(candidate.lastName)
+    ) {
+      return false;
+    }
+
+    const targetEmail = normalizeEmail(targetTrainer.email);
+
+    if (!candidateEmail && !targetEmail) {
+      return true;
+    }
+
+    if (!candidateEmail || !targetEmail) {
+      return false;
+    }
+
+    return candidateEmail === targetEmail;
+  });
+}
+
+export function selectSourceSquadCandidates(players: Player[], trainers: Trainer[]): SquadImportCandidate[] {
+  const playerCandidates: SquadImportCandidate[] = players.map((player) => ({
+    id: player.id,
+    role: 'player',
+    firstName: player.firstName,
+    lastName: player.lastName,
+    birthDate: player.birthDate,
+    level: player.level,
+    status: player.status,
+    guardians: player.guardians,
+  }));
+
+  const trainerCandidates: SquadImportCandidate[] = trainers.map((trainer) => ({
+    id: trainer.id,
+    role: 'trainer',
+    firstName: trainer.firstName,
+    lastName: trainer.lastName,
+    email: trainer.email,
+  }));
+
+  return [...playerCandidates, ...trainerCandidates].sort((left, right) => {
+    const byName = compareByName(left, right);
+    if (byName !== 0) {
+      return byName;
+    }
+
+    if (left.role === right.role) {
+      return left.id.localeCompare(right.id);
+    }
+
+    return left.role === 'player' ? -1 : 1;
+  });
+}
+
+export function isDuplicateTargetMember(
+  candidate: SquadImportCandidate,
+  targetPlayers: Player[],
+  targetTrainers: Trainer[]
+): boolean {
+  if (candidate.role === 'player') {
+    return isDuplicatePlayer(candidate, targetPlayers);
+  }
+
+  return isDuplicateTrainer(candidate, targetTrainers);
+}
+
+export function selectImportableSquadMembers(
+  sourcePlayers: Player[],
+  sourceTrainers: Trainer[],
+  targetPlayers: Player[],
+  targetTrainers: Trainer[],
+  selectedBirthYears: number[] = []
+): SquadImportCandidate[] {
+  const selectedBirthYearSet = new Set(selectedBirthYears.filter((birthYear) => Number.isInteger(birthYear)));
+
+  return selectSourceSquadCandidates(sourcePlayers, sourceTrainers).filter((candidate) => {
+    if (candidate.role === 'player' && candidate.status === 'inactive') {
+      return false;
+    }
+
+    const candidateBirthYear = getBirthYear(candidate.birthDate);
+
+    const matchesBirthYear =
+      selectedBirthYearSet.size === 0
+      || candidate.role === 'trainer'
+      || (candidateBirthYear ? selectedBirthYearSet.has(candidateBirthYear) : false);
+
+    return matchesBirthYear && !isDuplicateTargetMember(candidate, targetPlayers, targetTrainers);
+  });
+}

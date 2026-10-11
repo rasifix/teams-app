@@ -2,28 +2,28 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
-import AddGroupModal from '../components/AddGroupModal';
+import AddSquadModal from '../components/AddSquadModal';
 import UpcomingEventCard from '../components/UpcomingEventCard';
-import { useGroup, useGroups, useGroupsError, useGroupsLoading, useStore } from '../store/useStore';
+import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from '../store/useStore';
 import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEventsWithGuardianInvitations } from '../store/selectors/homeSelectors';
 import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
-import type { CreateGroupRequest } from '../types';
+import type { CreateSquadRequest } from '../types';
 
 export default function HomePage() {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
-  const { addGroup, configureGroupCategory, selectGroup, initializeApp, loadGroups } = useStore();
-  const group = useGroup();
-  const groups = useGroups();
-  const groupsLoading = useGroupsLoading();
-  const groupsError = useGroupsError();
+  const { addSquad, configureSquadCategory, selectSquad, initializeApp, loadSquads } = useStore();
+  const squad = useSquad();
+  const squads = useSquads();
+  const squadsLoading = useSquadsLoading();
+  const squadsError = useSquadsError();
   const { activities, updateActivityInvitation } = useActivities();
   const members = useStore((state) => state.members);
   const players = useMemo(() => selectPlayersFromMembers(members), [members]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [switchingGroupId, setSwitchingGroupId] = useState<string | null>(null);
+  const [switchingSquadId, setSwitchingSquadId] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [respondingInvitationId, setRespondingInvitationId] = useState<string | null>(null);
   const [invitationError, setInvitationError] = useState<string | null>(null);
@@ -32,26 +32,26 @@ export default function HomePage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadGroups();
+      loadSquads();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
-  const handleCreateGroup = async (groupData: CreateGroupRequest) => {
+  const handleCreateSquad = async (squadData: CreateSquadRequest) => {
     setIsSubmitting(true);
     setCreateError(null);
 
     try {
-      const newGroup = await addGroup(groupData);
-      if (!newGroup) {
-        setCreateError(useStore.getState().errors.groups || t('groups.errors.createFailed'));
+      const newSquad = await addSquad(squadData);
+      if (!newSquad) {
+        setCreateError(useStore.getState().errors.squads || t('squads.errors.createFailed'));
         return;
       }
 
-      await selectGroup(newGroup.id);
+      await selectSquad(newSquad.id);
       await initializeApp();
-      if (groupData.category) {
-        await configureGroupCategory(groupData.category);
+      if (squadData.category) {
+        await configureSquadCategory(squadData.category);
       }
       setIsAddModalOpen(false);
     } finally {
@@ -59,17 +59,17 @@ export default function HomePage() {
     }
   };
 
-  const handleGroupSwitch = async (groupId: string) => {
-    if (group?.id === groupId || switchingGroupId) {
+  const handleSquadSwitch = async (squadId: string) => {
+    if (squad?.id === squadId || switchingSquadId) {
       return;
     }
 
-    setSwitchingGroupId(groupId);
+    setSwitchingSquadId(squadId);
     try {
-      await selectGroup(groupId);
+      await selectSquad(squadId);
       await initializeApp();
     } finally {
-      setSwitchingGroupId(null);
+      setSwitchingSquadId(null);
     }
   };
 
@@ -95,47 +95,47 @@ export default function HomePage() {
 
         {isAuthenticated && (
           <div className="max-w-3xl mx-auto mb-12 text-left">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('groups.title')}</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('squads.title')}</h2>
 
-            {groupsLoading && (
+            {squadsLoading && (
               <div className="bg-white rounded-lg border border-gray-200 p-4 text-gray-600">
-                {t('groups.loading')}
+                {t('squads.loading')}
               </div>
             )}
 
-            {!groupsLoading && groupsError && (
+            {!squadsLoading && squadsError && (
               <div className="bg-red-50 rounded-lg border border-red-200 p-4 text-red-700">
-                {t('groups.errors.loadFailedWithReason', { error: groupsError })}
+                {t('squads.errors.loadFailedWithReason', { error: squadsError })}
               </div>
             )}
 
-            {!groupsLoading && !groupsError && (
+            {!squadsLoading && !squadsError && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {groups.map((groupItem) => {
-                  const isCurrentGroup = group?.id === groupItem.id;
-                  const isSwitching = switchingGroupId === groupItem.id;
+                {squads.map((squadItem) => {
+                  const isCurrentSquad = squad?.id === squadItem.id;
+                  const isSwitching = switchingSquadId === squadItem.id;
 
                   return (
                     <button
                       type="button"
-                      onClick={() => handleGroupSwitch(groupItem.id)}
-                      disabled={isCurrentGroup || !!switchingGroupId}
-                      key={groupItem.id}
+                      onClick={() => handleSquadSwitch(squadItem.id)}
+                      disabled={isCurrentSquad || !!switchingSquadId}
+                      key={squadItem.id}
                       className={`rounded-lg border p-4 bg-white text-left transition-colors ${
-                        isCurrentGroup
+                        isCurrentSquad
                           ? 'border-orange-400 cursor-default'
                           : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                       }`}
                     >
-                      <p className="font-medium text-gray-900">{groupItem.name}</p>
-                      {groupItem.club && (
-                        <p className="text-sm text-gray-600 mt-1">{t('groups.clubLabel', { club: groupItem.club })}</p>
+                      <p className="font-medium text-gray-900">{squadItem.name}</p>
+                      {squadItem.club && (
+                        <p className="text-sm text-gray-600 mt-1">{t('squads.clubLabel', { club: squadItem.club })}</p>
                       )}
-                      {groupItem.category && (
-                        <p className="text-sm text-gray-600 mt-1">{t('groups.categoryLabel', { category: groupItem.category })}</p>
+                      {squadItem.category && (
+                        <p className="text-sm text-gray-600 mt-1">{t('squads.categoryLabel', { category: squadItem.category })}</p>
                       )}
                       {isSwitching && (
-                        <p className="text-xs text-gray-500 mt-2">{t('groups.switching')}</p>
+                        <p className="text-xs text-gray-500 mt-2">{t('squads.switching')}</p>
                       )}
                     </button>
                   );
@@ -145,7 +145,7 @@ export default function HomePage() {
                   onClick={() => setIsAddModalOpen(true)}
                   className="rounded-lg border border-dashed border-orange-300 p-4 bg-orange-50 text-left hover:bg-orange-100 transition-colors"
                 >
-                  <p className="font-medium text-orange-800">{t('groups.createNew')}</p>
+                  <p className="font-medium text-orange-800">{t('squads.createNew')}</p>
                 </button>
               </div>
             )}
@@ -209,7 +209,7 @@ export default function HomePage() {
         )}
       </div>
 
-      <AddGroupModal
+      <AddSquadModal
         isOpen={isAddModalOpen}
         isSubmitting={isSubmitting}
         error={createError}
@@ -217,7 +217,7 @@ export default function HomePage() {
           setCreateError(null);
           setIsAddModalOpen(false);
         }}
-        onSave={handleCreateGroup}
+        onSave={handleCreateSquad}
       />
     </div>
   );

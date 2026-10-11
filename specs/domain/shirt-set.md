@@ -10,7 +10,7 @@ to players for a team on event day?"
 
 ## Core Concept
 
-A Shirt Set is an inventory container, not an event result. It groups multiple
+A Shirt Set is an inventory container, not an event result. It squads multiple
 Shirts under shared metadata (for example sponsor and color) and makes those
 shirts assignable to Teams in Events.
 

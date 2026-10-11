@@ -1,60 +1,73 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup, useMatchPlanning, useSfvCatalog } from '../store';
+import { Link } from 'react-router-dom';
+import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
 import { Card, CardBody, CardTitle } from '../components/ui';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ConfirmDialog';
-import PlayingModeModal, { type PlayingModeFormData } from '../components/PlayingModeModal';
+import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
+import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
 import { getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
-import type { Formation, GroupCategory, PlayingMode } from '../types';
-import { GROUP_CATEGORIES } from '../store/selectors/groupCategorySelectors';
+import type { Formation, SquadCategory, MatchFormat, Period } from '../types';
+import { GROUP_CATEGORIES } from '../store/selectors/squadCategorySelectors';
 import {
   selectIsOfficialMatchFormat,
   selectIsTournamentOnlyCategory,
   selectOfficialMatchFormatForCategory,
 } from '../store/selectors/sfvCatalogSelectors';
+import { selectSpondGroupUrl } from '../store/selectors/groupSettingsSelectors';
+import { unlinkSquadFromSpond } from '../services/squadService';
+import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 
 export default function MatchPlanningPage() {
   const { t } = useTranslation();
-  const group = useGroup();
+  const squad = useSquad();
+  const periods = useSquadPeriods();
   const sfvCatalog = useSfvCatalog();
-  const selectedOfficialFormat = (category: GroupCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
+  const spondGroupUrl = selectSpondGroupUrl(squad);
+  const initializeApp = useStore((state) => state.initializeApp);
+  const selectedOfficialFormat = (category: SquadCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
   const {
     matchPlanningEnabled,
-    playingModes,
+    matchFormats,
     formations,
     setMatchPlanningEnabled,
-    configureGroupCategory,
-    addPlayingMode,
-    updatePlayingMode,
-    deletePlayingMode,
-    setDefaultPlayingMode,
+    configureSquadCategory,
+    addMatchFormat,
+    updateMatchFormat,
+    deleteMatchFormat,
+    setDefaultMatchFormat,
     addFormation,
     updateFormation,
     deleteFormation,
   } = useMatchPlanning();
 
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<GroupCategory | ''>(group?.category ?? '');
+  const [selectedCategory, setSelectedCategory] = useState<SquadCategory | ''>(squad?.category ?? '');
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [categorySaveError, setCategorySaveError] = useState<string | null>(null);
-  const [isPlayingModeModalOpen, setIsPlayingModeModalOpen] = useState(false);
-  const [editingPlayingMode, setEditingPlayingMode] = useState<PlayingMode | null>(null);
-  const [deletingPlayingMode, setDeletingPlayingMode] = useState<PlayingMode | null>(null);
+  const [isMatchFormatModalOpen, setIsMatchFormatModalOpen] = useState(false);
+  const [editingMatchFormat, setEditingMatchFormat] = useState<MatchFormat | null>(null);
+  const [deletingMatchFormat, setDeletingMatchFormat] = useState<MatchFormat | null>(null);
   const [isFormationModalOpen, setIsFormationModalOpen] = useState(false);
   const [editingFormation, setEditingFormation] = useState<Formation | null>(null);
   const [deletingFormation, setDeletingFormation] = useState<Formation | null>(null);
+  const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
+  const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
+  const [isUnlinkSpondDialogOpen, setIsUnlinkSpondDialogOpen] = useState(false);
+  const [isUnlinkingSpond, setIsUnlinkingSpond] = useState(false);
+  const [unlinkSpondError, setUnlinkSpondError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedCategory(group?.category ?? '');
-  }, [group?.category]);
+    setSelectedCategory(squad?.category ?? '');
+  }, [squad?.category]);
 
   const handleSaveCategory = async () => {
     setCategorySaveError(null);
     setIsSavingCategory(true);
     try {
-      const success = await configureGroupCategory(selectedCategory || null);
+      const success = await configureSquadCategory(selectedCategory || null);
       if (!success) {
         setCategorySaveError(t('matchPlanning.category.saveFailed'));
       }
@@ -71,11 +84,26 @@ export default function MatchPlanningPage() {
     setIsTogglingEnabled(false);
   };
 
-  const handleSavePlayingMode = async (data: PlayingModeFormData) => {
-    if (editingPlayingMode) {
-      return updatePlayingMode(editingPlayingMode.id, data);
+  const handleUnlinkSpond = async () => {
+    if (!squad || isUnlinkingSpond) return;
+    setIsUnlinkingSpond(true);
+    setUnlinkSpondError(null);
+    try {
+      await unlinkSquadFromSpond(squad.id, squad.name);
+      await initializeApp();
+      setIsUnlinkSpondDialogOpen(false);
+    } catch {
+      setUnlinkSpondError(t('groupSettings.spond.unlinkFailed'));
+    } finally {
+      setIsUnlinkingSpond(false);
     }
-    const created = await addPlayingMode(data);
+  };
+
+  const handleSaveMatchFormat = async (data: MatchFormatFormData) => {
+    if (editingMatchFormat) {
+      return updateMatchFormat(editingMatchFormat.id, data);
+    }
+    const created = await addMatchFormat(data);
     return created !== null;
   };
 
@@ -89,6 +117,87 @@ export default function MatchPlanningPage() {
 
   return (
     <div className="page-container">
+      <SpondSyncResultBanner className="mb-4" />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">{t('groupSettings.title')}</h1>
+        <p className="mt-1 text-sm text-gray-600">{t('groupSettings.description')}</p>
+      </div>
+
+      <Card className="mb-4">
+        <CardBody>
+          <CardTitle>{t('groupSettings.spond.title')}</CardTitle>
+          <p className="mt-1 text-sm text-gray-600">{t('groupSettings.spond.description')}</p>
+          {unlinkSpondError && <p className="mt-3 text-sm text-red-700">{unlinkSpondError}</p>}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {spondGroupUrl ? (
+              <>
+                <a
+                  className="btn-primary inline-block"
+                  href={spondGroupUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t('groupSettings.spond.openGroup')}
+                </a>
+                <Button variant="danger" onClick={() => setIsUnlinkSpondDialogOpen(true)}>
+                  {t('groupSettings.spond.unlinkGroup')}
+                </Button>
+              </>
+            ) : (
+              <Link className="btn-primary inline-block" to="/spond-import">
+                {t('groupSettings.spond.linkGroup')}
+              </Link>
+            )}
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card className="mb-4">
+        <CardBody>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <CardTitle>{t('groupSettings.periods.title')}</CardTitle>
+              <p className="mt-1 text-sm text-gray-600">{t('groupSettings.periods.description')}</p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                setPeriodToEdit(null);
+                setIsPeriodModalOpen(true);
+              }}
+            >
+              {t('groupSettings.periods.add')}
+            </Button>
+          </div>
+          {periods.length === 0 ? (
+            <div className="empty-state">{t('groupSettings.periods.empty')}</div>
+          ) : (
+            <div className="space-y-2">
+              {periods.map((period) => (
+                <div key={period.id} className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 px-4 py-3">
+                  <div>
+                    <p className="font-medium text-gray-900">{period.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {t('groupSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setPeriodToEdit(period);
+                      setIsPeriodModalOpen(true);
+                    }}
+                  >
+                    {t('common.actions.edit')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
       <Card className="mb-4">
         <CardBody>
           <CardTitle>{t('matchPlanning.category.title')}</CardTitle>
@@ -97,10 +206,10 @@ export default function MatchPlanningPage() {
             <div className="flex-1">
               <label htmlFor="group-category" className="form-label">{t('matchPlanning.category.label')}</label>
               <select
-                id="group-category"
+                id="squad-category"
                 value={selectedCategory}
                 onChange={(event) => {
-                  setSelectedCategory(event.target.value as GroupCategory | '');
+                  setSelectedCategory(event.target.value as SquadCategory | '');
                   setCategorySaveError(null);
                 }}
                 className="form-input"
@@ -114,7 +223,7 @@ export default function MatchPlanningPage() {
             <Button
               variant="primary"
               onClick={handleSaveCategory}
-              disabled={isSavingCategory || selectedCategory === (group?.category ?? '')}
+              disabled={isSavingCategory || selectedCategory === (squad?.category ?? '')}
             >
               {isSavingCategory ? t('matchPlanning.category.saving') : t('common.actions.save')}
             </Button>
@@ -172,78 +281,78 @@ export default function MatchPlanningPage() {
           <Card>
             <CardBody>
               <div className="flex justify-between items-center mb-4">
-                <CardTitle>{t('matchPlanning.playingModes.title')}</CardTitle>
+                <CardTitle>{t('matchPlanning.matchFormats.title')}</CardTitle>
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={() => {
-                    setEditingPlayingMode(null);
-                    setIsPlayingModeModalOpen(true);
+                    setEditingMatchFormat(null);
+                    setIsMatchFormatModalOpen(true);
                   }}
                 >
                   {t('common.actions.add')}
                 </Button>
               </div>
 
-              {playingModes.length === 0 ? (
-                <div className="empty-state">{t('matchPlanning.playingModes.emptyState')}</div>
+              {matchFormats.length === 0 ? (
+                <div className="empty-state">{t('matchPlanning.matchFormats.emptyState')}</div>
               ) : (
                 <div className="space-y-2">
-                  {playingModes.map((playingMode) => (
+                  {matchFormats.map((matchFormat) => (
                     <div
-                      key={playingMode.id}
+                      key={matchFormat.id}
                       className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{playingMode.name}</span>
-                          {playingMode.isDefault && (
+                          <span className="font-medium">{matchFormat.name}</span>
+                          {matchFormat.isDefault && (
                             <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                              {t('matchPlanning.playingModes.defaultBadge')}
+                              {t('matchPlanning.matchFormats.defaultBadge')}
                             </span>
                           )}
-                          {selectIsOfficialMatchFormat(playingMode) && (
+                          {selectIsOfficialMatchFormat(matchFormat) && (
                             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                              {t('matchPlanning.playingModes.officialBadge')}
+                              {t('matchPlanning.matchFormats.officialBadge')}
                             </span>
                           )}
                         </div>
-                        {playingMode.playersOnField !== undefined && (
+                        {matchFormat.playersOnField !== undefined && (
                           <div className="text-sm text-gray-500">
-                            {t('matchPlanning.playingModes.players', {
-                              onField: playingMode.playersOnField,
-                              min: playingMode.minPlayersPerTeam ?? '-',
-                              max: playingMode.maxPlayersPerTeam ?? '-',
+                            {t('matchPlanning.matchFormats.players', {
+                              onField: matchFormat.playersOnField,
+                              min: matchFormat.minPlayersPerTeam ?? '-',
+                              max: matchFormat.maxPlayersPerTeam ?? '-',
                             })}
                           </div>
                         )}
                         <div className="text-sm text-gray-500">
-                          {t('matchPlanning.playingModes.summary', {
-                            periods: playingMode.numberOfPeriods,
-                            minutes: playingMode.periodLengthMinutes,
+                          {t('matchPlanning.matchFormats.summary', {
+                            periods: matchFormat.numberOfPeriods,
+                            minutes: matchFormat.periodLengthMinutes,
                           })}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {t('matchPlanning.playingModes.minimumPeriods', {
-                            count: playingMode.minimumPeriodsPerPlayer ?? 0,
+                          {t('matchPlanning.matchFormats.minimumPeriods', {
+                            count: matchFormat.minimumPeriodsPerPlayer ?? 0,
                           })}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {!playingMode.isDefault && (
+                        {!matchFormat.isDefault && (
                           <button
                             type="button"
-                            onClick={() => setDefaultPlayingMode(playingMode.id)}
+                            onClick={() => setDefaultMatchFormat(matchFormat.id)}
                             className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                           >
-                            {t('matchPlanning.playingModes.setDefault')}
+                            {t('matchPlanning.matchFormats.setDefault')}
                           </button>
                         )}
                         <button
                           type="button"
                           onClick={() => {
-                            setEditingPlayingMode(playingMode);
-                            setIsPlayingModeModalOpen(true);
+                            setEditingMatchFormat(matchFormat);
+                            setIsMatchFormatModalOpen(true);
                           }}
                           className="text-blue-500 hover:text-blue-700 p-1"
                           title={t('common.actions.edit')}
@@ -254,7 +363,7 @@ export default function MatchPlanningPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setDeletingPlayingMode(playingMode)}
+                          onClick={() => setDeletingMatchFormat(matchFormat)}
                           className="text-red-500 hover:text-red-700 p-1"
                           title={t('common.actions.delete')}
                         >
@@ -343,12 +452,12 @@ export default function MatchPlanningPage() {
         </div>
       )}
 
-      {isPlayingModeModalOpen && (
-        <PlayingModeModal
-          isOpen={isPlayingModeModalOpen}
-          onClose={() => setIsPlayingModeModalOpen(false)}
-          playingModeToEdit={editingPlayingMode}
-          onSave={handleSavePlayingMode}
+      {isMatchFormatModalOpen && (
+        <MatchFormatModal
+          isOpen={isMatchFormatModalOpen}
+          onClose={() => setIsMatchFormatModalOpen(false)}
+          matchFormatToEdit={editingMatchFormat}
+          onSave={handleSaveMatchFormat}
         />
       )}
 
@@ -361,17 +470,17 @@ export default function MatchPlanningPage() {
         />
       )}
 
-      {deletingPlayingMode && (
+      {deletingMatchFormat && (
         <ConfirmDialog
           isOpen={true}
-          title={t('matchPlanning.playingModes.deleteTitle')}
-          message={t('matchPlanning.playingModes.deleteMessage', { name: deletingPlayingMode.name })}
+          title={t('matchPlanning.matchFormats.deleteTitle')}
+          message={t('matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
           confirmText={t('common.actions.delete')}
           onConfirm={async () => {
-            await deletePlayingMode(deletingPlayingMode.id);
-            setDeletingPlayingMode(null);
+            await deleteMatchFormat(deletingMatchFormat.id);
+            setDeletingMatchFormat(null);
           }}
-          onCancel={() => setDeletingPlayingMode(null)}
+          onCancel={() => setDeletingMatchFormat(null)}
         />
       )}
 
@@ -388,6 +497,24 @@ export default function MatchPlanningPage() {
           onCancel={() => setDeletingFormation(null)}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={isUnlinkSpondDialogOpen}
+        title={t('groupSettings.spond.unlinkTitle')}
+        message={t('groupSettings.spond.unlinkMessage')}
+        confirmText={isUnlinkingSpond ? t('common.states.processing') : t('groupSettings.spond.unlinkGroup')}
+        onConfirm={() => void handleUnlinkSpond()}
+        onCancel={() => setIsUnlinkSpondDialogOpen(false)}
+      />
+
+      <StatisticsPeriodModal
+        isOpen={isPeriodModalOpen}
+        onClose={() => {
+          setIsPeriodModalOpen(false);
+          setPeriodToEdit(null);
+        }}
+        periodToEdit={periodToEdit}
+      />
     </div>
   );
 }

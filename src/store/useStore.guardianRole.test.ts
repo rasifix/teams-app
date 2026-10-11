@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { GroupMember } from './selectors/memberSelectors';
+import type { SquadMember } from './selectors/memberSelectors';
 import { mergeMembersFromCollections } from './selectors/memberSelectors';
 import type { Player, Trainer } from '../types';
 
@@ -61,9 +61,9 @@ describe('useStore addGuardianToPlayer role sync', () => {
     const trainer = createTrainer({ id: 't-1', roles: ['trainer'] });
 
     useStore.setState({
-      group: {
-        id: 'group-1',
-        name: 'Group 1',
+      squad: {
+        id: 'squad-1',
+        name: 'Squad 1',
         periods: [],
         members: [
           { id: 'p-1', roles: ['player'] },
@@ -99,15 +99,15 @@ describe('useStore addGuardianToPlayer role sync', () => {
 
     expect(success).toBe(true);
     expect(memberServiceMocks.updateMember).toHaveBeenCalledWith(
-      'group-1',
+      'squad-1',
       't-1',
       expect.objectContaining({
         roles: expect.arrayContaining(['trainer', 'guardian']),
       })
     );
-    expect(memberServiceMocks.addGuardianToPlayer).toHaveBeenCalledWith('group-1', 'p-1', { guardianId: 't-1' });
+    expect(memberServiceMocks.addGuardianToPlayer).toHaveBeenCalledWith('squad-1', 'p-1', { guardianId: 't-1' });
 
-    const updatedTrainer = (useStore.getState().members as GroupMember[]).find((member) => member.id === 't-1') as Trainer;
+    const updatedTrainer = (useStore.getState().members as SquadMember[]).find((member) => member.id === 't-1') as Trainer;
     expect(updatedTrainer.roles).toEqual(expect.arrayContaining(['trainer', 'guardian']));
   });
 
@@ -138,9 +138,9 @@ describe('useStore addGuardianToPlayer role sync', () => {
     });
 
     useStore.setState({
-      group: {
-        id: 'group-1',
-        name: 'Group 1',
+      squad: {
+        id: 'squad-1',
+        name: 'Squad 1',
         periods: [],
         members: [
           { id: 'p-1', roles: ['player'] },
@@ -192,8 +192,8 @@ describe('useStore addGuardianToPlayer role sync', () => {
     const success = await useStore.getState().mergeGuardianDuplicates('g-source', 'g-target');
 
     expect(success).toBe(true);
-    expect(memberServiceMocks.addGuardianToPlayer).toHaveBeenCalledWith('group-1', 'p-1', { guardianId: 'g-target' });
-    expect(memberServiceMocks.deleteGuardianFromPlayer).toHaveBeenCalledWith('group-1', 'p-1', 'g-source');
+    expect(memberServiceMocks.addGuardianToPlayer).toHaveBeenCalledWith('squad-1', 'p-1', { guardianId: 'g-target' });
+    expect(memberServiceMocks.deleteGuardianFromPlayer).toHaveBeenCalledWith('squad-1', 'p-1', 'g-source');
 
     const updatedPlayerOne = useStore.getState().getPlayerById('p-1');
     expect(updatedPlayerOne?.guardians?.some((guardian) => guardian.id === 'g-source')).toBe(false);

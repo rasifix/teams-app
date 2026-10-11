@@ -3,18 +3,18 @@
 ## Goal
 
 Allow an authenticated user to select a Formation for a Team once its Event
-has a Playing Mode assigned, fixing the Formation for the whole match.
+has a Match Format assigned, fixing the Formation for the whole match.
 
 ## Scope
 
 This use case covers:
-- selecting a Formation from the group's Formations for a Team,
+- selecting a Formation from the squad's Formations for a Team,
 - changing the selected Formation before or during lineup planning,
 - clearing the selected Formation.
 
 This use case does not cover:
 - creating or editing Formations (UC-GR-010),
-- assigning an Event's Playing Mode (UC-EV-006, a precondition here),
+- assigning an Event's Match Format (UC-EV-006, a precondition here),
 - assigning players to slots per period (UC-EV-008).
 
 ## Primary Actor
@@ -29,9 +29,9 @@ Authenticated User with Role admin or trainer
 
 ## Preconditions
 
-- User is authenticated and has admin or trainer role in the active group.
-- Active group has `matchPlanningEnabled: true`.
-- Target Team's Event has a non-null `playingModeId`.
+- User is authenticated and has admin or trainer role in the active squad.
+- Active squad has `matchPlanningEnabled: true`.
+- Target Team's Event has a non-null `matchFormatId`.
 
 ## Trigger
 
@@ -40,14 +40,14 @@ The user selects the Formation row on a Team in Team Detail.
 ## Input Data
 
 Optional:
-- `formationId` (id of a Formation belonging to the same group, or `null` to
+- `formationId` (id of a Formation belonging to the same squad, or `null` to
   clear)
 
 ## Main Success Scenario
 
-1. User opens Team Detail for a Team whose Event has a Playing Mode.
+1. User opens Team Detail for a Team whose Event has a Match Format.
 2. User selects the Formation row.
-3. System opens an assignment modal showing the group's Formations plus a
+3. System opens an assignment modal showing the squad's Formations plus a
    "None" option, with the current selection preselected.
 4. User selects a Formation and saves the modal.
 5. System persists `formationId` on the Team and closes the modal.
@@ -56,9 +56,9 @@ Optional:
 
 ## Alternative Flows
 
-### A1 - No Playing Mode On Event
+### A1 - No Match Format On Event
 
-1. Event has no `playingModeId` set.
+1. Event has no `matchFormatId` set.
 2. System hides the Formation picker and lineup editor for the Team.
 
 ### A2 - Change Formation After Lineup Exists
@@ -75,7 +75,7 @@ Optional:
 ### A3 - Invalid Formation Reference
 
 1. Client attempts to set `formationId` to an id that does not belong to the
-   Team's group.
+   Team's squad.
 2. System rejects the request with a validation error.
 3. Team's `formationId` remains unchanged.
 
@@ -96,15 +96,15 @@ Failure:
 
 - A Formation is fixed for the whole match once selected; only the
   per-period player-to-slot assignments vary.
-- `formationId` can only be set while the Team's Event has a Playing Mode.
-- Only group admin or trainer roles may change a Team's `formationId`.
+- `formationId` can only be set while the Team's Event has a Match Format.
+- Only squad admin or trainer roles may change a Team's `formationId`.
 - Formation is assigned through the clickable Team Detail row and a focused
   modal; it is not edited through an inline select control.
 
 ## Validation Rules
 
 - `formationId`, if provided, must reference a Formation belonging to the
-  same group as the Team's Event.
+  same squad as the Team's Event.
 - `formationId` may be explicitly `null` to represent "no Formation".
 - Setting a `formationId` is rejected if the Team's Event has no
-  `playingModeId`.
+  `matchFormatId`.

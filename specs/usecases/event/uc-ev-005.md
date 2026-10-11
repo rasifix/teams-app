@@ -36,10 +36,10 @@ Authenticated User with Role trainer
 ## Preconditions
 
 - User is authenticated.
-- A group is selected in app state.
+- A squad is selected in app state.
 - Target event exists and is open in Event Detail view.
 - At least one team exists in the event.
-- At least one shirt set exists in the group if shirt assignment should be
+- At least one shirt set exists in the squad if shirt assignment should be
   possible.
 
 ## Trigger
@@ -151,7 +151,7 @@ Failure:
 ## API Contract Used By Current Frontend
 
 Current frontend persistence path:
-- `PUT /api/groups/{groupId}/events/{id}`
+- `PUT /api/squads/{squadId}/events/{id}`
 - Request includes updated `teams` array with `shirtSetId` and
   `shirtAssignments` on affected team.
 

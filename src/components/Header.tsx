@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup, useTrainers } from '../store/useStore';
+import { useSquad, useTrainers } from '../store/useStore';
 import { useAuth } from '../hooks/useAuth';
 import { selectHeaderNavItems } from '../store/selectors/navigationSelectors';
 import LoginButton from './LoginButton';
@@ -12,7 +12,7 @@ export default function Header() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const group = useGroup();
+  const squad = useSquad();
   const trainers = useTrainers();
   const { isAuthenticated, user } = useAuth();
 
@@ -25,8 +25,8 @@ export default function Header() {
   };
 
   const navItems = useMemo(
-    () => selectHeaderNavItems(user, group, trainers),
-    [user, group, trainers],
+    () => selectHeaderNavItems(user, squad, trainers),
+    [user, squad, trainers],
   );
 
   const activeLanguage = i18n.language.startsWith('de') ? 'de' : 'en';
@@ -41,7 +41,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Title */}
           <Link to="/" className="flex items-center">
-            <h1 className="text-xl font-bold">{isAuthenticated ? (group?.name || t('app.name')) : t('app.name')}</h1>
+            <h1 className="text-xl font-bold">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
           </Link>
 
           {/* Desktop Navigation */}

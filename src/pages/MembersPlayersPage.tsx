@@ -1,15 +1,19 @@
 import { useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
 import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
+import SpondBadge from "../components/SpondBadge";
+import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
 import { getBirthYear } from '../utils/birthDate';
+import { selectSpondMemberExportCsv } from '../store/selectors/memberExportSelectors';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
-  const { players, openAddPlayerModal, openImportModal, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const navigate = useNavigate();
+  const { players, openAddPlayerModal, openImportModal, canImportFromSpond, canExportMembers, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -52,8 +56,19 @@ export default function MembersPlayersPage() {
     });
   }, [players, selectedLevels, selectedYear, showTrialPlayers, showInactivePlayers]);
 
+  const exportMembers = () => {
+    const url = URL.createObjectURL(new Blob([selectSpondMemberExportCsv(players)], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'spond-members.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
+    <>
+      <SpondSyncResultBanner className="mb-4 mx-4 lg:mx-0" />
+      <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
       <CardBody className="lg:p-6 p-4">
         <div className="flex justify-between items-center mb-4">
           <CardTitle className="mb-0">
@@ -65,6 +80,17 @@ export default function MembersPlayersPage() {
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
           </CardTitle>
           <div className="flex items-center gap-2">
+            {canExportMembers && (
+              <Button variant="secondary" size="sm" onClick={exportMembers}>
+                {t('membersExport.action')}
+              </Button>
+            )}
+            {canImportFromSpond && (
+              <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
+                <SpondBadge />
+                {t('spondSync.syncAction')}
+              </Button>
+            )}
             <Button variant="secondary" size="sm" onClick={openImportModal}>
               {t("membersImport.openAction")}
             </Button>
@@ -182,6 +208,7 @@ export default function MembersPlayersPage() {
 
         <MembersList members={filteredPlayers} onDelete={requestDeletePlayer} memberType="players" />
       </CardBody>
-    </Card>
+      </Card>
+    </>
   );
 }

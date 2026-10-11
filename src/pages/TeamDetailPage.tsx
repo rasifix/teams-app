@@ -8,6 +8,7 @@ import Strength from '../components/Strength';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
+import AssignResponsiblePeopleModal from '../components/AssignResponsiblePeopleModal';
 import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
@@ -29,6 +30,7 @@ export default function TeamDetailPage() {
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
   const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
+  const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
   const [isAssignShirtsModalOpen, setIsAssignShirtsModalOpen] = useState(false);
   const [isAssignFormationModalOpen, setIsAssignFormationModalOpen] = useState(false);
   
@@ -111,17 +113,27 @@ export default function TeamDetailPage() {
     navigate(`/events/${eventId}/teams/${teamId}/select-players`);
   };
   
-  const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, responsiblePersonIds: string[], location?: string) => {
+  const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, location?: string) => {
     if (!event || !eventId || !team) return;
     
     const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, name, strength, startTime, responsiblePersonIds, location } : t
+      t.id === teamId ? { ...t, name, strength, startTime, location } : t
     );
     
     await updateActivityTeams(eventId, updatedTeams);
     setIsEditTeamModalOpen(false);
   };
   
+  const handleAssignResponsiblePeople = async (responsiblePersonIds: string[]) => {
+    if (!event || !eventId || !team) return;
+
+    const updatedTeams = event.teams.map(t =>
+      t.id === teamId ? { ...t, responsiblePersonIds } : t
+    );
+
+    await updateActivityTeams(eventId, updatedTeams);
+  };
+
   const handleAssignShirts = async (shirtSetId: string, assignments: Array<{ playerId: string; shirtNumber: number }>) => {
     if (!event || !eventId || !team) return;
     
@@ -168,9 +180,9 @@ export default function TeamDetailPage() {
       <div className="space-y-4">
         {/* Trainer and Shirt Set */}
         <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4 space-y-3">
+          <CardBody className="lg:p-6 p-4 space-y-1">
             
-            <div className="flex items-center justify-between">
+            <div className="flex min-h-11 items-center justify-between py-2">
               <div className="flex items-center gap-2">
                 <span>🕐</span>
                 <span className="font-medium text-sm">{t('teamModal.fields.startTime')}</span>
@@ -180,13 +192,16 @@ export default function TeamDetailPage() {
               </div>
             </div>
             {(event.kind === 'match' ? event.location : team.location || event.location) && (
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-sm">{t('teamModal.fields.locationOptional')}</span>
+              <div className="flex min-h-11 items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  <span>📍</span>
+                  <span className="font-medium text-sm">{t('teamModal.fields.locationOptional')}</span>
+                </div>
                 <span className="text-sm">{event.kind === 'match' ? event.location : team.location || event.location}</span>
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex min-h-11 items-center justify-between py-2">
               <div className="flex items-center gap-2">
                 <span>💪</span>
                 <span className="font-medium text-sm">{t('teamModal.fields.strength')}</span>
@@ -196,7 +211,12 @@ export default function TeamDetailPage() {
               </div>
             </div>            
 
-            <div className="flex items-center justify-between gap-3 py-2">
+            <button
+              type="button"
+              className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              data-testid="team-responsible-people-row"
+              onClick={() => setIsResponsibleModalOpen(true)}
+            >
               <div className="flex items-center gap-2">
                 <span>👤</span>
                 <span className="font-medium text-sm">{t('teamModal.fields.responsiblePeople')}</span>
@@ -206,12 +226,12 @@ export default function TeamDetailPage() {
               ) : (
                 <div className="text-sm text-gray-500">{t('teamModal.noTrainerAssigned')}</div>
               )}
-            </div>
-            
+            </button>
+
             <button
               type="button"
-              className="-mx-4 flex w-[calc(100%+2rem)] items-center justify-between rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 disabled:cursor-default disabled:hover:bg-transparent lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
-              disabled={selectedPlayers.length === 0}
+              className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
             >
               <div className="flex items-center gap-2">
@@ -230,7 +250,7 @@ export default function TeamDetailPage() {
             {event.kind === 'match' && event.matchFormatId && (
               <button
                 type="button"
-                className="-mx-4 flex w-[calc(100%+2rem)] items-center justify-between rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+                className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
                 onClick={() => setIsAssignFormationModalOpen(true)}
               >
                 <div className="flex items-center gap-2">
@@ -243,8 +263,11 @@ export default function TeamDetailPage() {
               </button>
             )}
 
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
+            <div className="flex min-h-11 items-center justify-between gap-3 py-2">
+              <div className="flex items-center gap-2">
+                <span>📋</span>
+                <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
+              </div>
               <div className="flex flex-wrap justify-end gap-2">
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
                   <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
@@ -357,11 +380,19 @@ export default function TeamDetailPage() {
             currentName={team.name}
             currentStrength={team.strength}
             currentStartTime={team.startTime}
-            currentResponsiblePersonIds={team.responsiblePersonIds}
             currentLocation={team.location}
             showActivityOverrides={event.kind !== 'match'}
           />
           
+          <AssignResponsiblePeopleModal
+            isOpen={isResponsibleModalOpen}
+            onClose={() => setIsResponsibleModalOpen(false)}
+            onSave={handleAssignResponsiblePeople}
+            trainers={trainers}
+            players={players}
+            currentResponsiblePersonIds={team.responsiblePersonIds}
+          />
+
           <AssignShirtsModal
             isOpen={isAssignShirtsModalOpen}
             onClose={() => setIsAssignShirtsModalOpen(false)}

@@ -1,5 +1,5 @@
 import type { User } from '../../services/authService';
-import type { Group, Trainer } from '../../types';
+import type { Squad, Trainer } from '../../types';
 import { canAccessRestrictedManagement } from '../../utils/permissions';
 
 export interface HeaderNavItem {
@@ -17,10 +17,10 @@ const BASE_NAV_ITEMS: HeaderNavItem[] = [
 
 export const selectHeaderNavItems = (
   user: User | null | undefined,
-  group: Group | null | undefined,
+  squad: Squad | null | undefined,
   trainers: Trainer[] = [],
 ): HeaderNavItem[] => {
-  if (canAccessRestrictedManagement(user, { group, trainers })) {
+  if (canAccessRestrictedManagement(user, { squad, trainers })) {
     return BASE_NAV_ITEMS;
   }
 

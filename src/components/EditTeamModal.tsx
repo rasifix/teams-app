@@ -1,18 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 import Button from './ui/Button';
-import { usePlayers, useTrainers } from '../store';
-import { selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 
 interface EditTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, strength: number, startTime: string | undefined, responsiblePersonIds: string[], location?: string) => void;
+  onSave: (name: string, strength: number, startTime: string | undefined, location?: string) => void;
   currentName: string;
   currentStrength: number;
   currentStartTime?: string;
-  currentResponsiblePersonIds?: string[];
   currentLocation?: string;
   showActivityOverrides?: boolean;
 }
@@ -24,7 +21,6 @@ export default function EditTeamModal({
   currentName,
   currentStrength,
   currentStartTime,
-  currentResponsiblePersonIds,
   currentLocation,
   showActivityOverrides = true,
 }: EditTeamModalProps) {
@@ -32,29 +28,20 @@ export default function EditTeamModal({
   const [teamName, setTeamName] = useState(currentName);
   const [strength, setStrength] = useState(currentStrength);
   const [startTime, setStartTime] = useState(currentStartTime);
-  const [responsiblePersonIds, setResponsiblePersonIds] = useState<string[]>(currentResponsiblePersonIds || []);
   const [location, setLocation] = useState(currentLocation || '');
-
-  const { players } = usePlayers();
-  const { trainers } = useTrainers();
-  const memberOptions = useMemo(
-    () => selectTeamAssigneeOptions(trainers, players),
-    [trainers, players]
-  );
 
   useEffect(() => {
     setTeamName(currentName);
     setStrength(currentStrength);
     setStartTime(currentStartTime);
-    setResponsiblePersonIds(currentResponsiblePersonIds || []);
     setLocation(currentLocation || '');
-  }, [currentName, currentStrength, currentStartTime, currentResponsiblePersonIds, currentLocation, isOpen]);
+  }, [currentName, currentStrength, currentStartTime, currentLocation, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
       const normalizedLocation = location.trim();
-      onSave(teamName.trim(), strength, startTime || undefined, responsiblePersonIds, normalizedLocation || undefined);
+      onSave(teamName.trim(), strength, startTime || undefined, normalizedLocation || undefined);
       onClose();
     }
   };
@@ -112,34 +99,6 @@ export default function EditTeamModal({
                 className="form-input"
               />
             </div>}
-
-            <div>
-              <label htmlFor="responsiblePeople" className="form-label">
-                {t('teamModal.fields.responsiblePeople')}
-              </label>
-              <div className="space-y-2">
-                {memberOptions.map((option) => {
-                  const isSelected = responsiblePersonIds.includes(option.id);
-                  return (
-                    <label key={option.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => setResponsiblePersonIds((current) => isSelected
-                          ? current.filter((id) => id !== option.id)
-                          : [...current, option.id])}
-                      />
-                      <span>
-                        {option.firstName} {option.lastName}
-                        {option.source === 'player' ? ' (' + t('domain.players') + ')' : ''}
-                        {responsiblePersonIds[0] === option.id ? ' (' + t('teamModal.leadPerson') + ')' : ''}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-              <p className="mt-1 text-xs text-gray-500">{t('teamModal.responsiblePeopleHint')}</p>
-            </div>
 
             {showActivityOverrides && <div>
               <label htmlFor="location" className="form-label">

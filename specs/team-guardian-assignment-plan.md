@@ -73,7 +73,7 @@ teamLeadAssignment:
 
 Guardian option source:
 - Option A: guardians of invited/selected players in this event (recommended)
-- Option B: any guardian known in group
+- Option B: any guardian known in squad
 
 Option A keeps this as a small, low-risk change.
 

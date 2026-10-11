@@ -8,7 +8,7 @@ type Member = Player | Trainer;
 
 interface MembersListProps<T extends Member> {
   members: T[];
-  onDelete: (member: T) => void;
+  onDelete?: (member: T) => void;
   memberType: 'players' | 'trainers';
   emptyMessage?: string;
 }
@@ -81,7 +81,7 @@ export default function MembersList<T extends Member>({
 
   const handleDeleteClick = (member: T, e: React.MouseEvent) => {
     e.stopPropagation();
-    onDelete(member);
+    onDelete?.(member);
     setSwipedMemberId(null);
   };
 
@@ -103,8 +103,8 @@ export default function MembersList<T extends Member>({
             player={member}
             isSwiped={swipedMemberId === member.id}
             onClick={(e) => handleMemberClick(member, e)}
-            onTouchStart={(e) => handleTouchStart(member.id, e)}
-            onDelete={(e) => handleDeleteClick(member, e)}
+            onTouchStart={onDelete ? (e) => handleTouchStart(member.id, e) : undefined}
+            onDelete={onDelete ? (e) => handleDeleteClick(member, e) : undefined}
           />
         ) : (
           <div
@@ -116,7 +116,7 @@ export default function MembersList<T extends Member>({
                 swipedMemberId === member.id ? '-translate-x-20' : 'translate-x-0'
               } active:bg-gray-50`}
               onClick={(e) => handleMemberClick(member, e)}
-              onTouchStart={(e) => handleTouchStart(member.id, e)}
+              onTouchStart={onDelete ? (e) => handleTouchStart(member.id, e) : undefined}
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -134,18 +134,20 @@ export default function MembersList<T extends Member>({
               </div>
             </div>
 
-            <div
-              className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
-                swipedMemberId === member.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
-            >
-              <button
-                className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
-                onClick={(e) => handleDeleteClick(member, e)}
+            {onDelete && (
+              <div
+                className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
+                  swipedMemberId === member.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
               >
-                {t('common.actions.delete')}
-              </button>
-            </div>
+                <button
+                  className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
+                  onClick={(e) => handleDeleteClick(member, e)}
+                >
+                  {t('common.actions.delete')}
+                </button>
+              </div>
+            )}
           </div>
         )
       ))}

@@ -11,9 +11,8 @@ import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
-import ActivityTasksCard from '../components/ActivityTasksCard';
-import { canSignUpForTasks, selectCurrentMember } from '../store/selectors/taskSelectors';
 import ConfirmDialog from '../components/ConfirmDialog';
+import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
 import SpondBadge from '../components/SpondBadge';
 import { formatDate } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, sortActivities } from '../store/selectors/activitySelectors';
@@ -24,12 +23,12 @@ export default function EventDetailPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivityAttendance, addActivityTask, updateActivityTask, deleteActivityTask, signUpForActivityTask, withdrawFromActivityTask, deleteActivity } = useActivities();
+  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivityAttendance, deleteActivity } = useActivities();
   const { players } = usePlayers();
   const { user } = useAuth();
   const squad = useSquad();
   const trainers = useTrainers();
-  const currentMember = selectCurrentMember(user?.email, squad);
+  const spondLinked = selectIsSpondLinked(squad);
   const canManage = canAccessRestrictedManagement(user, { squad, trainers });
   const loading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -126,7 +125,7 @@ export default function EventDetailPage() {
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={() => setIsEditOpen(true)} className="text-sm font-medium text-blue-600">{t('common.actions.edit')}</button>
-          <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-red-600">{t('common.actions.delete')}</button>
+          {!spondLinked && <button type="button" onClick={() => setIsDeleteOpen(true)} className="text-sm font-medium text-red-600">{t('common.actions.delete')}</button>}
         </div>
       </div>
     </header>
@@ -142,26 +141,16 @@ export default function EventDetailPage() {
         invitations={activity.invitations}
         currentActivity={activity}
         players={players}
+        readOnly={spondLinked}
         onInviteClick={() => setIsInviteOpen(true)}
         onStatusChange={handleInvitationStatusChange}
         onRemoveInvitation={handleRemoveInvitation}
         assignedPlayerIds={assignedIds}
       />}
-      {sections.tasks && <ActivityTasksCard
-        tasks={activity.tasks}
-        currentPersonId={currentMember?.id}
-        canManage={canManage}
-        canSignUp={canSignUpForTasks(currentMember)}
-        onAdd={(task) => addActivityTask(activity.id, task)}
-        onUpdate={(taskId, task) => updateActivityTask(activity.id, taskId, task)}
-        onDelete={(taskId) => deleteActivityTask(activity.id, taskId)}
-        onSignUp={(taskId) => signUpForActivityTask(activity.id, taskId)}
-        onWithdraw={(taskId) => withdrawFromActivityTask(activity.id, taskId)}
-      />}
       {canManage && sections.attendance && <ActivityAttendanceCard activity={activity} players={players} onSave={handleRecordAttendance} />}
     </div>
 
-    <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />
+    {!spondLinked && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
     <EditEventModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />
     <ConfirmDialog isOpen={isDeleteOpen} title={t('eventDetail.deleteEventTitle')} message={t('eventDetail.deleteEventMessage', { name: activity.name })} confirmText={t('common.actions.delete')} cancelText={t('common.actions.cancel')} onConfirm={handleDeleteActivity} onCancel={() => setIsDeleteOpen(false)} confirmButtonColor="red" />
   </div>;

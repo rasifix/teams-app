@@ -7,12 +7,15 @@ for the squad.
 
 ## Scope
 
+For Spond-linked Squads, synchronized player fields are read-only; only
+planning-only attributes (level, preferred shirt number, active-for-selection)
+are editable, and local create, delete, merge, and import are unavailable.
+
 This use case covers:
 - viewing the player list in Members -> Players,
 - filtering players by level and year,
 - creating a new player,
 - importing players and guardians from Spond CSV,
-- exporting members in Spond's CSV layout (UC-GR-013),
 - synchronizing players and guardians directly from a linked Spond group
   (UC-GR-012),
 - opening a player detail view,

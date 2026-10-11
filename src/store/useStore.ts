@@ -26,7 +26,6 @@ import { authService } from '../services/authService';
 import { setSelectedSquadId, clearSelectedSquadId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedSquadPermissions } from '../utils/permissions';
 import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './selectors/memberSelectors';
-import { isDuplicateTargetMember, type SquadImportCandidate } from './selectors/memberSquadImportSelectors';
 import {
   selectActivityWithoutActiveInvitations,
   selectPlayerDeletionImpact,
@@ -34,20 +33,6 @@ import {
 import { selectMatchingMatchFormat } from './selectors/squadCategorySelectors';
 import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
 import { getSfvCategoryCatalog } from '../services/sfvService';
-
-export interface SquadMemberImportProgress {
-  total: number;
-  completed: number;
-}
-
-export interface SquadMemberImportResult {
-  processedMembers: number;
-  importedPlayers: number;
-  importedTrainers: number;
-  importedGuardians: number;
-  skippedMembers: number;
-  failedMembers: number;
-}
 
 // Helper function to sort members alphabetically by lastName + firstName
 const sortMembers = (members: SquadMember[]): SquadMember[] => {
@@ -139,45 +124,6 @@ function isMatchingGuardian(guardian: import('../types').Guardian, guardianId: s
   return guardian.id === guardianId;
 }
 
-function toGuardianIdentityKey(firstName: string | undefined, lastName: string | undefined, email: string | undefined): string {
-  return `${(firstName || '').trim().toLowerCase()}::${(lastName || '').trim().toLowerCase()}::${(email || '').trim().toLowerCase()}`;
-}
-
-function hasCompleteGuardianIdentity(firstName: string | undefined, lastName: string | undefined, email: string | undefined): boolean {
-  return Boolean((firstName || '').trim()) && Boolean((lastName || '').trim()) && Boolean((email || '').trim());
-}
-
-function buildGuardianIdentityLookup(members: SquadMember[]): Map<string, string> {
-  const lookup = new Map<string, string>();
-  const players = playersFromMembers(members);
-  const trainers = trainersFromMembers(members);
-
-  trainers.forEach((trainer) => {
-    if (!hasCompleteGuardianIdentity(trainer.firstName, trainer.lastName, trainer.email)) {
-      return;
-    }
-
-    lookup.set(toGuardianIdentityKey(trainer.firstName, trainer.lastName, trainer.email), trainer.id);
-  });
-
-  players.forEach((player) => {
-    (player.guardians || []).forEach((guardian) => {
-      if (!hasCompleteGuardianIdentity(guardian.firstName, guardian.lastName, guardian.email)) {
-        return;
-      }
-
-      const guardianMemberId = guardian.id;
-      if (!guardianMemberId) {
-        return;
-      }
-
-      lookup.set(toGuardianIdentityKey(guardian.firstName, guardian.lastName, guardian.email), guardianMemberId);
-    });
-  });
-
-  return lookup;
-}
-
 function mergeSquadMember(squad: Squad | null, member: SquadMember | null): Squad | null {
   if (!squad || !member) {
     return squad;
@@ -250,12 +196,6 @@ interface AppState extends ActivityActions {
   selectStatisticsPeriod: (periodId: string | null) => void;
   initializeApp: () => Promise<void>;
   clearAuthenticatedData: () => void;
-  getMembersForSquad: (squadId: string) => Promise<{ players: Player[]; trainers: Trainer[] } | null>;
-  importMembersFromSquad: (
-    sourceSquadId: string,
-    memberIds: string[],
-    onProgress?: (progress: SquadMemberImportProgress) => void
-  ) => Promise<SquadMemberImportResult>;
   setMembers: (members: SquadMember[]) => void;
   setActivities: (activities: Activity[]) => void;
   setShirtSets: (shirtSets: ShirtSet[]) => void;
@@ -550,166 +490,6 @@ export const useStore = create<AppState>()(
         });
       },
 
-      getMembersForSquad: async (squadId: string) => {
-        try {
-          return await getAllMembers(squadId);
-        } catch (error) {
-          console.error('Failed to load members for squad:', error);
-          return null;
-        }
-      },
-
-      importMembersFromSquad: async (sourceSquadId, memberIds, onProgress) => {
-        const targetSquad = get().squad;
-        if (!targetSquad) {
-          throw new Error('No squad selected');
-        }
-
-        const uniqueMemberIds = Array.from(new Set(memberIds));
-        const result: SquadMemberImportResult = {
-          processedMembers: 0,
-          importedPlayers: 0,
-          importedTrainers: 0,
-          importedGuardians: 0,
-          skippedMembers: 0,
-          failedMembers: 0,
-        };
-
-        onProgress?.({ total: uniqueMemberIds.length, completed: 0 });
-
-        const sourceMembers = await getAllMembers(sourceSquadId);
-        const sourceCandidatesById = new Map<string, SquadImportCandidate>();
-
-        sourceMembers.players.forEach((player) => {
-          sourceCandidatesById.set(player.id, {
-            id: player.id,
-            role: 'player',
-            firstName: player.firstName,
-            lastName: player.lastName,
-            birthDate: player.birthDate,
-            level: player.level,
-            status: player.status,
-            guardians: player.guardians,
-          });
-        });
-
-        sourceMembers.trainers.forEach((trainer) => {
-          sourceCandidatesById.set(trainer.id, {
-            id: trainer.id,
-            role: 'trainer',
-            firstName: trainer.firstName,
-            lastName: trainer.lastName,
-            email: trainer.email,
-          });
-        });
-
-        for (const sourceMemberId of uniqueMemberIds) {
-          const sourceCandidate = sourceCandidatesById.get(sourceMemberId);
-          let memberFailed = false;
-
-          result.processedMembers += 1;
-
-          if (!sourceCandidate) {
-            result.failedMembers += 1;
-            onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
-            continue;
-          }
-
-          const currentMembers = get().members;
-          const targetPlayers = playersFromMembers(currentMembers);
-          const targetTrainers = trainersFromMembers(currentMembers);
-          if (isDuplicateTargetMember(sourceCandidate, targetPlayers, targetTrainers)) {
-            result.skippedMembers += 1;
-            onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
-            continue;
-          }
-
-          if (sourceCandidate.role === 'player') {
-            try {
-              const createdPlayer = await addMemberService(targetSquad.id, {
-                firstName: sourceCandidate.firstName,
-                lastName: sourceCandidate.lastName,
-                birthDate: sourceCandidate.birthDate,
-                level: sourceCandidate.level || 1,
-                status: sourceCandidate.status || 'active',
-                guardians: [],
-                roles: ['player'],
-              }) as Player;
-
-              set({ members: upsertMember(get().members, createdPlayer) });
-              result.importedPlayers += 1;
-
-              const sourceGuardians = sourceCandidate.guardians || [];
-              const seenGuardianIdentity = new Set<string>();
-
-              for (const guardian of sourceGuardians) {
-                if (!guardian.firstName?.trim() || !guardian.lastName?.trim()) {
-                  continue;
-                }
-
-                const guardianIdentity = toGuardianIdentityKey(guardian.firstName, guardian.lastName, guardian.email);
-                if (seenGuardianIdentity.has(guardianIdentity)) {
-                  continue;
-                }
-                seenGuardianIdentity.add(guardianIdentity);
-
-                const guardianIdentityLookup = buildGuardianIdentityLookup(get().members);
-                const existingGuardianMemberId = hasCompleteGuardianIdentity(
-                  guardian.firstName,
-                  guardian.lastName,
-                  guardian.email
-                )
-                  ? guardianIdentityLookup.get(guardianIdentity)
-                  : undefined;
-
-                const guardianAdded = await get().addGuardianToPlayer(
-                  createdPlayer.id,
-                  existingGuardianMemberId
-                    ? { guardianId: existingGuardianMemberId }
-                    : {
-                        firstName: guardian.firstName,
-                        lastName: guardian.lastName,
-                        email: guardian.email,
-                      }
-                );
-
-                if (guardianAdded) {
-                  result.importedGuardians += 1;
-                } else {
-                  memberFailed = true;
-                }
-              }
-            } catch (error) {
-              console.error('Failed to import player from source squad:', error);
-              memberFailed = true;
-            }
-          } else {
-            try {
-              const createdTrainer = await addMemberService(targetSquad.id, {
-                firstName: sourceCandidate.firstName,
-                lastName: sourceCandidate.lastName,
-                email: sourceCandidate.email,
-                roles: ['trainer'],
-              }) as Trainer;
-
-              set({ members: upsertMember(get().members, createdTrainer) });
-              result.importedTrainers += 1;
-            } catch (error) {
-              console.error('Failed to import trainer from source squad:', error);
-              memberFailed = true;
-            }
-          }
-
-          if (memberFailed) {
-            result.failedMembers += 1;
-          }
-
-          onProgress?.({ total: uniqueMemberIds.length, completed: result.processedMembers });
-        }
-
-        return result;
-      },
-      
       loadSquads: async () => {
         set({ loading: { ...get().loading, squads: true }, errors: { ...get().errors, squads: null } });
         

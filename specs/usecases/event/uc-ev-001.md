@@ -14,6 +14,9 @@ This use case covers:
 - persisting the event through the squad events API,
 - updating in-memory store state so the event appears in the Events UI.
 
+Availability: only for Squads without a Spond link. For Spond-linked Squads
+events are created in Spond and synchronized (UC-EV-012).
+
 This use case does not cover:
 - inviting players,
 - changing invitation status,

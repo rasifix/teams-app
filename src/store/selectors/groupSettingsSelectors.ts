@@ -8,3 +8,7 @@ export const selectSpondGroupUrl = (
   const spondId = squad?.spondId?.trim();
   return spondId ? `${SPOND_GROUP_URL}${encodeURIComponent(spondId)}` : null;
 };
+
+export const selectIsSpondLinked = (
+  squad: Pick<Squad, 'spondId'> | null | undefined,
+): boolean => Boolean(squad?.spondId?.trim());

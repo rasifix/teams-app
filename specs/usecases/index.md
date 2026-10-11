@@ -18,13 +18,11 @@ be described in files grouped in subfolders per category.
 * UC-GR-004 - manage guardians
 * UC-GR-005 - edit guardian
 * UC-GR-006 - manage shirt sets
-* UC-GR-007 - sync members from another squad
 * UC-GR-008 - enable or disable match planning
 * UC-GR-009 - manage match formats
 * UC-GR-010 - manage formations
 * UC-GR-011 - link or unlink a Spond group
 * UC-GR-012 - synchronize players and guardians from Spond
-* UC-GR-013 - export members for Spond
 * UC-GR-014 - manage squad periods
 
 ## Event

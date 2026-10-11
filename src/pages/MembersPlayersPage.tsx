@@ -8,12 +8,11 @@ import SpondBadge from "../components/SpondBadge";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
 import { getBirthYear } from '../utils/birthDate';
-import { selectSpondMemberExportCsv } from '../store/selectors/memberExportSelectors';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { players, openAddPlayerModal, openImportModal, canImportFromSpond, canExportMembers, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const { players, openAddPlayerModal, canImportFromSpond, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -56,15 +55,6 @@ export default function MembersPlayersPage() {
     });
   }, [players, selectedLevels, selectedYear, showTrialPlayers, showInactivePlayers]);
 
-  const exportMembers = () => {
-    const url = URL.createObjectURL(new Blob([selectSpondMemberExportCsv(players)], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'spond-members.csv';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <>
       <SpondSyncResultBanner className="mb-4 mx-4 lg:mx-0" />
@@ -80,23 +70,17 @@ export default function MembersPlayersPage() {
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
           </CardTitle>
           <div className="flex items-center gap-2">
-            {canExportMembers && (
-              <Button variant="secondary" size="sm" onClick={exportMembers}>
-                {t('membersExport.action')}
-              </Button>
-            )}
             {canImportFromSpond && (
               <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
                 <SpondBadge />
                 {t('spondSync.syncAction')}
               </Button>
             )}
-            <Button variant="secondary" size="sm" onClick={openImportModal}>
-              {t("membersImport.openAction")}
-            </Button>
-            <Button variant="primary" size="sm" onClick={openAddPlayerModal}>
-              {t("common.actions.add")}
-            </Button>
+            {!spondLinked && (
+              <Button variant="primary" size="sm" onClick={openAddPlayerModal}>
+                {t("common.actions.add")}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -206,7 +190,7 @@ export default function MembersPlayersPage() {
           </div>
         </div>
 
-        <MembersList members={filteredPlayers} onDelete={requestDeletePlayer} memberType="players" />
+        <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" />
       </CardBody>
       </Card>
     </>

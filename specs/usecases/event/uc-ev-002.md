@@ -3,9 +3,11 @@
 ## Goal
 
 Allow an admin or trainer to enter initial player RSVP data for an existing
-Event when it cannot be synchronized from Spond.
+Event in a Squad without a Spond link.
 
 ## Scope
+
+Not available for Spond-linked Squads; RSVP is changed in Spond only.
 
 This use case covers:
 - opening the RSVP entry modal from an Event Detail page,

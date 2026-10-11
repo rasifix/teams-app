@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import type { Activity, ActivityAttendance, ActivityTask, ActivityPayload, ActivityInvitation, Team } from '../types';
+import type { Activity, ActivityAttendance, ActivityPayload, ActivityInvitation, Team } from '../types';
 
 const activitiesPath = (activityId?: string, suffix = '') => `/activities${activityId ? `/${activityId}` : ''}${suffix}`;
 
@@ -77,31 +77,3 @@ export async function updateActivityAttendance(squadId: string, id: string, atte
     body: JSON.stringify({ attendance }),
   });
 }
-
-export interface ActivityTaskInput {
-  name: string;
-  description?: string;
-  requiredPeople: number;
-}
-
-const taskRequest = (squadId: string, activityId: string, suffix: string, method: string, body?: unknown) =>
-  apiClient.request<ActivityTask[]>(apiClient.getSquadEndpoint(squadId, activitiesPath(activityId, `/tasks${suffix}`)), {
-    method,
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-
-/** All task endpoints answer with the full task list of the activity. */
-export const createActivityTask = (squadId: string, activityId: string, task: ActivityTaskInput) =>
-  taskRequest(squadId, activityId, '', 'POST', task);
-
-export const updateActivityTask = (squadId: string, activityId: string, taskId: string, task: Partial<ActivityTaskInput>) =>
-  taskRequest(squadId, activityId, `/${taskId}`, 'PUT', task);
-
-export const deleteActivityTask = (squadId: string, activityId: string, taskId: string) =>
-  taskRequest(squadId, activityId, `/${taskId}`, 'DELETE');
-
-export const signUpForActivityTask = (squadId: string, activityId: string, taskId: string) =>
-  taskRequest(squadId, activityId, `/${taskId}/signup`, 'PUT');
-
-export const withdrawFromActivityTask = (squadId: string, activityId: string, taskId: string) =>
-  taskRequest(squadId, activityId, `/${taskId}/signup`, 'DELETE');

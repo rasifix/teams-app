@@ -2,10 +2,12 @@
 
 ## Goal
 
-Allow an admin or trainer to correct or enter a Player's RSVP status when the
-value cannot be synchronized from Spond.
+Allow an admin or trainer to correct or enter a Player's RSVP status in a
+Squad without a Spond link.
 
 ## Scope
+
+Not available for Spond-linked Squads; RSVP is changed in Spond only.
 
 This use case covers staff-only updates to RSVP data used for match planning
 and statistics. It does not send an invitation, notify a member, write a change

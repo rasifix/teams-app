@@ -62,11 +62,6 @@ export const useActivities = () => {
   const updateActivitySelection = useStore((state) => state.updateActivitySelection);
   const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
   const updateActivityAttendance = useStore((state) => state.updateActivityAttendance);
-  const addActivityTask = useStore((state) => state.addActivityTask);
-  const updateActivityTask = useStore((state) => state.updateActivityTask);
-  const deleteActivityTask = useStore((state) => state.deleteActivityTask);
-  const signUpForActivityTask = useStore((state) => state.signUpForActivityTask);
-  const withdrawFromActivityTask = useStore((state) => state.withdrawFromActivityTask);
   const deleteActivity = useStore((state) => state.deleteActivity);
 
   return {
@@ -79,11 +74,6 @@ export const useActivities = () => {
     updateActivitySelection,
     markActivitySelectionSent,
     updateActivityAttendance,
-    addActivityTask,
-    updateActivityTask,
-    deleteActivityTask,
-    signUpForActivityTask,
-    withdrawFromActivityTask,
     deleteActivity,
   };
 };

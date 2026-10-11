@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
-import ImportMembersModal from "../components/ImportMembersModal";
+import { selectIsSpondLinked } from "../store/selectors/groupSettingsSelectors";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquad } from "../store";
 import {
@@ -21,9 +21,8 @@ export interface MembersOutletContext {
   guardians: Guardian[];
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
-  openImportModal: () => void;
   canImportFromSpond: boolean;
-  canExportMembers: boolean;
+  spondLinked: boolean;
   requestDeletePlayer: (player: Player) => void;
   requestDeleteTrainer: (trainer: Trainer) => void;
 }
@@ -45,7 +44,6 @@ export default function MembersPage() {
   // Modal states
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   // Delete confirmation states
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
@@ -56,6 +54,8 @@ export default function MembersPage() {
     () => selectMemberGuardians(players).map((row) => row.guardian),
     [players]
   );
+
+  const spondLinked = selectIsSpondLinked(squad);
 
   const isAdmin = useMemo(() => {
     return canManageGuardians(user, squad, trainers);
@@ -144,9 +144,8 @@ export default function MembersPage() {
     guardians,
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
-    openImportModal: () => setIsImportModalOpen(true),
-    canImportFromSpond: isAdmin && Boolean(squad?.spondId?.trim()),
-    canExportMembers: isAdmin,
+    canImportFromSpond: isAdmin && spondLinked,
+    spondLinked,
     requestDeletePlayer: handleDeletePlayer,
     requestDeleteTrainer: handleDeleteTrainer,
   };
@@ -231,11 +230,6 @@ export default function MembersPage() {
         onSave={handleAddTrainer}
         onUpdate={() => {}}
         editingTrainer={null}
-      />
-
-      <ImportMembersModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
       />
 
       {/* Delete Player Confirmation */}

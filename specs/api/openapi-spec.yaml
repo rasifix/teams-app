@@ -453,7 +453,10 @@ paths:
   /api/squads/{squadId}/activities/{id}/selection/sent:
     put:
       operationId: markSquadActivitySelectionSent
-      summary: Mark activity selection as sent
+      summary: Mark activity selection as finalized
+      description: >-
+        Internal planning state only. Nothing is sent or published; Spond does
+        not provide selections and this application does not notify members.
       tags:
         - Activities
       security:
@@ -471,7 +474,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Selection sent
+          description: Selection finalized
           content:
             application/json:
               schema:
@@ -4841,6 +4844,7 @@ components:
         selectionSentAt:
           type: string
           format: date-time
+          description: Time planning was finalized internally; implies no communication.
         attendance:
           type: array
           items:

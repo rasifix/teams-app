@@ -1,11 +1,6 @@
-import type { Activity, ActivityAttendance, ActivityTask, ActivityPayload, Squad, Team } from '../types';
+import type { Activity, ActivityAttendance, ActivityPayload, Squad, Team } from '../types';
 import {
   createActivity,
-  createActivityTask,
-  deleteActivityTask,
-  signUpForActivityTask,
-  updateActivityTask,
-  withdrawFromActivityTask,
   deleteActivity,
   markActivitySelectionSent,
   updateActivity,
@@ -13,7 +8,6 @@ import {
   updateActivitySelection,
   updateActivityAttendance,
   updateActivityTeams,
-  type ActivityTaskInput,
   type InvitationUpdate,
 } from '../services/activityService';
 import { sortActivities } from './selectors/activitySelectors';
@@ -37,11 +31,6 @@ export interface ActivityActions {
   markActivitySelectionSent: (activityId: string) => Promise<boolean>;
   updateActivityAttendance: (activityId: string, attendance: ActivityAttendance[]) => Promise<boolean>;
   deleteActivity: (id: string) => Promise<boolean>;
-  addActivityTask: (activityId: string, task: ActivityTaskInput) => Promise<boolean>;
-  updateActivityTask: (activityId: string, taskId: string, task: Partial<ActivityTaskInput>) => Promise<boolean>;
-  deleteActivityTask: (activityId: string, taskId: string) => Promise<boolean>;
-  signUpForActivityTask: (activityId: string, taskId: string) => Promise<boolean>;
-  withdrawFromActivityTask: (activityId: string, taskId: string) => Promise<boolean>;
 }
 
 /** Activity mutations; every successful call replaces the stored activity with the server response. */
@@ -54,11 +43,6 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
 
   const replace = (updated: Activity) => {
     set({ activities: sortActivities(get().activities.map((entry) => (entry.id === updated.id ? updated : entry))) });
-  };
-
-  const replaceTasks = (activityId: string, tasks: ActivityTask[]) => {
-    const current = get().activities.find((entry) => entry.id === activityId);
-    if (current) replace({ ...current, tasks });
   };
 
   const run = async (label: string, action: (squadId: string) => Promise<void>): Promise<boolean> => {
@@ -96,26 +80,6 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
       const saved = await updateActivityAttendance(squadId, activityId, attendance);
       const current = get().activities.find((entry) => entry.id === activityId);
       if (current) replace({ ...current, attendance: saved });
-    }),
-
-    addActivityTask: (activityId, task) => run('add task', async (squadId) => {
-      replaceTasks(activityId, await createActivityTask(squadId, activityId, task));
-    }),
-
-    updateActivityTask: (activityId, taskId, task) => run('update task', async (squadId) => {
-      replaceTasks(activityId, await updateActivityTask(squadId, activityId, taskId, task));
-    }),
-
-    deleteActivityTask: (activityId, taskId) => run('delete task', async (squadId) => {
-      replaceTasks(activityId, await deleteActivityTask(squadId, activityId, taskId));
-    }),
-
-    signUpForActivityTask: (activityId, taskId) => run('sign up for task', async (squadId) => {
-      replaceTasks(activityId, await signUpForActivityTask(squadId, activityId, taskId));
-    }),
-
-    withdrawFromActivityTask: (activityId, taskId) => run('withdraw from task', async (squadId) => {
-      replaceTasks(activityId, await withdrawFromActivityTask(squadId, activityId, taskId));
     }),
 
     updateActivitySelection: (activityId, teams) => run('update selection', async (squadId) => {

@@ -9,8 +9,8 @@ interface PlayerCardProps {
   player: Player;
   isSwiped: boolean;
   onClick: (e: MouseEvent<HTMLDivElement>) => void;
-  onTouchStart: (e: TouchEvent<HTMLDivElement>) => void;
-  onDelete: (e: MouseEvent<HTMLButtonElement>) => void;
+  onTouchStart?: (e: TouchEvent<HTMLDivElement>) => void;
+  onDelete?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
 export default function PlayerCard({
@@ -73,17 +73,19 @@ export default function PlayerCard({
         </div>
       </div>
 
-      <div
-        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${isSwiped ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-      >
-        <button
-          className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
-          onClick={onDelete}
+      {onDelete && (
+        <div
+          className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${isSwiped ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
         >
-          {t('common.actions.delete')}
-        </button>
-      </div>
+          <button
+            className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
+            onClick={onDelete}
+          >
+            {t('common.actions.delete')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

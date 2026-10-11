@@ -6,11 +6,41 @@ The Spond integration imports reviewed data from one Spond group into one
 Squad. It supplements local planning; it is not a bidirectional mirror and does
 not write changes back to Spond.
 
-Spond remains the source of truth for events, membership, guardians, and
-guardian/player RSVP actions. This application retains the subset needed for
-match planning and statistics. Admins and trainers may enter RSVP data manually
-when synchronization is unavailable; those local changes are not written back
-to Spond.
+Spond is the user-facing system and the source of truth for events,
+membership, guardians, and RSVP. This application owns match planning:
+selection, teams, formations, lineups, shirts, responsible people, and
+statistics. Manual RSVP entry is only for Squads without a Spond link; it is
+never written back to Spond.
+
+## Roles: This Application Vs. Spond
+
+For a Squad linked to Spond, responsibilities are split as follows.
+
+| Concern | Spond | This application |
+| --- | --- | --- |
+| Members, guardians, cross-squad membership | Source of truth; managed and imported between squads in Spond | Read-only synchronized copy |
+| Events (date, time, location, opponent) | Source of truth; created, edited, deleted in Spond | Read-only synchronized copy |
+| RSVP, invitations, notifications | Source of truth; responses given in Spond | Read-only synchronized copy; no invite action |
+| Selection, teams, formations, lineups | Not provided | Source of truth |
+| Shirts, responsible people, statistics | Not provided | Source of truth |
+| Planning-only attributes (level, preferred shirt number, active-for-selection) | Not provided | Locally editable on synchronized players |
+
+Rules for Spond-linked Squads:
+
+- Synchronized fields of players, trainers, guardians, and events are
+  read-only; only locally added fields are editable.
+- Local member creation, editing, deletion, merging, import, deduplication,
+  cross-squad import, and export to Spond are unavailable.
+- Local event creation, scheduling edits, and deletion are unavailable.
+- No invite action exists and RSVP cannot be changed locally.
+- "Selection finalized" is an internal planning state; this application
+  never sends or publishes selections.
+- Guardians have no access to this application; guardian records are
+  read-only references for assigning a responsible adult to a Team.
+- Trainer/admin identities keep a local representation for permissions.
+
+Squads without a Spond link keep full local functionality (member and event
+management, invitations, manual RSVP). Spond is never a hard requirement.
 
 ## Link Model
 
@@ -81,5 +111,4 @@ the created, updated, and linked counts.
 
 - UC-GR-011 - Link Or Unlink A Spond Group
 - UC-GR-012 - Synchronize Players And Guardians From Spond
-- UC-GR-013 - Export Members For Spond
 - UC-EV-012 - Synchronize Events From Spond

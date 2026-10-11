@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
+import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
+import { useSquad, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
 import type { Period, Trainer } from '../types';
 import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
@@ -76,6 +77,7 @@ export default function TrainerDetailPage() {
   // Use store hooks
   const { updateTrainer, deleteTrainer, getTrainerById, getTrainerEventHistory } = useTrainers();
   const squadPeriods = useSquadPeriods();
+  const spondLinked = selectIsSpondLinked(useSquad());
   const isInitialized = useAppInitialized();
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
@@ -243,20 +245,22 @@ export default function TrainerDetailPage() {
             ← {t('common.actions.back')}
           </button>
           <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{trainer.firstName} {trainer.lastName}</span>
-          <div className="flex gap-3">
-            <button
-              onClick={handleEditTrainer}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-            >
+          {!spondLinked && (
+            <div className="flex gap-3">
+              <button
+                onClick={handleEditTrainer}
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
                 {t('common.actions.edit')}
-            </button>
-            <button
-              onClick={handleDeleteTrainer}
-              className="text-red-600 hover:text-red-700 text-sm font-medium"
-            >
+              </button>
+              <button
+                onClick={handleDeleteTrainer}
+                className="text-red-600 hover:text-red-700 text-sm font-medium"
+              >
                 {t('common.actions.delete')}
-            </button>
-          </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

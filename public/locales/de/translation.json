@@ -304,13 +304,6 @@
       "empty": "Noch keine bevorstehenden Termine.",
       "eventMeta": "{{date}} • {{teamCount}} Teams"
     },
-    "openInvitations": {
-      "title": "Offene Einladungen",
-      "empty": "Keine offenen Einladungen für deine Kinder.",
-      "accept": "Zusagen",
-      "decline": "Absagen",
-      "updateError": "Einladung konnte nicht aktualisiert werden. Bitte versuche es erneut."
-    },
     "cards": {
       "membersTitle": "Mitglieder verwalten",
       "membersDescription": "Füge Spieler und Trainer hinzu, setze Leistungsstufen und verwalte den Kader",
@@ -386,63 +379,6 @@
       "deletePlayerFailed": "Spieler konnte nicht gelöscht werden. Bitte versuche es erneut.",
       "deleteTrainerFailed": "Trainer konnte nicht entfernt werden. Bitte versuche es erneut."
     }
-  },
-  "membersImport": {
-    "openAction": "Import",
-    "title": "Mitglieder importieren",
-    "description": "Wähle eine andere Mannschaft, markiere die zu importierenden Mitglieder und übernehme sie in die aktuelle Mannschaft.",
-    "sourceSquadLabel": "Quellmannschaft",
-    "sourceSquadPlaceholder": "Quellmannschaft auswählen",
-    "selectedSourceSquad": "Quellmannschaft: {{name}}",
-    "noSourceSquads": "Es sind keine weiteren zugänglichen Mannschaften für den Import verfügbar.",
-    "loadingSourceMembers": "Mitglieder der Quellmannschaft werden geladen...",
-    "noSourceMembers": "Die gewählte Quellmannschaft enthält keine Mitglieder.",
-    "noImportableMembers": "Alle Mitglieder der Quellmannschaft existieren bereits in dieser Mannschaft.",
-    "noEmail": "Keine E-Mail",
-    "birthYearFilter": {
-      "label": "Geburtsjahr-Filter",
-      "all": "Alle Jahre",
-      "clear": "Filter löschen",
-      "empty": "In der gewählten Quellmannschaft sind keine Geburtsjahre verfügbar."
-    },
-    "completedTitle": "Import abgeschlossen",
-    "newImport": "Neuen Import starten",
-    "selectAll": "Alle auswählen",
-    "clearSelection": "Auswahl aufheben",
-    "apply": "Import anwenden",
-    "applying": "Wird angewendet...",
-    "summary": {
-      "totalSourceMembers": "Mitglieder in Quellmannschaft: {{count}}",
-      "importableMembers": "Importierbare Mitglieder: {{count}}",
-      "hiddenExistingMembers": "Bereits vorhanden (ausgeblendet): {{count}}",
-      "selectedMembers": "Ausgewählte Mitglieder: {{count}}"
-    },
-    "progress": {
-      "label": "Import läuft",
-      "count": "{{completed}} / {{total}}"
-    },
-    "role": {
-      "player": "Spieler",
-      "trainer": "Trainer"
-    },
-    "memberMeta": {
-      "player": "Level {{level}} • Erziehungsberechtigte: {{guardiansCount}}",
-      "trainer": "E-Mail: {{email}}"
-    },
-    "errors": {
-      "sourceMembersLoadFailed": "Mitglieder der gewählten Quellmannschaft konnten nicht geladen werden."
-    },
-    "result": {
-      "processedMembers": "Verarbeitete Mitglieder: {{count}}",
-      "importedPlayers": "Importierte Spieler: {{count}}",
-      "importedTrainers": "Importierte Trainer: {{count}}",
-      "importedGuardians": "Importierte Erziehungsberechtigte: {{count}}",
-      "skippedMembers": "Übersprungene Mitglieder: {{count}}",
-      "failedMembers": "Fehlgeschlagene Mitglieder: {{count}}"
-    }
-  },
-  "membersExport": {
-    "action": "CSV exportieren"
   },
   "levels": {
     "1": "1 - Anfänger",
@@ -531,7 +467,8 @@
       "status": {
         "accepted": "zugesagte",
         "open": "offene"
-      }
+      },
+      "noneSynced": "Noch keine Rückmeldungen aus Spond synchronisiert."
     }
   },
   "teamCard": {
@@ -1097,27 +1034,6 @@
       "SPOND_INVALID_RESPONSE": "Spond hat Daten in einem nicht unterstützten Format geliefert.",
       "SPOND_REQUEST_FAILED": "Die Spond-Anfrage ist fehlgeschlagen.",
       "generic": "Die Spond-Synchronisierung konnte nicht abgeschlossen werden."
-    }
-  },
-  "tasks": {
-    "title": "Helfer-Aufgaben",
-    "add": "Aufgabe hinzufügen",
-    "addTitle": "Aufgabe hinzufügen",
-    "editTitle": "Aufgabe bearbeiten",
-    "empty": "Noch keine Aufgaben. Füge Aufgaben wie Kiosk oder Kuchen hinzu, um Helfer zu finden.",
-    "fulfilled": "Genug Helfer",
-    "needsMore": "Helfer gesucht",
-    "signedUpCount": "{{count}} von {{required}} angemeldet",
-    "overSubscribed": "überbucht",
-    "signUp": "Anmelden",
-    "withdraw": "Abmelden",
-    "deleteTitle": "Aufgabe löschen",
-    "deleteMessage": "Aufgabe «{{name}}» und ihre Anmeldungen löschen?",
-    "fields": {
-      "name": "Aufgabe",
-      "namePlaceholder": "z. B. Kiosk",
-      "description": "Beschreibung (optional)",
-      "requiredPeople": "Benötigte Personen"
     }
   }
 }

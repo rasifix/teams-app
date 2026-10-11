@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
 import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useSquad, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
@@ -65,7 +66,8 @@ export default function PlayerDetailPage() {
   }, [isInitialized, loading, id, player, navigate]);
 
   const guardians = player?.guardians || [];
-  const canManagePlayerGuardians = canManageGuardians(user, squad, trainers);
+  const spondLinked = selectIsSpondLinked(squad);
+  const canManagePlayerGuardians = !spondLinked && canManageGuardians(user, squad, trainers);
   const underageForGuardianAssignment = player ? isPlayerUnderage(player) : false;
   const playerStatus = player?.status || 'active';
   const playerStatusBadgeClassName = playerStatus === 'active'
@@ -258,12 +260,14 @@ export default function PlayerDetailPage() {
             >
               {t('common.actions.edit')}
             </button>
-            <button 
-              onClick={handleDeletePlayer}
-              className="text-red-600 hover:text-red-700 text-sm font-medium"
-            >
-              {t('common.actions.delete')}
-            </button>
+            {!spondLinked && (
+              <button
+                onClick={handleDeletePlayer}
+                className="text-red-600 hover:text-red-700 text-sm font-medium"
+              >
+                {t('common.actions.delete')}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -298,7 +302,7 @@ export default function PlayerDetailPage() {
           <CardBody className="lg:p-6 p-4">
             <div className="flex items-center justify-between gap-3 mb-4">
               <CardTitle className="mb-0">{t('playerDetail.guardians.title', { count: guardians.length })}</CardTitle>
-              <button
+              {!spondLinked && <button
                 onClick={() => {
                   setGuardianActionError(null);
                   setIsGuardianModalOpen(true);
@@ -310,16 +314,16 @@ export default function PlayerDetailPage() {
                   : (!underageForGuardianAssignment ? t('playerDetail.guardians.onlyUnderage') : t('playerDetail.guardians.assignAction'))}
               >
                 {t('playerDetail.guardians.addAction')}
-              </button>
+              </button>}
             </div>
 
-            {!canManagePlayerGuardians && (
+            {!spondLinked && !canManagePlayerGuardians && (
               <div className="mb-3 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
                 {t('playerDetail.guardians.onlyManagersManage')}
               </div>
             )}
 
-            {!underageForGuardianAssignment && (
+            {!spondLinked && !underageForGuardianAssignment && (
               <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
                 {t('playerDetail.guardians.onlyUnderage')}
               </div>
@@ -430,6 +434,7 @@ export default function PlayerDetailPage() {
         onSave={() => {}}
         onUpdate={handleUpdatePlayer}
         editingPlayer={player}
+        syncedFieldsReadOnly={spondLinked}
       />
 
       <ManageGuardiansModal

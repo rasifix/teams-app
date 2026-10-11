@@ -10,9 +10,10 @@ interface AddPlayerModalProps {
   onSave: (player: Omit<Player, 'id'>) => void;
   onUpdate?: (playerId: string, player: Omit<Player, 'id'>) => void;
   editingPlayer?: Player | null;
+  syncedFieldsReadOnly?: boolean;
 }
 
-export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, editingPlayer }: AddPlayerModalProps) {
+export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, editingPlayer, syncedFieldsReadOnly = false }: AddPlayerModalProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -112,6 +113,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 value={formData.firstName}
                 onChange={handleChange}
                 required
+                disabled={syncedFieldsReadOnly}
                 className="form-input"
                 placeholder={t('playerModal.placeholders.firstName')}
               />
@@ -128,6 +130,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 value={formData.lastName}
                 onChange={handleChange}
                 required
+                disabled={syncedFieldsReadOnly}
                 className="form-input"
                 placeholder={t('playerModal.placeholders.lastName')}
               />
@@ -144,6 +147,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 value={formData.birthDate}
                 onChange={handleChange}
                 required
+                disabled={syncedFieldsReadOnly}
                 className="form-input"
               />
             </div>

@@ -216,20 +216,6 @@ export interface ActivityAttendance {
   reason?: AttendanceReason; // optional, used for excused
 }
 
-export interface ActivityTaskSignup {
-  personId: string;
-  signedUpAt?: string;
-}
-
-export interface ActivityTask {
-  id: string;
-  name: string;
-  description?: string;
-  requiredPeople: number;
-  signups: ActivityTaskSignup[];
-  isFulfilled: boolean;
-}
-
 export interface TrainingUnit {
   id: string;
   name?: string;
@@ -260,7 +246,6 @@ export interface Activity {
   invitations: ActivityInvitation[];
   selectionSentAt?: string;
   attendance?: ActivityAttendance[];
-  tasks?: ActivityTask[];
   trainerIds?: string[];
   squads?: TrainingGroup[];
 }

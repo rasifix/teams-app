@@ -5,7 +5,6 @@ export type ActivityPhase = 'planning' | 'selectionSent' | 'started' | 'recorded
 
 export interface ActivityPhaseSections {
   invitations: boolean;
-  tasks: boolean;
   attendance: boolean;
 }
 
@@ -30,7 +29,6 @@ export function selectActivityPhase(
 export function selectActivityPhaseSections(phase: ActivityPhase): ActivityPhaseSections {
   return {
     invitations: phase === 'planning',
-    tasks: phase === 'planning' || phase === 'selectionSent',
     attendance: phase === 'started' || phase === 'recorded',
   };
 }

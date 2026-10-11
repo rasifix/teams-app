@@ -10,6 +10,7 @@ import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities
 import { useSquad, useTrainers } from '../store';
 import { useAuth } from '../hooks/useAuth';
 import { canAccessRestrictedManagement } from '../utils/permissions';
+import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
 import SpondBadge from '../components/SpondBadge';
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 
@@ -20,6 +21,7 @@ export default function EventsPage() {
   const squad = useSquad();
   const { trainers } = useTrainers();
   const { user } = useAuth();
+  const spondLinked = selectIsSpondLinked(squad);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const canSyncSpond = useMemo(() => canAccessRestrictedManagement(user, { squad, trainers }), [user, squad, trainers]);
   const teamActivities = selectActivitiesOfKinds(activities, ['match', 'tournament']);
@@ -40,8 +42,8 @@ export default function EventsPage() {
             <div className="mb-4 flex items-center justify-between">
               <CardTitle>{t('events.futureTitle', { count: futureActivities.length })}</CardTitle>
               <div className="flex gap-2">
-                {canSyncSpond && squad?.spondId?.trim() && <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}><SpondBadge />{t('spondSync.syncAction')}</Button>}
-                <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>
+                {canSyncSpond && spondLinked && <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}><SpondBadge />{t('spondSync.syncAction')}</Button>}
+                {!spondLinked && <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>}
               </div>
             </div>
             <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
@@ -54,7 +56,7 @@ export default function EventsPage() {
           </CardBody>
         </Card>}
       </div>
-      <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />
+      {!spondLinked && <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />}
     </div>
   );
 }

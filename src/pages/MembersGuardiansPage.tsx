@@ -13,7 +13,7 @@ import type { MembersOutletContext } from './MembersPage';
 
 export default function MembersGuardiansPage() {
   const { t } = useTranslation();
-  const { players } = useOutletContext<MembersOutletContext>();
+  const { players, spondLinked } = useOutletContext<MembersOutletContext>();
   const { trainers } = useTrainers();
   const { editGuardianForPlayer, mergeGuardianDuplicates } = usePlayers();
 
@@ -97,7 +97,7 @@ export default function MembersGuardiansPage() {
           <CardTitle className="mb-0">{t('members.allGuardiansTitle', { count: guardians.length })}</CardTitle>
         </div>
 
-        {duplicateGuardianGroups.length > 0 && (
+        {!spondLinked && duplicateGuardianGroups.length > 0 && (
           <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-3 space-y-2">
             <p className="text-sm text-amber-900 font-medium">
               {t('members.guardianDuplicates.detected', { count: duplicateGuardianGroups.length })}
@@ -175,11 +175,13 @@ export default function MembersGuardiansPage() {
                       </span>
                     ))}
                   </div>
-                  <div className="mt-3">
-                    <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
-                      {t('common.actions.edit')}
-                    </Button>
-                  </div>
+                  {!spondLinked && (
+                    <div className="mt-3">
+                      <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
+                        {t('common.actions.edit')}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -197,9 +199,11 @@ export default function MembersGuardiansPage() {
                     <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
                       {t('members.guardians.tablePlayers')}
                     </th>
-                    <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                      {t('members.guardians.tableActions')}
-                    </th>
+                    {!spondLinked && (
+                      <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                        {t('members.guardians.tableActions')}
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -224,11 +228,13 @@ export default function MembersGuardiansPage() {
                           ))}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-sm">
-                        <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
-                          {t('common.actions.edit')}
-                        </Button>
-                      </td>
+                      {!spondLinked && (
+                        <td className="px-3 py-2 text-sm">
+                          <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
+                            {t('common.actions.edit')}
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -11,6 +11,7 @@ interface PlayerInvitationsCardProps {
   onStatusChange: (invitationId: string, response: InvitationResponse, declineReason?: InvitationDeclineReason) => void;
   onRemoveInvitation: (invitationId: string) => void;
   assignedPlayerIds?: string[];
+  readOnly?: boolean;
 }
 
 export default function PlayerInvitationsCard({
@@ -21,6 +22,7 @@ export default function PlayerInvitationsCard({
   onStatusChange,
   onRemoveInvitation,
   assignedPlayerIds = [],
+  readOnly = false,
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
@@ -29,7 +31,7 @@ export default function PlayerInvitationsCard({
   return <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
     <div className="mb-4 flex items-center justify-between">
       <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
-      <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>
+      {!readOnly && <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>}
     </div>
     <div className="mb-4 flex flex-wrap gap-3 text-sm text-gray-600">
       <span>{t('invitationStatus.open')}: {counts.open}</span>
@@ -37,11 +39,11 @@ export default function PlayerInvitationsCard({
       <span>{t('invitationStatus.declined')}: {counts.declined}</span>
       {(['injured', 'sick', 'unavailable', 'unspecified'] as const).map((reason) => counts.declineReasons[reason] > 0 && <span key={reason}>{t(`activity.declineReasons.${reason}`)}: {counts.declineReasons[reason]}</span>)}
     </div>
-    {invitations.length === 0 ? <p className="py-4 text-center text-gray-500">{t('playerInvitations.empty.noneSent')}</p> : <div className="space-y-2">
+    {invitations.length === 0 ? <p className="py-4 text-center text-gray-500">{readOnly ? t('playerInvitations.empty.noneSynced') : t('playerInvitations.empty.noneSent')}</p> : <div className="space-y-2">
       {invitations.map((invitation) => {
         const player = players.find((entry) => entry.id === invitation.playerId);
         const assigned = assignedPlayerIds.includes(invitation.playerId);
-        const isSpondManaged = isSpondManagedInvitation(currentActivity, player);
+        const isSpondManaged = readOnly || isSpondManagedInvitation(currentActivity, player);
         return <div key={invitation.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 p-3" data-testid="invitation-row">
           <p className="min-w-0 flex-1 basis-40 truncate font-medium text-gray-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
           <select aria-label={t('common.labels.status')} value={invitation.response} onChange={(event) => {
@@ -50,14 +52,14 @@ export default function PlayerInvitationsCard({
           }} className="rounded border border-gray-300 px-2 py-1 text-sm" disabled={isSpondManaged} title={isSpondManaged ? t('spondSync.managedResponse') : undefined}>
             {(['open', 'accepted', 'declined'] as const).map((response) => <option key={response} value={response}>{t(`invitationStatus.${response}`)}</option>)}
           </select>
-          {invitation.response === 'declined' && <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+          {invitation.response === 'declined' && (readOnly ? <span className="text-sm text-gray-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
             const reason = event.target.value as InvitationDeclineReason | '';
             setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
             onStatusChange(invitation.id, 'declined', reason || undefined);
           }} className="rounded border border-gray-300 px-2 py-1 text-sm">
             <option value="">{t('activity.declineReasons.unspecified')}</option>
             {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
-          </select>}
+          </select>)}
           {!assigned && !isSpondManaged && <button
             type="button"
             onClick={() => onRemoveInvitation(invitation.id)}

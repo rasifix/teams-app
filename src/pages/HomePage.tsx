@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
@@ -6,29 +6,24 @@ import AddSquadModal from '../components/AddSquadModal';
 import UpcomingEventCard from '../components/UpcomingEventCard';
 import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from '../store/useStore';
 import { useActivities } from '../hooks/useActivities';
-import { selectUpcomingEventsWithGuardianInvitations } from '../store/selectors/homeSelectors';
-import { selectPlayersFromMembers } from '../store/selectors/memberSelectors';
+import { selectUpcomingEvents } from '../store/selectors/homeSelectors';
 import type { CreateSquadRequest } from '../types';
 
 export default function HomePage() {
   const { t } = useTranslation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { addSquad, configureSquadCategory, selectSquad, initializeApp, loadSquads } = useStore();
   const squad = useSquad();
   const squads = useSquads();
   const squadsLoading = useSquadsLoading();
   const squadsError = useSquadsError();
-  const { activities, updateActivityInvitation } = useActivities();
-  const members = useStore((state) => state.members);
-  const players = useMemo(() => selectPlayersFromMembers(members), [members]);
+  const { activities } = useActivities();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [switchingSquadId, setSwitchingSquadId] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
-  const [respondingInvitationId, setRespondingInvitationId] = useState<string | null>(null);
-  const [invitationError, setInvitationError] = useState<string | null>(null);
 
-  const upcomingEvents = selectUpcomingEventsWithGuardianInvitations(activities, players, user, new Date(), 5);
+  const upcomingEvents = selectUpcomingEvents(activities, new Date(), 5);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -70,19 +65,6 @@ export default function HomePage() {
       await initializeApp();
     } finally {
       setSwitchingSquadId(null);
-    }
-  };
-
-  const handleInvitationResponse = async (eventId: string, playerId: string, invitationId: string, status: 'accepted' | 'declined') => {
-    setRespondingInvitationId(invitationId);
-    setInvitationError(null);
-    try {
-      const success = await updateActivityInvitation(eventId, playerId, { response: status });
-      if (!success) {
-        setInvitationError(t('home.openInvitations.updateError'));
-      }
-    } finally {
-      setRespondingInvitationId(null);
     }
   };
 
@@ -188,23 +170,10 @@ export default function HomePage() {
             ) : (
               <div className="space-y-3">
                 {upcomingEvents.map((event) => (
-                  <UpcomingEventCard
-                    key={event.id}
-                    event={event}
-                    respondingInvitationId={respondingInvitationId}
-                    onInvitationResponse={handleInvitationResponse}
-                  />
+                  <UpcomingEventCard key={event.id} event={event} />
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {isAuthenticated && invitationError && (
-          <div className="max-w-3xl mx-auto mt-4 text-left">
-            <div className="bg-red-50 rounded-lg border border-red-200 p-4 text-red-700">
-              {invitationError}
-            </div>
           </div>
         )}
       </div>

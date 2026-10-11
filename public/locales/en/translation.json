@@ -304,13 +304,6 @@
       "empty": "No upcoming events yet.",
       "eventMeta": "{{date}} • {{teamCount}} teams"
     },
-    "openInvitations": {
-      "title": "Open Invitations",
-      "empty": "No open invitations for your children.",
-      "accept": "Accept",
-      "decline": "Decline",
-      "updateError": "Failed to update invitation. Please try again."
-    },
     "cards": {
       "membersTitle": "Manage Members",
       "membersDescription": "Add players and trainers, set skill levels, and manage your roster",
@@ -386,65 +379,6 @@
       "deletePlayerFailed": "Failed to delete player. Please try again.",
       "deleteTrainerFailed": "Failed to remove trainer. Please try again."
     }
-  },
-  "membersImport": {
-    "openAction": "Import",
-    "title": "Import Members",
-    "description": "Select another squad, choose members to import, and sync them into the current squad.",
-    "sourceSquadLabel": "Source squad",
-    "sourceSquadPlaceholder": "Select a source squad",
-    "selectedSourceSquad": "Source squad: {{name}}",
-    "noSourceSquads": "No other accessible squads are available for import.",
-    "loadingSourceMembers": "Loading source members...",
-    "noSourceMembers": "The selected source squad has no members.",
-    "noImportableMembers": "All source members already exist in this squad.",
-    "noEmail": "No email",
-    "birthYearFilter": {
-      "label": "Birth year filter",
-      "all": "All years",
-      "clear": "Clear filter",
-      "empty": "No birth years available in the selected source squad."
-    },
-    "completedTitle": "Import finished",
-    "newImport": "Start new import",
-    "selectAll": "Select all",
-    "clearSelection": "Clear selection",
-    "apply": "Apply import",
-    "managedFields": "Name, date, time, and location are managed by Spond.",
-    "managedResponse": "This response is managed by Spond.",
-    "applying": "Applying...",
-    "summary": {
-      "totalSourceMembers": "Source members: {{count}}",
-      "importableMembers": "Importable members: {{count}}",
-      "hiddenExistingMembers": "Already existing (hidden): {{count}}",
-      "selectedMembers": "Selected members: {{count}}"
-    },
-    "progress": {
-      "label": "Import in progress",
-      "count": "{{completed}} / {{total}}"
-    },
-    "role": {
-      "player": "Player",
-      "trainer": "Trainer"
-    },
-    "memberMeta": {
-      "player": "Level {{level}} • Guardians: {{guardiansCount}}",
-      "trainer": "Email: {{email}}"
-    },
-    "errors": {
-      "sourceMembersLoadFailed": "Failed to load members from the selected source squad."
-    },
-    "result": {
-      "processedMembers": "Processed members: {{count}}",
-      "importedPlayers": "Imported players: {{count}}",
-      "importedTrainers": "Imported trainers: {{count}}",
-      "importedGuardians": "Imported guardians: {{count}}",
-      "skippedMembers": "Skipped members: {{count}}",
-      "failedMembers": "Failed members: {{count}}"
-    }
-  },
-  "membersExport": {
-    "action": "Export CSV"
   },
   "levels": {
     "1": "1 - Beginner",
@@ -533,7 +467,8 @@
       "status": {
         "accepted": "accepted",
         "open": "open"
-      }
+      },
+      "noneSynced": "No RSVPs synchronized from Spond yet."
     }
   },
   "teamCard": {
@@ -1097,27 +1032,6 @@
       "SPOND_INVALID_RESPONSE": "Spond returned data in an unsupported format.",
       "SPOND_REQUEST_FAILED": "The Spond request failed.",
       "generic": "The Spond synchronization could not be completed."
-    }
-  },
-  "tasks": {
-    "title": "Helper tasks",
-    "add": "Add task",
-    "addTitle": "Add task",
-    "editTitle": "Edit task",
-    "empty": "No tasks yet. Add tasks such as kiosk or cake to find helpers.",
-    "fulfilled": "Enough helpers",
-    "needsMore": "Helpers needed",
-    "signedUpCount": "{{count}} of {{required}} signed up",
-    "overSubscribed": "over-subscribed",
-    "signUp": "Sign up",
-    "withdraw": "Withdraw",
-    "deleteTitle": "Delete task",
-    "deleteMessage": "Delete the task \"{{name}}\" and its sign-ups?",
-    "fields": {
-      "name": "Task",
-      "namePlaceholder": "e.g. Kiosk",
-      "description": "Description (optional)",
-      "requiredPeople": "People needed"
     }
   }
 }

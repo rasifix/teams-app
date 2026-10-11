@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectSpondGroupUrl } from './groupSettingsSelectors';
+import { selectIsSpondLinked, selectSpondGroupUrl } from './groupSettingsSelectors';
 
 describe('group settings selectors', () => {
   it('builds the Spond group URL for a linked squad', () => {
@@ -16,6 +16,20 @@ describe('group settings selectors', () => {
     'falls back to no link when the squad has no Spond group (%j)',
     (squad) => {
       expect(selectSpondGroupUrl(squad)).toBeNull();
+    },
+  );
+});
+
+describe('selectIsSpondLinked', () => {
+  it('is true for a squad with a Spond group', () => {
+    expect(selectIsSpondLinked({ spondId: 'group-123' })).toBe(true);
+    expect(selectIsSpondLinked({ spondId: ' group-123 ' })).toBe(true);
+  });
+
+  it.each([undefined, null, {}, { spondId: null }, { spondId: '' }, { spondId: '   ' }])(
+    'is false when the squad has no Spond group (%j)',
+    (squad) => {
+      expect(selectIsSpondLinked(squad)).toBe(false);
     },
   );
 });

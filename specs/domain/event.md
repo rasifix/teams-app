@@ -2,8 +2,8 @@
 
 ## Purpose
 
-An Event is a dated, executable planning unit where invitations are sent,
-attendance is confirmed, and teams are formed for a specific session.
+An Event is a dated, executable planning unit where player availability is
+known, attendance is confirmed, and teams are formed for a specific session.
 
 In business terms, an Event answers: "Who is available and selected on this
 date, and how are they organized into teams?"
@@ -12,8 +12,9 @@ date, and how are they organized into teams?"
 
 An Event belongs to exactly one Squad and captures a single occurrence
 (training, match day, or similar activity). It is temporal and operational:
-invitations, team setup, and final participation outcomes are all tracked at the
-Event level.
+RSVP data, team setup, and final participation outcomes are all tracked at the
+Event level. Event scheduling and the guardian-facing RSVP workflow remain in
+Spond.
 
 ## Relationships
 
@@ -32,7 +33,7 @@ Event level.
 ## Key Responsibilities
 
 - define planning metadata (name, date, max players per team),
-- collect invitation responses for in-scope Players,
+- retain RSVP data synchronized from Spond or entered by an admin or trainer,
 - provide the candidate pool for team selection,
 - store the final selected Players per Team,
 - serve as the atomic record for attendance and selection history,
@@ -44,8 +45,10 @@ Event level.
 1. An Event is created inside a Squad with date and configuration.
 2. If the Squad has match planning enabled, the Event is auto-assigned the
 	Squad's default Match Format (still optional and resettable to none).
-3. Invitations are generated for eligible Players.
-4. Players respond (for example, open, accepted, declined).
+3. RSVP data is synchronized from Spond or entered manually by an admin or
+   trainer.
+4. The current RSVP state (for example, open, accepted, declined) determines
+   the default candidate pool for planning.
 5. Teams are created and filled manually or via selection logic.
 6. If a Match Format is assigned, Teams may select a Formation and plan a
 	per-period lineup.
@@ -74,6 +77,8 @@ Event level.
 - Spond timestamps represent real instants. They are converted exactly once to
   the application's Europe/Zurich wall-clock convention so synchronization
   does not introduce a UTC/local-time offset.
+- Guardians and players cannot respond to invitations or change RSVP status in
+  this application. They use Spond for those actions.
 
 ## Attendance
 
@@ -85,19 +90,6 @@ Event level.
 - Only admins and trainers can record or change attendance; guardians and
   players neither see nor edit it.
 - Each recorded person must be a member of the Event's Squad.
-
-## Helper Tasks
-
-- Any Event kind can have free-form helper tasks (for example "Kiosk" or
-  "Cake"), each with a name, an optional description and the number of people
-  needed (`requiredPeople`, at least 1).
-- Admins and trainers create, edit and delete tasks and see the sign-up counts.
-- Adult Squad members (admin, trainer, guardian) sign up for and withdraw from
-  a task themselves; signing up on behalf of someone else is not supported.
-- A task is fulfilled once `signups` reaches `requiredPeople`; additional
-  sign-ups are allowed and shown to managers as over-subscribed.
-- Guardians only receive their own sign-ups from the API, so for them only the
-  fulfilled flag is reliable; counts are shown to managers only.
 
 ## Scope Boundaries
 
@@ -111,12 +103,14 @@ The Event does not:
 
 - define long-term membership (that is Squad responsibility),
 - replace Player profile data,
+- schedule events, notify members, collect guardian/player RSVP responses, or
+  manage helper tasks (those workflows remain in Spond),
 - directly model shirt inventory outside assignments made in teams.
 
 ## Practical Example
 
-"Saturday Training - 2026-04-11" is an Event in Squad "U12". Invitations are
-sent to Squad players. Accepted players are balanced into Team A and Team B,
+"Saturday Training - 2026-04-11" is an Event in Squad "U12". Its RSVP data is
+synchronized from Spond. Accepted players are balanced into Team A and Team B,
 with trainers and shirt sets assigned. The final participation record from this
 single date is then included in fairness statistics for future Events.
 

@@ -30,16 +30,15 @@ be described in files grouped in subfolders per category.
 ## Event
 
 * UC-EV-001 - create event
-* UC-EV-002 - invite players
+* UC-EV-002 - manually add player RSVP data
 * UC-EV-003 - select players for teams
-* UC-EV-004 - change invitation status
+* UC-EV-004 - manually change player RSVP status
 * UC-EV-005 - assign shirt set
 * UC-EV-006 - assign match format to event
 * UC-EV-007 - select team formation
 * UC-EV-008 - plan per-period lineup
 * UC-EV-009 - assign team trainer
 * UC-EV-010 - record attendance after an activity
-* UC-EV-011 - manage helper tasks and sign-ups
 * UC-EV-012 - synchronize events from Spond
 
 ## Statistics

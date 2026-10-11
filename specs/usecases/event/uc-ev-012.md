@@ -20,7 +20,8 @@ This use case covers:
 - returning to Events with a completion message.
 
 This use case does not import Players or Guardians, permit choosing another
-Spond group, or write changes back to Spond.
+Spond group, write changes back to Spond, or allow guardians or players to
+respond in this application.
 
 ## Primary Actor
 
@@ -128,6 +129,8 @@ The actor chooses the Spond-logo Sync action on Events.
 - Select all/none affects only the rows currently visible under the filter.
 - Imported times must preserve the intended Europe/Zurich local time across
   standard time and daylight-saving time.
+- Imported RSVP responses are planning data. Guardian and player response
+  actions remain in Spond.
 
 ## API Contract
 
@@ -158,4 +161,3 @@ The actor chooses the Spond-logo Sync action on Events.
    is blocked.
 10. Given a successful apply, then the actor returns to Events and sees a
     one-time translated completion message.
-

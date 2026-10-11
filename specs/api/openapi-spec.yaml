@@ -321,6 +321,7 @@ paths:
     put:
       operationId: updateSquadActivityInvitations
       summary: Bulk update activity invitations
+      description: Admin/trainer-only manual RSVP fallback. Guardian and player responses are collected in Spond.
       tags:
         - Activities
       security:
@@ -364,7 +365,8 @@ paths:
   /api/squads/{squadId}/activities/{id}/invitations/{playerId}:
     put:
       operationId: updateSquadActivityInvitation
-      summary: Respond to an activity invitation
+      summary: Manually update an activity RSVP
+      description: Admin/trainer-only manual RSVP fallback. Guardian and player responses are collected in Spond.
       tags:
         - Activities
       security:
@@ -399,7 +401,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Activity'
         '403':
-          description: Guardian may only respond for their own child
+          description: Only an authorized admin or trainer may update RSVP data
           content:
             application/json:
               schema:
@@ -641,196 +643,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/squads/{squadId}/activities/{id}/tasks:
-    post:
-      operationId: createSquadActivityTask
-      summary: Create an activity task
-      tags: [Activities]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateActivityTaskRequest'
-      responses:
-        '200':
-          description: Activity tasks after creation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityTask'
-        '400':
-          description: Invalid task
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /api/squads/{squadId}/activities/{id}/tasks/{taskId}:
-    put:
-      operationId: updateSquadActivityTask
-      summary: Update an activity task
-      tags: [Activities]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateActivityTaskRequest'
-      responses:
-        '200':
-          description: Activity tasks after update
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityTask'
-        '404':
-          description: Activity or task not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      operationId: deleteSquadActivityTask
-      summary: Delete an activity task
-      tags: [Activities]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Activity tasks after deletion
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityTask'
-        '404':
-          description: Activity or task not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /api/squads/{squadId}/activities/{id}/tasks/{taskId}/signup:
-    put:
-      operationId: signUpForSquadActivityTask
-      summary: Sign the authenticated adult member up for a task
-      description: Signup always uses the authenticated member ID; a guardian cannot submit a child’s ID. Signups may exceed requiredPeople.
-      tags: [Activities]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Activity tasks after signup
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityTask'
-        '403':
-          description: Only adult squad members can sign up
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      operationId: withdrawFromSquadActivityTask
-      summary: Withdraw the authenticated adult member from a task
-      tags: [Activities]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: taskId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Activity tasks after withdrawal
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityTask'
   /api/squads/{squadId}/match-formats:
     get:
       operationId: getSquadMatchFormats
@@ -3325,8 +3137,8 @@ paths:
   /api/squads/{squadId}/events/{id}/players/{player_id}/status:
     put:
       operationId: updateInvitationStatus
-      summary: Update invitation status
-      description: Update the status of a player's invitation. Guardians can update only invitations for their own children and only to accepted or declined.
+      summary: Manually update RSVP status
+      description: Admin/trainer-only manual RSVP fallback. Guardian and player responses are collected in Spond.
       tags:
         - Events
       security:
@@ -3923,12 +3735,6 @@ x-route-aliases:
       alias: /api/squads/{squadId}/activities/{id}/attendance
     - canonical: /api/squads/{squadId}/activities/{id}/attendance/{personId}
       alias: /api/squads/{squadId}/activities/{id}/attendance/{personId}
-    - canonical: /api/squads/{squadId}/activities/{id}/tasks
-      alias: /api/squads/{squadId}/activities/{id}/tasks
-    - canonical: /api/squads/{squadId}/activities/{id}/tasks/{taskId}
-      alias: /api/squads/{squadId}/activities/{id}/tasks/{taskId}
-    - canonical: /api/squads/{squadId}/activities/{id}/tasks/{taskId}/signup
-      alias: /api/squads/{squadId}/activities/{id}/tasks/{taskId}/signup
     - canonical: /api/squads/{squadId}/shirtsets
       alias: /api/squads/{squadId}/shirtsets
     - canonical: /api/squads/{squadId}/shirtsets/{id}
@@ -4758,59 +4564,6 @@ components:
           enum: [sick, injured, noShow, other]
           description: Optional reason, used for excused attendance.
       required: [personId, status]
-    ActivityTaskSignup:
-      type: object
-      properties:
-        personId:
-          type: string
-          description: Authenticated adult squad member who signed up.
-        signedUpAt:
-          type: string
-          format: date-time
-      required: [personId]
-    ActivityTask:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        requiredPeople:
-          type: integer
-          minimum: 1
-          description: Target only; signups may exceed this count.
-        signups:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityTaskSignup'
-        isFulfilled:
-          type: boolean
-          readOnly: true
-          description: Computed as signups.length greater than or equal to requiredPeople.
-      required: [id, name, requiredPeople, signups, isFulfilled]
-    CreateActivityTaskRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        requiredPeople:
-          type: integer
-          minimum: 1
-      required: [name, requiredPeople]
-    UpdateActivityTaskRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        requiredPeople:
-          type: integer
-          minimum: 1
     TrainingUnit:
       type: object
       properties:
@@ -5092,10 +4845,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ActivityAttendance'
-        tasks:
-          type: array
-          items:
-            $ref: '#/components/schemas/ActivityTask'
         trainerIds:
           type: array
           minItems: 1

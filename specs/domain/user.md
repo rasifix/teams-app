@@ -20,8 +20,10 @@ matches. See [player](player.md) for details.
 
 ### Guardian
 
-A guardian is for example the father or mother of a player. He can answer
-invitations in the name of his child.
+A guardian is for example the father or mother of a player. Guardians answer
+invitations in Spond, not in this application. A Guardian record may still be
+retained as synchronized reference data when needed for match planning, such as
+assigning a responsible adult to a Team.
 
 ### Coach
 

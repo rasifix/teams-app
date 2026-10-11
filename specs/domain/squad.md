@@ -6,8 +6,8 @@ A Squad is a stable roster context that organizes players over time so events,
 selection fairness, and attendance analysis can be scoped to the correct set of
 members.
 
-In business terms, a Squad answers: "Which players belong together for planning,
-invitation, and team generation?"
+In business terms, a Squad answers: "Which players belong together for planning
+and team generation?"
 
 ## Core Concept
 
@@ -38,7 +38,8 @@ Instead, it is the long-lived container that events reference.
 1. A Squad is created with a clear name and optional description.
 2. Players are assigned to or removed from the Squad.
 3. Events are created under the Squad timeline.
-4. Invitations and team selection run within Squad boundaries.
+4. Synchronized or staff-entered RSVP data and team selection remain within
+   Squad boundaries.
 5. Statistics are evaluated for fairness across the Squad's historical events.
 6. Optionally, a Squad Manager enables match planning (`matchPlanningEnabled`)
 	and defines Match Formats and Formations for the Squad. This is relevant

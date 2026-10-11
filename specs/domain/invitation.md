@@ -2,8 +2,9 @@
 
 ## Purpose
 
-An Invitation links one Player to one Event and captures that player's
-availability decision for that specific date.
+An Invitation links one Player to one Event and stores that player's RSVP state
+for planning and statistics. The decision itself is normally collected in
+Spond.
 
 In business terms, an Invitation answers: "Is this player available for this
 Event, and can they be considered for team selection?"
@@ -26,6 +27,7 @@ selection.
 
 - represent invitation state for one Player in one Event,
 - track the current response status,
+- retain the Spond-synchronized value or a staff-entered fallback,
 - provide filtering input for selection workflows,
 - preserve historical response context for analytics and audits.
 
@@ -51,9 +53,10 @@ Status semantics:
 
 ## Lifecycle
 
-1. Invitation is created when an Event invites an eligible Player.
-2. Initial status is open.
-3. Player (or admin flow) updates status.
+1. Invitation data is created or updated by Spond synchronization.
+2. When synchronization is unavailable, an admin or trainer may create or
+   update the RSVP data manually.
+3. Guardians and players respond in Spond, never in this application.
 4. Event planners use current status during team formation.
 5. Invitation remains stored as historical evidence after Event completion.
 
@@ -66,6 +69,8 @@ Status semantics:
 - Only accepted invitations should be considered selectable by default.
 - Status changes near or after team finalization should trigger selection
   revalidation.
+- Only admins and trainers may create or manually change RSVP data in this
+  application.
 
 ## Scope Boundaries
 
@@ -78,12 +83,14 @@ The Invitation does:
 The Invitation does not:
 
 - assign the player to a Team,
+- send an invitation or collect a guardian/player response,
 - determine final attendance metrics on its own,
 - alter Squad membership.
 
 ## Practical Example
 
-Player "Alex" receives an Invitation for Event "Saturday Training -
-2026-04-11". The status starts as open, then changes to accepted. Alex appears
-in the selectable pool for team generation. If status later changes to sick,
-Alex is removed from selectable candidates and team composition is revalidated.
+Player "Alex" accepts the Spond invitation for Event "Saturday Training -
+2026-04-11". Synchronization stores the accepted status locally, and Alex
+appears in the selectable pool for team generation. If the synchronized status
+later changes to sick, Alex is removed from selectable candidates and team
+composition is revalidated.

@@ -76,7 +76,7 @@ The Player does not:
 
 ## Practical Example
 
-"Mila Novak" (birth year 2014, level 3) is a Player in Squad "U12". She
-receives an Invitation for an Event, responds accepted, and is selected into
-Team B. This Event outcome increases her participation history used for future
+"Mila Novak" (birth year 2014, level 3) is a Player in Squad "U12". Her
+accepted Spond RSVP is synchronized for an Event, and she is selected into Team
+B. This Event outcome increases her participation history used for future
 fair-selection decisions.

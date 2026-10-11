@@ -6,6 +6,12 @@ The Spond integration imports reviewed data from one Spond group into one
 Squad. It supplements local planning; it is not a bidirectional mirror and does
 not write changes back to Spond.
 
+Spond remains the source of truth for events, membership, guardians, and
+guardian/player RSVP actions. This application retains the subset needed for
+match planning and statistics. Admins and trainers may enter RSVP data manually
+when synchronization is unavailable; those local changes are not written back
+to Spond.
+
 ## Link Model
 
 - `Squad.spondId` links a Squad to one Spond group.

@@ -25,7 +25,7 @@ export default function TeamDetailPage() {
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
-  const { formations } = useMatchPlanning();
+  const { formations, matchPlanningEnabled } = useMatchPlanning();
   
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
   const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
@@ -247,7 +247,7 @@ export default function TeamDetailPage() {
               )}
             </button>
 
-            {event.kind === 'match' && event.matchFormatId && (
+            {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
               <button
                 type="button"
                 className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
@@ -405,7 +405,7 @@ export default function TeamDetailPage() {
             currentShirtAssignments={team.shirtAssignments}
           />
 
-          <AssignTeamPropertyModal
+          {matchPlanningEnabled && <AssignTeamPropertyModal
             isOpen={isAssignFormationModalOpen}
             title={t('teamDetail.assignFormationTitle')}
             label={t('teamDetail.formationLabel')}
@@ -414,7 +414,7 @@ export default function TeamDetailPage() {
             options={formationOptions}
             onClose={() => setIsAssignFormationModalOpen(false)}
             onSave={handleChangeFormation}
-          />
+          />}
         </>
       )}
     </div>

@@ -10,7 +10,6 @@ import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
-import SpondBadge from '../components/SpondBadge';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
 import {
@@ -280,7 +279,6 @@ export default function PlayerDetailPage() {
       )}
 
       <div className="px-4 lg:px-0 mb-4 flex items-center gap-3">
-        {player.spondId && <SpondBadge />}
         <span className={`text-sm px-2 py-1 rounded ${playerStatusBadgeClassName}`}>
           {playerStatusLabel}
         </span>

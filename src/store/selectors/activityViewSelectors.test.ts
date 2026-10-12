@@ -16,8 +16,44 @@ describe('activity view selectors', () => {
   it('summarizes dates, readiness, invitation responses, and decline reasons', () => {
     expect(selectActivityCardSummary(baseActivity)).toMatchObject({
       date: '2026-05-01', startTime: '18:30', teamCount: 1, selectedPlayerCount: 1,
+      teams: [{ id: 'team-1', name: 'Team 1', startTime: '18:30', strength: 2, selectedPlayerCount: 1, responsiblePeople: [] }],
       allTeamsMeetMinimum: false, invitationStatusCounts: { accepted: 1, open: 1, sick: 1 },
       invitationCounts: { total: 3, accepted: 1, open: 1, declined: 1, declineReasons: { sick: 1 } },
+    });
+  });
+
+  it('summarizes team schedule, location fallbacks, strength, and responsible people', () => {
+    const activity = {
+      ...baseActivity,
+      kind: 'training' as const,
+      location: 'Main field',
+      teams: [
+        { ...baseActivity.teams[0], startTime: '17:30', location: 'Field 2', strength: 1, responsiblePersonIds: ['trainer-1'] },
+        { ...baseActivity.teams[0], id: 'team-2', name: 'Team 2', startTime: undefined, location: undefined, selectedPlayers: [] },
+      ],
+    };
+
+    expect(selectActivityCardSummary(activity, [{ id: 'trainer-1', firstName: 'Sam', lastName: 'Coach' }])).toMatchObject({
+      teams: [
+        {
+          id: 'team-1',
+          name: 'Team 1',
+          startTime: '17:30',
+          location: 'Field 2',
+          strength: 1,
+          selectedPlayerCount: 1,
+          responsiblePeople: [{ id: 'trainer-1', firstName: 'Sam', lastName: 'Coach', isLead: true }],
+        },
+        {
+          id: 'team-2',
+          name: 'Team 2',
+          startTime: '18:30',
+          location: 'Main field',
+          strength: 2,
+          selectedPlayerCount: 0,
+          responsiblePeople: [],
+        },
+      ],
     });
   });
 

@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
-import { isSpondManagedInvitation, selectInvitationCounts } from '../store/selectors/activitySelectors';
+import { isSpondManagedInvitation, selectInvitationCounts, selectInvitationsByResponse } from '../store/selectors/activitySelectors';
+import { getPlayerStats } from '../utils/playerStats';
+import Level from './Level';
 
 interface PlayerInvitationsCardProps {
   invitations: ActivityInvitation[];
   currentActivity: Activity;
+  activities: Activity[];
   players: Player[];
   onInviteClick: () => void;
   onStatusChange: (invitationId: string, response: InvitationResponse, declineReason?: InvitationDeclineReason) => void;
@@ -17,6 +20,7 @@ interface PlayerInvitationsCardProps {
 export default function PlayerInvitationsCard({
   invitations,
   currentActivity,
+  activities,
   players,
   onInviteClick,
   onStatusChange,
@@ -26,37 +30,53 @@ export default function PlayerInvitationsCard({
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
+  const [activeResponse, setActiveResponse] = useState<InvitationResponse>('accepted');
   const counts = selectInvitationCounts(currentActivity);
+  const visibleInvitations = useMemo(
+    () => selectInvitationsByResponse(invitations, activeResponse),
+    [invitations, activeResponse],
+  );
 
   return <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
     <div className="mb-4 flex items-center justify-between">
       <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
       {!readOnly && <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>}
     </div>
-    <div className="mb-4 flex flex-wrap gap-3 text-sm text-gray-600">
-      <span>{t('invitationStatus.open')}: {counts.open}</span>
-      <span>{t('invitationStatus.accepted')}: {counts.accepted}</span>
-      <span>{t('invitationStatus.declined')}: {counts.declined}</span>
-      {(['injured', 'sick', 'unavailable', 'unspecified'] as const).map((reason) => counts.declineReasons[reason] > 0 && <span key={reason}>{t(`activity.declineReasons.${reason}`)}: {counts.declineReasons[reason]}</span>)}
+    <div className="flex border-b border-gray-200" role="tablist" aria-label={t('domain.players')}>
+      {(['accepted', 'open', 'declined'] as const).map((response) => {
+        const isActive = activeResponse === response;
+        const count = counts[response];
+        return <button
+          key={response}
+          type="button"
+          role="tab"
+          aria-selected={isActive}
+          onClick={() => setActiveResponse(response)}
+          className={`-mb-px border-b-2 px-3 py-2 text-xs font-semibold transition-colors sm:px-4 ${
+            isActive ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {t(`invitationStatus.${response}`)} ({count})
+        </button>;
+      })}
     </div>
-    {invitations.length === 0 ? <p className="py-4 text-center text-gray-500">{readOnly ? t('playerInvitations.empty.noneSynced') : t('playerInvitations.empty.noneSent')}</p> : <div className="space-y-2">
-      {invitations.map((invitation) => {
+    {visibleInvitations.length === 0 ? <p className="mt-3 py-4 text-center text-sm text-gray-500">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</p> : <div className="mt-3 space-y-2">
+      {visibleInvitations.map((invitation) => {
         const player = players.find((entry) => entry.id === invitation.playerId);
         const assigned = assignedPlayerIds.includes(invitation.playerId);
         const isSpondManaged = readOnly || isSpondManagedInvitation(currentActivity, player);
-        return <div key={invitation.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 p-3" data-testid="invitation-row">
-          <p className="min-w-0 flex-1 basis-40 truncate font-medium text-gray-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
-          <select aria-label={t('common.labels.status')} value={invitation.response} onChange={(event) => {
-            const response = event.target.value as InvitationResponse;
-            onStatusChange(invitation.id, response, response === 'declined' ? declineReasons[invitation.id] || undefined : undefined);
-          }} className="rounded border border-gray-300 px-2 py-1 text-sm" disabled={isSpondManaged} title={isSpondManaged ? t('spondSync.managedResponse') : undefined}>
-            {(['open', 'accepted', 'declined'] as const).map((response) => <option key={response} value={response}>{t(`invitationStatus.${response}`)}</option>)}
-          </select>
-          {invitation.response === 'declined' && (readOnly ? <span className="text-sm text-gray-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+        const stats = player ? getPlayerStats(player.id, activities) : undefined;
+        return <div key={invitation.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 p-3 sm:p-4" data-testid="invitation-row">
+          <p className="min-w-0 flex-1 basis-32 truncate text-sm font-medium text-gray-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
+          {player && <Level level={player.level} className="text-base leading-none" />}
+          {stats && <span className="font-mono text-xs text-gray-500" title={t('teamCard.statsTooltip', { accepted: stats.acceptedCount, selected: stats.selectedCount })}>
+            {stats.selectedCount}/{stats.acceptedCount}
+          </span>}
+          {invitation.response === 'declined' && (readOnly ? <span className="text-xs text-gray-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
             const reason = event.target.value as InvitationDeclineReason | '';
             setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
             onStatusChange(invitation.id, 'declined', reason || undefined);
-          }} className="rounded border border-gray-300 px-2 py-1 text-sm">
+          }} className="rounded border border-gray-300 px-2 py-1 text-xs">
             <option value="">{t('activity.declineReasons.unspecified')}</option>
             {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
           </select>)}

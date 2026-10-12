@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import { useAuth } from '../hooks/useAuth';
-import { useSquad, useTrainers } from '../store/useStore';
+import { useSquad, useStore, useTrainers } from '../store/useStore';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
 import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
@@ -13,11 +13,14 @@ import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
-import SpondBadge from '../components/SpondBadge';
 import { formatDate } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, sortActivities } from '../store/selectors/activitySelectors';
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
+import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
+import Strength from '../components/Strength';
+import Level from '../components/Level';
 
 export default function EventDetailPage() {
   const { t } = useTranslation();
@@ -28,6 +31,7 @@ export default function EventDetailPage() {
   const { user } = useAuth();
   const squad = useSquad();
   const trainers = useTrainers();
+  const getTeamAverageLevel = useStore((state) => state.getTeamAverageLevel);
   const spondLinked = selectIsSpondLinked(squad);
   const canManage = canAccessRestrictedManagement(user, { squad, trainers });
   const loading = useAppLoading();
@@ -95,18 +99,55 @@ export default function EventDetailPage() {
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const renderTeam = (team: Team) => {
-    return <article key={team.id} className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <button type="button" onClick={() => navigate('/events/' + activity.id + '/teams/' + team.id)} className="font-semibold text-blue-700">{team.name}</button>
-        <span className="text-sm text-gray-600">{team.startTime}</span>
+    const teamTime = activity.kind === 'match' ? getActivityStartTime(activity) : team.startTime || getActivityStartTime(activity);
+    const teamLocation = activity.kind === 'match' ? activity.location : team.location || activity.location;
+    const hasDifferentTime = teamTime !== getActivityStartTime(activity);
+    const hasDifferentLocation = teamLocation !== activity.location;
+    const selectedPlayers = selectTeamPlayersByName(team, players);
+    const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
+
+    return <article key={team.id} aria-label={t('events.teamCardLabel', { team: team.name })} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className="flex items-start justify-between gap-3 p-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/events/${activity.id}/teams/${team.id}`)}
+              aria-label={t('events.openTeamDetails', { team: team.name })}
+              className="font-semibold text-gray-900 hover:text-blue-700"
+            >
+              {team.name}
+            </button>
+            <Strength level={team.strength || 2} className="text-xs" />
+            <span className="text-sm text-gray-600">👥 {selectedPlayers.length}/{activity.maxPlayersPerTeam ?? players.length}</span>
+            {selectedPlayers.length > 0 && <span className="text-sm text-gray-600">⭐ {getTeamAverageLevel(team).toFixed(1)}</span>}
+          </div>
+          {(hasDifferentTime || hasDifferentLocation) && <p className="mt-1 text-sm text-gray-600">
+            {hasDifferentTime && <>🕐 {teamTime}</>}
+            {hasDifferentLocation && <span className={hasDifferentTime ? 'ml-3' : ''}>📍 {teamLocation}</span>}
+          </p>}
+          {responsiblePeople.length > 0 && <p className="mt-1 text-sm text-blue-600">
+            👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}
+          </p>}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/events/${activity.id}/teams/${team.id}`)}
+          aria-label={t('events.openTeamDetails', { team: team.name })}
+          className="shrink-0 rounded p-2 text-gray-400 hover:bg-gray-100 hover:text-blue-600"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
       </div>
-      <div className="space-y-2">
-        {team.selectedPlayers.map((playerId) => {
-          const player = players.find((entry) => entry.id === playerId);
-          return <div key={playerId} className="flex items-center justify-between text-sm">
-            <span>{player ? `${player.firstName} ${player.lastName}` : playerId}</span>
-          </div>;
-        })}
+      <div className="border-t border-gray-100 px-4 py-2">
+        {selectedPlayers.length > 0 ? <ul className="space-y-1">
+          {selectedPlayers.map((player) => <li key={player.id} className="flex items-center gap-2 py-1 text-sm text-gray-700">
+            <span>{player.firstName} {player.lastName}</span>
+            <Level level={player.level} className="text-xs" />
+          </li>)}
+        </ul> : <p className="py-1 text-sm text-gray-500">{t('teamDetail.noPlayersSelected')}</p>}
       </div>
     </article>;
   };
@@ -121,7 +162,7 @@ export default function EventDetailPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="page-subtitle">📅 {formatDate(getActivityDate(activity))} · 🕐 {getActivityStartTime(activity)}{activity.location && <span className="ml-3">📍 {activity.location}</span>}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-700"><span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium">{t(`activity.kinds.${activity.kind}`)}</span>{activity.spondId && <SpondBadge />}{activity.kind === 'match' && activity.opponentName && <span>{t('activity.fields.opponent')}: {activity.opponentName}</span>}<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800" data-testid="activity-phase">{t(`eventDetail.phases.${phase}`)}</span></div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-700"><span className="rounded-full bg-orange-100 px-2 py-1 text-xs font-medium">{t(`activity.kinds.${activity.kind}`)}</span>{activity.kind === 'match' && activity.opponentName && <span>{t('activity.fields.opponent')}: {activity.opponentName}</span>}<span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800" data-testid="activity-phase">{t(`eventDetail.phases.${phase}`)}</span></div>
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={() => setIsEditOpen(true)} className="text-sm font-medium text-blue-600">{t('common.actions.edit')}</button>
@@ -140,6 +181,7 @@ export default function EventDetailPage() {
       {sections.invitations && <PlayerInvitationsCard
         invitations={activity.invitations}
         currentActivity={activity}
+        activities={activities}
         players={players}
         readOnly={spondLinked}
         onInviteClick={() => setIsInviteOpen(true)}

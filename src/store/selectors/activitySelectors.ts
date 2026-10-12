@@ -3,6 +3,7 @@ import type {
   ActivityInvitation,
   ActivityKind,
   InvitationDeclineReason,
+  InvitationResponse,
   InvitationStatus,
   Player,
 } from '../../types';
@@ -93,6 +94,13 @@ export const selectAcceptedPlayerIds = (activity: Pick<Activity, 'invitations'>)
 
 export const selectSelectedPlayerIds = (activity: Pick<Activity, 'teams'>): Set<string> =>
   new Set((activity.teams ?? []).flatMap((team) => team.selectedPlayers ?? []));
+
+export const selectInvitationsByResponse = (
+  invitations: ActivityInvitation[],
+  response: InvitationResponse,
+): ActivityInvitation[] => {
+  return invitations.filter((invitation) => invitation.response === response);
+};
 
 export const getActivityStartTime = (activity: Activity): string => {
   if (activity.kind === 'match') return getActivityTime(activity);

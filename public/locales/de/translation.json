@@ -63,7 +63,8 @@
     "teamCount_other": "{{count}} Teams",
     "playersMarkedAs": "Spieler mit Status {{status}}",
     "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden",
-    "invitationCounts": "Einladungszahlen"
+    "invitationCounts": "Einladungszahlen",
+    "teamCardLabel": "Details zu {{team}}"
   },
   "players": {
     "eventHistory": {

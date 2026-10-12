@@ -12,6 +12,7 @@ import {
   selectAcceptedPlayerIds,
   selectActivitiesOfKinds,
   selectInvitationCounts,
+  selectInvitationsByResponse,
   selectPastActivities,
   selectSelectedPlayerIds,
   selectUpcomingActivities,
@@ -46,6 +47,22 @@ describe('activity time helpers', () => {
     const a = activity({ startsAt: '2026-05-02T09:45:00.000Z' });
     expect(getActivityDate(a)).toBe('2026-05-02');
     expect(getActivityTime(a)).toBe('09:45');
+  });
+
+  describe('selectInvitationsByResponse', () => {
+    it('returns only invitations with the requested response', () => {
+      const invitations: ActivityInvitation[] = [
+        invitation({ id: 'accepted', response: 'accepted' }),
+        invitation({ id: 'open', response: 'open' }),
+        invitation({ id: 'declined', response: 'declined' }),
+      ];
+
+      expect(selectInvitationsByResponse(invitations, 'accepted')).toEqual([invitations[0]]);
+    });
+
+    it('returns an empty list when no invitations match', () => {
+      expect(selectInvitationsByResponse([invitation({ response: 'open' })], 'declined')).toEqual([]);
+    });
   });
 
   it('builds startsAt from date and time with a midnight fallback', () => {

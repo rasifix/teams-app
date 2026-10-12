@@ -63,7 +63,8 @@
     "teamCount_other": "{{count}} teams",
     "playersMarkedAs": "Players marked as {{status}}",
     "playersAssignedToTeams": "Players who have been assigned to teams",
-    "invitationCounts": "Invitation counts"
+    "invitationCounts": "Invitation counts",
+    "teamCardLabel": "{{team}} details"
   },
   "players": {
     "eventHistory": {

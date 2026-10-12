@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPlayerStats } from '../utils/playerStats';
 import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
@@ -53,7 +52,6 @@ export default function TeamCard({
   onDragOverPlayer
 }: TeamCardProps) {
   const { t } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const selectedPlayers = team.selectedPlayers || [];
   const hasCapacity = selectedPlayers.length < maxPlayersPerTeam;
   
@@ -111,18 +109,6 @@ export default function TeamCard({
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center flex-1 min-w-0">
-          <div
-            className="hidden lg:flex w-5 ml-1 mr-2 items-center justify-center cursor-pointer select-none self-center"
-            onClick={() => setIsCollapsed(c => !c)}
-            title={isCollapsed ? t('teamCard.expand') : t('teamCard.collapse')}
-          >
-            <svg
-              className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-              fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
           <div className="flex-1">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             <button
@@ -174,9 +160,19 @@ export default function TeamCard({
           >
             👕 {t('nav.shirts')}
           </button>
+          <button
+            type="button"
+            onClick={() => onOpenTeam(team.id)}
+            aria-label={t('events.openTeamDetails', { team: team.name })}
+            className="ml-1 self-center text-gray-400 hover:text-blue-600"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
         </div>
       </div>
-      {selectedPlayers.length > 0 && !isCollapsed && (
+      {selectedPlayers.length > 0 && (
         <>
         <div className="my-3 -mx-4 border-t border-gray-100" />
         <div className="lg:pl-8">

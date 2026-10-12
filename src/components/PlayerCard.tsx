@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import type { Player } from '../types';
 import Level from './Level';
 import { getBirthYear } from '../utils/birthDate';
-import SpondBadge from './SpondBadge';
 
 interface PlayerCardProps {
   player: Player;
@@ -63,7 +62,6 @@ export default function PlayerCard({
               </p>
             </div>
             <div className="ml-2 flex-shrink-0 flex items-center gap-2">
-              {player.spondId && <SpondBadge />}
               <Level level={player.level} className="text-xs" />
               <svg className={`w-5 h-5 ${arrowIconClassName}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />

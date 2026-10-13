@@ -702,6 +702,10 @@
     "selectedCount": "{{count}} selected",
     "noPlayersInRange": "No available players in this level range",
     "selectedPlayersSummary": "{{count}} player(s) selected",
+    "currentPlayers": "Players currently in this team",
+    "removePlayer": "Remove",
+    "undoRemove": "Undo",
+    "saveChanges": "Save changes",
     "tooManySelected": "Too many selected (max {{max}})",
     "addPlayersAction_one": "Add {{count}} Player",
     "addPlayersAction_other": "Add {{count}} Players"
@@ -914,6 +918,10 @@
     "wizard": {
       "next": "Continue",
       "progress": "Import progress",
+      "subgroups": {
+        "title": "Spond subgroups",
+        "help": "Select the subgroups to include in this synchronization."
+      },
       "typesHelp": "Choose the data you want to review and import.",
       "periodHelp": "Choose a configured period or enter the date range for the events to synchronize.",
       "playerImportHelp": "Load the Spond group members to review which players should be linked or created.",

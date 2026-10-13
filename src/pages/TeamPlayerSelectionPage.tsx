@@ -20,6 +20,7 @@ export default function TeamPlayerSelectionPage() {
   const team = event?.teams.find(t => t.id === teamId);
   
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
+  const [removedPlayerIds, setRemovedPlayerIds] = useState<string[]>([]);
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   
   const availablePlayers = useMemo(() => event && team
@@ -36,7 +37,7 @@ export default function TeamPlayerSelectionPage() {
   };
   
   const handleSelectAll = () => {
-    const currentPlayerCount = team?.selectedPlayers?.length || 0;
+    const currentPlayerCount = (team?.selectedPlayers?.length || 0) - removedPlayerIds.length;
     const remainingSlots = event ? maxPlayersPerTeam - currentPlayerCount : 0;
     const playersToSelect = availablePlayers.slice(0, remainingSlots).map(p => p.id);
     setSelectedPlayerIds(playersToSelect);
@@ -46,11 +47,15 @@ export default function TeamPlayerSelectionPage() {
     setSelectedPlayerIds([]);
   };
   
+  const currentPlayers = team?.selectedPlayers || [];
+
   const handleSave = async () => {
     if (!event || !eventId || !team) return;
     
-    const currentPlayers = team.selectedPlayers || [];
-    const updatedPlayers = [...currentPlayers, ...selectedPlayerIds];
+    const updatedPlayers = [
+      ...currentPlayers.filter((playerId) => !removedPlayerIds.includes(playerId)),
+      ...selectedPlayerIds,
+    ];
     
     const updatedTeams = event.teams.map(t =>
       t.id === teamId
@@ -72,7 +77,7 @@ export default function TeamPlayerSelectionPage() {
   
   const currentPlayerCount = team.selectedPlayers?.length || 0;
   const remainingSlots = maxPlayersPerTeam - currentPlayerCount;
-  const canAddMore = selectedPlayerIds.length <= remainingSlots;
+  const canAddMore = selectedPlayerIds.length <= remainingSlots + removedPlayerIds.length;
   
   return (
     <div className="page-container pb-24">
@@ -103,6 +108,33 @@ export default function TeamPlayerSelectionPage() {
           onChange={setLevelRange}
         />
       </div>
+
+      {currentPlayers.length > 0 && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+          <h2 className="mb-2 text-sm font-semibold text-gray-900">{t('teamPlayerSelection.currentPlayers')}</h2>
+          <div className="space-y-2">
+            {currentPlayers.map((playerId) => {
+              const player = players.find((candidate) => candidate.id === playerId);
+              if (!player) return null;
+              const isRemoved = removedPlayerIds.includes(playerId);
+              return (
+                <div key={playerId} className={`flex items-center justify-between rounded border p-2 text-sm ${isRemoved ? 'border-red-200 bg-red-50 text-gray-500' : 'border-gray-200'}`}>
+                  <span className={isRemoved ? 'line-through' : ''}>{player.firstName} {player.lastName}</span>
+                  <button
+                    type="button"
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => setRemovedPlayerIds((current) => isRemoved
+                      ? current.filter((id) => id !== playerId)
+                      : [...current, playerId])}
+                  >
+                    {isRemoved ? t('teamPlayerSelection.undoRemove') : t('teamPlayerSelection.removePlayer')}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       
       {/* Selection Controls */}
       {availablePlayers.length > 0 && (
@@ -188,9 +220,11 @@ export default function TeamPlayerSelectionPage() {
           </div>
           <Button
             onClick={handleSave}
-            disabled={selectedPlayerIds.length === 0 || !canAddMore}
+            disabled={(selectedPlayerIds.length === 0 && removedPlayerIds.length === 0) || !canAddMore}
           >
-            {t('teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })}
+            {selectedPlayerIds.length > 0
+              ? t('teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })
+              : t('teamPlayerSelection.saveChanges')}
           </Button>
         </div>
       </div>

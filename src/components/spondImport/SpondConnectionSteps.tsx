@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import Button from '../ui/Button';
 import type { Period } from '../../types';
+import type { SpondGroupSnapshot } from '../../types/spond';
 import SpondWizardActions from './SpondWizardActions';
 import type { SpondImportType } from './types';
 
@@ -98,6 +99,10 @@ export function SpondGroupStep({
 
 interface SpondImportTypesStepProps {
   scope: 'all' | 'events' | 'players';
+  groups: SpondGroupSnapshot[];
+  groupId: string;
+  selectedSubGroupId: string;
+  onSubGroupSelectionChange: (subGroupId: string) => void;
   types: SpondImportType[];
   periods: Period[];
   periodId: string;
@@ -115,6 +120,10 @@ interface SpondImportTypesStepProps {
 
 export function SpondImportTypesStep({
   scope,
+  groups,
+  groupId,
+  selectedSubGroupId,
+  onSubGroupSelectionChange,
   types,
   periods,
   periodId,
@@ -133,9 +142,32 @@ export function SpondImportTypesStep({
   const isEventOnly = scope === 'events';
   const isPlayerOnly = scope === 'players';
   const hasEvents = types.includes('events');
+  const subGroups = groups.find((group) => group.id === groupId)?.subGroups ?? [];
 
   return (
     <>
+      {subGroups.length > 0 && (
+        <div className="space-y-2">
+          <div>
+            <p className="form-label mb-0">{t('spondSync.wizard.subgroups.title')}</p>
+            <p className="text-sm text-gray-600">{t('spondSync.wizard.subgroups.help')}</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {subGroups.map((subGroup) => (
+              <label key={subGroup.id} className="flex cursor-pointer items-center gap-2 rounded border border-gray-200 p-3 hover:bg-gray-50">
+                <input
+                  type="radio"
+                  name="spond-subgroup"
+                  checked={selectedSubGroupId === subGroup.id}
+                  onChange={() => onSubGroupSelectionChange(subGroup.id)}
+                />
+                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: subGroup.color ?? '#9ca3af' }} aria-hidden="true" />
+                <span>{subGroup.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
       {isEventOnly ? (
         <>
           <p className="text-sm text-gray-600">{t('spondSync.wizard.periodHelp')}</p>
@@ -197,7 +229,7 @@ export function SpondImportTypesStep({
       <SpondWizardActions
         back={onBack}
         next={onNext}
-        nextDisabled={busy || types.length === 0 || (hasEvents && Boolean(dateRangeError))}
+        nextDisabled={busy || types.length === 0 || (subGroups.length > 0 && !selectedSubGroupId) || (hasEvents && Boolean(dateRangeError))}
         busy={busy}
       />
     </>

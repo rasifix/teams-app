@@ -49,6 +49,32 @@ describe('Spond proxy client', () => {
     await expect(client.getSnapshot('group-1', 'from', 'to')).rejects.toThrow('SPOND_AUTH_REQUIRED');
   });
 
+  it('passes selected Spond subgroup IDs when loading a snapshot', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce([{ id: 'group-1', name: 'U12', subGroups: [{ id: 'sub-1', name: 'Team orange' }] }])
+      .mockResolvedValueOnce({
+        group: { id: 'group-1', name: 'U12', subGroups: [{ id: 'sub-1', name: 'Team orange' }], members: [] },
+        events: [],
+        sourceReadAt: '2026-10-10T12:00:00.000Z',
+      });
+    const client = createSpondReadClient();
+
+    await client.login('coach@example.com', 'password');
+    await client.getSnapshot('group-1', 'from', 'to', 'sub-1');
+
+    expect(request).toHaveBeenNthCalledWith(2, '/api/integrations/spond/snapshot', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'coach@example.com',
+        password: 'password',
+        groupId: 'group-1',
+        subGroupId: 'sub-1',
+        from: 'from',
+        to: 'to',
+      }),
+    });
+  });
+
   it('normalizes Spond UTC instants to the activity wall-clock convention', async () => {
     vi.spyOn(apiClient, 'request')
       .mockResolvedValueOnce([{ id: 'group-1', name: 'U12' }])

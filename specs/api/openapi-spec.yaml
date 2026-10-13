@@ -92,6 +92,9 @@ paths:
                 - type: object
                   properties:
                     groupId: { type: string }
+                    subGroupId:
+                      type: string
+                      description: Optional single Spond subgroup ID to include; omitted means the whole group.
                     from: { type: string, format: date-time }
                     to: { type: string, format: date-time }
                   required: [groupId, from, to]
@@ -4662,17 +4665,32 @@ components:
       properties:
         id: { type: string }
         name: { type: string }
+        subGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondSubGroup'
         members:
           type: array
           items:
             $ref: '#/components/schemas/SpondMemberSnapshot'
       required: [id, name, members]
+    SpondSubGroup:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        color: { type: string }
+      required: [id, name]
     SpondGroupSummary:
       type: object
       properties:
         id: { type: string }
         name: { type: string }
-      required: [id, name]
+        subGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondSubGroup'
+      required: [id, name, subGroups]
     SpondEventResponse:
       type: object
       properties:

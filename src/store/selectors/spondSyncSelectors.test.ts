@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Player } from '../../types';
-import type { SpondEventSnapshot, SpondMemberSnapshot } from '../../types/spond';
+import type { SpondEventSnapshot, SpondMemberSnapshot, SpondGroupSnapshot } from '../../types/spond';
 import {
   selectSpondDecisionSummary,
   selectSpondActionableEventRows,
@@ -17,6 +17,7 @@ import {
   selectNextSpondReviewStep,
   selectSpondSyncRange,
   selectSpondWizardProgressSteps,
+  selectSpondLinkedGroup,
 } from './spondSyncSelectors';
 
 const player = (overrides: Partial<Player> = {}): Player => ({
@@ -30,6 +31,24 @@ const activity = (overrides: Partial<Activity> = {}): Activity => ({
 });
 const event = (overrides: Partial<SpondEventSnapshot> = {}): SpondEventSnapshot => ({
   id: 'se1', groupId: 'sg1', name: 'Training', startsAt: '2026-10-10T10:00:00.000Z', responses: [], ...overrides,
+});
+
+describe('Spond linked group selector', () => {
+  const groups: SpondGroupSnapshot[] = [{
+    id: 'parent', name: 'U12', members: [], subGroups: [{ id: 'sub-1', name: 'Team orange' }],
+  }];
+
+  it('resolves a linked subgroup to its parent and subgroup ID', () => {
+    expect(selectSpondLinkedGroup(groups, 'sub-1')).toEqual({ groupId: 'parent', subGroupId: 'sub-1' });
+  });
+
+  it('keeps a top-level linked group at group scope', () => {
+    expect(selectSpondLinkedGroup(groups, 'parent')).toEqual({ groupId: 'parent' });
+  });
+
+  it('returns null when the linked ID is inaccessible', () => {
+    expect(selectSpondLinkedGroup(groups, 'missing')).toBeNull();
+  });
 });
 
 describe('Spond member selectors', () => {

@@ -23,6 +23,7 @@ import {
   selectFilteredSpondEventRows,
   selectNextSpondReviewStep,
   selectSpondActionableEventRows,
+  selectSpondLinkedGroup,
   selectSpondActivityDraftsWithSelection,
   selectSpondDateRangeError,
   selectSpondDecisionSummary,
@@ -37,7 +38,7 @@ import {
   type SpondEventFilter,
   type SpondMemberDraft,
 } from '../store/selectors/spondSyncSelectors';
-import type { SpondActivityDecision, SpondMemberDecision, SpondSnapshot } from '../types/spond';
+import type { SpondActivityDecision, SpondGroupSnapshot, SpondMemberDecision, SpondSnapshot } from '../types/spond';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { localDateStartToUtcISOString } from '../utils/dateFormatter';
 
@@ -71,8 +72,9 @@ export default function SpondImportPage() {
   const [step, setStep] = useState<Step>('credentials');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [groups, setGroups] = useState<Array<{ id: string; name: string }>>([]);
+  const [groups, setGroups] = useState<SpondGroupSnapshot[]>([]);
   const [groupId, setGroupId] = useState(squad?.spondId ?? '');
+  const [selectedSubGroupId, setSelectedSubGroupId] = useState('');
   const [types, setTypes] = useState<ImportType[]>(isEventOnly ? ['events'] : isPlayerOnly ? ['players', 'guardians'] : ['players', 'guardians', 'events']);
   const [periodId, setPeriodId] = useState('');
   const [from, setFrom] = useState(shiftedDate(-30));
@@ -117,6 +119,11 @@ export default function SpondImportPage() {
     return translated === key ? t('spondSync.errors.generic') : translated;
   };
 
+  const selectGroup = (nextGroupId: string) => {
+    setGroupId(nextGroupId);
+    setSelectedSubGroupId(groups.find((group) => group.id === nextGroupId)?.subGroups?.[0]?.id ?? '');
+  };
+
   const connect = async () => {
     setBusy(true);
     setError(null);
@@ -126,22 +133,30 @@ export default function SpondImportPage() {
     try {
       await client.login(email.trim(), password);
       const available = await client.getGroups();
-      const summaries = available.map(({ id, name }) => ({ id, name }));
-      setGroups(summaries);
+      setGroups(available);
       if (isScopedSync) {
         const linkedGroupId = squad.spondId?.trim();
-        if (!linkedGroupId || !summaries.some((group) => group.id === linkedGroupId)) {
+        const linkedGroup = selectSpondLinkedGroup(available, linkedGroupId);
+        if (!linkedGroup) {
           throw new Error('SPOND_LINKED_GROUP_NOT_FOUND');
         }
-        setGroupId(linkedGroupId);
+        setGroupId(linkedGroup.groupId);
+        setSelectedSubGroupId(linkedGroup.subGroupId ?? '');
         setStep('types');
         return;
       }
-      const preferred = squad.spondId && summaries.some((group) => group.id === squad.spondId)
-        ? squad.spondId
-        : summaries.length === 1 ? summaries[0].id : '';
-      setGroupId(preferred);
-      setStep(summaries.length === 1 ? 'types' : 'group');
+      const preferred = selectSpondLinkedGroup(available, squad.spondId)?.groupId
+        ?? (available.length === 1 ? available[0].id : '');
+      if (preferred) {
+        setGroupId(preferred);
+        const linkedGroup = selectSpondLinkedGroup(available, squad.spondId);
+        setSelectedSubGroupId(linkedGroup?.subGroupId ?? '');
+      }
+      else {
+        setGroupId('');
+        setSelectedSubGroupId('');
+      }
+      setStep(available.length === 1 ? 'types' : 'group');
     } catch (caught) {
       client.dispose();
       clientRef.current = null;
@@ -160,6 +175,7 @@ export default function SpondImportPage() {
         groupId,
         localDateStartToUtcISOString(from),
         localDateStartToUtcISOString(to),
+        selectedSubGroupId || undefined,
       );
       const nextMemberRows = selectSpondMemberRows(nextSnapshot.group.members, players);
       const nextGuardianRows = selectSpondGuardianRows(nextSnapshot.group.members, players);
@@ -318,7 +334,7 @@ export default function SpondImportPage() {
             <SpondGroupStep
               groups={groups}
               groupId={groupId}
-              onGroupChange={setGroupId}
+              onGroupChange={selectGroup}
               onBack={previousStep}
               onNext={() => setStep("types")}
             />
@@ -326,6 +342,10 @@ export default function SpondImportPage() {
           {step === "types" && (
             <SpondImportTypesStep
               scope={isEventOnly ? "events" : isPlayerOnly ? "players" : "all"}
+              groups={groups}
+              groupId={groupId}
+              selectedSubGroupId={selectedSubGroupId}
+              onSubGroupSelectionChange={setSelectedSubGroupId}
               types={types}
               periods={periods}
               periodId={periodId}

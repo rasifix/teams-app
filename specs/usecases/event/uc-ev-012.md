@@ -12,6 +12,7 @@ This use case covers:
 - starting Sync from the Events page,
 - using a predefined Squad period or custom date range,
 - reading Events only from the linked Spond group,
+- selecting one subgroup of that linked group for synchronization,
 - hiding unchanged Events,
 - filtering actionable Events by Training or Match name,
 - selecting all or none of the visible Events,
@@ -47,9 +48,12 @@ The actor chooses the Spond-logo Sync action on Events.
    selector is shown.
 4. System offers configured Squad periods when at least one exists, plus a
    custom date range. Selecting a period sets the range to its start/end dates.
-5. System validates the range and converts its Europe/Zurich calendar
+5. System lists the linked group's subgroups and selects the first subgroup by
+   default. The actor selects exactly one subgroup; when no subgroups are
+   returned, the whole group is synchronized.
+6. System validates the range and converts its Europe/Zurich calendar
    boundaries to UTC instants before loading the Spond snapshot.
-6. System converts returned Spond event instants exactly once into the
+7. System converts returned Spond event instants exactly once into the
    application's Europe/Zurich wall-clock convention.
 7. System matches Events by existing `spondId`; otherwise same-calendar-day
    Events are suggestions. A single suggestion is selected automatically.
@@ -116,6 +120,8 @@ The actor chooses the Spond-logo Sync action on Events.
 ## Business Rules
 
 - Event sync uses only `Squad.spondId` and never displays a group selector.
+- Subgroup selection is local to each synchronization run; all returned
+  subgroups are selected by default.
 - The scoped flow submits skip decisions for member data and changes Events
   only.
 - An Event is actionable when it is unlinked or when supported metadata or a

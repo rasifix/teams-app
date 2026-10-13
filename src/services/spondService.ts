@@ -10,7 +10,7 @@ import { instantToWallClockISOString } from '../utils/dateFormatter';
 export interface SpondReadClient {
   login(email: string, password: string): Promise<void>;
   getGroups(): Promise<SpondGroupSnapshot[]>;
-  getSnapshot(groupId: string, from: string, to: string): Promise<SpondSnapshot>;
+  getSnapshot(groupId: string, from: string, to: string, subGroupId?: string): Promise<SpondSnapshot>;
   dispose(): void;
 }
 
@@ -31,11 +31,18 @@ class ProxySpondReadClient implements SpondReadClient {
     return this.#groups;
   }
 
-  async getSnapshot(groupId: string, from: string, to: string): Promise<SpondSnapshot> {
+  async getSnapshot(groupId: string, from: string, to: string, subGroupId?: string): Promise<SpondSnapshot> {
     this.#requireCredentials();
     const snapshot = await apiClient.request<SpondSnapshot>('/api/integrations/spond/snapshot', {
       method: 'POST',
-      body: JSON.stringify({ email: this.#email, password: this.#password, groupId, from, to }),
+      body: JSON.stringify({
+        email: this.#email,
+        password: this.#password,
+        groupId,
+        ...(subGroupId ? { subGroupId } : {}),
+        from,
+        to,
+      }),
     });
     return {
       ...snapshot,
@@ -54,11 +61,11 @@ class ProxySpondReadClient implements SpondReadClient {
   }
 
   async #requestGroups(): Promise<SpondGroupSnapshot[]> {
-    const groups = await apiClient.request<Array<Pick<SpondGroupSnapshot, 'id' | 'name'>>>('/api/integrations/spond/groups', {
+    const groups = await apiClient.request<SpondGroupSnapshot[]>('/api/integrations/spond/groups', {
       method: 'POST',
       body: JSON.stringify({ email: this.#email, password: this.#password }),
     });
-    return groups.map((group) => ({ ...group, members: [] }));
+    return groups.map((group) => ({ ...group, members: group.members ?? [] }));
   }
 
   #requireCredentials(): void {

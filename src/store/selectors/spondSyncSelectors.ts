@@ -4,6 +4,7 @@ import type {
   SpondEventSnapshot,
   SpondMemberDecision,
   SpondMemberSnapshot,
+  SpondGroupSnapshot,
 } from '../../types/spond';
 
 const normalized = (value: string | undefined): string =>
@@ -24,6 +25,18 @@ const isTrainingName = (name: string): boolean => normalized(name).includes('tra
 
 export type SpondReviewStep = 'players' | 'guardians' | 'events';
 export type SpondWizardStep = 'credentials' | 'group' | 'types' | SpondReviewStep | 'summary';
+
+export function selectSpondLinkedGroup(
+  groups: SpondGroupSnapshot[],
+  linkedId: string | null | undefined,
+): { groupId: string; subGroupId?: string } | null {
+  const id = linkedId?.trim();
+  if (!id) return null;
+  const topLevelGroup = groups.find((group) => group.id === id);
+  if (topLevelGroup) return { groupId: topLevelGroup.id };
+  const parentGroup = groups.find((group) => group.subGroups?.some((subGroup) => subGroup.id === id));
+  return parentGroup ? { groupId: parentGroup.id, subGroupId: id } : null;
+}
 
 export function selectSpondWizardProgressSteps(
   reviewSteps: SpondReviewStep[],

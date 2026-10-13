@@ -16,6 +16,12 @@ export interface SpondMemberSnapshot {
   roles?: string[];
 }
 
+export interface SpondSubGroup {
+  id: string;
+  name: string;
+  color?: string;
+}
+
 export type SpondInvitationResponse = 'open' | 'accepted' | 'declined';
 
 export interface SpondEventResponse {
@@ -36,6 +42,7 @@ export interface SpondEventSnapshot {
 export interface SpondGroupSnapshot {
   id: string;
   name: string;
+  subGroups?: SpondSubGroup[];
   members: SpondMemberSnapshot[];
 }
 

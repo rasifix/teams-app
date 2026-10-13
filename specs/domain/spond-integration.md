@@ -45,6 +45,8 @@ management, invitations, manual RSVP). Spond is never a hard requirement.
 ## Link Model
 
 - `Squad.spondId` links a Squad to one Spond group.
+- A Spond group may expose subgroups. Each synchronization may select one
+  subgroup; omitting the subgroup means the full group is requested.
 - `Player.spondId`, `Guardian.spondId`, and `Event.spondId` link imported or
   matched local records to their Spond source records.
 - The initial link flow may list and select a Spond group.

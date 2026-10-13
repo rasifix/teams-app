@@ -10,6 +10,7 @@ import {
   isSpondManagedInvitation,
   isTeamActivity,
   selectAcceptedPlayerIds,
+  selectAvailableInvitations,
   selectActivitiesOfKinds,
   selectInvitationCounts,
   selectInvitationsByResponse,
@@ -63,6 +64,15 @@ describe('activity time helpers', () => {
     it('returns an empty list when no invitations match', () => {
       expect(selectInvitationsByResponse([invitation({ response: 'open' })], 'declined')).toEqual([]);
     });
+  });
+
+  it('selects accepted invitations whose players are not assigned to a team', () => {
+    const invitations = [
+      invitation({ id: 'available', playerId: 'p1', response: 'accepted' }),
+      invitation({ id: 'assigned', playerId: 'p2', response: 'accepted' }),
+      invitation({ id: 'open', playerId: 'p3', response: 'open' }),
+    ];
+    expect(selectAvailableInvitations(invitations, ['p2'])).toEqual([invitations[0]]);
   });
 
   it('builds startsAt from date and time with a midnight fallback', () => {

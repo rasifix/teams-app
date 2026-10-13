@@ -74,6 +74,11 @@ Status semantics:
 
 ## Scope Boundaries
 
+On the Events page, staff can review invitation tabs. The `Available` tab
+contains only Players whose invitation status is `accepted` and who are not
+yet selected in any Team for that Event. Players already selected are excluded
+from this tab; `Open` and `Declined` remain separate status views.
+
 The Invitation does:
 
 - model player response state for one Event,

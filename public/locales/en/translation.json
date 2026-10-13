@@ -437,6 +437,7 @@
     "reloadPage": "Reload Page"
   },
   "invitationStatus": {
+    "available": "Available",
     "accepted": "Accepted",
     "open": "Open",
     "declined": "Declined",

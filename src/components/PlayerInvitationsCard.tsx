@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
-import { isSpondManagedInvitation, selectInvitationCounts, selectInvitationsByResponse } from '../store/selectors/activitySelectors';
+import { isSpondManagedInvitation, selectAvailableInvitations, selectInvitationCounts, selectInvitationsByResponse } from '../store/selectors/activitySelectors';
 import { getPlayerStats } from '../utils/playerStats';
 import Level from './Level';
 
@@ -30,12 +30,15 @@ export default function PlayerInvitationsCard({
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
-  const [activeResponse, setActiveResponse] = useState<InvitationResponse>('accepted');
+  const [activeResponse, setActiveResponse] = useState<'available' | InvitationResponse>('available');
   const counts = selectInvitationCounts(currentActivity);
   const visibleInvitations = useMemo(
-    () => selectInvitationsByResponse(invitations, activeResponse),
-    [invitations, activeResponse],
+    () => activeResponse === 'available'
+      ? selectAvailableInvitations(invitations, assignedPlayerIds)
+      : selectInvitationsByResponse(invitations, activeResponse),
+    [invitations, activeResponse, assignedPlayerIds],
   );
+  const availableCount = selectAvailableInvitations(invitations, assignedPlayerIds).length;
 
   return <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
     <div className="mb-4 flex items-center justify-between">
@@ -43,9 +46,9 @@ export default function PlayerInvitationsCard({
       {!readOnly && <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>}
     </div>
     <div className="flex border-b border-gray-200" role="tablist" aria-label={t('domain.players')}>
-      {(['accepted', 'open', 'declined'] as const).map((response) => {
+      {(['available', 'open', 'declined'] as const).map((response) => {
         const isActive = activeResponse === response;
-        const count = counts[response];
+        const count = response === 'available' ? availableCount : counts[response];
         return <button
           key={response}
           type="button"

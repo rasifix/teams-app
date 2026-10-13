@@ -102,6 +102,14 @@ export const selectInvitationsByResponse = (
   return invitations.filter((invitation) => invitation.response === response);
 };
 
+export const selectAvailableInvitations = (
+  invitations: ActivityInvitation[],
+  assignedPlayerIds: string[] = [],
+): ActivityInvitation[] => {
+  const assigned = new Set(assignedPlayerIds);
+  return invitations.filter((invitation) => invitation.response === 'accepted' && !assigned.has(invitation.playerId));
+};
+
 export const getActivityStartTime = (activity: Activity): string => {
   if (activity.kind === 'match') return getActivityTime(activity);
   const teamStartTimes = (activity.teams ?? [])

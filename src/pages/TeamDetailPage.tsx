@@ -291,7 +291,7 @@ export default function TeamDetailPage() {
                 disabled={selectedPlayers.length >= (event.maxPlayersPerTeam ?? players.length)}
                 className='btn-sm'
               >
-                {t('common.actions.add')}
+                {t('common.actions.edit')}
               </Button>
             </div>
             

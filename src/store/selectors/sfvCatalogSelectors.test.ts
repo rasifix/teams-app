@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { SfvCategoryCatalog } from '../../types';
 import {
   selectDefaultActivityLimits,
+  selectDefaultActivityLimitsForCategory,
   selectIsOfficialMatchFormat,
   selectIsTournamentOnlyCategory,
   selectOfficialMatchFormatForCategory,
@@ -86,5 +87,13 @@ describe('sfvCatalogSelectors', () => {
         maxPlayersPerTeam: 12,
       });
     });
+  });
+
+  it('uses category-level limits when no match format is provided', () => {
+    expect(selectDefaultActivityLimitsForCategory({
+      version: '1', source: 'test', categories: {
+        E: { activityType: 'match', minPlayersPerTeam: 5, maxPlayersPerTeam: 8 },
+      },
+    }, 'E')).toEqual({ minPlayersPerTeam: 5, maxPlayersPerTeam: 8 });
   });
 });

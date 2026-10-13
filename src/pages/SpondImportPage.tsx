@@ -16,7 +16,7 @@ import type { SpondImportType } from '../components/spondImport/types';
 import type { SpondSyncResult } from '../components/SpondSyncResultBanner';
 import { useAuth } from '../hooks/useAuth';
 import { createSpondReadClient, importSpondSnapshot } from '../services/spondService';
-import { useActivities, usePlayers, useSquad, useSquadPeriods, useStore, useTrainers } from '../store';
+import { useActivities, usePlayers, useSfvCatalog, useSquad, useSquadPeriods, useStore, useTrainers } from '../store';
 import {
   selectInitialSpondActivityDrafts,
   selectInitialSpondMemberDrafts,
@@ -40,6 +40,7 @@ import {
   type SpondEventFilter,
   type SpondMemberDraft,
 } from '../store/selectors/spondSyncSelectors';
+import { selectDefaultActivityLimitsForCategory } from '../store/selectors/sfvCatalogSelectors';
 import type { SpondActivityDecision, SpondGroupSnapshot, SpondMemberDecision, SpondSnapshot } from '../types/spond';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { localDateStartToUtcISOString } from '../utils/dateFormatter';
@@ -65,10 +66,11 @@ export default function SpondImportPage() {
   const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/events' : '/match-planning';
   const { user } = useAuth();
   const squad = useSquad();
+  const sfvCatalog = useSfvCatalog();
   const periods = useSquadPeriods();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
-  const { activities } = useActivities();
+  const { activities, updateActivity: updateActivityRecord } = useActivities();
   const initializeApp = useStore((state) => state.initializeApp);
   const clientRef = useRef<ReturnType<typeof createSpondReadClient> | null>(null);
   const [step, setStep] = useState<Step>('credentials');
@@ -116,6 +118,7 @@ export default function SpondImportPage() {
   const canImport = Boolean(squad && canAccessRestrictedManagement(user, { squad, trainers }));
   const reviewSteps = types.filter((type) => type !== 'guardians' || types.includes('players'));
   const progressSteps = selectSpondWizardProgressSteps(reviewSteps, !isScopedSync) as Step[];
+  const defaultActivityLimits = selectDefaultActivityLimitsForCategory(sfvCatalog, squad?.category);
 
   if (!squad) return <Navigate to="/squads" replace />;
   if (!canImport) return <Navigate to={closePath} replace />;
@@ -290,12 +293,23 @@ export default function SpondImportPage() {
     setBusy(true);
     setError(null);
     try {
+      const existingSpondEventIds = new Set(activities.flatMap((activity) => activity.spondId ? [activity.spondId] : []));
       const imported = await importSpondSnapshot(squad.id, {
         importId: crypto.randomUUID(), spondGroupId: snapshot.group.id, from, to,
         squadUpdatedAt: squad.updatedAt, snapshot,
         members: memberDecisions, activities: activityDecisions,
       });
       await initializeApp();
+      if (defaultActivityLimits) {
+        const newlyCreatedActivities = useStore.getState().activities.filter((activity) => (
+          activity.spondId
+          && !existingSpondEventIds.has(activity.spondId)
+          && (activity.kind === 'match' || activity.kind === 'tournament')
+        ));
+        for (const activity of newlyCreatedActivities) {
+          await updateActivityRecord(activity.id, defaultActivityLimits);
+        }
+      }
       clientRef.current?.dispose();
       clientRef.current = null;
       const syncResult: SpondSyncResult = {

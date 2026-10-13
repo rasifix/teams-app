@@ -73,6 +73,17 @@ export function selectDefaultActivityLimits(
   return { minPlayersPerTeam: Math.min(min, max), maxPlayersPerTeam: Math.max(min, max) };
 }
 
+export function selectDefaultActivityLimitsForCategory(
+  catalog: SfvCategoryCatalog | null,
+  code: SquadCategory | null | undefined,
+): ActivityLimits | null {
+  const entry = code ? catalog?.categories[code] : undefined;
+  if (entry && (entry.minPlayersPerTeam !== undefined || entry.maxPlayersPerTeam !== undefined)) {
+    return selectDefaultActivityLimits(entry);
+  }
+  return selectDefaultActivityLimits(selectOfficialMatchFormatForCategory(catalog, code));
+}
+
 function toLegacyFormat(code: SquadCategory): OfficialMatchFormat | null {
   const legacy = selectLegacyOfficialMatchFormat(code);
   return legacy ? { ...legacy, minimumPeriodsPerPlayer: 0 } : null;

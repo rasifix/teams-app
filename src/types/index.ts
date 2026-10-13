@@ -47,6 +47,8 @@ export interface SfvCategoryEntry {
   activityType: SfvActivityType;
   /** Absent for tournament-only categories. */
   matchFormat?: OfficialMatchFormat;
+  minPlayersPerTeam?: number;
+  maxPlayersPerTeam?: number;
 }
 
 export interface SfvCategoryCatalog {

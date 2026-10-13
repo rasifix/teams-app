@@ -75,6 +75,7 @@ export default function SpondImportPage() {
   const [groups, setGroups] = useState<SpondGroupSnapshot[]>([]);
   const [groupId, setGroupId] = useState(squad?.spondId ?? '');
   const [selectedSubGroupId, setSelectedSubGroupId] = useState('');
+  const [subGroupSelectionLocked, setSubGroupSelectionLocked] = useState(false);
   const [types, setTypes] = useState<ImportType[]>(isEventOnly ? ['events'] : isPlayerOnly ? ['players', 'guardians'] : ['players', 'guardians', 'events']);
   const [periodId, setPeriodId] = useState('');
   const [from, setFrom] = useState(shiftedDate(-30));
@@ -122,6 +123,7 @@ export default function SpondImportPage() {
   const selectGroup = (nextGroupId: string) => {
     setGroupId(nextGroupId);
     setSelectedSubGroupId(groups.find((group) => group.id === nextGroupId)?.subGroups?.[0]?.id ?? '');
+    setSubGroupSelectionLocked(false);
   };
 
   const connect = async () => {
@@ -142,6 +144,7 @@ export default function SpondImportPage() {
         }
         setGroupId(linkedGroup.groupId);
         setSelectedSubGroupId(linkedGroup.subGroupId ?? '');
+        setSubGroupSelectionLocked(Boolean(linkedGroup.subGroupId));
         setStep('types');
         return;
       }
@@ -151,10 +154,12 @@ export default function SpondImportPage() {
         setGroupId(preferred);
         const linkedGroup = selectSpondLinkedGroup(available, squad.spondId);
         setSelectedSubGroupId(linkedGroup?.subGroupId ?? '');
+        setSubGroupSelectionLocked(Boolean(linkedGroup?.subGroupId));
       }
       else {
         setGroupId('');
         setSelectedSubGroupId('');
+        setSubGroupSelectionLocked(false);
       }
       setStep(available.length === 1 ? 'types' : 'group');
     } catch (caught) {
@@ -345,6 +350,7 @@ export default function SpondImportPage() {
               groups={groups}
               groupId={groupId}
               selectedSubGroupId={selectedSubGroupId}
+              subGroupSelectionLocked={subGroupSelectionLocked}
               onSubGroupSelectionChange={setSelectedSubGroupId}
               types={types}
               periods={periods}

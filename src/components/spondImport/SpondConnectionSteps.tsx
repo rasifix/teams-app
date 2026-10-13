@@ -102,6 +102,7 @@ interface SpondImportTypesStepProps {
   groups: SpondGroupSnapshot[];
   groupId: string;
   selectedSubGroupId: string;
+  subGroupSelectionLocked: boolean;
   onSubGroupSelectionChange: (subGroupId: string) => void;
   types: SpondImportType[];
   periods: Period[];
@@ -123,6 +124,7 @@ export function SpondImportTypesStep({
   groups,
   groupId,
   selectedSubGroupId,
+  subGroupSelectionLocked,
   onSubGroupSelectionChange,
   types,
   periods,
@@ -146,7 +148,7 @@ export function SpondImportTypesStep({
 
   return (
     <>
-      {subGroups.length > 0 && (
+      {subGroups.length > 0 && !subGroupSelectionLocked && (
         <div className="space-y-2">
           <div>
             <p className="form-label mb-0">{t('spondSync.wizard.subgroups.title')}</p>
@@ -229,7 +231,7 @@ export function SpondImportTypesStep({
       <SpondWizardActions
         back={onBack}
         next={onNext}
-        nextDisabled={busy || types.length === 0 || (subGroups.length > 0 && !selectedSubGroupId) || (hasEvents && Boolean(dateRangeError))}
+        nextDisabled={busy || types.length === 0 || (!subGroupSelectionLocked && subGroups.length > 0 && !selectedSubGroupId) || (hasEvents && Boolean(dateRangeError))}
         busy={busy}
       />
     </>

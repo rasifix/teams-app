@@ -9,6 +9,8 @@ import {
   selectSpondEventRows,
   selectFilteredSpondEventRows,
   selectSpondGuardianRows,
+  selectSpondActionableGuardianRows,
+  selectSpondActionableMemberRows,
   selectInitialSpondActivityDrafts,
   selectInitialSpondMemberDrafts,
   selectSpondImportPreview,
@@ -69,6 +71,13 @@ describe('Spond member selectors', () => {
 
   it('falls back to name matching when the source birth date is absent', () => {
     expect(selectSpondMemberRows([member({ birthDate: undefined })], [player()])[0].suggestedPlayers).toHaveLength(1);
+  });
+
+  it('hides unchanged linked members while retaining new and changed members', () => {
+    const linked = selectSpondMemberRows([member()], [player({ spondId: 'sm1' })]);
+    const changed = selectSpondMemberRows([member({ id: 'changed', birthDate: '2015-01-02' })], [player({ spondId: 'changed' })]);
+    const missing = selectSpondMemberRows([member({ id: 'new' })], []);
+    expect(selectSpondActionableMemberRows([...linked, ...changed, ...missing]).map((row) => row.source.id)).toEqual(['changed', 'new']);
   });
 
   it('excludes members with trainer or custom administrator roles while retaining players and role-less snapshots', () => {
@@ -213,6 +222,13 @@ describe('Spond import defaults', () => {
     expect(rows[0].spondMemberIds).toEqual(['sm1', 'sm2']);
     expect(rows[0].childNames).toEqual(['Ada Lovelace', 'Katherine Johnson']);
     expect(selectSpondGuardianRows([], [])).toEqual([]);
+  });
+
+  it('hides guardians that are already linked', () => {
+    const rows = selectSpondGuardianRows([member({ guardians: [{ id: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] })], [
+      player({ guardians: [{ id: 'g1', spondId: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] }),
+    ]);
+    expect(selectSpondActionableGuardianRows(rows)).toEqual([]);
   });
 
   it('previews concrete actions and excludes guardians absent from final player decisions', () => {

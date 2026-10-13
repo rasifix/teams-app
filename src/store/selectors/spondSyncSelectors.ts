@@ -98,6 +98,15 @@ export function selectSpondMemberRows(members: SpondMemberSnapshot[], players: P
   });
 }
 
+export function selectSpondActionableMemberRows(rows: SpondMemberRow[]): SpondMemberRow[] {
+  return rows.filter((row) => {
+    if (!row.linkedPlayer) return true;
+    return normalized(row.linkedPlayer.firstName) !== normalized(row.source.firstName)
+      || normalized(row.linkedPlayer.lastName) !== normalized(row.source.lastName)
+      || Boolean(row.source.birthDate && row.linkedPlayer.birthDate !== row.source.birthDate);
+  });
+}
+
 export function selectSpondEventRows(events: SpondEventSnapshot[], activities: Activity[], players: Player[] = []): SpondEventRow[] {
   return events.map((source) => {
     const linkedActivity = activities.find((activity) => activity.spondId === source.id);
@@ -145,6 +154,10 @@ export function selectSpondGuardianRows(members: SpondMemberSnapshot[], players:
     rows.set(source.id, { source, spondMemberIds: [member.id], childNames: [childName], linkedGuardian });
   }));
   return Array.from(rows.values());
+}
+
+export function selectSpondActionableGuardianRows(rows: SpondGuardianRow[]): SpondGuardianRow[] {
+  return rows.filter((row) => !row.linkedGuardian);
 }
 
 export function selectInitialSpondMemberDrafts(rows: SpondMemberRow[]): Record<string, SpondMemberDraft> {

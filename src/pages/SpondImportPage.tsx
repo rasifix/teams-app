@@ -23,6 +23,8 @@ import {
   selectFilteredSpondEventRows,
   selectNextSpondReviewStep,
   selectSpondActionableEventRows,
+  selectSpondActionableGuardianRows,
+  selectSpondActionableMemberRows,
   selectSpondLinkedGroup,
   selectSpondActivityDraftsWithSelection,
   selectSpondDateRangeError,
@@ -93,8 +95,14 @@ export default function SpondImportPage() {
     clientRef.current = null;
   }, []);
 
-  const memberRows = useMemo(() => selectSpondMemberRows(snapshot?.group.members ?? [], players), [snapshot, players]);
-  const guardianRows = useMemo(() => selectSpondGuardianRows(snapshot?.group.members ?? [], players), [snapshot, players]);
+  const memberRows = useMemo(
+    () => selectSpondActionableMemberRows(selectSpondMemberRows(snapshot?.group.members ?? [], players)),
+    [snapshot, players],
+  );
+  const guardianRows = useMemo(
+    () => selectSpondActionableGuardianRows(selectSpondGuardianRows(snapshot?.group.members ?? [], players)),
+    [snapshot, players],
+  );
   const allEventRows = useMemo(
     () => selectSpondEventRows(snapshot?.events ?? [], activities, players),
     [snapshot, activities, players],
@@ -182,15 +190,20 @@ export default function SpondImportPage() {
         localDateStartToUtcISOString(to),
         selectedSubGroupId || undefined,
       );
-      const nextMemberRows = selectSpondMemberRows(nextSnapshot.group.members, players);
-      const nextGuardianRows = selectSpondGuardianRows(nextSnapshot.group.members, players);
+      const nextMemberRows = selectSpondActionableMemberRows(selectSpondMemberRows(nextSnapshot.group.members, players));
+      const nextGuardianRows = selectSpondActionableGuardianRows(selectSpondGuardianRows(nextSnapshot.group.members, players));
       const nextEventRows = selectSpondActionableEventRows(selectSpondEventRows(nextSnapshot.events, activities, players));
       setSnapshot(nextSnapshot);
       setMemberDrafts(selectInitialSpondMemberDrafts(nextMemberRows));
       setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
       setGuardianSelection(Object.fromEntries(nextGuardianRows.map((row) => [row.source.id, !row.linkedGuardian])));
       setPassword('');
-      setStep(reviewSteps[0] ?? 'summary');
+      const firstReviewStep = reviewSteps.find((reviewStep) => (
+        reviewStep === 'players' ? nextMemberRows.length > 0
+          : reviewStep === 'guardians' ? nextGuardianRows.length > 0
+            : nextEventRows.length > 0
+      ));
+      setStep(firstReviewStep ?? 'summary');
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {

@@ -933,7 +933,7 @@
       "eventsHelp": "Existing activities on the same day are selected automatically. Missing events are selected for import.",
       "noEventsToSync": "No events matching this filter need to be synchronized.",
       "summaryHelp": "Review every change that will be made before starting the import.",
-      "noChanges": "Nothing is selected for import.",
+      "noChanges": "There are no changes to sync.",
       "actions": {
         "create": "Create",
         "link": "Link",

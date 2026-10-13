@@ -933,7 +933,7 @@
       "eventsHelp": "Bestehende Termine am gleichen Tag werden automatisch ausgewählt. Fehlende Termine sind für den Import ausgewählt.",
       "noEventsToSync": "Keine Termine in diesem Filter müssen synchronisiert werden.",
       "summaryHelp": "Prüfe vor dem Import jede Änderung, die vorgenommen wird.",
-      "noChanges": "Für den Import ist nichts ausgewählt.",
+      "noChanges": "Es gibt keine Änderungen zu synchronisieren.",
       "actions": {
         "create": "Erstellen",
         "link": "Verknüpfen",

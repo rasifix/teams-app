@@ -143,10 +143,14 @@ export default function EventDetailPage() {
       </div>
       <div className="border-t border-gray-100 px-4 py-2">
         {selectedPlayers.length > 0 ? <ul className="space-y-1">
-          {selectedPlayers.map((player) => <li key={player.id} className="flex items-center gap-2 py-1 text-sm text-gray-700">
+          {selectedPlayers.map((player) => {
+            const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
+            return <li key={player.id} className="flex items-center gap-2 py-1 text-sm text-gray-700">
+            {shirtNumber && shirtNumber > 0 && <span className="w-6 text-xs font-extrabold text-gray-800">{shirtNumber}</span>}
             <span>{player.firstName} {player.lastName}</span>
             <Level level={player.level} className="text-xs" />
-          </li>)}
+          </li>;
+          })}
         </ul> : <p className="py-1 text-sm text-gray-500">{t('teamDetail.noPlayersSelected')}</p>}
       </div>
     </article>;

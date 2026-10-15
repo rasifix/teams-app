@@ -103,6 +103,13 @@ This use case covers:
 - The invitation overview remains visible in planning, selection-sent,
   started, and attendance-recorded phases. It is editable only during planning
   (and remains read-only for Spond-managed invitations).
+- The invitation overview renders Players as a plain compact list. It does not
+  use draggable cards or expose drag-and-drop affordances; Team selection is
+  changed only through the Team's Player-selection editor.
+- Selected Players inside Event Detail Team cards use the same compact list
+  presentation and row separators as the invitation overview, with Player
+  levels aligned to the right edge of each row.
+- Invitation and Team-card Player rows use the same fixed compact row height.
 - Team Detail sorts resolved Players by first name, then last name, without
   regard to letter casing or surrounding whitespace.
 - Player ID is the deterministic fallback when both comparable names match.
@@ -128,3 +135,10 @@ This use case covers:
 9. Given a sent, started, or attendance-recorded Event, Event Detail still
    shows accepted-but-unselected Players and declined Players with their
    decline reasons in a read-only invitation overview.
+10. Given any invitation status tab, its Players are displayed as plain list
+    items and cannot be dragged onto Teams.
+11. Given selected Players on an Event Detail Team card, they use the same
+    compact row spacing and separators as invitation list items, and their
+    levels align at the right edge of the list.
+12. Given invitation and selected-Player lists on Event Detail, their Player
+    rows have equal height.

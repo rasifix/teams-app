@@ -153,13 +153,13 @@ export default function EventDetailPage() {
         </button>
       </div>
       <div className="border-t border-gray-100 px-4 py-2">
-        {selectedPlayers.length > 0 ? <ul className="space-y-1">
+        {selectedPlayers.length > 0 ? <ul className="divide-y divide-gray-200">
           {selectedPlayers.map((player) => {
             const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
-            return <li key={player.id} className="flex items-center gap-2 py-1 text-sm text-gray-700">
+            return <li key={player.id} className="flex h-10 items-center gap-2 text-sm text-gray-700">
             {shirtNumber && shirtNumber > 0 && <span className="w-6 text-xs font-extrabold text-gray-800">{shirtNumber}</span>}
-            <span>{player.firstName} {player.lastName}</span>
-            <Level level={player.level} className="text-xs" />
+            <span className="min-w-0 flex-1 truncate">{player.firstName} {player.lastName}</span>
+            <Level level={player.level} className="text-base" />
           </li>;
           })}
         </ul> : <p className="py-1 text-sm text-gray-500">{t('teamDetail.noPlayersSelected')}</p>}
@@ -209,7 +209,6 @@ export default function EventDetailPage() {
       {sections.invitations && <PlayerInvitationsCard
         invitations={activity.invitations}
         currentActivity={activity}
-        activities={activities}
         players={players}
         readOnly={spondLinked || phase !== 'planning'}
         onInviteClick={() => setIsInviteOpen(true)}

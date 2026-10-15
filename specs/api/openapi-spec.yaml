@@ -5090,6 +5090,11 @@ components:
           type: array
           items:
             type: string
+        selectionRemovals:
+          type: array
+          description: Audit trail of players removed after the selection was sent.
+          items:
+            $ref: '#/components/schemas/SelectionRemoval'
         trainerId:
           type: string
           nullable: true
@@ -5124,6 +5129,18 @@ components:
         - strength
         - startTime
         - selectedPlayers
+    SelectionRemoval:
+      type: object
+      properties:
+        playerId:
+          type: string
+        reason:
+          type: string
+          enum: [sick, injured, noShow, other]
+        removedAt:
+          type: string
+          format: date-time
+      required: [playerId, reason, removedAt]
     Event:
       type: object
       properties:

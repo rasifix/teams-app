@@ -27,8 +27,8 @@ describe('activity lifecycle selectors', () => {
 
   it('maps phases to relevant sections', () => {
     expect(selectActivityPhaseSections('planning')).toEqual({ invitations: true, attendance: false });
-    expect(selectActivityPhaseSections('selectionSent')).toEqual({ invitations: false, attendance: false });
-    expect(selectActivityPhaseSections('started')).toEqual({ invitations: false, attendance: true });
-    expect(selectActivityPhaseSections('recorded')).toEqual({ invitations: false, attendance: true });
+    expect(selectActivityPhaseSections('selectionSent')).toEqual({ invitations: true, attendance: false });
+    expect(selectActivityPhaseSections('started')).toEqual({ invitations: true, attendance: true });
+    expect(selectActivityPhaseSections('recorded')).toEqual({ invitations: true, attendance: true });
   });
 });

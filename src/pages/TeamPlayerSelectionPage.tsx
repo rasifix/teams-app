@@ -3,13 +3,16 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers } from '../store';
 import { selectAvailablePlayersForTeamSelection } from '../store/selectors/teamPlayerSelectors';
+import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
 import { Button } from '../components/ui';
 import Level from '../components/Level';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 import { getBirthYear } from '../utils/birthDate';
+import { formatInstantDateTime } from '../utils/dateFormatter';
+import type { SelectionRemovalReason } from '../types';
 
 export default function TeamPlayerSelectionPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
@@ -21,6 +24,7 @@ export default function TeamPlayerSelectionPage() {
   
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
   const [removedPlayerIds, setRemovedPlayerIds] = useState<string[]>([]);
+  const [removalReasons, setRemovalReasons] = useState<Record<string, SelectionRemovalReason | ''>>({});
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
   
   const availablePlayers = useMemo(() => event && team
@@ -48,23 +52,26 @@ export default function TeamPlayerSelectionPage() {
   };
   
   const currentPlayers = team?.selectedPlayers || [];
+  const editState = event ? selectSelectionEditState(event) : null;
 
   const handleSave = async () => {
-    if (!event || !eventId || !team) return;
+    if (!event || !eventId || !team || !editState?.canEdit) return;
     
     const updatedPlayers = [
       ...currentPlayers.filter((playerId) => !removedPlayerIds.includes(playerId)),
       ...selectedPlayerIds,
     ];
     
-    const updatedTeams = event.teams.map(t =>
-      t.id === teamId
-        ? { ...t, selectedPlayers: updatedPlayers }
-        : t
+    const reasons = Object.fromEntries(
+      Object.entries(removalReasons).filter((entry): entry is [string, SelectionRemovalReason] => Boolean(entry[1])),
     );
-    
-    await updateActivitySelection(eventId, updatedTeams);
-    navigate(`/events/${eventId}/teams/${teamId}`);
+    const updatedTeams = selectTeamsWithSelectionChanges(
+      event.teams, team.id, updatedPlayers, editState.requiresRemovalReason ? reasons : {}, new Date().toISOString(),
+    );
+
+    if (await updateActivitySelection(eventId, updatedTeams)) {
+      navigate(`/events/${eventId}/teams/${teamId}`);
+    }
   };
   
   if (!event || !team) {
@@ -78,6 +85,8 @@ export default function TeamPlayerSelectionPage() {
   const currentPlayerCount = team.selectedPlayers?.length || 0;
   const remainingSlots = maxPlayersPerTeam - currentPlayerCount;
   const canAddMore = selectedPlayerIds.length <= remainingSlots + removedPlayerIds.length;
+  const hasMissingRemovalReasons = Boolean(editState?.requiresRemovalReason
+    && removedPlayerIds.some((playerId) => !removalReasons[playerId]));
   
   return (
     <div className="page-container pb-24">
@@ -98,6 +107,20 @@ export default function TeamPlayerSelectionPage() {
           })}
         </p>
       </div>
+
+      {!editState?.canEdit && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+          {t('teamPlayerSelection.eventPassedWarning')}
+        </div>
+      )}
+
+      {editState?.isSent && editState.canEdit && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+          {t('teamPlayerSelection.sentWarning', {
+            dateTime: event.selectionSentAt ? formatInstantDateTime(event.selectionSentAt, i18n.language) : '',
+          })}
+        </div>
+      )}
       
       {/* Level Filter */}
       <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -123,12 +146,30 @@ export default function TeamPlayerSelectionPage() {
                   <button
                     type="button"
                     className="text-red-600 hover:text-red-800"
+                    disabled={!editState?.canEdit}
                     onClick={() => setRemovedPlayerIds((current) => isRemoved
                       ? current.filter((id) => id !== playerId)
                       : [...current, playerId])}
                   >
                     {isRemoved ? t('teamPlayerSelection.undoRemove') : t('teamPlayerSelection.removePlayer')}
                   </button>
+                  {isRemoved && editState?.requiresRemovalReason && (
+                    <select
+                      value={removalReasons[playerId] ?? ''}
+                      onChange={(changeEvent) => setRemovalReasons((current) => ({
+                        ...current,
+                        [playerId]: changeEvent.target.value as SelectionRemovalReason | '',
+                      }))}
+                      className="form-input ml-2 w-auto"
+                      aria-label={t('teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
+                      required
+                    >
+                      <option value="">{t('teamPlayerSelection.selectRemovalReason')}</option>
+                      {(['sick', 'injured', 'noShow', 'other'] as SelectionRemovalReason[]).map((reason) => (
+                        <option key={reason} value={reason}>{t(`attendance.reasons.${reason}`)}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               );
             })}
@@ -142,6 +183,7 @@ export default function TeamPlayerSelectionPage() {
           <button
             type="button"
             onClick={handleSelectAll}
+            disabled={!editState?.canEdit}
             className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
           >
             {t('common.actions.selectAll')}
@@ -149,6 +191,7 @@ export default function TeamPlayerSelectionPage() {
           <button
             type="button"
             onClick={handleDeselectAll}
+            disabled={!editState?.canEdit}
             className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
           >
             {t('common.actions.deselectAll')}
@@ -168,7 +211,7 @@ export default function TeamPlayerSelectionPage() {
         ) : (
           availablePlayers.map(player => {
             const isSelected = selectedPlayerIds.includes(player.id);
-            const isDisabled = !isSelected && !canAddMore;
+            const isDisabled = !editState?.canEdit || (!isSelected && !canAddMore);
             
             return (
               <button
@@ -220,7 +263,7 @@ export default function TeamPlayerSelectionPage() {
           </div>
           <Button
             onClick={handleSave}
-            disabled={(selectedPlayerIds.length === 0 && removedPlayerIds.length === 0) || !canAddMore}
+            disabled={!editState?.canEdit || (selectedPlayerIds.length === 0 && removedPlayerIds.length === 0) || !canAddMore || hasMissingRemovalReasons}
           >
             {selectedPlayerIds.length > 0
               ? t('teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })

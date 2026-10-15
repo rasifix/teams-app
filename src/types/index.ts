@@ -126,6 +126,14 @@ export interface TeamLineupPeriod {
   assignments: LineupPositionAssignment[]; // selected players absent here are implicitly benched
 }
 
+export type SelectionRemovalReason = 'sick' | 'injured' | 'noShow' | 'other';
+
+export interface SelectionRemoval {
+  playerId: string;
+  reason: SelectionRemovalReason;
+  removedAt: string;
+}
+
 export interface Team {
   id: string;
   name: string;
@@ -133,6 +141,7 @@ export interface Team {
   startTime?: string; // HH:MM override; otherwise use the activity start time
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
+  selectionRemovals?: SelectionRemoval[]; // Audit trail for players removed after the selection was sent
   responsiblePersonIds?: string[]; // Members responsible for the team (trainers or guardians, one or more; players are never responsible)
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number

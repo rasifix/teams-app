@@ -13,20 +13,22 @@ import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
-import { formatDate } from '../utils/dateFormatter';
+import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, sortActivities } from '../store/selectors/activitySelectors';
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
+import { selectSelectionEditState } from '../store/selectors/selectionSelectors';
 import Strength from '../components/Strength';
 import Level from '../components/Level';
+import { Button } from '../components/ui';
 
 export default function EventDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivityAttendance, deleteActivity } = useActivities();
+  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, markActivitySelectionSent, updateActivityAttendance, deleteActivity } = useActivities();
   const { players } = usePlayers();
   const { user } = useAuth();
   const squad = useSquad();
@@ -41,6 +43,7 @@ export default function EventDetailPage() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isSendingSelection, setIsSendingSelection] = useState(false);
   const sortedActivities = sortActivities(activities);
   const currentIndex = activity ? sortedActivities.findIndex((entry) => entry.id === activity.id) : -1;
   const previous = currentIndex > 0 ? sortedActivities[currentIndex - 1] : undefined;
@@ -86,6 +89,13 @@ export default function EventDetailPage() {
     if (activity) await updateActivityAttendance(activity.id, attendance);
   };
 
+  const handleMarkSelectionSent = async () => {
+    if (!activity) return;
+    setIsSendingSelection(true);
+    await markActivitySelectionSent(activity.id);
+    setIsSendingSelection(false);
+  };
+
   const handleDeleteActivity = async () => {
     if (activity && await deleteActivity(activity.id)) navigate('/events');
   };
@@ -96,6 +106,7 @@ export default function EventDetailPage() {
 
   const phase = selectActivityPhase(activity);
   const sections = selectActivityPhaseSections(phase);
+  const selectionEditState = selectSelectionEditState(activity);
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const renderTeam = (team: Team) => {
@@ -177,7 +188,20 @@ export default function EventDetailPage() {
 
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
-        {activity.kind === 'tournament' ? <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">{t('eventDetail.teamsTitle')}</h2><button type="button" onClick={handleAddTeam} className="btn-primary btn-sm">{t('common.actions.add')}</button></div> : null}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">{t('eventDetail.teamsTitle')}</h2>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {activity.kind === 'tournament' && <button type="button" onClick={handleAddTeam} className="btn-secondary btn-sm">{t('common.actions.add')}</button>}
+            {!selectionEditState.isSent && selectionEditState.canEdit && activity.teams.length > 0 && (
+              <Button type="button" className="btn-sm" disabled={isSendingSelection} onClick={() => void handleMarkSelectionSent()}>
+                {t('eventDetail.markSelectionSent')}
+              </Button>
+            )}
+          </div>
+        </div>
+        {activity.selectionSentAt && <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">
+          {t('eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
+        </p>}
         {activity.teams.length === 0 ? <p className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{t('activity.noTeamsLegacy')}</p> : <div className="space-y-3">
           {activity.kind === 'match' ? renderTeam(activity.teams[0]) : activity.teams.map(renderTeam)}
         </div>}
@@ -187,7 +211,7 @@ export default function EventDetailPage() {
         currentActivity={activity}
         activities={activities}
         players={players}
-        readOnly={spondLinked}
+        readOnly={spondLinked || phase !== 'planning'}
         onInviteClick={() => setIsInviteOpen(true)}
         onStatusChange={handleInvitationStatusChange}
         onRemoveInvitation={handleRemoveInvitation}

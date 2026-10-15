@@ -5,7 +5,7 @@ import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning 
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
-import ConfirmDialog from '../components/ConfirmDialog';
+import SelectionRemovalDialog from '../components/SelectionRemovalDialog';
 import EditTeamModal from '../components/EditTeamModal';
 import AssignShirtsModal from '../components/AssignShirtsModal';
 import AssignResponsiblePeopleModal from '../components/AssignResponsiblePeopleModal';
@@ -14,20 +14,23 @@ import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 import { getActivityTime } from '../store/selectors/activitySelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
+import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
 import { getBirthYear } from '../utils/birthDate';
+import type { SelectionRemovalReason } from '../types';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
-  const { getActivityById, updateActivityTeams } = useActivities();
+  const { getActivityById, updateActivityTeams, updateActivitySelection } = useActivities();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
   const { formations, matchPlanningEnabled } = useMatchPlanning();
   
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
+  const [removalReason, setRemovalReason] = useState<SelectionRemovalReason | ''>('');
   const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
@@ -42,6 +45,7 @@ export default function TeamDetailPage() {
     : [];
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = team ? selectTeamPlayersByName(team, players) : [];
+  const selectionEditState = event ? selectSelectionEditState(event) : null;
   const formationOptions = useMemo(
     () => formations.map((formation) => ({ value: formation.id, label: formation.name })),
     [formations]
@@ -55,16 +59,20 @@ export default function TeamDetailPage() {
   }, [event, team]);
   
   const handleRemovePlayer = async () => {
-    if (!event || !eventId || !team || !playerToRemove) return;
-    
-    const updatedTeams = event.teams.map(t => 
-      t.id === teamId 
-        ? { ...t, selectedPlayers: t.selectedPlayers?.filter(id => id !== playerToRemove) || [] }
-        : t
+    if (!event || !eventId || !team || !playerToRemove || !selectionEditState?.canEdit) return;
+    if (selectionEditState.requiresRemovalReason && !removalReason) return;
+
+    const updatedTeams = selectTeamsWithSelectionChanges(
+      event.teams,
+      team.id,
+      team.selectedPlayers.filter((id) => id !== playerToRemove),
+      removalReason ? { [playerToRemove]: removalReason } : {},
+      new Date().toISOString(),
     );
-    
-    await updateActivityTeams(eventId, updatedTeams);
+
+    await updateActivitySelection(eventId, updatedTeams);
     setPlayerToRemove(null);
+    setRemovalReason('');
     setSwipedPlayerId(null);
   };
 
@@ -288,12 +296,13 @@ export default function TeamDetailPage() {
               </CardTitle>
               <Button 
                 onClick={handleAddPlayers}
-                disabled={selectedPlayers.length >= (event.maxPlayersPerTeam ?? players.length)}
+                disabled={!selectionEditState?.canEdit}
                 className='btn-sm'
               >
                 {t('common.actions.edit')}
               </Button>
             </div>
+            {!selectionEditState?.canEdit && <p className="mb-4 text-sm text-red-700">{t('teamPlayerSelection.eventPassedWarning')}</p>}
             
             {selectedPlayers.length === 0 ? (
               <div className="empty-state text-sm">{t('teamDetail.noPlayersSelected')}</div>
@@ -312,7 +321,7 @@ export default function TeamDetailPage() {
                         className={`flex items-center justify-between p-3 transition-transform duration-200 ${
                           swipedPlayerId === player.id ? '-translate-x-20' : 'translate-x-0'
                         }`}
-                        onTouchStart={(e) => handleTouchStart(player.id, e)}
+                        onTouchStart={(e) => selectionEditState?.canEdit && handleTouchStart(player.id, e)}
                       >
                         <div className="flex items-center gap-2 text-sm flex-1">
                           {shirtAssignment && shirtSet && (
@@ -358,17 +367,14 @@ export default function TeamDetailPage() {
         </Card>
       </div>
       
-      <ConfirmDialog
-        isOpen={!!playerToRemove}
-        title={t('teamDetail.removePlayerTitle')}
-        message={t('teamDetail.removePlayerMessage', {
-          firstName: playerToRemoveData?.firstName,
-          lastName: playerToRemoveData?.lastName,
-        })}
-        confirmText={t('teamDetail.removeAction')}
-        cancelText={t('common.actions.cancel')}
+      <SelectionRemovalDialog
+        isOpen={Boolean(playerToRemove)}
+        playerName={playerToRemoveData ? `${playerToRemoveData.firstName} ${playerToRemoveData.lastName}` : ''}
+        reason={removalReason}
+        reasonRequired={Boolean(selectionEditState?.requiresRemovalReason)}
+        onReasonChange={setRemovalReason}
         onConfirm={handleRemovePlayer}
-        onCancel={() => setPlayerToRemove(null)}
+        onCancel={() => { setPlayerToRemove(null); setRemovalReason(''); }}
       />
       
       {team && (

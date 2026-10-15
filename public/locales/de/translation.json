@@ -679,7 +679,7 @@
   "eventDetail": {
     "phases": {
       "planning": "In Planung",
-      "selectionSent": "Aufstellung versendet",
+      "selectionSent": "Aufgebot versendet",
       "started": "Gestartet",
       "recorded": "Anwesenheit erfasst"
     },
@@ -690,6 +690,8 @@
     "noPreviousEvent": "Kein vorheriges Termin",
     "noNextEvent": "Kein nächstes Termin",
     "teamsTitle": "Teams",
+    "markSelectionSent": "Aufgebot als versendet markieren",
+    "selectionSentAt": "Aufgebot versendet am {{dateTime}}",
     "printTeams": "Teams drucken",
     "noTeamsConfigured": "Noch keine Teams konfiguriert.",
     "deleteEventTitle": "Termin löschen",
@@ -714,7 +716,7 @@
     "noPlayersSelected": "Noch keine Spieler ausgewählt",
     "removeAction": "Entfernen",
     "removePlayerTitle": "Spieler entfernen",
-    "removePlayerMessage": "Möchtest du {{firstName}} {{lastName}} aus diesem Team entfernen?",
+    "removePlayerMessage": "Möchtest du {{name}} aus diesem Team entfernen?",
     "formationLabel": "Formation",
     "assignFormationTitle": "Formation zuweisen",
     "noFormationAssigned": "Keine Formation ausgewählt",
@@ -732,6 +734,11 @@
     "removePlayer": "Entfernen",
     "undoRemove": "Rückgängig",
     "saveChanges": "Änderungen speichern",
+    "sentWarning": "Dieses Aufgebot wurde am {{dateTime}} versendet. Änderungen sind bis zum Termindatum weiterhin möglich. Beim Entfernen eines Spielers muss ein Grund angegeben werden.",
+    "eventPassedWarning": "Nach dem Termindatum kann das Aufgebot nicht mehr bearbeitet werden.",
+    "removalReason": "Grund für die Entfernung",
+    "removalReasonFor": "Grund für die Entfernung von {{name}}",
+    "selectRemovalReason": "Grund auswählen",
     "tooManySelected": "Zu viele ausgewählt (max. {{max}})",
     "addPlayersAction_one": "{{count}} Spieler hinzufügen",
     "addPlayersAction_other": "{{count}} Spieler hinzufügen"

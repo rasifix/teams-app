@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatInstantDateTime,
   formatWallClockDateTime,
   instantToWallClockISOString,
   localDateStartToUtcISOString,
 } from './dateFormatter';
+
+describe('formatInstantDateTime', () => {
+  it('formats real timestamps in the local timezone and returns invalid values unchanged', () => {
+    const value = '2026-07-10T16:30:00.000Z';
+    expect(formatInstantDateTime(value, 'de-CH')).toBe(
+      new Intl.DateTimeFormat('de-CH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)),
+    );
+    expect(formatInstantDateTime('invalid', 'en')).toBe('invalid');
+  });
+});
 
 describe('formatWallClockDateTime', () => {
   it('preserves the encoded wall-clock hour instead of applying a timezone offset', () => {

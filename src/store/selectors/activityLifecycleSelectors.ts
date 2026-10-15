@@ -28,7 +28,7 @@ export function selectActivityPhase(
 
 export function selectActivityPhaseSections(phase: ActivityPhase): ActivityPhaseSections {
   return {
-    invitations: phase === 'planning',
+    invitations: true,
     attendance: phase === 'started' || phase === 'recorded',
   };
 }

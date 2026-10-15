@@ -118,6 +118,21 @@ export default function HomePage() {
           <section>
             <div className="mb-5 flex items-end justify-between gap-4">
               <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">{t('home.scheduleLabel')}</p>
+                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{t('home.upcomingEvents.title')}</h2>
+              </div>
+              <Link to="/events" className="text-sm font-semibold text-slate-600 transition hover:text-orange-700">{t('home.upcomingEvents.viewAll')} <span aria-hidden="true">→</span></Link>
+            </div>
+            {upcomingEvents.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-8 text-center text-sm text-slate-500">{t('home.upcomingEvents.empty')}</div>
+            ) : (
+              <div className="space-y-3">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</div>
+            )}
+          </section>
+
+          <section>
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">{t('home.manageLabel')}</p>
                 <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{t('squads.title')}</h2>
               </div>
@@ -129,7 +144,7 @@ export default function HomePage() {
             {squadsLoading && <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">{t('squads.loading')}</div>}
             {!squadsLoading && squadsError && <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">{t('squads.errors.loadFailedWithReason', { error: squadsError })}</div>}
             {!squadsLoading && !squadsError && (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3">
                 {squads.map((squadItem) => {
                   const isCurrentSquad = squad?.id === squadItem.id;
                   const isSwitching = switchingSquadId === squadItem.id;
@@ -159,21 +174,6 @@ export default function HomePage() {
                   );
                 })}
               </div>
-            )}
-          </section>
-
-          <section>
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">{t('home.scheduleLabel')}</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">{t('home.upcomingEvents.title')}</h2>
-              </div>
-              <Link to="/events" className="text-sm font-semibold text-slate-600 transition hover:text-orange-700">{t('home.upcomingEvents.viewAll')} <span aria-hidden="true">→</span></Link>
-            </div>
-            {upcomingEvents.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 p-8 text-center text-sm text-slate-500">{t('home.upcomingEvents.empty')}</div>
-            ) : (
-              <div className="space-y-3">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</div>
             )}
           </section>
         </div>

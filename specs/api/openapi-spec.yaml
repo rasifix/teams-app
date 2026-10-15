@@ -3895,6 +3895,10 @@ components:
           nullable: true
         name:
           type: string
+        active:
+          type: boolean
+          default: true
+          description: Soft lifecycle state. Inactive squads remain persisted but are omitted from active UI pickers.
         club:
           type: string
           nullable: true
@@ -4077,6 +4081,9 @@ components:
           description: >-
             Toggling this does not delete existing Match Formats, Formations,
             or Team lineup data. Requires admin or trainer role.
+        active:
+          type: boolean
+          description: Set to false to deactivate the squad without deleting its data. Requires admin or trainer role.
     SquadCategory:
       type: string
       enum: [A, B, C, D9, D7, E, F, G, FF9, FF11, FF14, FF17]

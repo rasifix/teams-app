@@ -48,6 +48,9 @@ Instead, it is the long-lived container that events reference.
 	it disabled.
 7. Optionally, a Squad Manager links one Spond group and uses that fixed link
    for later player and event synchronization.
+8. A Squad Manager may deactivate a Squad. Deactivation is a soft lifecycle
+   state: the Squad and all dependent history remain persisted, while active
+   UI pickers exclude it.
 
 ## Invariants And Rules
 
@@ -76,6 +79,8 @@ Instead, it is the long-lived container that events reference.
   Players, Guardians, Events, or their existing external identifiers.
 - Spond credentials and access tokens are request-scoped secrets and must not
   be persisted or logged.
+- `active` defaults to true for legacy records. Setting it to false hides the
+  Squad from active UI flows without deleting any dependent data.
 
 ## Scope Boundaries
 

@@ -774,6 +774,14 @@
       "unlinkMessage": "This stops Spond synchronization for this group. Existing imported players and events remain unchanged.",
       "unlinkFailed": "The Spond group could not be unlinked. Please try again."
     },
+    "deactivate": {
+      "title": "Deactivate group",
+      "description": "Hide this group from the app without deleting its members, events, or history.",
+      "action": "Deactivate group",
+      "confirmTitle": "Deactivate this group?",
+      "confirmMessage": "The group will disappear from group pickers, but all data will remain stored in the backend.",
+      "failed": "The group could not be deactivated. Please try again."
+    },
     "periods": {
       "title": "Periods",
       "description": "Define the date periods used to group and filter statistics.",

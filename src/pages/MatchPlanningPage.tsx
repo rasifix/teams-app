@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -22,10 +22,12 @@ import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 export default function MatchPlanningPage() {
   const { t } = useTranslation();
   const squad = useSquad();
+  const navigate = useNavigate();
   const periods = useSquadPeriods();
   const sfvCatalog = useSfvCatalog();
   const spondGroupUrl = selectSpondGroupUrl(squad);
   const initializeApp = useStore((state) => state.initializeApp);
+  const deactivateSquad = useStore((state) => state.deactivateSquad);
   const selectedOfficialFormat = (category: SquadCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
   const {
     matchPlanningEnabled,
@@ -57,6 +59,9 @@ export default function MatchPlanningPage() {
   const [isUnlinkSpondDialogOpen, setIsUnlinkSpondDialogOpen] = useState(false);
   const [isUnlinkingSpond, setIsUnlinkingSpond] = useState(false);
   const [unlinkSpondError, setUnlinkSpondError] = useState<string | null>(null);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedCategory(squad?.category ?? '');
@@ -96,6 +101,20 @@ export default function MatchPlanningPage() {
     } finally {
       setIsUnlinkingSpond(false);
     }
+  };
+
+  const handleDeactivateSquad = async () => {
+    if (isDeactivating) return;
+    setIsDeactivating(true);
+    setDeactivateError(null);
+    const success = await deactivateSquad();
+    setIsDeactivating(false);
+    if (!success) {
+      setDeactivateError(t('groupSettings.deactivate.failed'));
+      return;
+    }
+    setIsDeactivateDialogOpen(false);
+    navigate('/squads', { replace: true });
   };
 
   const handleSaveMatchFormat = async (data: MatchFormatFormData) => {
@@ -477,6 +496,15 @@ export default function MatchPlanningPage() {
         </div>
       )}
 
+      <section className="mt-5 rounded-3xl border border-red-200 bg-red-50/60 p-5 shadow-[0_16px_40px_-32px_rgba(15,29,38,.25)] sm:p-6">
+        <h2 className="text-lg font-semibold tracking-tight text-red-950">{t('groupSettings.deactivate.title')}</h2>
+        <p className="mt-1 text-sm leading-6 text-red-800/80">{t('groupSettings.deactivate.description')}</p>
+        {deactivateError && <p className="mt-3 text-sm text-red-700" role="alert">{deactivateError}</p>}
+        <Button className="mt-4" variant="danger" onClick={() => setIsDeactivateDialogOpen(true)}>
+          {t('groupSettings.deactivate.action')}
+        </Button>
+      </section>
+
       {isMatchFormatModalOpen && (
         <MatchFormatModal
           isOpen={isMatchFormatModalOpen}
@@ -530,6 +558,15 @@ export default function MatchPlanningPage() {
         confirmText={isUnlinkingSpond ? t('common.states.processing') : t('groupSettings.spond.unlinkGroup')}
         onConfirm={() => void handleUnlinkSpond()}
         onCancel={() => setIsUnlinkSpondDialogOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeactivateDialogOpen}
+        title={t('groupSettings.deactivate.confirmTitle')}
+        message={t('groupSettings.deactivate.confirmMessage')}
+        confirmText={isDeactivating ? t('common.states.processing') : t('groupSettings.deactivate.action')}
+        onConfirm={() => void handleDeactivateSquad()}
+        onCancel={() => !isDeactivating && setIsDeactivateDialogOpen(false)}
       />
 
       <StatisticsPeriodModal

@@ -24,6 +24,7 @@ be described in files grouped in subfolders per category.
 * UC-GR-011 - link or unlink a Spond group
 * UC-GR-012 - synchronize players and guardians from Spond
 * UC-GR-014 - manage squad periods
+* UC-GR-015 - deactivate a squad
 
 ## Event
 

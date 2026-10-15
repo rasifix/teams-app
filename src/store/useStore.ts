@@ -21,7 +21,7 @@ import { getActivities, updateActivity as updateActivityService } from '../servi
 import { createActivityActions, type ActivityActions } from './activityActions';
 import { getActivityDate, getActivityStartTime, sortActivities } from './selectors/activitySelectors';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
-import { getSquads, getSquad, createSquad as createSquadService, updateSquadCategory as updateSquadCategoryService, addSquadPeriod as addSquadPeriodService, updateSquadPeriod as updateSquadPeriodService, deleteSquadPeriod as deleteSquadPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addSquadMatchFormat as addSquadMatchFormatService, updateSquadMatchFormat as updateSquadMatchFormatService, deleteSquadMatchFormat as deleteSquadMatchFormatService, setDefaultSquadMatchFormat as setDefaultSquadMatchFormatService, addSquadFormation as addSquadFormationService, updateSquadFormation as updateSquadFormationService, deleteSquadFormation as deleteSquadFormationService } from '../services/squadService';
+import { getSquads, getSquad, createSquad as createSquadService, deactivateSquad as deactivateSquadService, updateSquadCategory as updateSquadCategoryService, addSquadPeriod as addSquadPeriodService, updateSquadPeriod as updateSquadPeriodService, deleteSquadPeriod as deleteSquadPeriodService, setMatchPlanningEnabled as setMatchPlanningEnabledService, addSquadMatchFormat as addSquadMatchFormatService, updateSquadMatchFormat as updateSquadMatchFormatService, deleteSquadMatchFormat as deleteSquadMatchFormatService, setDefaultSquadMatchFormat as setDefaultSquadMatchFormatService, addSquadFormation as addSquadFormationService, updateSquadFormation as updateSquadFormationService, deleteSquadFormation as deleteSquadFormationService } from '../services/squadService';
 import { authService } from '../services/authService';
 import { setSelectedSquadId, clearSelectedSquadId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedSquadPermissions } from '../utils/permissions';
@@ -31,6 +31,7 @@ import {
   selectPlayerDeletionImpact,
 } from './selectors/playerDeletionSelectors';
 import { selectMatchingMatchFormat } from './selectors/squadCategorySelectors';
+import { selectActiveSquads } from './selectors/squadSelectors';
 import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
 import { getSfvCategoryCatalog } from '../services/sfvService';
 
@@ -191,6 +192,7 @@ interface AppState extends ActivityActions {
 
   loadSquads: () => Promise<void>;
   addSquad: (squadData: CreateSquadRequest) => Promise<Squad | null>;
+  deactivateSquad: () => Promise<boolean>;
   configureSquadCategory: (category: SquadCategory | null) => Promise<boolean>;
   selectSquad: (squadId: string) => Promise<void>;
   selectStatisticsPeriod: (periodId: string | null) => void;
@@ -495,7 +497,7 @@ export const useStore = create<AppState>()(
         
         try {
           const squads = await getSquads();
-          set({ squads: sortSquads(squads), loading: { ...get().loading, squads: false } });
+          set({ squads: sortSquads(selectActiveSquads(squads)), loading: { ...get().loading, squads: false } });
         } catch (error) {
           console.error('Failed to load squads:', error);
           set({ 
@@ -523,6 +525,30 @@ export const useStore = create<AppState>()(
             errors: { ...get().errors, squads: error instanceof Error ? error.message : 'Failed to add squad' },
           });
           return null;
+        }
+      },
+
+      deactivateSquad: async () => {
+        const currentSquad = get().squad;
+        if (!currentSquad) return false;
+
+        try {
+          await deactivateSquadService(currentSquad.id);
+          clearSelectedSquadId();
+          clearSelectedStatisticsPeriodId();
+          set((state) => ({
+            squad: null,
+            squads: state.squads.filter((squad) => squad.id !== currentSquad.id),
+            selectedStatisticsPeriodId: null,
+            members: [],
+            activities: [],
+            shirtSets: [],
+            isInitialized: false,
+          }));
+          return true;
+        } catch (error) {
+          console.error('Failed to deactivate squad:', error);
+          return false;
         }
       },
 

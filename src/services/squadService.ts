@@ -67,6 +67,15 @@ export async function updateSquadCategory(squadId: string, name: string, categor
   return normalizeSquad(squad);
 }
 
+export async function deactivateSquad(squadId: string): Promise<Squad> {
+  const squad = await apiClient.request<Squad>(apiClient.getSquadEndpoint(squadId), {
+    method: 'PUT',
+    body: JSON.stringify({ active: false }),
+  });
+
+  return normalizeSquad(squad);
+}
+
 export async function unlinkSquadFromSpond(squadId: string, name: string): Promise<Squad> {
   const squad = await apiClient.request<Squad>(apiClient.getSquadEndpoint(squadId), {
     method: 'PUT',

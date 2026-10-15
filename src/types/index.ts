@@ -61,6 +61,8 @@ export interface Squad {
   id: string;
   spondId?: string | null;
   name: string;
+  /** Soft lifecycle state; omitted by legacy API records means active. */
+  active?: boolean;
   club?: string;
   description?: string;
   category?: SquadCategory | null;

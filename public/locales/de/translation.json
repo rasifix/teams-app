@@ -774,6 +774,14 @@
       "unlinkMessage": "Dadurch wird die Spond-Synchronisierung für diese Gruppe beendet. Bereits importierte Spieler und Termine bleiben unverändert.",
       "unlinkFailed": "Die Spond-Gruppe konnte nicht getrennt werden. Bitte versuche es erneut."
     },
+    "deactivate": {
+      "title": "Gruppe deaktivieren",
+      "description": "Blende diese Gruppe aus, ohne Mitglieder, Termine oder den Verlauf zu löschen.",
+      "action": "Gruppe deaktivieren",
+      "confirmTitle": "Diese Gruppe deaktivieren?",
+      "confirmMessage": "Die Gruppe wird nicht mehr in der Gruppenauswahl angezeigt. Alle Daten bleiben im Backend gespeichert.",
+      "failed": "Die Gruppe konnte nicht deaktiviert werden. Bitte versuche es erneut."
+    },
     "periods": {
       "title": "Zeiträume",
       "description": "Definiere die Zeiträume, nach denen Statistiken gruppiert und gefiltert werden.",

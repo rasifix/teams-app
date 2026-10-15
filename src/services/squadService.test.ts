@@ -3,6 +3,7 @@ import { apiClient } from './apiClient';
 import {
   addSquadMatchFormat,
   createBirthdayCalendarSubscription,
+  deactivateSquad,
   getBirthdayCalendarSubscription,
   revokeBirthdayCalendarSubscription,
   unlinkSquadFromSpond,
@@ -42,6 +43,22 @@ describe('squadService', () => {
 
     const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
     expect(JSON.parse(options?.body ?? '{}')).toEqual({ name: 'Juniors', category: null });
+  });
+
+  it('deactivates a squad without deleting it', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1',
+      name: 'Juniors',
+      active: false,
+      periods: [],
+    });
+
+    await deactivateSquad('squad-1');
+
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1', {
+      method: 'PUT',
+      body: JSON.stringify({ active: false }),
+    });
   });
 
   it('unlinks Spond while preserving the required squad name', async () => {

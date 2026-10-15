@@ -1,6 +1,10 @@
 import { apiClient, SQUADS_PATH } from './apiClient';
 import type { CreateSquadRequest, Formation, FormationSlot, Squad, SquadCategory, Period, MatchFormat, PositionCode } from '../types';
 
+export interface BirthdayCalendarSubscription {
+  subscriptionUrl: string | null;
+}
+
 /**
  * Service layer for squad data operations.
  * This provides an abstraction layer that handles API communication
@@ -23,6 +27,26 @@ export async function getSquad(squadId: string): Promise<Squad> {
 export async function getSquads(): Promise<Squad[]> {
   const squads = await apiClient.request<Squad[]>(SQUADS_PATH);
   return squads.map(normalizeSquad);
+}
+
+export async function getBirthdayCalendarSubscription(squadId: string): Promise<BirthdayCalendarSubscription> {
+  return apiClient.request<BirthdayCalendarSubscription>(
+    apiClient.getSquadEndpoint(squadId, '/birthday-calendar')
+  );
+}
+
+export async function createBirthdayCalendarSubscription(squadId: string): Promise<BirthdayCalendarSubscription> {
+  return apiClient.request<BirthdayCalendarSubscription>(
+    apiClient.getSquadEndpoint(squadId, '/birthday-calendar'),
+    { method: 'POST' }
+  );
+}
+
+export async function revokeBirthdayCalendarSubscription(squadId: string): Promise<void> {
+  await apiClient.request<void>(
+    apiClient.getSquadEndpoint(squadId, '/birthday-calendar'),
+    { method: 'DELETE' }
+  );
 }
 
 export async function createSquad(squadData: CreateSquadRequest): Promise<Squad> {

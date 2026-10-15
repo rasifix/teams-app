@@ -8,16 +8,20 @@ import SpondBadge from "../components/SpondBadge";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
 import { getBirthYear } from '../utils/birthDate';
+import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
+import { useSquad } from '../store';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { players, openAddPlayerModal, canImportFromSpond, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const { players, openAddPlayerModal, canImportFromSpond, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const squad = useSquad();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [showTrialPlayers, setShowTrialPlayers] = useState(false);
   const [showInactivePlayers, setShowInactivePlayers] = useState(false);
+  const [isBirthdayCalendarOpen, setIsBirthdayCalendarOpen] = useState(false);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();
@@ -70,6 +74,11 @@ export default function MembersPlayersPage() {
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
           </CardTitle>
           <div className="flex items-center gap-2">
+            {canManageBirthdayCalendar && squad && (
+              <Button variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
+                {t('members.birthdayCalendar.openAction')}
+              </Button>
+            )}
             {canImportFromSpond && (
               <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
                 <SpondBadge />
@@ -193,6 +202,13 @@ export default function MembersPlayersPage() {
         <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" />
       </CardBody>
       </Card>
+      {squad && (
+        <BirthdayCalendarModal
+          isOpen={isBirthdayCalendarOpen}
+          onClose={() => setIsBirthdayCalendarOpen(false)}
+          squadId={squad.id}
+        />
+      )}
     </>
   );
 }

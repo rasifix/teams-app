@@ -333,6 +333,31 @@
     "hideTrialPlayers": "Hide",
     "showInactivePlayers": "Show",
     "hideInactivePlayers": "Hide",
+    "birthdayCalendar": {
+      "openAction": "Birthday calendar",
+      "title": "Birthday calendar",
+      "description": "Create a private calendar link that stays up to date in your calendar app.",
+      "loading": "Loading calendar subscription...",
+      "notCreated": "No subscription link has been created for this squad yet.",
+      "subscriptionHelp": "Subscribe directly or copy this link into Apple Calendar, Google Calendar, Outlook, or another calendar app.",
+      "subscriptionUrl": "Calendar subscription URL",
+      "privacyNote": "The private link shows active players' names and birthday month and day. Anyone with the link can view it.",
+      "secureUrlRequired": "Calendar subscriptions require a publicly reachable HTTPS address. A localhost development link cannot be subscribed in calendar apps.",
+      "create": "Create subscription link",
+      "creating": "Creating...",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "subscribe": "Subscribe",
+      "revoke": "Revoke link",
+      "revoking": "Revoking...",
+      "revokeConfirm": "Revoke this link? Existing calendar subscriptions will stop updating.",
+      "errors": {
+        "loadFailed": "The birthday calendar could not be loaded.",
+        "createFailed": "The subscription link could not be created.",
+        "copyFailed": "The link could not be copied. Select and copy it manually.",
+        "revokeFailed": "The subscription link could not be revoked."
+      }
+    },
     "guardians": {
       "playerPrefix": "Player:",
       "noEmail": "No email",

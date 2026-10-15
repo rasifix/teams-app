@@ -22,6 +22,7 @@ export interface MembersOutletContext {
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
   canImportFromSpond: boolean;
+  canManageBirthdayCalendar: boolean;
   spondLinked: boolean;
   requestDeletePlayer: (player: Player) => void;
   requestDeleteTrainer: (trainer: Trainer) => void;
@@ -145,6 +146,7 @@ export default function MembersPage() {
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
     canImportFromSpond: isAdmin && spondLinked,
+    canManageBirthdayCalendar: isAdmin,
     spondLinked,
     requestDeletePlayer: handleDeletePlayer,
     requestDeleteTrainer: handleDeleteTrainer,

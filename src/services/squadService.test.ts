@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { addSquadMatchFormat, unlinkSquadFromSpond, updateSquadCategory } from './squadService';
+import {
+  addSquadMatchFormat,
+  createBirthdayCalendarSubscription,
+  getBirthdayCalendarSubscription,
+  revokeBirthdayCalendarSubscription,
+  unlinkSquadFromSpond,
+  updateSquadCategory,
+} from './squadService';
 
 describe('squadService', () => {
   afterEach(() => {
@@ -71,5 +78,17 @@ describe('squadService', () => {
 
     const [, options] = requestSpy.mock.calls[0] as [string, { body?: string }?];
     expect(JSON.parse(options?.body ?? '{}')).toMatchObject({ minimumPeriodsPerPlayer: 2 });
+  });
+
+  it('loads, creates, and revokes a birthday calendar subscription', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ subscriptionUrl: null });
+
+    await getBirthdayCalendarSubscription('squad-1');
+    await createBirthdayCalendarSubscription('squad-1');
+    await revokeBirthdayCalendarSubscription('squad-1');
+
+    expect(requestSpy).toHaveBeenNthCalledWith(1, '/api/squads/squad-1/birthday-calendar');
+    expect(requestSpy).toHaveBeenNthCalledWith(2, '/api/squads/squad-1/birthday-calendar', { method: 'POST' });
+    expect(requestSpy).toHaveBeenNthCalledWith(3, '/api/squads/squad-1/birthday-calendar', { method: 'DELETE' });
   });
 });

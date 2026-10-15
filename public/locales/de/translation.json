@@ -333,6 +333,31 @@
     "hideTrialPlayers": "Ausblenden",
     "showInactivePlayers": "Anzeigen",
     "hideInactivePlayers": "Ausblenden",
+    "birthdayCalendar": {
+      "openAction": "Geburtstagskalender",
+      "title": "Geburtstagskalender",
+      "description": "Erstelle einen privaten Kalender-Link, der in deiner Kalender-App aktuell bleibt.",
+      "loading": "Kalender-Abonnement wird geladen...",
+      "notCreated": "Für diese Mannschaft wurde noch kein Abonnement-Link erstellt.",
+      "subscriptionHelp": "Abonniere den Kalender direkt oder kopiere diesen Link in Apple Kalender, Google Kalender, Outlook oder eine andere Kalender-App.",
+      "subscriptionUrl": "URL des Kalender-Abonnements",
+      "privacyNote": "Der private Link zeigt die Namen sowie den Geburtstag ohne Geburtsjahr von aktiven Spielern. Wer den Link kennt, kann den Kalender sehen.",
+      "secureUrlRequired": "Kalender-Abonnements benötigen eine öffentlich erreichbare HTTPS-Adresse. Ein lokaler Entwicklungs-Link mit localhost kann in Kalender-Apps nicht abonniert werden.",
+      "create": "Abonnement-Link erstellen",
+      "creating": "Wird erstellt...",
+      "copy": "Link kopieren",
+      "copied": "Kopiert",
+      "subscribe": "Abonnieren",
+      "revoke": "Link widerrufen",
+      "revoking": "Wird widerrufen...",
+      "revokeConfirm": "Diesen Link widerrufen? Bestehende Kalender-Abonnements werden nicht mehr aktualisiert.",
+      "errors": {
+        "loadFailed": "Der Geburtstagskalender konnte nicht geladen werden.",
+        "createFailed": "Der Abonnement-Link konnte nicht erstellt werden.",
+        "copyFailed": "Der Link konnte nicht kopiert werden. Bitte markiere und kopiere ihn manuell.",
+        "revokeFailed": "Der Abonnement-Link konnte nicht widerrufen werden."
+      }
+    },
     "guardians": {
       "playerPrefix": "Spieler:",
       "noEmail": "Keine E-Mail",

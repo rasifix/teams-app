@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /*
+   * Keep native text controls aligned even when a component does not add a
+   * form class. :where() keeps specificity low so local layout utilities can
+   * still override these defaults when necessary.
+   */
+  :where(
+    input:not([type]),
+    input[type='date'],
+    input[type='email'],
+    input[type='number'],
+    input[type='password'],
+    input[type='search'],
+    input[type='tel'],
+    input[type='text'],
+    input[type='time'],
+    input[type='url'],
+    select
+  ) {
+    @apply h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500;
+  }
+
+  :where(textarea) {
+    @apply min-h-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500;
+  }
+}
+
 @layer components {
   /* Card Components */
   .card {
@@ -80,12 +107,11 @@
     @apply block text-sm font-medium text-gray-700 mb-1;
   }
   
-  .form-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
-  }
-  
-  .form-select {
-    @apply form-input;
+  .form-control,
+  .form-input,
+  .form-select,
+  .input-field {
+    @apply w-full;
   }
 
   /* Modal */

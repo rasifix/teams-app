@@ -6,7 +6,6 @@ import { usePlayers } from '../hooks/usePlayers';
 import type { Activity, Period, Player } from '../types';
 import { isTeamActivity } from '../store/selectors/activitySelectors';
 import { selectPlayerActivityStatistics } from '../store/selectors/statisticsSelectors';
-import { SummaryCard, SummaryCardContent } from '../components/ui';
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
 import { useSelectedStatisticsPeriod } from '../store';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
@@ -56,61 +55,68 @@ export default function StatisticsPage() {
     : 0;
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="page-title">{t('statistics.title')}</h1>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('statistics.title')}</h1>
+          <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('statistics.description')}</p>
+        </div>
+        <div className="shrink-0">
           <StatisticsPeriodSelector />
+        </div>
+      </header>
+
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
+          <div className="mb-3 h-1 w-8 rounded-full bg-orange-400" />
+          <p className="text-2xl font-semibold tracking-tight text-slate-950">{totalPlayers}</p>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.totalPlayers')}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
+          <div className="mb-3 h-1 w-8 rounded-full bg-sky-400" />
+          <p className="text-2xl font-semibold tracking-tight text-slate-950">{totalEvents}</p>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.totalEvents')}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
+          <div className="mb-3 h-1 w-8 rounded-full bg-emerald-400" />
+          <p className="text-2xl font-semibold tracking-tight text-slate-950">{avgAcceptances.toFixed(1)}</p>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.avgAcceptancesPerPlayer')}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
+          <div className="mb-3 h-1 w-8 rounded-full bg-violet-400" />
+          <p className="text-2xl font-semibold tracking-tight text-slate-950">{avgSelections.toFixed(1)}</p>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.avgSelectionsPerPlayer')}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <SummaryCard>
-          <SummaryCardContent label={t('statistics.summary.totalPlayers')} value={totalPlayers} />
-        </SummaryCard>
-        
-        <SummaryCard>
-          <SummaryCardContent label={t('statistics.summary.totalEvents')} value={totalEvents} />
-        </SummaryCard>
-        
-        <SummaryCard>
-          <SummaryCardContent label={t('statistics.summary.avgAcceptancesPerPlayer')} value={avgAcceptances.toFixed(1)} />
-        </SummaryCard>
-        
-        <SummaryCard>
-          <SummaryCardContent label={t('statistics.summary.avgSelectionsPerPlayer')} value={avgSelections.toFixed(1)} />
-        </SummaryCard>
-      </div>
-
-      {/* Tab Bar */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex gap-8" aria-label={t('common.tabs')}>
+      <div className="mb-5 overflow-x-auto">
+        <nav className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-label={t('common.tabs')}>
           <NavLink
             to="/statistics/player-statistics"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('statistics.tabs.playerStatistics')}
           </NavLink>
           <NavLink
             to="/statistics/event-participation"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('statistics.tabs.eventParticipation')}
           </NavLink>
           <NavLink
             to="/statistics/team-selections"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('statistics.tabs.teamSelections')}
@@ -118,7 +124,6 @@ export default function StatisticsPage() {
         </nav>
       </div>
 
-      {/* Nested Route Content */}
       <Outlet context={{
         filteredEvents,
         statisticsPeriod,

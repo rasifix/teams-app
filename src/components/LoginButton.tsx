@@ -7,7 +7,7 @@ export default function LoginButton() {
   return (
     <Link
       to="/login"
-      className="px-4 py-2 rounded-md text-sm font-medium bg-orange-700 text-white hover:bg-orange-800 transition-colors flex items-center gap-2"
+      className="ml-2 flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-300"
       title={t('auth.login')}
     >
       <svg
@@ -24,6 +24,7 @@ export default function LoginButton() {
           d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
         />
       </svg>
+      <span>{t('auth.login')}</span>
     </Link>
   );
 }

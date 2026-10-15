@@ -5,9 +5,10 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
 }
 
-export function Modal({ isOpen, onClose, children }: ModalProps) {
+export function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
   const isPointerDownOnOverlay = useRef(false);
 
   if (!isOpen) return null;
@@ -42,7 +43,7 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-content ${className}`} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

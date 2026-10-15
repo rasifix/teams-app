@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "Mein Team"
+    "name": "Mein Team",
+    "tagline": "Teamorganisation"
   },
   "common": {
     "language": "Sprache",
@@ -53,6 +54,8 @@
     "to": "Bis:"
   },
   "events": {
+    "title": "Termine",
+    "subtitle": "Spiele und Turniere planen, Teilnahmen und Teams verwalten.",
     "loading": "Termine werden geladen...",
     "futureTitle": "Kommende Termine ({{count}})",
     "pastTitle": "Vergangene Termine ({{count}})",
@@ -63,6 +66,7 @@
     "teamCount_other": "{{count}} Teams",
     "playersMarkedAs": "Spieler mit Status {{status}}",
     "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden",
+    "teamsReady": "Alle Teams erfüllen die Mindestanzahl an Spielern",
     "invitationCounts": "Einladungszahlen",
     "teamCardLabel": "Details zu {{team}}"
   },
@@ -72,6 +76,7 @@
     }
   },
   "shirts": {
+    "subtitle": "Trikotsätze, Nummern, Grössen und Verfügbarkeit verwalten.",
     "goalkeeperShort": "TW",
     "unavailableShort": "NICHT VERF",
     "editShirt": "Trikot bearbeiten",
@@ -299,6 +304,13 @@
   },
   "home": {
     "title": "Willkommen bei My Teams",
+    "publicTitle": "Teamverwaltung",
+    "publicSubtitle": "Mannschaften, Termine, Anwesenheiten und Statistiken an einem Ort.",
+    "overviewTitle": "Übersicht",
+    "overviewSubtitle": "Wähle eine Mannschaft oder öffne einen bevorstehenden Termin.",
+    "featuresLabel": "Deine Möglichkeiten",
+    "manageLabel": "Verwalten",
+    "scheduleLabel": "Als Nächstes",
     "upcomingEvents": {
       "title": "Bevorstehende Termine",
       "viewAll": "Alle anzeigen",
@@ -315,6 +327,8 @@
     }
   },
   "members": {
+    "title": "Mitglieder",
+    "subtitle": "Spieler, Trainer und Erziehungsberechtigte verwalten.",
     "list": {
       "emptyPlayers": "Noch keine Spieler hinzugefügt. Klicke auf \"Spieler hinzufügen\", um zu starten.",
       "emptyTrainers": "Noch keine Trainer hinzugefügt. Klicke auf \"Trainer hinzufügen\", um zu starten.",
@@ -533,11 +547,12 @@
     "members": "Mitglieder",
     "events": "Termine",
     "shirts": "Trikots",
-    "matchPlanning": "Gruppeneinstellungen",
+    "matchPlanning": "Einstellungen",
     "statistics": "Statistiken"
   },
   "statistics": {
     "title": "Statistiken",
+    "description": "Behalte Teilnahme, Verfügbarkeit und Teamauswahlen im Blick.",
     "summary": {
       "totalPlayers": "Anzahl Spieler",
       "totalEvents": "Anzahl Termine",
@@ -688,6 +703,7 @@
     "notFound": "Termin nicht gefunden.",
     "previousShort": "Vorh.",
     "nextShort": "Näch.",
+    "navigationLabel": "Termin wechseln",
     "noPreviousEvent": "Kein vorheriges Termin",
     "noNextEvent": "Kein nächstes Termin",
     "teamsTitle": "Teams",
@@ -710,6 +726,7 @@
   },
   "teamDetail": {
     "teamNotFound": "Team nicht gefunden",
+    "switchTeam": "Team wechseln",
     "trainerLabel": "Trainer",
     "assignTrainerTitle": "Trainer zuweisen",
     "shirtSetLabel": "Trikotsatz",
@@ -745,7 +762,7 @@
     "addPlayersAction_other": "{{count}} Spieler hinzufügen"
   },
   "groupSettings": {
-    "title": "Gruppeneinstellungen",
+    "title": "Einstellungen",
     "description": "Verwalte die Einstellungen und Integrationen dieser Gruppe.",
     "spond": {
       "title": "Spond-Gruppe",
@@ -760,7 +777,7 @@
     "periods": {
       "title": "Zeiträume",
       "description": "Definiere die Zeiträume, nach denen Statistiken gruppiert und gefiltert werden.",
-      "add": "Zeitraum hinzufügen",
+      "add": "Hinzufügen",
       "empty": "Es wurden noch keine Zeiträume konfiguriert.",
       "range": "{{startDate}} bis {{endDate}}"
     }

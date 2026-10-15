@@ -11,10 +11,10 @@ export default function EventsList({ activities, onActivityClick }: EventsListPr
   const { t } = useTranslation();
 
   if (activities.length === 0) {
-    return <div className="py-8 text-center text-gray-500"><p>{t('events.list.emptyState')}</p></div>;
+    return <div className="rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500"><p>{t('events.list.emptyState')}</p></div>;
   }
 
-  return <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+  return <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
     {activities.map((activity) => <EventCard key={activity.id} activity={activity} onClick={onActivityClick} />)}
   </div>;
 }

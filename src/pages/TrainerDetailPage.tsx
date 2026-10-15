@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
 import { useSquad, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
 import type { Period, Trainer } from '../types';
-import { Card, CardBody, CardTitle, DateColumn } from '../components/ui';
+import { DateColumn } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Strength from '../components/Strength';
@@ -234,66 +234,61 @@ export default function TrainerDetailPage() {
   };
 
   return (
-    <div className="page-container lg:px-4 px-0">
-      {/* Sub Navigation */}
-      <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
-        <div className="relative flex items-center justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <header className="mb-6">
+        <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-4">
           <button
             onClick={() => navigate('/members/trainers')}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
           >
             ← {t('common.actions.back')}
           </button>
-          <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{trainer.firstName} {trainer.lastName}</span>
           {!spondLinked && (
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={handleEditTrainer}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                className="btn-secondary btn-sm"
               >
                 {t('common.actions.edit')}
               </button>
               <button
                 onClick={handleDeleteTrainer}
-                className="text-red-600 hover:text-red-700 text-sm font-medium"
+                className="rounded-full px-3.5 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
               >
                 {t('common.actions.delete')}
               </button>
             </div>
           )}
         </div>
-      </div>
+        <div>
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{t('domain.trainers')}</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{trainer.firstName} {trainer.lastName}</h1>
+          {trainer.email && <p className="mt-2 text-sm text-slate-600">{trainer.email}</p>}
+        </div>
+      </header>
 
-      {/* Trainer Badge */}
       {deleteActionError && (
-        <div className="mx-4 mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 lg:mx-0">
+        <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {deleteActionError}
         </div>
       )}
 
-      <div className="px-4 lg:px-0 mb-4">
-        <span className="text-gray-600 text-sm bg-gray-100 px-2 py-1 rounded">{t('domain.trainers')}</span>
-      </div>
-
-      {/* Training History */}
       {trainerEventHistory.length > 0 && (
-        <div>
-          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-            <CardBody className="lg:p-6 p-4">
-              <CardTitle>{t('domain.events')}</CardTitle>
-              <p className="text-sm text-gray-600 mt-1 mb-4">
+        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+              <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('domain.events')}</h2>
+              <p className="mb-5 mt-1 text-sm leading-6 text-slate-500">
                 {t('trainerDetail.eventsAssignedDescription', { firstName: trainer.firstName })}
               </p>
               {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
                 <div key={group.id} className="mb-6 last:mb-0">
                   {groupedTrainerEventHistory && (
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">{group.title}</h3>
+                    <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.075em] text-slate-500">{group.title}</h3>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-hidden">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {group.eventHistory.map((item) => (
                       <div
                         key={item.eventId}
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer min-w-0"
+                        className="min-w-0 cursor-pointer rounded-2xl border border-slate-200 bg-slate-50/40 p-4 transition hover:border-slate-300 hover:bg-white hover:shadow-sm"
                         onClick={() => navigate(`/events/${item.eventId}`)}
                       >
                         <div className="flex items-center gap-4">
@@ -303,24 +298,24 @@ export default function TrainerDetailPage() {
                           {/* Content and chevron */}
                           <div className="flex justify-between items-center flex-1 min-w-0">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-gray-900 truncate" title={item.eventName}>{item.eventName}</h3>
+                              <h3 className="truncate font-semibold text-slate-900" title={item.eventName}>{item.eventName}</h3>
                               <div className="flex items-center gap-4 mt-2">
                                 {item.startTime && (
-                                  <span className="text-sm text-gray-700">🕐 {item.startTime}</span>
+                                  <span className="text-sm text-slate-600">🕐 {item.startTime}</span>
                                 )}
                                 {item.location && (
-                                  <span className="text-sm text-gray-700">📍 {item.location}</span>
+                                  <span className="text-sm text-slate-600">📍 {item.location}</span>
                                 )}
                               </div>
                               <div className="flex items-center gap-4 mt-2">
-                                <span className="text-sm text-gray-700">
+                                <span className="text-sm text-slate-600">
                                   👥 {item.teamName || t('team.unknownTeam')}
                                 </span>
                                 <Strength level={item.teamStrength} className="text-xs" />
                               </div>
                             </div>
                             <div className="flex-shrink-0 ml-2">
-                              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                               </svg>
                             </div>
@@ -331,22 +326,16 @@ export default function TrainerDetailPage() {
                   </div>
                 </div>
               ))}
-            </CardBody>
-          </Card>
-        </div>
+        </section>
       )}
 
       {trainerEventHistory.length === 0 && (
-        <div>
-          <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-            <CardBody className="lg:p-6 p-4">
-              <CardTitle>{t('trainerDetail.trainingHistory')}</CardTitle>
-              <p className="text-gray-500 text-center py-8">
+        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+              <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('trainerDetail.trainingHistory')}</h2>
+              <p className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
                 {t('trainerDetail.noAssignmentsYet', { firstName: trainer.firstName })}
               </p>
-            </CardBody>
-          </Card>
-        </div>
+        </section>
       )}
 
       <AddTrainerModal

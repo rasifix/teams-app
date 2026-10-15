@@ -3,7 +3,6 @@ import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
 import { Card, CardBody, CardTitle, Button } from '../components/ui';
-import Level from '../components/Level';
 import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
 import {
   selectMatchFormatById,
@@ -46,6 +45,7 @@ export default function TeamLineupPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
+  const [dragOverSlotId, setDragOverSlotId] = useState<string | null>(null);
 
   // Only reinitialize the draft when switching teams, not on every store refresh, to avoid clobbering in-progress edits.
   useEffect(() => {
@@ -174,18 +174,24 @@ export default function TeamLineupPage() {
   };
 
   return (
-    <div className="page-container pb-24">
-      <div className="page-header">
+    <div className="lineup-page mx-auto max-w-7xl px-4 py-8 pb-32 sm:px-6 sm:py-10 sm:pb-32 lg:px-8">
+      <header className="mb-6">
         <button
           onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
-          className="text-blue-600 hover:text-blue-700 mb-2 text-sm font-medium"
+          className="mb-5 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
         >
           ← {t('common.actions.cancel')}
         </button>
-        <h1 className="page-title">{t('teamLineup.title', { team: team.name })}</h1>
-      </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{event.name}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('teamLineup.title', { team: team.name })}</h1>
+          </div>
+          <p className="text-sm font-medium text-slate-500 sm:text-right">{matchFormat.name} · {formation.name}</p>
+        </div>
+      </header>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto">
+      <div className="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
         {Array.from({ length: matchFormat.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
           <button
             key={periodNumber}
@@ -193,10 +199,10 @@ export default function TeamLineupPage() {
               navigate(`/events/${eventId}/teams/${teamId}/lineup/${periodNumber}`);
               setSelectingSlotId(null);
             }}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium border ${
+            className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
               activeTab === periodNumber
-                ? 'bg-orange-600 text-white border-orange-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('teamLineup.periodLabel', { number: periodNumber })}
@@ -207,10 +213,10 @@ export default function TeamLineupPage() {
             navigate(`/events/${eventId}/teams/${teamId}/lineup/summary`);
             setSelectingSlotId(null);
           }}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium border ${
+          className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-sm font-semibold transition ${
             activeTab === 'summary'
-              ? 'bg-orange-600 text-white border-orange-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              ? 'bg-[#13212b] text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
           }`}
         >
           {t('teamLineup.summaryTab')}
@@ -218,7 +224,7 @@ export default function TeamLineupPage() {
       </div>
 
       {activeTab !== 'summary' && activePeriod > 1 && (
-        <div className="flex justify-end mb-4">
+        <div className="mb-4 flex justify-end">
           <Button variant="secondary" size="sm" onClick={handleCopyPreviousPeriod}>
             {t('teamLineup.copyPreviousPeriod')}
           </Button>
@@ -226,21 +232,21 @@ export default function TeamLineupPage() {
       )}
 
       {activeTab !== 'summary' && hasMismatch && (
-        <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded text-sm">
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           {t('teamLineup.rosterMismatchWarning')}
         </div>
       )}
 
       {activeTab === 'summary' ? (
         <div className="lineup-print-content">
-          <div className="flex items-center justify-between mb-4 print:hidden">
-            <h2 className="text-xl font-semibold text-gray-900">{t('teamLineup.summaryTitle')}</h2>
+          <div className="mb-4 flex items-center justify-between print:hidden">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('teamLineup.summaryTitle')}</h2>
             <Button variant="secondary" onClick={() => window.print()}>
               {t('teamLineup.printSummary')}
             </Button>
           </div>
           {minimumPeriodViolations.length > 0 && (
-            <div className="mb-4 rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+            <div className="mb-4 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
               <div className="font-semibold">{t('teamLineup.minimumPeriodsViolationTitle')}</div>
               <ul className="mt-1 list-disc pl-5">
                 {minimumPeriodViolations.map((violation) => (
@@ -259,12 +265,12 @@ export default function TeamLineupPage() {
             <h1 className="text-2xl font-bold">{t('teamLineup.title', { team: team.name })}</h1>
             <p>{matchFormat.name} · {formation.name}</p>
           </div>
-          <div className="lineup-summary-grid grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="lineup-summary-grid grid grid-cols-1 gap-4 md:grid-cols-2">
             {lineupSummary.map((period) => (
-              <Card key={period.periodNumber} className="lineup-period-card break-inside-avoid">
-                <CardBody className="p-3">
-                  <CardTitle className="text-center">{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
-                  <div className="lineup-pitch relative mt-2 mx-auto w-full max-w-xs aspect-[4/3] overflow-hidden rounded-md bg-emerald-600 shadow-inner">
+              <Card key={period.periodNumber} className="lineup-period-card break-inside-avoid !rounded-3xl !border-slate-200 !shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+                <CardBody className="!p-4">
+                  <CardTitle className="!mb-3 text-center text-sm uppercase tracking-[0.075em] text-slate-500">{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
+                  <div className="lineup-pitch relative mx-auto aspect-[4/3] w-full max-w-xs overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-inner">
                     {period.assignments.map((assignment) => (
                       <div
                         key={assignment.slotId}
@@ -279,7 +285,7 @@ export default function TeamLineupPage() {
                         onMouseEnter={() => assignment.playerId && setHoveredSummaryPlayerId(assignment.playerId)}
                         onMouseLeave={() => setHoveredSummaryPlayerId(null)}
                       >
-                        <span className="block text-[10px] font-bold leading-none opacity-70">
+                          <span className="block text-[10px] font-bold leading-none opacity-70">
                           {t(getPositionLabelKey(assignment.positionCode))}
                           {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
                         </span>
@@ -289,14 +295,14 @@ export default function TeamLineupPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-2 pt-2 border-t border-gray-200">
-                    <div className="text-xs font-semibold text-center text-gray-700 mb-1">{t('teamLineup.benchLabel')}</div>
+                  <div className="mt-3 border-t border-slate-100 pt-3">
+                    <div className="mb-1 text-center text-[11px] font-bold uppercase tracking-[0.075em] text-slate-500">{t('teamLineup.benchLabel')}</div>
                     {period.benchedPlayers.length > 0 ? (
-                      <div className="flex flex-wrap justify-center gap-1 text-center text-xs text-gray-600">
+                      <div className="flex flex-wrap justify-center gap-1.5 text-center text-xs text-slate-600">
                         {period.benchedPlayers.map((player) => (
                           <span
                             key={player.playerId}
-                            className={`px-1 rounded transition-colors ${
+                            className={`rounded-lg px-2 py-1 transition-colors ${
                               hoveredSummaryPlayerId === player.playerId
                                 ? 'bg-orange-100 text-orange-900'
                                 : ''
@@ -309,7 +315,7 @@ export default function TeamLineupPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center text-xs text-gray-600">{t('teamLineup.noBenchedPlayers')}</div>
+                      <div className="text-center text-xs text-slate-500">{t('teamLineup.noBenchedPlayers')}</div>
                     )}
                   </div>
                 </CardBody>
@@ -340,11 +346,12 @@ export default function TeamLineupPage() {
         </div>
       ) : (
       <>
-      <Card className="mb-4">
-        <CardBody>
-          <CardTitle>{t('teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)] lg:items-start">
+      <Card className="!rounded-3xl !border-slate-200 !shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+        <CardBody className="!p-4 sm:!p-6">
+          <CardTitle className="!mb-4 text-lg tracking-tight">{t('teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
           {currentPeriodSummary && (
-            <div className="lineup-pitch relative mt-3 mx-auto w-full max-w-md aspect-[4/3] overflow-hidden rounded-md bg-emerald-600 shadow-inner">
+            <div className="lineup-pitch relative mx-auto mt-3 aspect-[4/3] w-full max-w-xl overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-inner">
               {currentPeriodSummary.assignments.map((assignment) => (
                 <button
                   type="button"
@@ -353,14 +360,21 @@ export default function TeamLineupPage() {
                   onDragOver={(event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'move';
+                    setDragOverSlotId(assignment.slotId);
+                  }}
+                  onDragLeave={() => {
+                    setDragOverSlotId((current) => current === assignment.slotId ? null : current);
                   }}
                   onDrop={(event) => {
                     event.preventDefault();
                     const playerId = event.dataTransfer.getData('lineupPlayerId');
                     if (playerId) handleAssignSlot(assignment.slotId, playerId);
+                    setDragOverSlotId(null);
                   }}
                   className={`absolute z-10 w-[25%] -translate-x-1/2 -translate-y-1/2 rounded border px-1 py-1 text-center shadow-sm transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                    selectingSlotId === assignment.slotId
+                    dragOverSlotId === assignment.slotId
+                      ? 'scale-110 border-orange-300 bg-orange-100 text-orange-950 shadow-[0_0_0_4px_rgba(251,146,60,.35),0_10px_24px_-8px_rgba(15,23,42,.55)] ring-2 ring-orange-400'
+                      : selectingSlotId === assignment.slotId
                       ? 'border-orange-300 bg-orange-100 text-orange-950 ring-2 ring-orange-300'
                       : assignment.playerId
                         ? 'border-white/70 bg-white/95 text-gray-900'
@@ -381,8 +395,8 @@ export default function TeamLineupPage() {
           )}
 
           {selectingAssignment && (
-            <div className="mt-3 rounded-lg border border-orange-200 bg-orange-50 p-3">
-              <div className="mb-2 text-sm font-semibold text-gray-800">
+            <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+              <div className="mb-3 text-sm font-semibold text-slate-800">
                 {t('teamLineup.selectPlayerForPosition', {
                   position: t(getPositionLabelKey(selectingAssignment.positionCode)),
                 })}
@@ -391,7 +405,7 @@ export default function TeamLineupPage() {
                 <button
                   type="button"
                   onClick={() => handleAssignSlot(selectingAssignment.slotId, '')}
-                  className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   {t('teamLineup.emptySlot')}
                 </button>
@@ -400,10 +414,10 @@ export default function TeamLineupPage() {
                     type="button"
                     key={player.id}
                     onClick={() => handleAssignSlot(selectingAssignment.slotId, player.id)}
-                    className={`rounded border px-3 py-1.5 text-sm ${
+                    className={`rounded-xl border px-3 py-1.5 text-sm font-semibold transition ${
                       selectingAssignment.playerId === player.id
                         ? 'border-orange-500 bg-orange-100 text-orange-900'
-                        : 'border-gray-300 bg-white hover:bg-gray-50'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
                     {player.firstName} {player.lastName}
@@ -415,34 +429,41 @@ export default function TeamLineupPage() {
         </CardBody>
       </Card>
 
-      <Card>
-        <CardBody>
-          <CardTitle>{t('teamLineup.benchTitle', { count: benchedPlayerIds.length })}</CardTitle>
+      <Card className="!rounded-3xl !border-slate-200 !shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+        <CardBody className="!p-4 sm:!p-6">
+          <CardTitle className="!mb-4 text-lg tracking-tight">{t('teamLineup.benchTitle', { count: benchedPlayerIds.length })}</CardTitle>
           {benchedPlayerIds.length === 0 ? (
-            <div className="empty-state text-sm">{t('teamLineup.noBenchedPlayers')}</div>
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">{t('teamLineup.noBenchedPlayers')}</div>
           ) : (
-            <div className="space-y-2 mt-3">
+            <div className="mt-3 grid gap-2" role="list">
               {selectedPlayers
                 .filter((player) => benchedPlayerIds.includes(player.id))
                 .map((player) => (
                   <div
                     key={player.id}
+                    role="listitem"
                     draggable
                     onDragStart={(event) => {
                       event.dataTransfer.effectAllowed = 'move';
                       event.dataTransfer.setData('lineupPlayerId', player.id);
                     }}
-                    className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2 lg:cursor-grab lg:active:cursor-grabbing"
+                    onDragEnd={() => setDragOverSlotId(null)}
+                    className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-3 text-sm shadow-[0_10px_24px_-22px_rgba(15,29,38,.65)] transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_28px_-22px_rgba(15,29,38,.55)] lg:cursor-grab lg:active:cursor-grabbing"
                   >
-                    <span>{player.firstName} {player.lastName}</span>
-                    <span className="flex items-center gap-3">
-                      <span className="text-xs text-gray-500">
-                        {t('teamLineup.plannedPeriods', {
-                          count: plannedPeriodCounts.get(player.id) ?? 0,
-                          total: matchFormat.numberOfPeriods,
-                        })}
-                      </span>
-                      <Level level={player.level} />
+                    <span className="flex shrink-0 flex-col gap-0.5 text-slate-400" aria-hidden="true">
+                      <span className="flex gap-0.5"><span className="h-1 w-1 rounded-full bg-current" /><span className="h-1 w-1 rounded-full bg-current" /></span>
+                      <span className="flex gap-0.5"><span className="h-1 w-1 rounded-full bg-current" /><span className="h-1 w-1 rounded-full bg-current" /></span>
+                      <span className="flex gap-0.5"><span className="h-1 w-1 rounded-full bg-current" /><span className="h-1 w-1 rounded-full bg-current" /></span>
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-semibold text-slate-900">{player.firstName} {player.lastName}</span>
+                    <span
+                      className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold tabular-nums text-slate-600"
+                      aria-label={t('teamLineup.plannedPeriods', {
+                        count: plannedPeriodCounts.get(player.id) ?? 0,
+                        total: matchFormat.numberOfPeriods,
+                      })}
+                    >
+                      {plannedPeriodCounts.get(player.id) ?? 0}/{matchFormat.numberOfPeriods}
                     </span>
                   </div>
                 ))}
@@ -450,14 +471,17 @@ export default function TeamLineupPage() {
           )}
         </CardBody>
       </Card>
+      </div>
       </>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-        {saveError && <p className="mb-2 text-center text-sm text-red-600" role="alert">{saveError}</p>}
-        <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving} className="w-full">
-          {t('common.actions.save')}
-        </Button>
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-16px_40px_-30px_rgba(15,23,42,.45)] backdrop-blur sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          {saveError ? <p className="text-sm text-red-600" role="alert">{saveError}</p> : <span className="text-sm font-medium text-slate-500">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPeriods', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
+          <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving}>
+            {t('common.actions.save')}
+          </Button>
+        </div>
       </div>
       <UnsavedLineupDialog
         isOpen={navigationBlocker.state === 'blocked'}
@@ -471,8 +495,8 @@ export default function TeamLineupPage() {
         body * { visibility: hidden; }
         .lineup-print-content, .lineup-print-content * { visibility: visible; }
         #root > div > header { display: none !important; }
-        .page-container { max-width: none !important; padding: 0 !important; }
-        .page-container > *:not(.lineup-print-content):not(style) { display: none !important; }
+        .lineup-page { max-width: none !important; padding: 0 !important; }
+        .lineup-page > *:not(.lineup-print-content):not(style) { display: none !important; }
         .lineup-print-content { position: static !important; width: 100%; padding: 0; }
         .lineup-summary-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
         .lineup-period-card .card-body { padding: 3mm !important; }

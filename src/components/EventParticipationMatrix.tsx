@@ -5,7 +5,7 @@ import type { Activity, Player } from '../types';
 import { getActivityDate } from '../store/selectors/activitySelectors';
 import { selectEventParticipationRows } from '../store/selectors/statisticsSelectors';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import { Card, CardBody, DateColumn } from './ui';
+import { DateColumn } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
@@ -99,58 +99,54 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   if (events.length === 0 || players.length === 0) {
     return (
-      <Card>
-        <CardBody>
-          <div className="empty-state">
+      <section className="rounded-3xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-500 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
             <p>{t('statistics.eventParticipation.emptyState')}</p>
-          </div>
-        </CardBody>
-      </Card>
+      </section>
     );
   }
 
   return (
-    <Card>
-      <CardBody>        
-        {/* Level Filter */}
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <div className="p-4 sm:p-5">
         <LevelRangeSelector
           defaultRange={levelRange}
           onChange={setLevelRange}
         />
 
-        <div className="mt-4 text-xs text-gray-600 mb-4 flex flex-wrap gap-4">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-slate-500">
           <div className="flex items-center gap-1">
-            <span className="text-green-600 font-bold">✓</span>
+            <span className="font-bold text-emerald-600">✓</span>
             <span>{t('statistics.playerTable.selected')}</span>
           </div>
           {invitationStatusOrder.map((status) => (
             <div key={status} className="flex items-center gap-1">
-              <span className={`${status === 'accepted' ? 'text-gray-400' : invitationStatusMeta[status].iconClassName} font-bold`}>
+              <span className={`${status === 'accepted' ? 'text-slate-400' : invitationStatusMeta[status].iconClassName} font-bold`}>
                 {invitationStatusMeta[status].icon}
               </span>
               <span>{t(`invitationStatus.${status}`)}</span>
             </div>
           ))}
           <div className="flex items-center gap-1">
-            <span className="text-gray-400 font-bold">-</span>
+            <span className="font-bold text-slate-400">-</span>
             <span>{t('invitationStatus.notInvited')}</span>
           </div>
         </div>
-        <div className="overflow-x-auto" ref={scrollContainerRef}>
+      </div>
+        <div className="overflow-x-auto border-t border-slate-100" ref={scrollContainerRef}>
           <table className="min-w-full border-collapse">
             <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="sticky left-0 bg-white z-10 px-4 py-3 text-left text-sm font-semibold text-gray-900 border-r-2 border-gray-300 min-w-[220px]">
+              <tr className="border-b border-slate-200 bg-slate-50/80">
+                <th className="sticky left-0 z-10 min-w-[220px] border-r border-slate-200 bg-slate-50 px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">
                   {t('domain.player')}
                 </th>
                 {events.map(event => (
                   <th 
                     key={event.id} 
-                    className="px-2 py-2 text-center text-sm font-medium text-gray-900 min-w-[50px]"
+                    className="min-w-[58px] px-2 py-2.5 text-center text-sm font-medium text-slate-900"
                     title={`${event.name} - ${formatDate(getActivityDate(event))}`}
                   >
                     <div 
-                      className="flex justify-center cursor-pointer hover:opacity-70 transition-opacity"
+                      className="flex cursor-pointer justify-center transition-opacity hover:opacity-70"
                       onClick={(e) => handleEventClick(event.id, e)}
                     >
                       <DateColumn date={getActivityDate(event)} />
@@ -163,11 +159,11 @@ export default function EventParticipationMatrix({ players, events }: EventParti
               {sortedData.map(({ player, attendance }) => (
                 <tr 
                   key={player.id} 
-                  className="border-b border-gray-200 hover:bg-gray-50 max-h-[40px] cursor-pointer"
+                  className="max-h-[40px] cursor-pointer border-b border-slate-100 transition hover:bg-slate-50/80"
                   onClick={() => handlePlayerClick(player.id)}
                 >
-                  <td className="sticky left-0 bg-white z-10 px-4 py-2 text-sm font-medium text-gray-900 border-r border-gray-200 max-h-[40px] min-w-[220px]">
-                    <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                  <td className="sticky left-0 z-10 max-h-[40px] min-w-[220px] border-r border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-900">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                       <span>{player.firstName} {player.lastName}</span>
                       <Level level={player.level} className="text-xs" />
                     </div>
@@ -177,10 +173,10 @@ export default function EventParticipationMatrix({ players, events }: EventParti
                     return (
                       <td 
                         key={index}
-                        className="px-3 py-2 text-center max-h-[40px]"
+                        className="max-h-[40px] px-3 py-2 text-center"
                         title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
                       >
-                        <div className={`inline-flex items-center justify-center w-7 h-7 rounded ${statusInfo.bg}`}>
+                        <div className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${statusInfo.bg}`}>
                           <span className={`text-base font-bold ${statusInfo.color}`}>
                             {statusInfo.icon}
                           </span>
@@ -193,7 +189,6 @@ export default function EventParticipationMatrix({ players, events }: EventParti
             </tbody>
           </table>
         </div>
-      </CardBody>
-    </Card>
+    </section>
   );
 }

@@ -33,7 +33,7 @@ export default function MembersList<T extends Member>({
       : t('members.list.emptyTrainers');
 
     return (
-      <div className="text-gray-500 text-center py-8">
+      <div className="rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500">
         <p>{emptyMessage || defaultEmptyMessage}</p>
       </div>
     );
@@ -95,7 +95,7 @@ export default function MembersList<T extends Member>({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-3 px-0" onClick={handleBackdropClick}>
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" onClick={handleBackdropClick}>
       {members.map((member) => (
         memberType === 'players' && isPlayer(member) ? (
           <PlayerCard
@@ -109,29 +109,26 @@ export default function MembersList<T extends Member>({
         ) : (
           <div
             key={member.id}
-            className="member-card relative overflow-hidden bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+            className="member-card group relative overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md"
           >
             <div
-              className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${
+              className={`flex cursor-pointer items-center justify-between gap-3 p-3 transition-transform duration-200 ${
                 swipedMemberId === member.id ? '-translate-x-20' : 'translate-x-0'
-              } active:bg-gray-50`}
+              } active:bg-slate-50`}
               onClick={(e) => handleMemberClick(member, e)}
               onTouchStart={onDelete ? (e) => handleTouchStart(member.id, e) : undefined}
             >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="truncate">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {member.firstName} {member.lastName}
-                    </p>
-                  </div>
-                  <div className="ml-2 flex-shrink-0 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                  </div>
-                </div>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-orange-50 group-hover:text-orange-600">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20a7.5 7.5 0 0 1 15 0" />
+                </svg>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900">{member.firstName} {member.lastName}</p>
               </div>
+              <svg className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-orange-500" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </div>
 
             {onDelete && (

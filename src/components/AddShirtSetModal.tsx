@@ -92,7 +92,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
         <ModalBody>
           <div className="space-y-3">
             <div>
-              <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="sponsor" className="form-label">
                 {t('shirtSetModal.fields.sponsorRequired')}
               </label>
               <input
@@ -108,7 +108,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
             </div>
 
             <div>
-              <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="color" className="form-label">
                 {t('shirtSetModal.fields.colorRequired')}
               </label>
               <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                 <div className="space-y-3 pl-4 border-l-2 border-gray-100">
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label htmlFor="startNumber" className="block text-xs font-medium text-gray-700 mb-1">
+                      <label htmlFor="startNumber" className="form-label">
                         {t('shirtSetModal.fields.startNumber')}
                       </label>
                       <input
@@ -167,7 +167,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                       />
                     </div>
                     <div>
-                      <label htmlFor="endNumber" className="block text-xs font-medium text-gray-700 mb-1">
+                      <label htmlFor="endNumber" className="form-label">
                         {t('shirtSetModal.fields.endNumber')}
                       </label>
                       <input
@@ -182,7 +182,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                       />
                     </div>
                     <div>
-                      <label htmlFor="size" className="block text-xs font-medium text-gray-700 mb-1">
+                      <label htmlFor="size" className="form-label">
                         {t('shirtSetModal.fields.size')}
                       </label>
                       <select

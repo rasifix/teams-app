@@ -37,12 +37,13 @@ export default function PlayerInvitationsCard({
   );
   const availableCount = selectAvailableInvitations(invitations, assignedPlayerIds).length;
 
-  return <section className="rounded-lg border border-gray-200 bg-white p-4 lg:p-6">
-    <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-lg font-semibold text-gray-900">{t('domain.players')}</h2>
-      {!readOnly && <button type="button" onClick={onInviteClick} className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700">{t('playerInvitations.invite')}</button>}
+  return <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('domain.players')}</h2>
+      {!readOnly && <button type="button" onClick={onInviteClick} className="btn-primary btn-sm">{t('playerInvitations.invite')}</button>}
     </div>
-    <div className="flex border-b border-gray-200" role="tablist" aria-label={t('domain.players')}>
+    <div className="mb-1 max-w-full overflow-x-auto" role="tablist" aria-label={t('domain.players')}>
+      <div className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
       {(['available', 'open', 'declined'] as const).map((response) => {
         const isActive = activeResponse === response;
         const count = response === 'available' ? availableCount : counts[response];
@@ -52,34 +53,35 @@ export default function PlayerInvitationsCard({
           role="tab"
           aria-selected={isActive}
           onClick={() => setActiveResponse(response)}
-          className={`-mb-px border-b-2 px-3 py-2 text-xs font-semibold transition-colors sm:px-4 ${
-            isActive ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+          className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+            isActive ? 'bg-[#13212b] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
           }`}
         >
           {t(`invitationStatus.${response}`)} ({count})
         </button>;
       })}
+      </div>
     </div>
-    {visibleInvitations.length === 0 ? <p className="mt-3 py-4 text-center text-sm text-gray-500">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</p> : <ul className="mt-3 divide-y divide-gray-200">
+    {visibleInvitations.length === 0 ? <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</p> : <ul className="mt-3 divide-y divide-slate-100">
       {visibleInvitations.map((invitation) => {
         const player = players.find((entry) => entry.id === invitation.playerId);
         const assigned = assignedPlayerIds.includes(invitation.playerId);
         const isSpondManaged = readOnly || isSpondManagedInvitation(currentActivity, player);
-        return <li key={invitation.id} className="flex h-10 items-center gap-2" data-testid="invitation-row">
-          <p className="min-w-0 flex-1 basis-32 truncate text-sm text-gray-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
+        return <li key={invitation.id} className="flex min-h-11 items-center gap-2" data-testid="invitation-row">
+          <p className="min-w-0 flex-1 basis-32 truncate text-sm font-medium text-slate-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
           {player && <Level level={player.level} className="text-base leading-none" />}
-          {invitation.response === 'declined' && (readOnly ? <span className="text-xs text-gray-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+          {invitation.response === 'declined' && (readOnly ? <span className="text-xs text-slate-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
             const reason = event.target.value as InvitationDeclineReason | '';
             setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
             onStatusChange(invitation.id, 'declined', reason || undefined);
-          }} className="rounded border border-gray-300 px-2 py-1 text-xs">
+          }} className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs">
             <option value="">{t('activity.declineReasons.unspecified')}</option>
             {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
           </select>)}
           {!assigned && !isSpondManaged && <button
             type="button"
             onClick={() => onRemoveInvitation(invitation.id)}
-            className="p-1 text-red-500 transition-colors hover:text-red-700"
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
             title={t('playerInvitations.remove')}
             aria-label={t('playerInvitations.remove')}
           >

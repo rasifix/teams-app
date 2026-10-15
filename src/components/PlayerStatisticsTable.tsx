@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player } from '../types';
 import Level from './Level';
-import { Card, CardBody } from './ui';
 import LevelRangeSelector from './LevelRangeSelector';
 import { getBirthYear } from '../utils/birthDate';
 
@@ -102,110 +101,110 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
   };
 
   return (
-    <Card>
-      <CardBody>        
-        {/* Level Filter */}
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <div className="p-4 sm:p-5">
         <LevelRangeSelector
           defaultRange={levelRange}
           onChange={setLevelRange}
         />
-        
+      </div>
+
         {filteredPlayerStats.length === 0 ? (
-          <div className="empty-state">
+          <div className="border-t border-slate-100 px-4 py-12 text-center text-sm text-slate-500">
             <p>{t('statistics.playerTable.emptyState')}</p>
           </div>
         ) : (
-          <div className="table-container">
-            <table className="table">
-              <thead className="table-header hidden md:table-header-group">
+          <div className="overflow-x-auto border-t border-slate-100">
+            <table className="min-w-full">
+              <thead className="hidden bg-slate-50/80 md:table-header-group">
                 <tr>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('name')}
                   >
                     {t('domain.player')}{getSortIndicator('name')}
                   </th>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('invited')}
                   >
                     {t('statistics.playerTable.invited')}{getSortIndicator('invited')}
                   </th>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('accepted')}
                   >
                     {t('statistics.playerTable.accepted')}{getSortIndicator('accepted')}
                   </th>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('selected')}
                   >
                     {t('statistics.playerTable.selected')}{getSortIndicator('selected')}
                   </th>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('acceptanceRate')}
                   >
                     {t('statistics.playerTable.acceptanceRate')}{getSortIndicator('acceptanceRate')}
                   </th>
                   <th 
-                    className="table-header-cell cursor-pointer hover:bg-gray-100"
+                    className="cursor-pointer px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500 transition hover:bg-slate-100"
                     onClick={() => handleSort('selectionRate')}
                   >
                     {t('statistics.playerTable.selectionRate')}{getSortIndicator('selectionRate')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="table-body">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {filteredPlayerStats.map((stat) => (
                   <tr 
                     key={stat.player.id} 
-                    className="table-row cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer transition hover:bg-slate-50/80"
                     onClick={() => handlePlayerClick(stat.player.id)}
                   >
                     {/* Desktop view */}
-                    <td className="table-cell hidden md:table-cell">
-                      <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                    <td className="hidden whitespace-nowrap px-5 py-3.5 md:table-cell">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                         <span>{stat.player.firstName} {stat.player.lastName}</span>
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
                     </td>
-                    <td className="table-cell hidden md:table-cell">
+                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-slate-600 md:table-cell">
                       {stat.invitedCount}
                     </td>
-                    <td className="table-cell hidden md:table-cell">
+                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-slate-600 md:table-cell">
                       {stat.acceptedCount}
                     </td>
-                    <td className="table-cell hidden md:table-cell">
-                      <span className="font-semibold">{stat.selectedCount}</span>
+                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm md:table-cell">
+                      <span className="font-semibold text-slate-900">{stat.selectedCount}</span>
                     </td>
-                    <td className="table-cell text-gray-600 hidden md:table-cell">
+                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-slate-600 md:table-cell">
                       {stat.acceptanceRate.toFixed(0)}%
                     </td>
-                    <td className="table-cell text-gray-600 hidden md:table-cell">
+                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-slate-600 md:table-cell">
                       {stat.selectionRate.toFixed(0)}%
                     </td>
                     
                     {/* Mobile view */}
-                    <td className="px-4 py-3 md:hidden" colSpan={6}>
-                      <div className="text-sm font-medium text-gray-900 mb-1 text-center">
+                    <td className="px-4 py-4 md:hidden" colSpan={6}>
+                      <div className="mb-3 flex items-center justify-center text-sm font-semibold text-slate-900">
                         {stat.player.firstName} {stat.player.lastName}{' '}
-                        <span className="text-xs text-muted m-2">{getBirthYear(stat.player.birthDate)}</span>{' '}
+                        <span className="mx-2 text-xs font-normal text-slate-400">{getBirthYear(stat.player.birthDate)}</span>{' '}
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-3 text-xs">
                         <div className="text-center">
-                          <div className="font-semibold text-gray-900">{stat.invitedCount}</div>
-                          <div className="text-muted">{t('statistics.playerTable.invited')}</div>
+                          <div className="font-semibold text-slate-900">{stat.invitedCount}</div>
+                          <div className="mt-0.5 text-slate-500">{t('statistics.playerTable.invited')}</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-gray-900">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
-                          <div className="text-muted">{t('statistics.playerTable.accepted')}</div>
+                          <div className="font-semibold text-slate-900">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
+                          <div className="mt-0.5 text-slate-500">{t('statistics.playerTable.accepted')}</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-semibold text-green-600">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
-                          <div className="text-muted">{t('statistics.playerTable.selected')}</div>
+                          <div className="font-semibold text-emerald-600">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
+                          <div className="mt-0.5 text-slate-500">{t('statistics.playerTable.selected')}</div>
                         </div>
                       </div>
                     </td>
@@ -215,7 +214,6 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
             </table>
           </div>
         )}
-      </CardBody>
-    </Card>
+    </section>
   );
 }

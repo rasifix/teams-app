@@ -154,8 +154,8 @@ export default function MembersPage() {
 
   if (isLoading) {
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-500">
           <p>{t('members.loading')}</p>
         </div>
       </div>
@@ -163,38 +163,43 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="page-container lg:px-4 px-0">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('members.title')}</h1>
+        <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('members.subtitle')}</p>
+      </div>
+
       {hasErrors && (errors.players || errors.trainers) && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
+        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errors.players || errors.trainers}
         </div>
       )}
 
       {deleteActionError && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mx-4 lg:mx-0">
+        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {deleteActionError}
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6 px-4 lg:px-0">
-        <nav className="flex gap-8" aria-label={t('common.tabs')}>
+      <div className="mb-5 overflow-x-auto">
+        <nav className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-label={t('common.tabs')}>
           <NavLink
             to="/members/players"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('domain.players')} ({players.length})
           </NavLink>
           <NavLink
             to="/members/trainers"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('domain.trainers')} ({trainers.length})
@@ -202,10 +207,10 @@ export default function MembersPage() {
           {isAdmin && (
           <NavLink
             to="/members/guardians"
-            className={({ isActive }) => `py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
               isActive
-                ? 'border-orange-600 text-orange-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'bg-[#13212b] text-white shadow-sm'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
             {t('domain.guardians')} ({guardians.length})

@@ -36,33 +36,42 @@ export default function Header() {
   };
 
   return (
-    <header className="relative bg-gradient-to-b from-orange-600/70 to-orange-600 backdrop-blur-md text-white shadow-md">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#101b24]/95 text-white shadow-[0_8px_30px_-22px_rgba(0,0,0,.8)] backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex h-[4.5rem] items-center justify-between">
           {/* Logo/Title */}
-          <Link to="/" className="flex items-center">
-            <h1 className="text-xl font-bold">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
+          <Link to="/" className="group flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400">
+            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-orange-500 shadow-lg shadow-orange-950/30 transition group-hover:rotate-3">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.5 10.25 3.5 1.8 3.5-1.8M12 12v4" />
+              </svg>
+            </span>
+            <div>
+              <h1 className="text-base font-semibold tracking-tight sm:text-lg">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
+              <p className="hidden text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400 sm:block">{t('app.tagline')}</p>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8 items-center">
+          <nav className="hidden items-center gap-1.5 md:flex">
             {isAuthenticated && navItems.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-orange-700 text-white'
-                      : 'text-orange-100 hover:bg-orange-500 hover:text-white'
+                      ? 'bg-white text-slate-950 shadow-sm'
+                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   {t(item.labelKey)}
                 </Link>
               );
             })}
-            <div className="flex items-center gap-2" aria-label={t('common.language')}>
+            <div className="ml-2 flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1" aria-label={t('common.language')}>
               {SUPPORTED_LANGUAGES.map((language) => {
                 const isActive = activeLanguage === language;
                 return (
@@ -70,10 +79,10 @@ export default function Header() {
                     key={language}
                     type="button"
                     onClick={() => handleLanguageChange(language)}
-                    className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+                    className={`rounded-full px-2 py-1 text-[11px] font-semibold transition-colors ${
                       isActive
-                        ? 'bg-white text-orange-700'
-                        : 'bg-orange-700 text-orange-100 hover:bg-orange-800 hover:text-white'
+                        ? 'bg-orange-500 text-white'
+                        : 'text-slate-400 hover:text-white'
                     }`}
                     aria-pressed={isActive}
                   >
@@ -83,8 +92,8 @@ export default function Header() {
               })}
             </div>
             {isAuthenticated ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-orange-100">
+              <div className="ml-2 flex items-center gap-3 border-l border-white/10 pl-3">
+                <span className="max-w-32 truncate text-sm text-slate-300">
                   {user?.firstName} {user?.lastName}
                 </span>
                 <LogoutButton />
@@ -99,7 +108,7 @@ export default function Header() {
             <button
               type="button"
               onClick={toggleMobileMenu}
-              className="bg-orange-700 inline-flex items-center justify-center p-2 rounded-md text-orange-200 hover:text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-slate-300 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-400"
               aria-controls="mobile-menu"
               aria-expanded={isMobileMenuOpen}
             >
@@ -125,8 +134,8 @@ export default function Header() {
 
         {/* Mobile menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden" id="mobile-menu">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <div className="border-t border-white/10 py-3 md:hidden" id="mobile-menu">
+            <div className="space-y-1 px-1 pb-2 pt-1">
               {isAuthenticated && navItems.map((item) => {
                 const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                 return (
@@ -136,8 +145,8 @@ export default function Header() {
                     onClick={closeMobileMenu}
                     className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
                       isActive
-                        ? 'bg-orange-700 text-white'
-                        : 'text-orange-100 hover:bg-orange-500 hover:text-white'
+                      ? 'bg-white text-slate-950'
+                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     {t(item.labelKey)}
@@ -145,7 +154,7 @@ export default function Header() {
                 );
               })}
               <div className="px-3 py-2">
-                <div className="text-xs text-orange-100 mb-2">{t('common.language')}</div>
+                <div className="mb-2 text-xs text-slate-400">{t('common.language')}</div>
                 <div className="flex items-center gap-2">
                   {SUPPORTED_LANGUAGES.map((language) => {
                     const isActive = activeLanguage === language;
@@ -156,8 +165,8 @@ export default function Header() {
                         onClick={() => handleLanguageChange(language)}
                         className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
                           isActive
-                            ? 'bg-white text-orange-700'
-                            : 'bg-orange-700 text-orange-100 hover:bg-orange-800 hover:text-white'
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
                         }`}
                         aria-pressed={isActive}
                       >
@@ -169,7 +178,7 @@ export default function Header() {
               </div>
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 py-2 text-base text-orange-100">
+                  <div className="px-3 py-2 text-base text-slate-300">
                     {user?.firstName} {user?.lastName}
                   </div>
                   <div className="px-3 py-2">

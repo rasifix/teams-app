@@ -127,7 +127,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
           </p>
           <div className="rounded-lg border border-gray-200 p-4 space-y-4">
             <div>
-              <label htmlFor="stats-period-name" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.name')}</label>
+              <label htmlFor="stats-period-name" className="form-label">{t('common.labels.name')}</label>
               <input
                 id="stats-period-name"
                 type="text"
@@ -139,7 +139,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
             </div>
 
             <div>
-              <label htmlFor="stats-period-start" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.startDate')}</label>
+              <label htmlFor="stats-period-start" className="form-label">{t('common.labels.startDate')}</label>
               <input
                 id="stats-period-start"
                 type="date"
@@ -150,7 +150,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
             </div>
 
             <div>
-              <label htmlFor="stats-period-end" className="block text-sm font-medium text-gray-700 mb-1">{t('common.labels.endDate')}</label>
+              <label htmlFor="stats-period-end" className="form-label">{t('common.labels.endDate')}</label>
               <input
                 id="stats-period-end"
                 type="date"

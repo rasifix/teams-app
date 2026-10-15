@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "My Team"
+    "name": "My Team",
+    "tagline": "Team operations"
   },
   "common": {
     "language": "Language",
@@ -53,6 +54,8 @@
     "to": "To:"
   },
   "events": {
+    "title": "Events",
+    "subtitle": "Plan matches and tournaments, then manage attendance and teams.",
     "loading": "Loading events...",
     "futureTitle": "Future Events ({{count}})",
     "pastTitle": "Past Events ({{count}})",
@@ -63,6 +66,7 @@
     "teamCount_other": "{{count}} teams",
     "playersMarkedAs": "Players marked as {{status}}",
     "playersAssignedToTeams": "Players who have been assigned to teams",
+    "teamsReady": "All teams meet the minimum player count",
     "invitationCounts": "Invitation counts",
     "teamCardLabel": "{{team}} details"
   },
@@ -72,6 +76,7 @@
     }
   },
   "shirts": {
+    "subtitle": "Manage shirt sets, numbers, sizes, and availability.",
     "goalkeeperShort": "GK",
     "unavailableShort": "UNAV",
     "editShirt": "Edit shirt",
@@ -299,6 +304,13 @@
   },
   "home": {
     "title": "Welcome to My Teams",
+    "publicTitle": "Team management",
+    "publicSubtitle": "Squads, events, attendance, and statistics in one place.",
+    "overviewTitle": "Overview",
+    "overviewSubtitle": "Select a squad or open an upcoming event.",
+    "featuresLabel": "What you can do",
+    "manageLabel": "Manage",
+    "scheduleLabel": "Next up",
     "upcomingEvents": {
       "title": "Upcoming Events",
       "viewAll": "View all",
@@ -315,6 +327,8 @@
     }
   },
   "members": {
+    "title": "Members",
+    "subtitle": "Manage players, trainers, and guardians.",
     "list": {
       "emptyPlayers": "No players added yet. Click \"Add Player\" to get started.",
       "emptyTrainers": "No trainers added yet. Click \"Add Trainer\" to get started.",
@@ -538,6 +552,7 @@
   },
   "statistics": {
     "title": "Statistics",
+    "description": "Track attendance, availability, and team selections at a glance.",
     "summary": {
       "totalPlayers": "Total Players",
       "totalEvents": "Total Events",
@@ -688,6 +703,7 @@
     "notFound": "Event not found.",
     "previousShort": "Prev",
     "nextShort": "Next",
+    "navigationLabel": "Event navigation",
     "noPreviousEvent": "No previous event",
     "noNextEvent": "No next event",
     "teamsTitle": "Teams",
@@ -710,6 +726,7 @@
   },
   "teamDetail": {
     "teamNotFound": "Team not found",
+    "switchTeam": "Switch team",
     "trainerLabel": "Trainer",
     "assignTrainerTitle": "Assign trainer",
     "shirtSetLabel": "Shirt Set",
@@ -760,7 +777,7 @@
     "periods": {
       "title": "Periods",
       "description": "Define the date periods used to group and filter statistics.",
-      "add": "Add period",
+      "add": "Add",
       "empty": "No periods have been configured yet.",
       "range": "{{startDate}} to {{endDate}}"
     }

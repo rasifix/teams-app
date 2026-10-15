@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
-import { Card, CardBody, CardTitle, Button } from '../components/ui';
+import { Button } from '../components/ui';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
 import SelectionRemovalDialog from '../components/SelectionRemovalDialog';
@@ -164,55 +164,73 @@ export default function TeamDetailPage() {
   const playerToRemoveData = playerToRemove ? players.find(p => p.id === playerToRemove) : null;
   
   return (
-    <div className="page-container lg:px-4 px-0">
-      {/* Sub Navigation */}
-      <div className="bg-gray-50 border-b border-gray-200 -mt-8 mb-6 py-3 px-4 lg:px-0 lg:rounded-t-lg">
-        <div className="relative flex items-center justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <header className="mb-6">
+        <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-4">
           <button 
             onClick={() => navigate(`/events/${eventId}`)}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
           >
             ← {t('common.actions.back')}
           </button>
-          <span className="absolute left-1/2 -translate-x-1/2 text-sm font-semibold text-gray-900">{team.name}</span>
           <button
             onClick={() => setIsEditTeamModalOpen(true)}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="btn-secondary btn-sm"
           >
             {t('common.actions.edit')}
           </button>
         </div>
-      </div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{event.name}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{team.name}</h1>
+              <Strength level={team.strength} className="text-sm" />
+            </div>
+          </div>
+          {event.teams.length > 1 && (
+            <div className="w-full sm:w-auto sm:min-w-56">
+              <label htmlFor="team-switcher" className="form-label">{t('teamDetail.switchTeam')}</label>
+              <select
+                id="team-switcher"
+                value={team.id}
+                onChange={(event) => navigate(`/events/${eventId}/teams/${event.target.value}`)}
+                className="form-input !min-h-10 !rounded-xl !py-2 text-sm"
+              >
+                {event.teams.map((eventTeam) => <option key={eventTeam.id} value={eventTeam.id}>{eventTeam.name}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+      </header>
       
-      {/* Team Details */}
-      <div className="space-y-4">
-        {/* Trainer and Shirt Set */}
-        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4 space-y-1">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+          <div className="divide-y divide-slate-100">
             
-            <div className="flex min-h-11 items-center justify-between py-2">
+            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
               <div className="flex items-center gap-2">
                 <span>🕐</span>
-                <span className="font-medium text-sm">{t('teamModal.fields.startTime')}</span>
+                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.startTime')}</span>
               </div>
-              <div className="text-sm">
+              <div className="text-right text-sm font-medium text-slate-900">
                 {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
               </div>
             </div>
             {(event.kind === 'match' ? event.location : team.location || event.location) && (
-              <div className="flex min-h-11 items-center justify-between py-2">
+              <div className="flex min-h-12 items-center justify-between gap-4 py-3">
                 <div className="flex items-center gap-2">
                   <span>📍</span>
-                  <span className="font-medium text-sm">{t('teamModal.fields.locationOptional')}</span>
+                  <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.locationOptional')}</span>
                 </div>
-                <span className="text-sm">{event.kind === 'match' ? event.location : team.location || event.location}</span>
+                <span className="text-right text-sm font-medium text-slate-900">{event.kind === 'match' ? event.location : team.location || event.location}</span>
               </div>
             )}
 
-            <div className="flex min-h-11 items-center justify-between py-2">
+            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
               <div className="flex items-center gap-2">
                 <span>💪</span>
-                <span className="font-medium text-sm">{t('teamModal.fields.strength')}</span>
+                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.strength')}</span>
               </div>
               <div className="text-sm">
                 <Strength level={team.strength} className="text-xs" />
@@ -221,60 +239,60 @@ export default function TeamDetailPage() {
 
             <button
               type="button"
-              className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
               data-testid="team-responsible-people-row"
               onClick={() => setIsResponsibleModalOpen(true)}
             >
               <div className="flex items-center gap-2">
                 <span>👤</span>
-                <span className="font-medium text-sm">{t('teamModal.fields.responsiblePeople')}</span>
+                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.responsiblePeople')}</span>
               </div>
               {responsiblePeople.length > 0 ? (
-                <div className="text-sm text-right">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
+                <div className="text-right text-sm font-medium text-slate-900">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
               ) : (
-                <div className="text-sm text-gray-500">{t('teamModal.noTrainerAssigned')}</div>
+                <div className="text-right text-sm text-slate-500">{t('teamModal.noTrainerAssigned')}</div>
               )}
             </button>
 
             <button
               type="button"
-              className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+              className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
               data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
             >
               <div className="flex items-center gap-2">
                 <span>👕</span>
-                <span className="font-medium text-sm">{t('teamDetail.shirtSetLabel')}</span>
+                <span className="text-sm font-semibold text-slate-700">{t('teamDetail.shirtSetLabel')}</span>
               </div>
               {shirtSet ? (
-                <div className="text-sm">
+                <div className="text-right text-sm font-medium text-slate-900">
                   {shirtSet.sponsor}
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">{t('teamDetail.noShirtSetAssigned')}</div>
+                <div className="text-right text-sm text-slate-500">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
             </button>
 
             {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
               <button
                 type="button"
-                className="-mx-4 flex w-[calc(100%+2rem)] min-h-11 items-center justify-between gap-3 rounded px-4 py-2 text-left transition-colors hover:bg-gray-50 lg:-mx-6 lg:w-[calc(100%+3rem)] lg:px-6"
+                className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
                 onClick={() => setIsAssignFormationModalOpen(true)}
               >
                 <div className="flex items-center gap-2">
                   <span>🧩</span>
-                  <span className="font-medium text-sm">{t('teamDetail.formationLabel')}</span>
+                  <span className="text-sm font-semibold text-slate-700">{t('teamDetail.formationLabel')}</span>
                 </div>
-                <span className={`text-sm ${team.formationId ? '' : 'text-gray-500'}`}>
+                <span className={`text-right text-sm ${team.formationId ? 'font-medium text-slate-900' : 'text-slate-500'}`}>
                   {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
                 </span>
               </button>
             )}
 
-            <div className="flex min-h-11 items-center justify-between gap-3 py-2">
+            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
               <div className="flex items-center gap-2">
                 <span>📋</span>
-                <span className="font-medium text-sm">{t('teamDetail.lineupLabel')}</span>
+                <span className="text-sm font-semibold text-slate-700">{t('teamDetail.lineupLabel')}</span>
               </div>
               <div className="flex flex-wrap justify-end gap-2">
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
@@ -284,16 +302,14 @@ export default function TeamDetailPage() {
                 )}
               </div>
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </section>
         
-        {/* Selected Players */}
-        <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-          <CardBody className="lg:p-6 p-4">
-            <div className="flex justify-between items-center mb-4">
-              <CardTitle>
+        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h2 className="text-lg font-semibold tracking-tight text-slate-950">
                 {t('domain.players')} ({selectedPlayers.length}/{(event.maxPlayersPerTeam ?? players.length)})
-              </CardTitle>
+              </h2>
               <Button 
                 onClick={handleAddPlayers}
                 disabled={!selectionEditState?.canEdit}
@@ -302,31 +318,31 @@ export default function TeamDetailPage() {
                 {t('common.actions.edit')}
               </Button>
             </div>
-            {!selectionEditState?.canEdit && <p className="mb-4 text-sm text-red-700">{t('teamPlayerSelection.eventPassedWarning')}</p>}
+            {!selectionEditState?.canEdit && <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{t('teamPlayerSelection.eventPassedWarning')}</p>}
             
             {selectedPlayers.length === 0 ? (
-              <div className="empty-state text-sm">{t('teamDetail.noPlayersSelected')}</div>
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">{t('teamDetail.noPlayersSelected')}</div>
             ) : (
-              <div className="space-y-2">
+              <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
                 {selectedPlayers.map(player => {
                   const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player.id);
                   
                   return (
                     <div 
                       key={player.id}
-                      className="relative overflow-hidden bg-gray-50 rounded-lg"
+                      className="relative overflow-hidden bg-white"
                     >
                       {/* Main content */}
                       <div
-                        className={`flex items-center justify-between p-3 transition-transform duration-200 ${
+                        className={`flex items-center justify-between px-4 py-3.5 transition-transform duration-200 ${
                           swipedPlayerId === player.id ? '-translate-x-20' : 'translate-x-0'
                         }`}
                         onTouchStart={(e) => selectionEditState?.canEdit && handleTouchStart(player.id, e)}
                       >
-                        <div className="flex items-center gap-2 text-sm flex-1">
+                        <div className="flex flex-1 items-center gap-2 text-sm">
                           {shirtAssignment && shirtSet && (
                             <span 
-                              className="flex items-center justify-center w-6 h-6 text-white font-bold rounded-full flex-shrink-0"
+                              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-sm"
                               style={{ 
                                 backgroundColor: shirtSet.color,
                                 fontSize: '10px'
@@ -335,10 +351,10 @@ export default function TeamDetailPage() {
                               {shirtAssignment.shirtNumber}
                             </span>
                           )}
-                          <span className="font-medium">
+                          <span className="font-semibold text-slate-900">
                             {player.firstName} {player.lastName}
                           </span>
-                          <span className="text-gray-500">
+                          <span className="text-slate-400">
                             {getBirthYear(player.birthDate)}
                           </span>
                         </div>
@@ -363,8 +379,7 @@ export default function TeamDetailPage() {
                 })}
               </div>
             )}
-          </CardBody>
-        </Card>
+        </section>
       </div>
       
       <SelectionRemovalDialog

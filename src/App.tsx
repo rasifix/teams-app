@@ -34,7 +34,7 @@ import SquadSelectionPage from './pages/SquadSelectionPage';
 function AppRoutes() {
   return (
     <AppInitializer>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#f6f7f5]">
         <Header />
         <ApiStatus />
         <ApiErrorBoundary>

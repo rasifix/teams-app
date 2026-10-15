@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
-import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
 import SpondBadge from "../components/SpondBadge";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
@@ -61,41 +60,40 @@ export default function MembersPlayersPage() {
 
   return (
     <>
-      <SpondSyncResultBanner className="mb-4 mx-4 lg:mx-0" />
-      <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-      <CardBody className="lg:p-6 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle className="mb-0">
+      <SpondSyncResultBanner className="mb-4" />
+      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">
             {selectedLevels.length > 0 || selectedYear !== null || !showTrialPlayers
               ? t("members.allPlayersFilteredTitle", {
                   filteredCount: filteredPlayers.length,
                   totalCount: players.length,
                 })
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
-          </CardTitle>
-          <div className="flex items-center gap-2">
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
             {canManageBirthdayCalendar && squad && (
-              <Button variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
+              <Button className="!rounded-full !bg-slate-100 !text-slate-700 hover:!bg-slate-200" variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
                 {t('members.birthdayCalendar.openAction')}
               </Button>
             )}
             {canImportFromSpond && (
-              <Button className="inline-flex items-center gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
+              <Button className="inline-flex items-center gap-1.5 !rounded-full !bg-slate-100 !text-slate-700 hover:!bg-slate-200" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
                 <SpondBadge />
                 {t('spondSync.syncAction')}
               </Button>
             )}
             {!spondLinked && (
-              <Button variant="primary" size="sm" onClick={openAddPlayerModal}>
+              <Button className="!rounded-full !bg-orange-500 hover:!bg-orange-600" variant="primary" size="sm" onClick={openAddPlayerModal}>
                 {t("common.actions.add")}
               </Button>
             )}
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("members.levelFilter")}</span>
+            <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-slate-500">{t("members.levelFilter")}</span>
             <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5].map((level) => (
                 <button
@@ -105,10 +103,10 @@ export default function MembersPlayersPage() {
                       prev.includes(level) ? prev.filter((entry) => entry !== level) : [...prev, level]
                     );
                   }}
-                  className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
+                  className={`h-7 min-w-7 rounded-full px-2 text-xs font-semibold transition-colors ${
                     selectedLevels.includes(level)
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      ? "bg-orange-500 text-white"
+                      : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                   }`}
                 >
                   {level}
@@ -116,7 +114,7 @@ export default function MembersPlayersPage() {
               ))}
               <button
                 onClick={() => setSelectedLevels([])}
-                className={`px-2 py-1 text-xs font-medium underline transition-opacity ${
+                className={`px-1 py-1 text-xs font-medium transition-opacity ${
                   selectedLevels.length > 0
                     ? "text-gray-600 hover:text-gray-800 opacity-100"
                     : "text-transparent opacity-0 pointer-events-none"
@@ -129,16 +127,16 @@ export default function MembersPlayersPage() {
 
           {availableYears.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("members.yearFilter")}</span>
+              <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-slate-500">{t("members.yearFilter")}</span>
               <div className="flex gap-1.5">
                 {availableYears.map((year) => (
                   <button
                     key={year}
                     onClick={() => setSelectedYear(selectedYear === year ? null : year)}
-                    className={`px-2.5 py-1 rounded text-sm font-medium transition-colors ${
+                    className={`h-7 rounded-full px-2.5 text-xs font-semibold transition-colors ${
                       selectedYear === year
-                        ? "bg-orange-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-orange-500 text-white"
+                        : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     }`}
                   >
                     {year}
@@ -146,7 +144,7 @@ export default function MembersPlayersPage() {
                 ))}
                 <button
                   onClick={() => setSelectedYear(null)}
-                  className={`px-2 py-1 text-xs font-medium underline transition-opacity ${
+                  className={`px-1 py-1 text-xs font-medium transition-opacity ${
                     selectedYear !== null
                       ? "text-gray-600 hover:text-gray-800 opacity-100"
                       : "text-transparent opacity-0 pointer-events-none"
@@ -159,19 +157,19 @@ export default function MembersPlayersPage() {
           )}
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("members.trialFilter")}</span>
+            <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-slate-500">{t("members.trialFilter")}</span>
             <button
               onClick={() => setShowTrialPlayers((prev) => !prev)}
               aria-pressed={showTrialPlayers}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                showTrialPlayers ? "bg-orange-600" : "bg-gray-300"
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                showTrialPlayers ? "bg-orange-500" : "bg-slate-300"
               }`}
             >
               <span className="sr-only">
                 {showTrialPlayers ? t("members.hideTrialPlayers") : t("members.showTrialPlayers")}
               </span>
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
                   showTrialPlayers ? "translate-x-6" : "translate-x-1"
                 }`}
               />
@@ -179,19 +177,19 @@ export default function MembersPlayersPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{t("members.inactiveFilter")}</span>
+            <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-slate-500">{t("members.inactiveFilter")}</span>
             <button
               onClick={() => setShowInactivePlayers((prev) => !prev)}
               aria-pressed={showInactivePlayers}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                showInactivePlayers ? "bg-orange-600" : "bg-gray-300"
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                showInactivePlayers ? "bg-orange-500" : "bg-slate-300"
               }`}
             >
               <span className="sr-only">
                 {showInactivePlayers ? t("members.hideInactivePlayers") : t("members.showInactivePlayers")}
               </span>
               <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
                   showInactivePlayers ? "translate-x-6" : "translate-x-1"
                 }`}
               />
@@ -200,8 +198,7 @@ export default function MembersPlayersPage() {
         </div>
 
         <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" />
-      </CardBody>
-      </Card>
+      </section>
       {squad && (
         <BirthdayCalendarModal
           isOpen={isBirthdayCalendarOpen}

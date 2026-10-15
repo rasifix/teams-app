@@ -3,7 +3,6 @@ import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
 import DuplicateMembersModal from "../components/DuplicateMembersModal";
-import { Card, CardBody, CardTitle } from "../components/ui";
 import Button from "../components/ui/Button";
 import { useActivities, useTrainers } from "../store";
 import { selectDuplicateTrainerGuardianGroups } from "../store/selectors/memberDuplicateSelectors";
@@ -26,17 +25,16 @@ export default function MembersTrainersPage() {
   };
 
   return (
-    <Card className="lg:border border-0 lg:rounded-lg rounded-none lg:shadow shadow-none">
-      <CardBody className="lg:p-6 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle className="mb-0">{t("members.allTrainersTitle", { count: trainers.length })}</CardTitle>
-          <div className="flex items-center gap-2">
+    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">{t("members.allTrainersTitle", { count: trainers.length })}</h2>
+          <div className="flex flex-wrap items-center gap-2">
             {!spondLinked && (
               <>
-                <Button variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
+                <Button className="!rounded-full !bg-slate-100 !text-slate-700 hover:!bg-slate-200" variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
                   {t("members.duplicates.openAction", { count: duplicateGroups.length })}
                 </Button>
-                <Button variant="primary" size="sm" onClick={openAddTrainerModal}>
+                <Button className="!rounded-full !bg-orange-500 hover:!bg-orange-600" variant="primary" size="sm" onClick={openAddTrainerModal}>
                   {t("common.actions.add")}
                 </Button>
               </>
@@ -52,7 +50,7 @@ export default function MembersTrainersPage() {
           duplicateGroups={duplicateGroups}
           onMerge={handleMergeDuplicate}
         />
-      </CardBody>
-    </Card>
+
+    </section>
   );
 }

@@ -85,7 +85,7 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
         <ModalBody>
           <div className="space-y-4">
             <div>
-              <label htmlFor="number" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="number" className="form-label">
                 {t('shirtModal.fields.numberRequired')}
               </label>
               <input
@@ -106,7 +106,7 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
             </div>
 
             <div>
-              <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="size" className="form-label">
                 {t('shirtModal.fields.sizeRequired')}
               </label>
               <select

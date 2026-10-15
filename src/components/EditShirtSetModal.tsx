@@ -49,7 +49,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
         <ModalBody>
           <div className="space-y-4">
             <div>
-              <label htmlFor="sponsor" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="sponsor" className="form-label">
                 {t('shirtSetModal.fields.sponsorRequired')}
               </label>
               <input
@@ -65,7 +65,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
             </div>
 
             <div>
-              <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="color" className="form-label">
                 {t('shirtSetModal.fields.colorRequired')}
               </label>
               <div className="flex items-center gap-3">

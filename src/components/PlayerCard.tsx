@@ -25,50 +25,51 @@ export default function PlayerCard({
   const isInactive = playerStatus === 'inactive';
   const isTrial = playerStatus === 'trial';
   const cardStatusClassName = isInactive
-    ? 'bg-gray-50 border-gray-200'
+    ? 'bg-slate-50 border-slate-200'
     : isTrial
-      ? 'bg-orange-50 border-orange-700'
-      : 'bg-white border-gray-200';
+      ? 'bg-orange-50/70 border-orange-200'
+      : 'bg-white border-slate-200';
   const nameClassName = isInactive
-    ? 'text-gray-500'
+    ? 'text-slate-500'
     : isTrial
       ? 'text-orange-900'
-      : 'text-gray-900';
+      : 'text-slate-900';
   const detailTextClassName = isInactive
-    ? 'text-gray-500'
+    ? 'text-slate-400'
     : isTrial
       ? 'text-orange-800'
-      : 'text-gray-500';
+      : 'text-slate-500';
   const arrowIconClassName = isInactive
-    ? 'text-gray-400'
+    ? 'text-slate-300'
     : isTrial
       ? 'text-orange-700'
-      : 'text-gray-400';
+      : 'text-slate-300';
 
   return (
-    <div className={`member-card relative overflow-hidden border rounded-lg hover:shadow-md transition-shadow ${cardStatusClassName}`}>
+    <div className={`member-card group relative overflow-hidden rounded-2xl border transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${cardStatusClassName}`}>
       <div
-        className={`flex items-center justify-between p-3 cursor-pointer transition-transform duration-200 ${isSwiped ? '-translate-x-20' : 'translate-x-0'
-          } active:bg-gray-50`}
+        className={`flex cursor-pointer items-center justify-between gap-3 p-3 transition-transform duration-200 ${isSwiped ? '-translate-x-20' : 'translate-x-0'
+          } active:bg-slate-50`}
         onClick={onClick}
         onTouchStart={onTouchStart}
       >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <div className="truncate">
-              <p className={`text-sm font-medium truncate ${nameClassName}`}>
-                {player.firstName} {player.lastName}
-                <span className={`text-xs ml-1 ${detailTextClassName}`}>{birthYear}</span>
-              </p>
-            </div>
-            <div className="ml-2 flex-shrink-0 flex items-center gap-2">
-              <Level level={player.level} className="text-xs" />
-              <svg className={`w-5 h-5 ${arrowIconClassName}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </div>
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isTrial ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}>
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20a7.5 7.5 0 0 1 15 0" />
+          </svg>
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className={`truncate text-sm font-semibold ${nameClassName}`}>
+            {player.firstName} {player.lastName}
+          </p>
+          <div className="mt-0.5 flex items-center gap-2">
+            {birthYear && <span className={`text-xs ${detailTextClassName}`}>{birthYear}</span>}
+            <Level level={player.level} className="text-[10px] tracking-[-0.08em]" />
           </div>
         </div>
+        <svg className={`h-4 w-4 shrink-0 transition group-hover:translate-x-0.5 group-hover:text-orange-500 ${arrowIconClassName}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
       </div>
 
       {onDelete && (

@@ -89,63 +89,67 @@ export default function TeamPlayerSelectionPage() {
     && removedPlayerIds.some((playerId) => !removalReasons[playerId]));
   
   return (
-    <div className="page-container pb-24">
-      <div className="page-header">
+    <div className="mx-auto max-w-5xl px-4 py-8 pb-32 sm:px-6 sm:py-10 sm:pb-32 lg:px-8">
+      <header className="mb-6">
         <button 
           onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
-          className="text-blue-600 hover:text-blue-700 mb-2 text-sm font-medium"
+          className="mb-5 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
         >
           ← {t('common.actions.cancel')}
         </button>
         
-        <h1 className="page-title">{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</h1>
-        <p className="text-sm text-gray-600 mt-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{event.name}</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</h1>
+          </div>
+          <p className="text-sm font-medium text-slate-500 sm:text-right">
           {t('teamPlayerSelection.slotsSummary', {
             current: currentPlayerCount,
             max: maxPlayersPerTeam,
             remaining: remainingSlots,
           })}
-        </p>
-      </div>
+          </p>
+        </div>
+      </header>
 
       {!editState?.canEdit && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
           {t('teamPlayerSelection.eventPassedWarning')}
         </div>
       )}
 
       {editState?.isSent && editState.canEdit && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
           {t('teamPlayerSelection.sentWarning', {
             dateTime: event.selectionSentAt ? formatInstantDateTime(event.selectionSentAt, i18n.language) : '',
           })}
         </div>
       )}
       
-      {/* Level Filter */}
-      <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <LevelRangeSelector
-          minLevel={1}
-          maxLevel={5}
-          defaultRange={levelRange}
-          onChange={setLevelRange}
-        />
-      </div>
+      <LevelRangeSelector
+        minLevel={1}
+        maxLevel={5}
+        defaultRange={levelRange}
+        onChange={setLevelRange}
+        className="mb-4"
+      />
 
       {currentPlayers.length > 0 && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
-          <h2 className="mb-2 text-sm font-semibold text-gray-900">{t('teamPlayerSelection.currentPlayers')}</h2>
-          <div className="space-y-2">
+        <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-5">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-slate-950">{t('teamPlayerSelection.currentPlayers')}</h2>
+          <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
             {currentPlayers.map((playerId) => {
               const player = players.find((candidate) => candidate.id === playerId);
               if (!player) return null;
               const isRemoved = removedPlayerIds.includes(playerId);
               return (
-                <div key={playerId} className={`flex items-center justify-between rounded border p-2 text-sm ${isRemoved ? 'border-red-200 bg-red-50 text-gray-500' : 'border-gray-200'}`}>
-                  <span className={isRemoved ? 'line-through' : ''}>{player.firstName} {player.lastName}</span>
+                <div key={playerId} className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm ${isRemoved ? 'bg-red-50 text-slate-500' : 'bg-white'}`}>
+                  <span className={`font-medium ${isRemoved ? 'line-through' : 'text-slate-900'}`}>{player.firstName} {player.lastName}</span>
+                  <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    className="text-red-600 hover:text-red-800"
+                    className="text-xs font-semibold text-red-600 transition hover:text-red-800"
                     disabled={!editState?.canEdit}
                     onClick={() => setRemovedPlayerIds((current) => isRemoved
                       ? current.filter((id) => id !== playerId)
@@ -160,7 +164,7 @@ export default function TeamPlayerSelectionPage() {
                         ...current,
                         [playerId]: changeEvent.target.value as SelectionRemovalReason | '',
                       }))}
-                      className="form-input ml-2 w-auto"
+                      className="form-input !min-h-8 !w-auto !rounded-lg !py-1 !text-xs"
                       aria-label={t('teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
                       required
                     >
@@ -170,21 +174,22 @@ export default function TeamPlayerSelectionPage() {
                       ))}
                     </select>
                   )}
+                  </div>
                 </div>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
       
       {/* Selection Controls */}
       {availablePlayers.length > 0 && (
-        <div className="flex gap-2 mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <button
             type="button"
             onClick={handleSelectAll}
             disabled={!editState?.canEdit}
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="btn-secondary btn-sm"
           >
             {t('common.actions.selectAll')}
           </button>
@@ -192,20 +197,20 @@ export default function TeamPlayerSelectionPage() {
             type="button"
             onClick={handleDeselectAll}
             disabled={!editState?.canEdit}
-            className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+            className="btn-secondary btn-sm"
           >
             {t('common.actions.deselectAll')}
           </button>
-          <span className="ml-auto text-sm text-gray-600">
+          <span className="ml-auto rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
             {t('teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
           </span>
         </div>
       )}
       
       {/* Available Players List */}
-      <div className="space-y-2">
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
         {availablePlayers.length === 0 ? (
-          <div className="empty-state">
+          <div className="px-4 py-12 text-center text-sm text-slate-500">
             {t('teamPlayerSelection.noPlayersInRange')}
           </div>
         ) : (
@@ -218,15 +223,15 @@ export default function TeamPlayerSelectionPage() {
                 key={player.id}
                 onClick={() => !isDisabled && handleTogglePlayer(player.id)}
                 disabled={isDisabled}
-                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                className={`flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3.5 text-left transition-all last:border-b-0 ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    ? 'bg-orange-50'
+                    : 'bg-white hover:bg-slate-50'
+                } ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                    isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                  <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
+                    isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'
                   }`}>
                     {isSelected && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -235,10 +240,10 @@ export default function TeamPlayerSelectionPage() {
                     )}
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-sm">
+                    <div className="text-sm font-semibold text-slate-900">
                       {player.firstName} {player.lastName}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-slate-500">
                       {getBirthYear(player.birthDate)}
                     </div>
                   </div>
@@ -248,15 +253,15 @@ export default function TeamPlayerSelectionPage() {
             );
           })
         )}
-      </div>
+      </section>
       
       {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10">
-        <div className="max-w-screen-lg mx-auto flex items-center justify-between gap-4">
-          <div className="text-sm">
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-16px_40px_-30px_rgba(15,23,42,.45)] backdrop-blur sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+          <div className="text-sm font-medium text-slate-700">
             {t('teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
             {!canAddMore && selectedPlayerIds.length > 0 && (
-              <div className="text-red-600 text-xs mt-1">
+              <div className="mt-1 text-xs text-red-600">
                 {t('teamPlayerSelection.tooManySelected', { max: remainingSlots })}
               </div>
             )}

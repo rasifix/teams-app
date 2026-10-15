@@ -14,9 +14,9 @@ export default function DateColumn({ date, className = "" }: DateColumnProps) {
   const day = eventDate.getDate();
 
   return (
-    <div className={`flex-shrink-0 text-center bg-gray-50 rounded-lg p-3 min-w-[60px] ${className}`}>
-      <div className="text-xs font-medium text-gray-500">{month}</div>
-      <div className="text-xl font-bold text-gray-900">{day}</div>
+    <div className={`flex h-12 w-12 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-slate-100 text-center ${className}`}>
+      <div className="text-[10px] font-semibold leading-none tracking-wide text-orange-700">{month}</div>
+      <div className="mt-0.5 text-lg font-bold leading-none text-slate-900">{day}</div>
     </div>
   );
 }

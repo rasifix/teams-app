@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { getSelectedSquadId } from '../utils/localStorage';
@@ -7,7 +7,8 @@ import {
   useAppInitialized, 
   useAppLoading, 
   useAppHasErrors, 
-  useAppErrors
+  useAppErrors,
+  useSquad,
 } from '../store/useStore';
 import type { Squad } from '../types';
 
@@ -43,7 +44,9 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   const isLoading = useAppLoading();
   const hasErrors = useAppHasErrors();
   const errors = useAppErrors();
+  const squad = useSquad();
   const { selectSquad, initializeApp, loadSquads, loadSfvCatalog } = useStore();
+  const [hasResolvedInitialSquad, setHasResolvedInitialSquad] = useState(false);
   
   // Use ref to prevent duplicate initialization
   const initTriggered = useRef(false);
@@ -52,6 +55,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   useEffect(() => {
     if (!isAuthenticated) {
       initTriggered.current = false;
+      setHasResolvedInitialSquad(false);
     }
   }, [isAuthenticated]);
 
@@ -61,27 +65,31 @@ export default function AppInitializer({ children }: AppInitializerProps) {
       initTriggered.current = true;
 
       const initializeWithSquadSelection = async () => {
-        await Promise.all([loadSquads(), loadSfvCatalog()]);
+        try {
+          await Promise.all([loadSquads(), loadSfvCatalog()]);
 
-        const squads = useStore.getState().squads;
-        if (squads.length === 0) {
-          return;
+          const squads = useStore.getState().squads;
+          if (squads.length === 0) {
+            return;
+          }
+
+          const savedSquadId = getSelectedSquadId();
+          const savedSquadExists = !!savedSquadId && squads.some((squad) => squad.id === savedSquadId);
+
+          let squadToSelect: Squad;
+          if (squads.length === 1) {
+            squadToSelect = squads[0];
+          } else if (savedSquadExists) {
+            squadToSelect = squads.find((squad) => squad.id === savedSquadId)!;
+          } else {
+            squadToSelect = getNewestSquad(squads) ?? squads[0];
+          }
+
+          await selectSquad(squadToSelect.id);
+          await initializeApp();
+        } finally {
+          setHasResolvedInitialSquad(true);
         }
-
-        const savedSquadId = getSelectedSquadId();
-        const savedSquadExists = !!savedSquadId && squads.some((squad) => squad.id === savedSquadId);
-
-        let squadToSelect: Squad;
-        if (squads.length === 1) {
-          squadToSelect = squads[0];
-        } else if (savedSquadExists) {
-          squadToSelect = squads.find((squad) => squad.id === savedSquadId)!;
-        } else {
-          squadToSelect = getNewestSquad(squads) ?? squads[0];
-        }
-
-        await selectSquad(squadToSelect.id);
-        await initializeApp();
       };
 
       initializeWithSquadSelection().catch((error) => {
@@ -106,6 +114,18 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   // If not authenticated, just show the children (which will redirect to login via ProtectedRoute)
   if (!isAuthenticated) {
     return <>{children}</>;
+  }
+
+  // Do not let squad-scoped route guards redirect while restoring a saved squad.
+  if (!squad && !hasResolvedInitialSquad) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('squads.loading')}</h2>
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {

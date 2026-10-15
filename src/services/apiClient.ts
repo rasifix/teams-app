@@ -1,4 +1,9 @@
 import { API_CONFIG } from '../config/api';
+import {
+  clearSessionAndRedirectToLogin,
+  isAuthenticationFailure,
+  isJwtExpired,
+} from './authSession';
 
 /** Squad-scoped API base path (`/api/squads` remains a deprecated backend alias). */
 export const SQUADS_PATH = '/api/squads';
@@ -19,8 +24,9 @@ class ApiClient {
     // Check if this is a protected endpoint (all endpoints except auth-related ones)
     const isProtectedEndpoint = !endpoint.startsWith('/api/auth/') && !endpoint.startsWith('/health');
     
-    // If trying to access a protected endpoint without a token, fail fast
-    if (isProtectedEndpoint && !token) {
+    // Fail fast and restore the login flow when the local session is missing or expired.
+    if (isProtectedEndpoint && (!token || isJwtExpired(token))) {
+      clearSessionAndRedirectToLogin();
       throw new Error('Authentication required. Please log in.');
     }
     
@@ -44,10 +50,8 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      // If unauthorized, clear token and redirect to login
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
+      if (isProtectedEndpoint && isAuthenticationFailure(response.status, token)) {
+        clearSessionAndRedirectToLogin();
       }
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
     }

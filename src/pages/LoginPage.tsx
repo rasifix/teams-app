@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import { LOGGED_OUT_REASON } from '../services/authSession';
+
+interface LoginLocationState {
+  from?: Location;
+  reason?: string;
+}
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -16,7 +22,10 @@ export default function LoginPage() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: Location })?.from?.pathname || '/';
+  const locationState = location.state as LoginLocationState | null;
+  const from = locationState?.from?.pathname || '/';
+  const wasLoggedOut = searchParams.get('reason') === LOGGED_OUT_REASON
+    || locationState?.reason === LOGGED_OUT_REASON;
 
   useEffect(() => {
     setIsLogin(!searchParams.get('register'));
@@ -62,6 +71,12 @@ export default function LoginPage() {
             </button>
           </p>
         </div>
+
+        {wasLoggedOut && (
+          <div className="rounded-md border border-blue-200 bg-blue-50 p-4" role="status">
+            <p className="text-sm font-medium text-blue-800">{t('auth.loggedOutMessage')}</p>
+          </div>
+        )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">

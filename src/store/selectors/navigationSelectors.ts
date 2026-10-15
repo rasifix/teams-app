@@ -20,6 +20,10 @@ export const selectHeaderNavItems = (
   squad: Squad | null | undefined,
   trainers: Trainer[] = [],
 ): HeaderNavItem[] => {
+  if (!squad) {
+    return [];
+  }
+
   if (canAccessRestrictedManagement(user, { squad, trainers })) {
     return BASE_NAV_ITEMS;
   }

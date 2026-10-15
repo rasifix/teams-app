@@ -2,6 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { selectHeaderNavItems } from './navigationSelectors';
 
 describe('navigation selectors', () => {
+  it('hides squad-scoped navigation when no squad is selected', () => {
+    const user = {
+      id: 'u-admin',
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+    };
+
+    expect(selectHeaderNavItems(user, null)).toEqual([]);
+    expect(selectHeaderNavItems(user, undefined)).toEqual([]);
+  });
+
   it('shows all navigation items for admins', () => {
     const items = selectHeaderNavItems(
       {

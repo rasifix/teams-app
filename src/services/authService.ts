@@ -1,4 +1,5 @@
 import { API_CONFIG } from '../config/api';
+import { clearSessionAndRedirectToLogin, isJwtExpired } from './authSession';
 
 export interface User {
   id: string;
@@ -84,6 +85,11 @@ class AuthService {
       throw new Error('No token found');
     }
 
+    if (isJwtExpired(token)) {
+      clearSessionAndRedirectToLogin();
+      throw new Error('Session expired');
+    }
+
     const response = await fetch(`${this.baseUrl}/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -91,8 +97,8 @@ class AuthService {
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        localStorage.removeItem('token');
+      if (response.status === 401 || response.status === 403) {
+        clearSessionAndRedirectToLogin();
       }
       throw new Error('Failed to get current user');
     }

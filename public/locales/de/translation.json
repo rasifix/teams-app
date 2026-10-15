@@ -429,6 +429,7 @@
     "emailAddress": "E-Mail-Adresse",
     "password": "Passwort",
     "forgotPassword": "Passwort vergessen?",
+    "loggedOutMessage": "Du wurdest abgemeldet. Bitte melde dich erneut an.",
     "errors": {
       "authenticationFailed": "Authentifizierung fehlgeschlagen"
     }

@@ -429,6 +429,7 @@
     "emailAddress": "Email address",
     "password": "Password",
     "forgotPassword": "Forgot your password?",
+    "loggedOutMessage": "You have been logged out. Please sign in again.",
     "errors": {
       "authenticationFailed": "Authentication failed"
     }

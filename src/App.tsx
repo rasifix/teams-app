@@ -6,6 +6,7 @@ import AppInitializer from './components/AppInitializer';
 import { ApiStatus } from './components/ApiStatus';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
+import SelectedSquadRoute from './components/SelectedSquadRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -47,30 +48,32 @@ function AppRoutes() {
                     {/* Protected routes */}
                     <Route path="/squads" element={<ProtectedRoute><SquadSelectionPage /></ProtectedRoute>} />
                     <Route path="/groups" element={<Navigate to="/squads" replace />} />
-                    {/* Members routes */}
-                    <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>}>
-                      <Route index element={<Navigate to="players" replace />} />
-                      <Route path="players" element={<MembersPlayersPage />} />
-                      <Route path="trainers" element={<MembersTrainersPage />} />
-                      <Route path="guardians" element={<MembersGuardiansPage />} />
-                    </Route>
-                    {/* Player detail still needs its own route */}
-                    <Route path="/players/:id" element={<ProtectedRoute><PlayerDetailPage /></ProtectedRoute>} />
-                    {/* Trainer detail route */}
-                    <Route path="/trainers/:id" element={<ProtectedRoute><TrainerDetailPage /></ProtectedRoute>} />
-                    <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-                    <Route path="/spond-import" element={<ProtectedRoute><SpondImportPage /></ProtectedRoute>} />
-                    <Route path="/events/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
-                    <Route path="/events/:eventId/teams/:teamId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />
-                    <Route path="/events/:eventId/teams/:teamId/select-players" element={<ProtectedRoute><TeamPlayerSelectionPage /></ProtectedRoute>} />
-                    <Route path="/events/:eventId/teams/:teamId/lineup" element={<ProtectedRoute><TeamLineupPage /></ProtectedRoute>} />
-                    <Route path="/events/:eventId/teams/:teamId/lineup/:lineupTab" element={<ProtectedRoute><TeamLineupPage /></ProtectedRoute>} />
-                    <Route path="/shirts" element={<ProtectedRoute><ShirtSetsPage /></ProtectedRoute>} />
-                    <Route path="/match-planning" element={<ProtectedRoute><MatchPlanningPage /></ProtectedRoute>} />
-                    <Route path="/statistics" element={<ProtectedRoute><StatisticsPage /></ProtectedRoute>}>
-                      <Route path="player-statistics" element={<PlayerStatisticsPage />} />
-                      <Route path="event-participation" element={<EventParticipationPage />} />
-                      <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
+                    <Route element={<ProtectedRoute><SelectedSquadRoute /></ProtectedRoute>}>
+                      {/* Members routes */}
+                      <Route path="/members" element={<MembersPage />}>
+                        <Route index element={<Navigate to="players" replace />} />
+                        <Route path="players" element={<MembersPlayersPage />} />
+                        <Route path="trainers" element={<MembersTrainersPage />} />
+                        <Route path="guardians" element={<MembersGuardiansPage />} />
+                      </Route>
+                      {/* Player detail still needs its own route */}
+                      <Route path="/players/:id" element={<PlayerDetailPage />} />
+                      {/* Trainer detail route */}
+                      <Route path="/trainers/:id" element={<TrainerDetailPage />} />
+                      <Route path="/events" element={<EventsPage />} />
+                      <Route path="/spond-import" element={<SpondImportPage />} />
+                      <Route path="/events/:id" element={<EventDetailPage />} />
+                      <Route path="/events/:eventId/teams/:teamId" element={<TeamDetailPage />} />
+                      <Route path="/events/:eventId/teams/:teamId/select-players" element={<TeamPlayerSelectionPage />} />
+                      <Route path="/events/:eventId/teams/:teamId/lineup" element={<TeamLineupPage />} />
+                      <Route path="/events/:eventId/teams/:teamId/lineup/:lineupTab" element={<TeamLineupPage />} />
+                      <Route path="/shirts" element={<ShirtSetsPage />} />
+                      <Route path="/match-planning" element={<MatchPlanningPage />} />
+                      <Route path="/statistics" element={<StatisticsPage />}>
+                        <Route path="player-statistics" element={<PlayerStatisticsPage />} />
+                        <Route path="event-participation" element={<EventParticipationPage />} />
+                        <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
+                      </Route>
                     </Route>
             </Routes>
           </main>

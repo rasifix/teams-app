@@ -898,6 +898,7 @@
     "periodLabel": "Period {{number}}",
     "copyPreviousPeriod": "Copy previous period",
     "plannedPeriods": "{{count}}/{{total}} periods planned",
+    "plannedPlayersSummary": "{{count}} players across {{total}} periods planned",
     "summaryTab": "Summary",
     "summaryTitle": "Lineup summary",
     "printSummary": "Print summary",

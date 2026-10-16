@@ -477,7 +477,7 @@ export default function TeamLineupPage() {
 
       <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-16px_40px_-30px_rgba(15,23,42,.45)] backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          {saveError ? <p className="text-sm text-red-600" role="alert">{saveError}</p> : <span className="text-sm font-medium text-slate-500">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPeriods', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
+          {saveError ? <p className="text-sm text-red-600" role="alert">{saveError}</p> : <span className="text-sm font-medium text-slate-500">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
           <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving}>
             {t('common.actions.save')}
           </Button>

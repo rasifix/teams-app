@@ -898,6 +898,7 @@
     "periodLabel": "Abschnitt {{number}}",
     "copyPreviousPeriod": "Vorherigen Abschnitt kopieren",
     "plannedPeriods": "{{count}}/{{total}} Abschnitte eingeplant",
+    "plannedPlayersSummary": "{{count}} Spieler in {{total}} Abschnitten eingeplant",
     "summaryTab": "Übersicht",
     "summaryTitle": "Aufstellungsübersicht",
     "printSummary": "Übersicht drucken",

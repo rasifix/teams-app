@@ -547,7 +547,7 @@
     "members": "Members",
     "events": "Events",
     "shirts": "Shirts",
-    "squadSettings": "Squad Settings",
+    "squadSettings": "Settings",
     "statistics": "Statistics"
   },
   "statistics": {
@@ -762,7 +762,7 @@
     "addPlayersAction_other": "Add {{count}} Players"
   },
   "squadSettings": {
-    "title": "Squad Settings",
+    "title": "Settings",
     "description": "Manage the settings and integrations for this squad.",
     "spond": {
       "title": "Spond Group",

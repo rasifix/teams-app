@@ -547,7 +547,7 @@
     "members": "Mitglieder",
     "events": "Termine",
     "shirts": "Trikots",
-    "squadSettings": "Mannschaftseinstellungen",
+    "squadSettings": "Einstellungen",
     "statistics": "Statistiken"
   },
   "statistics": {
@@ -762,7 +762,7 @@
     "addPlayersAction_other": "{{count}} Spieler hinzufügen"
   },
   "squadSettings": {
-    "title": "Mannschaftseinstellungen",
+    "title": "Einstellungen",
     "description": "Verwalte die Einstellungen und Integrationen dieser Mannschaft.",
     "spond": {
       "title": "Spond-Gruppe",

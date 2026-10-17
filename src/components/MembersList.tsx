@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PlayerCard from './PlayerCard';
+import { EmptyState } from './ui';
 
 type Member = Player | Trainer;
 
@@ -33,9 +34,9 @@ export default function MembersList<T extends Member>({
       : t('members.list.emptyTrainers');
 
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 py-10 text-center text-sm text-slate-500">
+      <EmptyState>
         <p>{emptyMessage || defaultEmptyMessage}</p>
-      </div>
+      </EmptyState>
     );
   }
 
@@ -109,36 +110,38 @@ export default function MembersList<T extends Member>({
         ) : (
           <div
             key={member.id}
-            className="member-card group relative overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md"
+            className="member-card group relative overflow-hidden rounded-2xl border border-edge bg-surface transition duration-200 hover:-translate-y-0.5 hover:border-brand-border hover:shadow-md"
           >
             <div
               className={`flex cursor-pointer items-center justify-between gap-3 p-3 transition-transform duration-200 ${
                 swipedMemberId === member.id ? '-translate-x-20' : 'translate-x-0'
-              } active:bg-slate-50`}
+              } active:bg-surface-subtle`}
               onClick={(e) => handleMemberClick(member, e)}
               onTouchStart={onDelete ? (e) => handleTouchStart(member.id, e) : undefined}
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition group-hover:bg-orange-50 group-hover:text-orange-600">
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-content-subtle transition group-hover:bg-brand-subtle group-hover:text-brand-text">
+                <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20a7.5 7.5 0 0 1 15 0" />
                 </svg>
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-900">{member.firstName} {member.lastName}</p>
+                <p className="truncate text-sm font-semibold text-content-strong">{member.firstName} {member.lastName}</p>
               </div>
-              <svg className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-orange-500" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-4 w-4 shrink-0 text-content-disabled transition group-hover:translate-x-0.5 group-hover:text-brand-text" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
 
             {onDelete && (
               <div
-                className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
+                className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-danger transition-opacity duration-200 ${
                   swipedMemberId === member.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
                 <button
-                  className="delete-button flex items-center justify-center w-full h-full text-white font-medium"
+                  type="button"
+                  data-ui-control="composite"
+                  className="delete-button flex items-center justify-center w-full h-full text-content-inverse font-medium"
                   onClick={(e) => handleDeleteClick(member, e)}
                 >
                   {t('common.actions.delete')}

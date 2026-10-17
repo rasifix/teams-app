@@ -5,6 +5,20 @@ import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import { selectInviteablePlayers } from '../store/selectors/eventInactivePlayerSelectors';
 import { getBirthYear } from '../utils/birthDate';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  EmptyState,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalSubtitle,
+  ModalTitle,
+  Panel,
+  Radio,
+} from './ui';
 
 interface InvitePlayersModalProps {
   isOpen: boolean;
@@ -82,79 +96,74 @@ export default function InvitePlayersModal({
     .filter(p => p.level >= levelRange[0] && p.level <= levelRange[1]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">{t('invitePlayers.title')}</h2>
-          <p className="mt-1 text-sm text-gray-600">
-            {t('invitePlayers.subtitle')}
-          </p>
-          <p className="mt-1 text-xs text-amber-700">
-            {t('invitePlayers.inactiveExcludedHint')}
-          </p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto p-6">
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <LevelRangeSelector
-                    minLevel={1}
-                    maxLevel={5}
-                    defaultRange={levelRange}
-                    onChange={setLevelRange}
-                  />
-                </div>
+    <Modal isOpen={isOpen} onClose={handleClose}>
+      <form onSubmit={handleSubmit}>
+        <ModalHeader>
+          <ModalTitle>{t('invitePlayers.title')}</ModalTitle>
+          <ModalSubtitle>{t('invitePlayers.subtitle')}</ModalSubtitle>
+          <Alert tone="warning" className="mt-3">{t('invitePlayers.inactiveExcludedHint')}</Alert>
+        </ModalHeader>
+
+        <ModalBody>
+          <Panel padding="compact" className="mb-4">
+            <LevelRangeSelector
+              minLevel={1}
+              maxLevel={5}
+              defaultRange={levelRange}
+              onChange={setLevelRange}
+            />
+          </Panel>
             {availablePlayers.length === 0 ? (
-              <div className="text-gray-500 text-center py-8">
+              <EmptyState>
                 <p>{t('invitePlayers.noPlayers')}</p>
                 <p className="text-sm mt-2">{t('invitePlayers.noPlayersDetail')}</p>
-              </div>
+              </EmptyState>
             ) : (
               <>
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900 mb-2">{t('invitePlayers.defaultStatus')}</p>
+                <Alert tone="info" className="mb-4">
+                  <p className="text-sm font-medium text-content-strong mb-2">{t('invitePlayers.defaultStatus')}</p>
                   <div className="flex gap-4">
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                      <input
-                        type="radio"
+                    <label className="checkbox-label">
+                      <Radio
                         name="invitationStatus"
                         value="accepted"
                         checked={invitationStatus === 'accepted'}
                         onChange={() => setInvitationResponse('accepted')}
-                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                        className="w-4 h-4 text-success focus:ring-2 focus:ring-success"
                       />
                       {t('invitationStatus.accepted')}
                     </label>
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                      <input
-                        type="radio"
+                    <label className="checkbox-label">
+                      <Radio
                         name="invitationStatus"
                         value="open"
                         checked={invitationStatus === 'open'}
                         onChange={() => setInvitationResponse('open')}
-                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                        className="w-4 h-4 text-success focus:ring-2 focus:ring-success"
                       />
                       {t('invitationStatus.open')}
                     </label>
                   </div>
-                </div>
+                </Alert>
 
                 <div className="flex gap-2 mb-4">
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={handleSelectAll}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
                     {t('invitePlayers.selectAll')}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={handleDeselectAll}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
                     {t('invitePlayers.deselectAll')}
-                  </button>
-                  <span className="ml-auto text-sm text-gray-600">
+                  </Button>
+                  <span className="ml-auto text-sm text-content-muted">
                     {t('invitePlayers.selectedCount', { count: selectedPlayerIds.size })}
                   </span>
                 </div>
@@ -163,23 +172,22 @@ export default function InvitePlayersModal({
                   {availablePlayers.map((player) => (
                     <label
                       key={player.id}
-                      className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                      className="flex items-center p-3 border border-edge rounded-lg hover:bg-surface-subtle cursor-pointer"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedPlayerIds.has(player.id)}
                         onChange={() => handleTogglePlayer(player.id)}
-                        className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                        className="w-4 h-4 text-success rounded focus:ring-2 focus:ring-success"
                       />
                       <div className="ml-3 flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900">
+                        <div className="layout-split">
+                          <div className="layout-cluster">
+                            <span className="font-medium text-content-strong">
                               {player.firstName} {player.lastName}
                             </span>
-                            <span className="text-sm text-gray-600">{getBirthYear(player.birthDate)}</span>
+                            <span className="body-muted">{getBirthYear(player.birthDate)}</span>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <div className="flex items-center gap-3 text-sm text-content-muted">
                             <Level level={player.level} />
                           </div>
                         </div>
@@ -189,26 +197,27 @@ export default function InvitePlayersModal({
                 </div>
               </>
             )}
-          </div>
+        </ModalBody>
 
-          <div className="p-6 border-t border-gray-200 flex gap-3">
-            <button
+        <ModalFooter>
+            <Button
               type="button"
+              variant="secondary"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
+              className="flex-1"
             >
               {t('common.actions.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="success"
               disabled={selectedPlayerIds.size === 0}
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex-1"
             >
               {t('invitePlayers.inviteAction')} {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

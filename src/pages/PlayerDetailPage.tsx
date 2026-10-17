@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
+import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useSquad, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
-import { DateColumn } from '../components/ui';
+import { ActionCard, ActionCardTitle, Alert, Badge, Button, DateColumn, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
@@ -69,11 +69,7 @@ export default function PlayerDetailPage() {
   const canManagePlayerGuardians = !spondLinked && canManageGuardians(user, squad, trainers);
   const underageForGuardianAssignment = player ? isPlayerUnderage(player) : false;
   const playerStatus = player?.status || 'active';
-  const playerStatusBadgeClassName = playerStatus === 'active'
-    ? 'bg-green-50 text-green-700'
-    : playerStatus === 'trial'
-      ? 'bg-amber-50 text-amber-700'
-      : 'bg-gray-100 text-gray-700';
+  const playerStatusTone = playerStatus === 'active' ? 'success' : playerStatus === 'trial' ? 'warning' : 'neutral';
   const playerStatusLabel = t(`playerModal.status.${playerStatus}`);
 
   const playerEventHistory = useMemo(
@@ -98,11 +94,11 @@ export default function PlayerDetailPage() {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('playerDetail.loading')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
@@ -112,21 +108,21 @@ export default function PlayerDetailPage() {
     }
 
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('common.errors.errorWithMessage', { message: error })}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
   if (!player) {
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('playerDetail.notFound')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
@@ -239,138 +235,143 @@ export default function PlayerDetailPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6">
-        <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-4">
-          <button 
+    <Page>
+      <PageToolbar>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/members')}
-            className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
           >
             ← {t('common.actions.back')}
-          </button>
-          <div className="flex gap-2">
-            <button 
+          </Button>
+          <div className="layout-cluster">
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleEditPlayer}
-              className="btn-secondary btn-sm"
             >
               {t('common.actions.edit')}
-            </button>
+            </Button>
             {!spondLinked && (
-              <button
+              <Button
+                variant="dangerGhost"
+                size="sm"
                 onClick={handleDeletePlayer}
-                className="rounded-full px-3.5 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
               >
                 {t('common.actions.delete')}
-              </button>
+              </Button>
             )}
           </div>
-        </div>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{t('domain.player')}</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{player.firstName} {player.lastName}</h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${playerStatusBadgeClassName}`}>
+      </PageToolbar>
+      <PageHeader>
+          <PageHeaderContent>
+            <p className="eyebrow">{t('domain.player')}</p>
+            <PageTitle>{player.firstName} {player.lastName}</PageTitle>
+          </PageHeaderContent>
+          <PageActions>
+            <Badge tone={playerStatusTone}>
               {playerStatusLabel}
-            </span>
+            </Badge>
             {player.birthDate && (
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+              <Badge>
                 {new Date(player.birthDate).toLocaleDateString()}
-              </span>
+              </Badge>
             )}
             {player.preferredShirtNumber && (
-              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">
+              <Badge tone="info">
                 {t('playerDetail.preferredShirtNumber', { number: player.preferredShirtNumber })}
-              </span>
+              </Badge>
             )}
             <Level level={player.level} />
-          </div>
-        </div>
-      </header>
+          </PageActions>
+      </PageHeader>
 
       {deleteActionError && (
-        <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <Alert className="mb-5">
           {deleteActionError}
-        </div>
+        </Alert>
       )}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6 lg:col-start-2">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('playerDetail.guardians.title', { count: guardians.length })}</h2>
-              {!spondLinked && <button
+        <Panel className="lg:col-start-2">
+            <PanelHeader>
+              <PanelTitle>{t('playerDetail.guardians.title', { count: guardians.length })}</PanelTitle>
+              <PanelActions>
+              {!spondLinked && <Button
+                size="sm"
                 onClick={() => {
                   setGuardianActionError(null);
                   setIsGuardianModalOpen(true);
                 }}
-                className="btn-primary btn-sm"
                 disabled={!canManagePlayerGuardians || !underageForGuardianAssignment}
                 title={!canManagePlayerGuardians
                   ? t('playerDetail.guardians.onlyManagers')
                   : (!underageForGuardianAssignment ? t('playerDetail.guardians.onlyUnderage') : t('playerDetail.guardians.assignAction'))}
               >
                 {t('playerDetail.guardians.addAction')}
-              </button>}
-            </div>
+              </Button>}
+              </PanelActions>
+            </PanelHeader>
 
             {!spondLinked && !canManagePlayerGuardians && (
-              <div className="mb-3 rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+              <Alert tone="warning" className="mb-3">
                 {t('playerDetail.guardians.onlyManagersManage')}
-              </div>
+              </Alert>
             )}
 
             {!spondLinked && !underageForGuardianAssignment && (
-              <div className="mb-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+              <Alert tone="info" className="mb-3">
                 {t('playerDetail.guardians.onlyUnderage')}
-              </div>
+              </Alert>
             )}
 
             {guardianActionError && (
-              <div className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <Alert className="mb-3">
                 {guardianActionError}
-              </div>
+              </Alert>
             )}
 
             {guardians.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{t('playerDetail.guardians.empty')}</p>
+              <EmptyState>{t('playerDetail.guardians.empty')}</EmptyState>
             ) : (
               <div className="space-y-2">
                 {guardians.map((guardian) => (
-                  <div key={guardian.id} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+                  <div key={guardian.id} className="rounded-2xl border border-edge bg-surface-subtle p-4">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-content-strong">
                         {guardian.firstName} {guardian.lastName}
                       </p>
                       {guardian.email && (
-                        <p className="mt-1 text-xs text-slate-500">{guardian.email}</p>
+                        <p className="mt-1 text-xs text-content-subtle">{guardian.email}</p>
                       )}
                     </div>
                     {canManagePlayerGuardians && (
                       <div className="mt-3 flex items-center gap-3">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
                             setGuardianActionError(null);
                             setEditingGuardian(guardian);
                             setIsGuardianModalOpen(true);
                           }}
-                          className="text-sm font-semibold text-slate-600 transition hover:text-slate-950"
                         >
                           {t('common.actions.edit')}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="dangerGhost"
+                          size="sm"
                           onClick={() => setGuardianToRemove(guardian)}
-                          className="text-sm font-semibold text-red-600 transition hover:text-red-700"
                         >
                           {t('playerDetail.guardians.removeAction')}
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
-        </section>
+        </Panel>
 
         <PlayerEventHistory
           eventHistory={playerEventHistory}
@@ -381,42 +382,25 @@ export default function PlayerDetailPage() {
 
       {/* Available Future Events Section */}
       {futureEventsWithoutInvitation.length > 0 && (
-        <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-              <h2 className="mb-5 text-lg font-semibold tracking-tight text-slate-950">{t('playerDetail.eventsWithoutInvitation')}</h2>
+        <Panel className="mt-5">
+              <PanelHeader><PanelTitle>{t('playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
               <div className="grid max-w-3xl grid-cols-1 gap-3">
                 {futureEventsWithoutInvitation.map((event) => (
-                  <div 
+                  <ActionCard
                     key={event.id}
-                    className="min-w-0 cursor-pointer rounded-2xl border border-slate-200 bg-slate-50/40 p-4 transition hover:border-slate-300 hover:bg-white hover:shadow-sm"
+                    leading={<DateColumn date={getActivityDate(event)} />}
                     onClick={() => navigate(`/events/${event.id}`)}
                   >
-                    <div className="flex items-start gap-4">
-                      {/* Date column */}
-                      <DateColumn date={getActivityDate(event)} />
-                      
-                      {/* Content and status */}
-                      <div className="flex justify-between items-center flex-1 min-w-0">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="truncate font-semibold text-slate-900" title={event.name}>{event.name}</h3>
+                          <ActionCardTitle title={event.name}>{event.name}</ActionCardTitle>
                           <div className="mt-2">
-                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                            <Badge>
                               {t('invitationStatus.notInvited')}
-                            </span>
+                            </Badge>
                           </div>
-                        </div>
-                        
-                        {/* Chevron icon */}
-                        <div className="flex-shrink-0 ml-2">
-                          <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  </ActionCard>
                 ))}
               </div>
-        </section>
+        </Panel>
       )}
 
       <AddPlayerModal
@@ -462,6 +446,6 @@ export default function PlayerDetailPage() {
         onCancel={() => setGuardianToRemove(null)}
         confirmButtonColor="red"
       />
-    </div>
+    </Page>
   );
 }

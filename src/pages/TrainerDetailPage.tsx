@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
+import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useSquad, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
 import type { Period, Trainer } from '../types';
-import { DateColumn } from '../components/ui';
+import { ActionCard, ActionCardTitle, Alert, Button, DateColumn, EmptyState, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelDescription, PanelHeader, PanelTitle } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Strength from '../components/Strength';
@@ -160,11 +160,11 @@ export default function TrainerDetailPage() {
 
   if (loading) {
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('trainerDetail.loading')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
@@ -174,21 +174,21 @@ export default function TrainerDetailPage() {
     }
 
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('common.errors.errorWithMessage', { message: error })}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
   if (!trainer) {
     return (
-      <div className="page-container">
-        <div className="empty-state">
+      <Page>
+        <EmptyState>
           <p>{t('trainerDetail.notFound')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
@@ -234,108 +234,98 @@ export default function TrainerDetailPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6">
-        <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-4">
-          <button
+    <Page>
+      <PageToolbar>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate('/members/trainers')}
-            className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
           >
             ← {t('common.actions.back')}
-          </button>
+          </Button>
           {!spondLinked && (
-            <div className="flex gap-2">
-              <button
+            <div className="layout-cluster">
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={handleEditTrainer}
-                className="btn-secondary btn-sm"
               >
                 {t('common.actions.edit')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="dangerGhost"
+                size="sm"
                 onClick={handleDeleteTrainer}
-                className="rounded-full px-3.5 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
               >
                 {t('common.actions.delete')}
-              </button>
+              </Button>
             </div>
           )}
-        </div>
-        <div>
-          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{t('domain.trainers')}</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{trainer.firstName} {trainer.lastName}</h1>
-          {trainer.email && <p className="mt-2 text-sm text-slate-600">{trainer.email}</p>}
-        </div>
-      </header>
+      </PageToolbar>
+      <PageHeader>
+        <PageHeaderContent>
+          <p className="eyebrow">{t('domain.trainers')}</p>
+          <PageTitle>{trainer.firstName} {trainer.lastName}</PageTitle>
+          {trainer.email && <PageDescription>{trainer.email}</PageDescription>}
+        </PageHeaderContent>
+      </PageHeader>
 
       {deleteActionError && (
-        <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <Alert className="mb-5">
           {deleteActionError}
-        </div>
+        </Alert>
       )}
 
       {trainerEventHistory.length > 0 && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('domain.events')}</h2>
-              <p className="mb-5 mt-1 text-sm leading-6 text-slate-500">
+        <Panel>
+              <PanelHeader><div>
+              <PanelTitle>{t('domain.events')}</PanelTitle>
+              <PanelDescription>
                 {t('trainerDetail.eventsAssignedDescription', { firstName: trainer.firstName })}
-              </p>
+              </PanelDescription>
+              </div></PanelHeader>
               {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
                 <div key={group.id} className="mb-6 last:mb-0">
                   {groupedTrainerEventHistory && (
-                    <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.075em] text-slate-500">{group.title}</h3>
+                    <h3 className="mb-3 text-eyebrow font-bold uppercase tracking-label text-content-subtle">{group.title}</h3>
                   )}
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                     {group.eventHistory.map((item) => (
-                      <div
+                      <ActionCard
                         key={item.eventId}
-                        className="min-w-0 cursor-pointer rounded-2xl border border-slate-200 bg-slate-50/40 p-4 transition hover:border-slate-300 hover:bg-white hover:shadow-sm"
+                        leading={<DateColumn date={item.eventDate} />}
                         onClick={() => navigate(`/events/${item.eventId}`)}
                       >
-                        <div className="flex items-center gap-4">
-                          {/* Date column */}
-                          <DateColumn date={item.eventDate} />
-
-                          {/* Content and chevron */}
-                          <div className="flex justify-between items-center flex-1 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="truncate font-semibold text-slate-900" title={item.eventName}>{item.eventName}</h3>
+                              <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
                               <div className="flex items-center gap-4 mt-2">
                                 {item.startTime && (
-                                  <span className="text-sm text-slate-600">🕐 {item.startTime}</span>
+                                  <span className="body-muted">🕐 {item.startTime}</span>
                                 )}
                                 {item.location && (
-                                  <span className="text-sm text-slate-600">📍 {item.location}</span>
+                                  <span className="body-muted">📍 {item.location}</span>
                                 )}
                               </div>
                               <div className="flex items-center gap-4 mt-2">
-                                <span className="text-sm text-slate-600">
+                                <span className="body-muted">
                                   👥 {item.teamName || t('team.unknownTeam')}
                                 </span>
                                 <Strength level={item.teamStrength} className="text-xs" />
                               </div>
-                            </div>
-                            <div className="flex-shrink-0 ml-2">
-                              <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      </ActionCard>
                     ))}
                   </div>
                 </div>
               ))}
-        </section>
+        </Panel>
       )}
 
       {trainerEventHistory.length === 0 && (
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('trainerDetail.trainingHistory')}</h2>
-              <p className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+        <Panel>
+              <PanelHeader><PanelTitle>{t('trainerDetail.trainingHistory')}</PanelTitle></PanelHeader>
+              <EmptyState>
                 {t('trainerDetail.noAssignmentsYet', { firstName: trainer.firstName })}
-              </p>
-        </section>
+              </EmptyState>
+        </Panel>
       )}
 
       <AddTrainerModal
@@ -355,6 +345,6 @@ export default function TrainerDetailPage() {
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}
       />
-    </div>
+    </Page>
   );
 }

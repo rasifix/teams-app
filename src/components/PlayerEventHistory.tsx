@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ActionCard, ActionCardTitle, Badge, EmptyState, Panel, PanelHeader, PanelTitle, type BadgeTone } from './ui';
 import type { PlayerEventHistoryItem } from '../types';
-import { invitationStatusMeta } from '../utils/invitationStatus';
 import { DateColumn } from './ui';
 
 interface PlayerEventHistoryGroup {
@@ -23,67 +23,59 @@ export default function PlayerEventHistory({
 }: PlayerEventHistoryProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const invitationTone = (status: PlayerEventHistoryItem['invitationStatus']): BadgeTone => {
+    if (status === 'accepted') return 'success';
+    if (status === 'open' || status === 'sick') return 'warning';
+    if (status === 'declined' || status === 'injured') return 'danger';
+    return 'neutral';
+  };
 
   const renderEventCards = (items: PlayerEventHistoryItem[]) => (
     <div className="grid grid-cols-1 gap-3">
       {items.map((item) => (
-        <div
+        <ActionCard
           key={item.eventId}
-          className="min-w-0 cursor-pointer rounded-2xl border border-slate-200 bg-slate-50/40 p-4 transition hover:border-slate-300 hover:bg-white hover:shadow-sm"
+          leading={<DateColumn date={item.eventDate} />}
           onClick={() => navigate(`/events/${item.eventId}`)}
         >
-          <div className="flex items-start gap-4">
-            <DateColumn date={item.eventDate} />
-
-            <div className="flex justify-between items-start flex-1 min-w-0">
-              <div className="flex-1 min-w-0">
-                <h5 className="truncate font-semibold text-slate-900" title={item.eventName}>{item.eventName}</h5>
+                <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
                 <div className="mt-2">
                   {item.isSelected ? (
                     <div className="space-y-1">
-                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                      <Badge tone="success">
                         {t('statistics.playerTable.selected')}
-                      </span>
-                      <p className="text-xs text-slate-600">
+                      </Badge>
+                      <p className="text-xs text-content-muted">
                         {t('playerDetail.assignedTeam', {
                           teamName: item.teamName || t('team.unknownTeam'),
                         })}
                       </p>
                     </div>
                   ) : (
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${invitationStatusMeta[item.invitationStatus].badgeClassName}`}>
+                    <Badge tone={invitationTone(item.invitationStatus)}>
                       {t(`invitationStatus.${item.invitationStatus}`)}
-                    </span>
+                    </Badge>
                   )}
                 </div>
-              </div>
-
-              <div className="flex-shrink-0 ml-2">
-                <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
+        </ActionCard>
       ))}
     </div>
   );
 
   return (
-    <section className={`rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6 ${className}`}>
-        <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('domain.events')}</h2>
+    <Panel className={className}>
+        <PanelHeader><PanelTitle>{t('domain.events')}</PanelTitle></PanelHeader>
         {eventHistory.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+          <EmptyState>
             <p>{t('players.eventHistory.empty')}</p>
-          </div>
+          </EmptyState>
         ) : (
           <div className="mt-4">
             {groupedEventHistory && groupedEventHistory.length > 0 ? (
-              <div className="space-y-6">
+              <div className="layout-stack layout-stack--lg">
                 {groupedEventHistory.map((group) => (
                   <section key={group.id}>
-                    <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.075em] text-slate-500">{group.title}</h3>
+                    <h3 className="mb-3 text-eyebrow font-bold uppercase tracking-label text-content-subtle">{group.title}</h3>
                     {renderEventCards(group.eventHistory)}
                   </section>
                 ))}
@@ -91,6 +83,6 @@ export default function PlayerEventHistory({
             ) : renderEventCards(eventHistory)}
           </div>
         )}
-    </section>
+    </Panel>
   );
 }

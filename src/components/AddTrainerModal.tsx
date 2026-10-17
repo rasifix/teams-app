@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Trainer } from '../types';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 
 interface AddTrainerModalProps {
   isOpen: boolean;
@@ -83,53 +82,41 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="firstName" className="form-label">
-                {t('auth.firstName')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('auth.firstName')} htmlFor="firstName">
+              <Input
                 type="text"
                 id="firstName"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                className="form-input"
                 placeholder={t('trainerModal.placeholders.firstName')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="lastName" className="form-label">
-                {t('auth.lastName')}
-              </label>
-              <input
+            <Field label={t('auth.lastName')} htmlFor="lastName">
+              <Input
                 type="text"
                 id="lastName"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
                 required
-                className="form-input"
                 placeholder={t('trainerModal.placeholders.lastName')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="email" className="form-label">
-                {t('trainerModal.fields.emailOptional')}
-              </label>
-              <input
+            <Field label={t('trainerModal.fields.emailOptional')} htmlFor="email">
+              <Input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="form-input"
                 placeholder={t('trainerModal.placeholders.email')}
               />
-            </div>
+            </Field>
           </div>
         </ModalBody>
 

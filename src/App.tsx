@@ -28,13 +28,13 @@ import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
 import EventParticipationPage from './pages/EventParticipationPage';
 import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
-import MatchPlanningPage from './pages/MatchPlanningPage';
+import SquadSettingsPage from './pages/SquadSettingsPage';
 import SquadSelectionPage from './pages/SquadSelectionPage';
 
 function AppRoutes() {
   return (
     <AppInitializer>
-      <div className="min-h-screen bg-[#f6f7f5]">
+      <div className="min-h-screen bg-canvas">
         <Header />
         <ApiStatus />
         <ApiErrorBoundary>
@@ -68,7 +68,8 @@ function AppRoutes() {
                       <Route path="/events/:eventId/teams/:teamId/lineup" element={<TeamLineupPage />} />
                       <Route path="/events/:eventId/teams/:teamId/lineup/:lineupTab" element={<TeamLineupPage />} />
                       <Route path="/shirts" element={<ShirtSetsPage />} />
-                      <Route path="/match-planning" element={<MatchPlanningPage />} />
+                      <Route path="/squad-settings" element={<SquadSettingsPage />} />
+                      <Route path="/match-planning" element={<Navigate to="/squad-settings" replace />} />
                       <Route path="/statistics" element={<StatisticsPage />}>
                         <Route path="player-statistics" element={<PlayerStatisticsPage />} />
                         <Route path="event-participation" element={<EventParticipationPage />} />

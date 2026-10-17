@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Button, Checkbox, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import type { Player, Trainer } from '../types';
 import { filterTeamAssignees, selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 
@@ -59,41 +58,40 @@ export default function AssignResponsiblePeopleModal({
           <ModalTitle>{t('teamModal.fields.responsiblePeople')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <input
+          <Input
             type="search"
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
             placeholder={t('teamModal.filterPlaceholder')}
             aria-label={t('teamModal.filterPlaceholder')}
-            className="form-input mb-3"
+            className="mb-3"
             data-testid="responsible-people-filter"
             autoFocus
           />
           {visibleOptions.length === 0 ? (
-            <p className="text-sm text-gray-500">{t('teamModal.noPersonsFound')}</p>
+            <p className="body-muted">{t('teamModal.noPersonsFound')}</p>
           ) : (
             <ul className="space-y-1">
               {visibleOptions.map((option) => (
                 <li key={option.id}>
-                  <label className="flex items-center gap-2 rounded px-1 py-1.5 text-sm hover:bg-gray-50">
-                    <input
-                      type="checkbox"
+                  <label className="flex items-center gap-2 rounded px-1 py-1.5 text-sm hover:bg-surface-subtle">
+                    <Checkbox
                       checked={selectedIds.includes(option.id)}
                       onChange={() => toggle(option.id)}
                     />
                     <span className="min-w-0 flex-1 truncate">
                       {option.firstName} {option.lastName}
                     </span>
-                    <span className="text-xs text-gray-500">{t(`teamModal.assigneeSource.${option.source}`)}</span>
+                    <span className="text-xs text-content-subtle">{t(`teamModal.assigneeSource.${option.source}`)}</span>
                     {selectedIds[0] === option.id && (
-                      <span className="text-xs font-medium text-blue-600">{t('teamModal.leadPerson')}</span>
+                      <span className="text-xs font-medium text-info-text">{t('teamModal.leadPerson')}</span>
                     )}
                   </label>
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-3 text-xs text-gray-500">{t('teamModal.responsiblePeopleHint')}</p>
+          <p className="mt-3 text-xs text-content-subtle">{t('teamModal.responsiblePeopleHint')}</p>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">

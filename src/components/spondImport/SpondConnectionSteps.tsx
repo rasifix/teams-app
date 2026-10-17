@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import Button from '../ui/Button';
+import { Alert, Button, Checkbox, Field, FieldLegend, Input, Radio, Select } from '../ui';
 import type { Period } from '../../types';
 import type { SpondGroupSnapshot } from '../../types/spond';
 import SpondWizardActions from './SpondWizardActions';
@@ -26,29 +26,25 @@ export function SpondCredentialsStep({
 
   return (
     <>
-      <p className="text-sm text-gray-600">{t('spondSync.description')}</p>
-      <div>
-        <label className="form-label" htmlFor="spond-email">{t('spondSync.email')}</label>
-        <input
+      <p className="body-muted">{t('spondSync.description')}</p>
+      <Field label={t('spondSync.email')} htmlFor="spond-email">
+        <Input
           id="spond-email"
-          className="form-input"
           type="email"
           value={email}
           onChange={(event) => onEmailChange(event.target.value)}
           autoComplete="username"
         />
-      </div>
-      <div>
-        <label className="form-label" htmlFor="spond-password">{t('spondSync.password')}</label>
-        <input
+      </Field>
+      <Field label={t('spondSync.password')} htmlFor="spond-password">
+        <Input
           id="spond-password"
-          className="form-input"
           type="password"
           value={password}
           onChange={(event) => onPasswordChange(event.target.value)}
           autoComplete="current-password"
         />
-      </div>
+      </Field>
       <div className="flex justify-end">
         <Button disabled={busy || !email.trim() || !password} onClick={onNext}>
           {busy ? t('common.states.processing') : t('spondSync.wizard.next')}
@@ -79,11 +75,10 @@ export function SpondGroupStep({
         {groups.map((group) => (
           <label
             key={group.id}
-            className={`cursor-pointer rounded border p-4 ${groupId === group.id ? 'border-orange-500 bg-orange-50' : 'border-gray-200'}`}
+            className={`cursor-pointer rounded border p-4 ${groupId === group.id ? 'border-brand bg-brand-subtle' : 'border-edge'}`}
           >
-            <input
+            <Radio
               className="mr-3"
-              type="radio"
               name="spond-group"
               checked={groupId === group.id}
               onChange={() => onGroupChange(group.id)}
@@ -151,19 +146,18 @@ export function SpondImportTypesStep({
       {subGroups.length > 0 && !subGroupSelectionLocked && (
         <div className="space-y-2">
           <div>
-            <p className="form-label mb-0">{t('spondSync.wizard.subgroups.title')}</p>
-            <p className="text-sm text-gray-600">{t('spondSync.wizard.subgroups.help')}</p>
+            <FieldLegend className="mb-0">{t('spondSync.wizard.subgroups.title')}</FieldLegend>
+            <p className="body-muted">{t('spondSync.wizard.subgroups.help')}</p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {subGroups.map((subGroup) => (
-              <label key={subGroup.id} className="flex cursor-pointer items-center gap-2 rounded border border-gray-200 p-3 hover:bg-gray-50">
-                <input
-                  type="radio"
+              <label key={subGroup.id} className="flex cursor-pointer items-center gap-2 rounded border border-edge p-3 hover:bg-surface-subtle">
+                <Radio
                   name="spond-subgroup"
                   checked={selectedSubGroupId === subGroup.id}
                   onChange={() => onSubGroupSelectionChange(subGroup.id)}
                 />
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: subGroup.color ?? '#9ca3af' }} aria-hidden="true" />
+                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: subGroup.color ?? 'var(--color-text-disabled)' }} aria-hidden="true" />
                 <span>{subGroup.name}</span>
               </label>
             ))}
@@ -172,22 +166,21 @@ export function SpondImportTypesStep({
       )}
       {isEventOnly ? (
         <>
-          <p className="text-sm text-gray-600">{t('spondSync.wizard.periodHelp')}</p>
+          <p className="body-muted">{t('spondSync.wizard.periodHelp')}</p>
           <SpondPeriodSelector periods={periods} periodId={periodId} onChange={onPeriodChange} />
         </>
       ) : isPlayerOnly ? (
-        <p className="text-sm text-gray-600">{t('spondSync.wizard.playerImportHelp')}</p>
+        <p className="body-muted">{t('spondSync.wizard.playerImportHelp')}</p>
       ) : (
         <>
-          <p className="text-sm text-gray-600">{t('spondSync.wizard.typesHelp')}</p>
+          <p className="body-muted">{t('spondSync.wizard.typesHelp')}</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {(['players', 'events'] as const).map((type) => (
               <label
                 key={type}
-                className={`cursor-pointer rounded border p-4 ${types.includes(type) ? 'border-orange-500 bg-orange-50' : 'border-gray-200'}`}
+                className={`cursor-pointer rounded border p-4 ${types.includes(type) ? 'border-brand bg-brand-subtle' : 'border-edge'}`}
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   className="mr-3"
                   checked={types.includes(type)}
                   onChange={() => onToggleType(type)}
@@ -203,31 +196,25 @@ export function SpondImportTypesStep({
       )}
       {hasEvents && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="form-label" htmlFor="spond-from">{t('filters.from')}</label>
-            <input
+          <Field label={t('filters.from')} htmlFor="spond-from">
+            <Input
               id="spond-from"
-              className="form-input"
               type="date"
               value={from}
               onChange={(event) => onFromChange(event.target.value)}
             />
-          </div>
-          <div>
-            <label className="form-label" htmlFor="spond-to">{t('filters.to')}</label>
-            <input
+          </Field>
+          <Field label={t('filters.to')} htmlFor="spond-to">
+            <Input
               id="spond-to"
-              className="form-input"
               type="date"
               value={to}
               onChange={(event) => onToChange(event.target.value)}
             />
-          </div>
+          </Field>
         </div>
       )}
-      {hasEvents && dateRangeError && (
-        <p className="text-sm text-red-700">{t(`spondSync.dateErrors.${dateRangeError}`)}</p>
-      )}
+      {hasEvents && dateRangeError && <Alert>{t(`spondSync.dateErrors.${dateRangeError}`)}</Alert>}
       <SpondWizardActions
         back={onBack}
         next={onNext}
@@ -249,11 +236,9 @@ function SpondPeriodSelector({ periods, periodId, onChange }: SpondPeriodSelecto
   if (periods.length === 0) return null;
 
   return (
-    <div>
-      <label className="form-label" htmlFor="spond-period">{t('spondSync.period')}</label>
-      <select
+    <Field label={t('spondSync.period')} htmlFor="spond-period">
+      <Select
         id="spond-period"
-        className="form-select"
         value={periodId}
         onChange={(event) => onChange(event.target.value)}
       >
@@ -263,7 +248,7 @@ function SpondPeriodSelector({ periods, periodId, onChange }: SpondPeriodSelecto
             {period.name} · {period.startDate} – {period.endDate}
           </option>
         ))}
-      </select>
-    </div>
+      </Select>
+    </Field>
   );
 }

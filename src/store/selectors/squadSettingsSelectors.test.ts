@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { selectIsSpondLinked, selectSpondGroupUrl } from './groupSettingsSelectors';
+import { selectIsSpondLinked, selectSpondGroupUrl } from './squadSettingsSelectors';
 
-describe('group settings selectors', () => {
+describe('squad settings selectors', () => {
   it('builds the Spond group URL for a linked squad', () => {
     expect(selectSpondGroupUrl({ spondId: 'group-123' }))
       .toBe('https://spond.com/client/groups/group-123');

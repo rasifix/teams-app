@@ -4,8 +4,7 @@ import { useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { getActivityDate, getActivityTime, toStartsAt } from '../store/selectors/activitySelectors';
 import type { Activity, ActivityKind, ActivityPayload } from '../types';
-import Button from './ui/Button';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 
 interface EditEventModalProps {
   isOpen: boolean;
@@ -75,18 +74,18 @@ export default function EditEventModal({ isOpen, onClose, onSave, currentActivit
       <ModalHeader><ModalTitle>{t('editEventModal.title')}</ModalTitle></ModalHeader>
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            {isSpondManaged && <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">{t('spondSync.managedFields')}</div>}
-            {canChangeMatchType && <div><label htmlFor="edit-event-kind" className="form-label">{t('activity.fields.kind')}</label><select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as 'match' | 'tournament'; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }} className="form-input"><option value="match">{t('activity.kinds.match')}</option><option value="tournament">{t('activity.kinds.tournament')}</option></select></div>}
-            <div><label htmlFor="edit-event-name" className="form-label">{t('eventModal.fields.eventName')}</label><input id="edit-event-name" value={name} onChange={(event) => setName(event.target.value)} required className="form-input" disabled={isSpondManaged} /></div>
-            {config.showOpponent && <div><label htmlFor="edit-opponent" className="form-label">{t('activity.fields.opponent')}</label><input id="edit-opponent" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} className="form-input" disabled={isSpondManaged} /></div>}
-            {config.showMatchFormat && <div><label htmlFor="edit-format" className="form-label">{t('activity.fields.matchFormat')}</label><select id="edit-format" value={matchFormatId} onChange={(event) => { const nextId = event.target.value; setMatchFormatId(nextId); const nextConfig = selectActivityFormConfiguration(kind, matchFormats, nextId); if (nextConfig.defaultLimits) { setMinPlayersPerTeam(nextConfig.defaultLimits.minPlayersPerTeam); setMaxPlayersPerTeam(nextConfig.defaultLimits.maxPlayersPerTeam); } }} className="form-input"><option value="">{t('eventModal.fields.noMatchFormat')}</option>{matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></div>}
-            <div><label htmlFor="edit-event-date" className="form-label">{t('eventModal.fields.date')}</label><input id="edit-event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required className="form-input" disabled={isSpondManaged} /></div>
-            <div><label htmlFor="edit-event-time" className="form-label">{t('activity.fields.startTime')}</label><input id="edit-event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required className="form-input" disabled={isSpondManaged} /></div>
-            <div><label htmlFor="edit-event-location" className="form-label">{t('eventModal.fields.location')}</label><input id="edit-event-location" value={location} onChange={(event) => setLocation(event.target.value)} className="form-input" disabled={isSpondManaged} /></div>
-            <div><label htmlFor="edit-max-players" className="form-label">{t('eventModal.fields.maxPlayersPerTeam')}</label><input id="edit-max-players" type="number" min={Math.max(minMaxPlayers, 1)} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required className="form-input" /></div>
-            <div><label htmlFor="edit-min-players" className="form-label">{t('eventModal.fields.minPlayersPerTeam')}</label><input id="edit-min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required className="form-input" /></div>
-            {error && <div role="alert" className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+          <div className="layout-stack">
+            {isSpondManaged && <Alert tone="info">{t('spondSync.managedFields')}</Alert>}
+            {canChangeMatchType && <Field label={t('activity.fields.kind')} htmlFor="edit-event-kind"><Select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as 'match' | 'tournament'; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }}><option value="match">{t('activity.kinds.match')}</option><option value="tournament">{t('activity.kinds.tournament')}</option></Select></Field>}
+            <Field label={t('eventModal.fields.eventName')} htmlFor="edit-event-name"><Input id="edit-event-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={isSpondManaged} /></Field>
+            {config.showOpponent && <Field label={t('activity.fields.opponent')} htmlFor="edit-opponent"><Input id="edit-opponent" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} disabled={isSpondManaged} /></Field>}
+            {config.showMatchFormat && <Field label={t('activity.fields.matchFormat')} htmlFor="edit-format"><Select id="edit-format" value={matchFormatId} onChange={(event) => { const nextId = event.target.value; setMatchFormatId(nextId); const nextConfig = selectActivityFormConfiguration(kind, matchFormats, nextId); if (nextConfig.defaultLimits) { setMinPlayersPerTeam(nextConfig.defaultLimits.minPlayersPerTeam); setMaxPlayersPerTeam(nextConfig.defaultLimits.maxPlayersPerTeam); } }}><option value="">{t('eventModal.fields.noMatchFormat')}</option>{matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</Select></Field>}
+            <Field label={t('eventModal.fields.date')} htmlFor="edit-event-date"><Input id="edit-event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required disabled={isSpondManaged} /></Field>
+            <Field label={t('activity.fields.startTime')} htmlFor="edit-event-time"><Input id="edit-event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required disabled={isSpondManaged} /></Field>
+            <Field label={t('eventModal.fields.location')} htmlFor="edit-event-location"><Input id="edit-event-location" value={location} onChange={(event) => setLocation(event.target.value)} disabled={isSpondManaged} /></Field>
+            <Field label={t('eventModal.fields.maxPlayersPerTeam')} htmlFor="edit-max-players"><Input id="edit-max-players" type="number" min={Math.max(minMaxPlayers, 1)} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
+            <Field label={t('eventModal.fields.minPlayersPerTeam')} htmlFor="edit-min-players"><Input id="edit-min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
+            {error && <Alert>{error}</Alert>}
           </div>
         </ModalBody>
         <ModalFooter><Button type="button" variant="secondary" onClick={onClose}>{t('common.actions.cancel')}</Button><Button type="submit" variant="primary">{t('common.actions.save')}</Button></ModalFooter>

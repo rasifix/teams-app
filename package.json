@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check:styles": "node scripts/check-styles.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest --run",

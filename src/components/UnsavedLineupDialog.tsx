@@ -25,7 +25,7 @@ export default function UnsavedLineupDialog({
         <ModalTitle>{t('teamLineup.unsavedChangesTitle')}</ModalTitle>
       </ModalHeader>
       <ModalBody>
-        <p className="text-sm text-gray-600">{t('teamLineup.unsavedChangesMessage')}</p>
+        <p className="body-muted">{t('teamLineup.unsavedChangesMessage')}</p>
       </ModalBody>
       <ModalFooter className="flex-col sm:flex-row">
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving} className="flex-1">

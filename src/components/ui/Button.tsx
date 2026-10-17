@@ -1,8 +1,10 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { getButtonClassName } from './buttonStyles';
+import type { ButtonSize, ButtonVariant } from './buttonStyles';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   children: ReactNode;
 }
 
@@ -13,26 +15,9 @@ export default function Button({
   className = '', 
   ...props 
 }: ButtonProps) {
-  // Explicit class mapping so Tailwind JIT can detect them
-  const variantClasses = {
-    primary: 'btn-primary',
-    secondary: 'btn-secondary',
-    success: 'btn-success',
-    danger: 'btn-danger',
-  };
-  
-  const sizeClasses = {
-    sm: 'btn-sm',
-    md: '',
-    lg: 'btn-lg',
-  };
-  
-  const variantClass = variantClasses[variant];
-  const sizeClass = sizeClasses[size];
-  
   return (
     <button
-      className={`${variantClass} ${sizeClass} ${className}`.trim()}
+      className={getButtonClassName({ variant, size, className })}
       {...props}
     >
       {children}

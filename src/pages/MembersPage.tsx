@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
 import ConfirmDialog from "../components/ConfirmDialog";
-import { selectIsSpondLinked } from "../store/selectors/groupSettingsSelectors";
+import { selectIsSpondLinked } from "../store/selectors/squadSettingsSelectors";
 import { selectMemberGuardians } from "../store/selectors/memberGuardiansSelectors";
 import { usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquad } from "../store";
 import {
@@ -14,6 +14,7 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { canManageGuardians } from "../utils/guardians";
 import type { Guardian, Player, Trainer } from "../types";
+import { Alert, EmptyState, NavigationTab, NavigationTabs, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
 
 export interface MembersOutletContext {
   players: Player[];
@@ -154,70 +155,49 @@ export default function MembersPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-500">
+      <Page>
+        <EmptyState>
           <p>{t('members.loading')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('members.title')}</h1>
-        <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('members.subtitle')}</p>
-      </div>
+    <Page>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>{t('members.title')}</PageTitle>
+          <PageDescription>{t('members.subtitle')}</PageDescription>
+        </PageHeaderContent>
+      </PageHeader>
 
       {hasErrors && (errors.players || errors.trainers) && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <Alert>
           {errors.players || errors.trainers}
-        </div>
+        </Alert>
       )}
 
       {deleteActionError && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <Alert>
           {deleteActionError}
-        </div>
+        </Alert>
       )}
 
       {/* Tab Navigation */}
-      <div className="mb-5 overflow-x-auto">
-        <nav className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-label={t('common.tabs')}>
-          <NavLink
-            to="/members/players"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+      <NavigationTabs label={t('common.tabs')} className="mb-5">
+          <NavigationTab to="/members/players">
             {t('domain.players')} ({players.length})
-          </NavLink>
-          <NavLink
-            to="/members/trainers"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+          </NavigationTab>
+          <NavigationTab to="/members/trainers">
             {t('domain.trainers')} ({trainers.length})
-          </NavLink>
+          </NavigationTab>
           {isAdmin && (
-          <NavLink
-            to="/members/guardians"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+          <NavigationTab to="/members/guardians">
             {t('domain.guardians')} ({guardians.length})
-          </NavLink>
+          </NavigationTab>
           )}
-        </nav>
-      </div>
+      </NavigationTabs>
 
       <Outlet context={outletContext} />
 
@@ -266,6 +246,6 @@ export default function MembersPage() {
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}
       />
-    </div>
+    </Page>
   );
 }

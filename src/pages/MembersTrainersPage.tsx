@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
 import DuplicateMembersModal from "../components/DuplicateMembersModal";
-import Button from "../components/ui/Button";
+import { Button, Panel, PanelTitle } from "../components/ui";
 import { useActivities, useTrainers } from "../store";
 import { selectDuplicateTrainerGuardianGroups } from "../store/selectors/memberDuplicateSelectors";
 import type { MembersOutletContext } from "./MembersPage";
@@ -25,16 +25,16 @@ export default function MembersTrainersPage() {
   };
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+    <Panel>
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950">{t("members.allTrainersTitle", { count: trainers.length })}</h2>
-          <div className="flex flex-wrap items-center gap-2">
+          <PanelTitle>{t("members.allTrainersTitle", { count: trainers.length })}</PanelTitle>
+          <div className="layout-cluster layout-cluster--wrap">
             {!spondLinked && (
               <>
-                <Button className="!rounded-full !bg-slate-100 !text-slate-700 hover:!bg-slate-200" variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
+                <Button variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
                   {t("members.duplicates.openAction", { count: duplicateGroups.length })}
                 </Button>
-                <Button className="!rounded-full !bg-orange-500 hover:!bg-orange-600" variant="primary" size="sm" onClick={openAddTrainerModal}>
+                <Button variant="primary" size="sm" onClick={openAddTrainerModal}>
                   {t("common.actions.add")}
                 </Button>
               </>
@@ -51,6 +51,6 @@ export default function MembersTrainersPage() {
           onMerge={handleMergeDuplicate}
         />
 
-    </section>
+    </Panel>
   );
 }

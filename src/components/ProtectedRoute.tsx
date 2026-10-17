@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { LOGGED_OUT_REASON } from '../services/authSession';
+import { LoadingState } from './ui';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -14,11 +15,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('common.states.loading')}</h2>
-        </div>
+      <div className="auth-shell">
+        <LoadingState message={t('common.states.loading')} size="lg" />
       </div>
     );
   }

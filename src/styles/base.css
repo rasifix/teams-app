@@ -1,0 +1,107 @@
+*,
+::before,
+::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 20rem;
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgb(var(--palette-brand-200));
+  color: rgb(var(--palette-brand-950));
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+}
+
+:where(input:not([type]), input[type='date'], input[type='datetime-local'], input[type='email'], input[type='number'], input[type='password'], input[type='search'], input[type='tel'], input[type='text'], input[type='time'], input[type='url'], select, textarea) {
+  width: 100%;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  box-shadow: var(--shadow-field);
+  transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+:where(input, select, textarea)::placeholder {
+  color: var(--color-text-subtle);
+  font-weight: var(--font-weight-normal);
+}
+
+:where(input, select, textarea):hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background: rgb(var(--color-surface));
+}
+
+:where(input, select, textarea):focus-visible {
+  border-color: var(--color-focus);
+  outline: 0;
+  box-shadow: var(--shadow-field-focus);
+}
+
+:where(input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+:where(select) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2364758b' stroke-width='1.75'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.875rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem;
+  padding-right: 2.75rem;
+}
+
+:where(input[type='checkbox'], input[type='radio']) {
+  accent-color: rgb(var(--palette-brand-500));
+}
+
+/*
+ * Tailwind's preflight resets form padding with element selectors. These
+ * element-level defaults intentionally match that specificity, occur later,
+ * and still allow class utilities or feature styles to override them.
+ */
+input,
+select {
+  min-height: var(--control-height-lg);
+  padding: var(--field-padding-block) var(--field-padding-inline);
+}
+
+select {
+  padding-right: 2.75rem;
+}
+
+textarea {
+  min-height: 7rem;
+  padding: var(--field-padding-inline);
+  line-height: 1.5;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: auto;
+  min-height: auto;
+  padding: 0;
+}
+
+input[type='color'] {
+  width: 3rem;
+  padding: var(--space-1);
+}

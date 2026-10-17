@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player, PlayerStatus } from '../types';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
 
 interface AddPlayerModalProps {
   isOpen: boolean;
@@ -101,12 +100,9 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="firstName" className="form-label">
-                {t('auth.firstName')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('auth.firstName')} htmlFor="firstName">
+              <Input
                 type="text"
                 id="firstName"
                 name="firstName"
@@ -114,16 +110,12 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 onChange={handleChange}
                 required
                 disabled={syncedFieldsReadOnly}
-                className="form-input"
                 placeholder={t('playerModal.placeholders.firstName')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="lastName" className="form-label">
-                {t('auth.lastName')}
-              </label>
-              <input
+            <Field label={t('auth.lastName')} htmlFor="lastName">
+              <Input
                 type="text"
                 id="lastName"
                 name="lastName"
@@ -131,16 +123,12 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 onChange={handleChange}
                 required
                 disabled={syncedFieldsReadOnly}
-                className="form-input"
                 placeholder={t('playerModal.placeholders.lastName')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="birthDate" className="form-label">
-                {t('playerModal.fields.birthDate')}
-              </label>
-              <input
+            <Field label={t('playerModal.fields.birthDate')} htmlFor="birthDate">
+              <Input
                 type="date"
                 id="birthDate"
                 name="birthDate"
@@ -148,61 +136,48 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 onChange={handleChange}
                 required
                 disabled={syncedFieldsReadOnly}
-                className="form-input"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="level" className="form-label">
-                {t('playerModal.fields.level')}
-              </label>
-              <select
+            <Field label={t('playerModal.fields.level')} htmlFor="level">
+              <Select
                 id="level"
                 name="level"
                 value={formData.level}
                 onChange={handleChange}
-                className="form-select"
               >
                 <option value={1}>{t('levels.1')}</option>
                 <option value={2}>{t('levels.2')}</option>
                 <option value={3}>{t('levels.3')}</option>
                 <option value={4}>{t('levels.4')}</option>
                 <option value={5}>{t('levels.5')}</option>
-              </select>
-            </div>
+              </Select>
+            </Field>
 
-            <div>
-              <label htmlFor="status" className="form-label">
-                {t('common.labels.status')}
-              </label>
-              <select
+            <Field label={t('common.labels.status')} htmlFor="status">
+              <Select
                 id="status"
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="form-select"
               >
                 <option value="active">{t('playerModal.status.active')}</option>
                 <option value="trial">{t('playerModal.status.trial')}</option>
                 <option value="inactive">{t('playerModal.status.inactive')}</option>
-              </select>
-            </div>
+              </Select>
+            </Field>
 
-            <div>
-              <label htmlFor="preferredShirtNumber" className="form-label">
-                {t('playerModal.fields.preferredShirtNumberOptional')}
-              </label>
-              <input
+            <Field label={t('playerModal.fields.preferredShirtNumberOptional')} htmlFor="preferredShirtNumber">
+              <Input
                 type="number"
                 id="preferredShirtNumber"
                 name="preferredShirtNumber"
                 value={formData.preferredShirtNumber}
                 onChange={handleChange}
                 min={1}
-                className="form-input"
                 placeholder={t('playerModal.placeholders.preferredShirtNumber')}
               />
-            </div>
+            </Field>
           </div>
         </ModalBody>
 

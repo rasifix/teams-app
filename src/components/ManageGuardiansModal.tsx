@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Guardian } from '../types';
 import type { ExistingGuardianUserOption } from '../store/selectors/guardianAssignmentSelectors';
 import { hasDuplicateGuardian } from '../utils/guardians';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, Select } from './ui';
 
 interface ManageGuardiansModalProps {
   isOpen: boolean;
@@ -188,11 +187,10 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
+          <div className="layout-stack">
             <div className="flex gap-4">
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="radio"
+              <label className="checkbox-label">
+                <Radio
                   name="guardianMode"
                   value="existing"
                   checked={mode === 'existing'}
@@ -203,9 +201,8 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                 />
                 {t('guardians.existingUser')}
               </label>
-              <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="radio"
+              <label className="checkbox-label">
+                <Radio
                   name="guardianMode"
                   value="documented"
                   checked={mode === 'documented'}
@@ -220,12 +217,11 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
             {mode === 'existing' ? (
               <div>
-                <label htmlFor="guardian-existing" className="form-label">{t('guardians.existingUser')}</label>
-                <select
+                <FieldLabel htmlFor="guardian-existing">{t('guardians.existingUser')}</FieldLabel>
+                <Select
                   id="guardian-existing"
                   value={selectedMemberId}
                   onChange={(e) => handleSelectedExistingUserChange(e.target.value)}
-                  className="form-select"
                   disabled={isEditMode}
                 >
                   <option value="">{t('guardians.selectUser')}</option>
@@ -234,47 +230,44 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                       {user.firstName} {user.lastName}
                     </option>
                   ))}
-                </select>
+                </Select>
                 {availableExistingUsers.length === 0 && (
-                  <p className="text-xs text-gray-500 mt-2">{t('guardians.noAvailableUsers')}</p>
+                  <p className="text-xs text-content-subtle mt-2">{t('guardians.noAvailableUsers')}</p>
                 )}
                 {isEditMode && (
-                  <p className="text-xs text-gray-500 mt-2">{t('guardians.selectionLocked')}</p>
+                  <p className="text-xs text-content-subtle mt-2">{t('guardians.selectionLocked')}</p>
                 )}
                 {isEditMode && (
                 <div className="mt-3 grid grid-cols-1 gap-3">
                   <div>
-                    <label htmlFor="guardian-existing-first-name" className="form-label">{t('auth.firstName')}</label>
-                    <input
+                    <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}</FieldLabel>
+                    <Input
                       id="guardian-existing-first-name"
                       type="text"
                       value={existingFirstName}
                       onChange={(e) => setExistingFirstName(e.target.value)}
-                      className="form-input"
                       placeholder={t('auth.firstName')}
                       required={mode === 'existing'}
                     />
                   </div>
                   <div>
-                    <label htmlFor="guardian-existing-last-name" className="form-label">{t('auth.lastName')}</label>
-                    <input
+                    <FieldLabel htmlFor="guardian-existing-last-name">{t('auth.lastName')}</FieldLabel>
+                    <Input
                       id="guardian-existing-last-name"
                       type="text"
                       value={existingLastName}
                       onChange={(e) => setExistingLastName(e.target.value)}
-                      className="form-input"
                       placeholder={t('auth.lastName')}
                       required={mode === 'existing'}
                     />
                   </div>
                   <div>
-                    <label htmlFor="guardian-existing-email" className="form-label">{t('auth.emailAddress')}</label>
-                    <input
+                    <FieldLabel htmlFor="guardian-existing-email">{t('auth.emailAddress')}</FieldLabel>
+                    <Input
                       id="guardian-existing-email"
                       type="email"
                       value={existingEmail}
                       onChange={(e) => setExistingEmail(e.target.value)}
-                      className="form-input"
                       placeholder={t('auth.emailAddress')}
                       required={mode === 'existing'}
                     />
@@ -285,49 +278,42 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
             ) : (
               <>
                 <div>
-                  <label htmlFor="guardian-first-name" className="form-label">{t('auth.firstName')}</label>
-                  <input
+                  <FieldLabel htmlFor="guardian-first-name">{t('auth.firstName')}</FieldLabel>
+                  <Input
                     id="guardian-first-name"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="form-input"
                     placeholder={t('guardians.placeholderFirstName')}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="guardian-last-name" className="form-label">{t('auth.lastName')}</label>
-                  <input
+                  <FieldLabel htmlFor="guardian-last-name">{t('auth.lastName')}</FieldLabel>
+                  <Input
                     id="guardian-last-name"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="form-input"
                     placeholder={t('guardians.placeholderLastName')}
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="guardian-documented-email" className="form-label">{t('guardians.emailOptional')}</label>
-                  <input
+                  <FieldLabel htmlFor="guardian-documented-email">{t('guardians.emailOptional')}</FieldLabel>
+                  <Input
                     id="guardian-documented-email"
                     type="email"
                     value={documentedEmail}
                     onChange={(e) => setDocumentedEmail(e.target.value)}
-                    className="form-input"
                     placeholder={t('guardians.placeholderEmail')}
                   />
                 </div>
-                <p className="text-xs text-gray-500">{t('guardians.documentedHint')}</p>
+                <p className="text-xs text-content-subtle">{t('guardians.documentedHint')}</p>
               </>
             )}
 
-            {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+            {error && <Alert>{error}</Alert>}
           </div>
         </ModalBody>
 

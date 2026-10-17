@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Alert } from './ui';
 
 export interface SpondSyncResult {
   created: number;
@@ -29,12 +30,12 @@ export default function SpondSyncResultBanner({ className = '' }: { className?: 
   if (!result) return null;
 
   return (
-    <div className={`rounded border border-green-200 bg-green-50 px-4 py-3 text-green-800 ${className}`} role="status">
+    <Alert tone="success" className={className}>
       {t('spondSync.result', {
         created: result.created,
         updated: result.updated,
         linked: result.linked,
       })}
-    </div>
+    </Alert>
   );
 }

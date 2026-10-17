@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Alert, Button, LoadingSpinner } from './ui';
 
 interface ApiStatusProps {
   className?: string;
@@ -42,21 +43,23 @@ export function ApiStatus({ className = '' }: ApiStatusProps) {
   return (
     <div className={`fixed top-4 right-4 z-50 ${className}`}>
       {isChecking ? (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded-lg text-sm flex items-center space-x-2">
-          <div className="animate-spin h-4 w-4 border-2 border-yellow-600 rounded-full border-t-transparent"></div>
+        <Alert tone="warning" className="flex items-center gap-2">
+          <LoadingSpinner size="sm" />
           <span>{t('common.states.checkingConnection')}</span>
-        </div>
+        </Alert>
       ) : (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg text-sm flex items-center space-x-2">
-          <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+        <Alert className="flex items-center gap-2">
+          <span className="dot" aria-hidden="true" />
           <span>{t('common.states.serverDisconnected')}</span>
-          <button
+          <Button
+            type="button"
+            variant="dangerGhost"
+            size="sm"
             onClick={checkApiHealth}
-            className="ml-2 text-red-800 hover:text-red-900 underline"
           >
             {t('common.actions.retry')}
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
     </div>
   );

@@ -1,0 +1,227 @@
+:root {
+  color-scheme: light;
+
+  /* Brand and semantic colour roles. RGB channels keep alpha utilities usable. */
+  --palette-brand-50: 255 241 230;
+  --palette-brand-100: 255 216 184;
+  --palette-brand-200: 255 183 125;
+  --palette-brand-300: 255 165 92;
+  --palette-brand-400: 255 140 46;
+  --palette-brand-500: 255 140 46;
+  --palette-brand-600: 209 94 0;
+  --palette-brand-700: 163 73 0;
+  --palette-brand-800: 117 53 0;
+  --palette-brand-900: 71 32 0;
+  --palette-brand-950: 26 11 0;
+
+  --palette-neutral-50: 248 250 252;
+  --palette-neutral-100: 241 245 249;
+  --palette-neutral-200: 226 232 240;
+  --palette-neutral-300: 203 213 225;
+  --palette-neutral-400: 148 163 184;
+  --palette-neutral-500: 100 116 139;
+  --palette-neutral-600: 71 85 105;
+  --palette-neutral-700: 51 65 85;
+  --palette-neutral-800: 30 41 59;
+  --palette-neutral-900: 15 23 42;
+  --palette-neutral-950: 2 6 23;
+
+  --palette-danger-50: 254 242 242;
+  --palette-danger-200: 254 202 202;
+  --palette-danger-600: 220 38 38;
+  --palette-danger-700: 185 28 28;
+  --palette-success-50: 236 253 245;
+  --palette-success-200: 167 243 208;
+  --palette-success-600: 5 150 105;
+  --palette-success-700: 4 120 87;
+
+  --color-canvas: rgb(var(--palette-neutral-50));
+  --color-surface: 255 255 255;
+  --color-surface-subtle: rgb(var(--palette-neutral-100));
+  --color-surface-muted: rgb(var(--palette-neutral-200));
+  --color-surface-raised: 255 255 255;
+  --color-text: rgb(var(--palette-neutral-900));
+  --color-text-strong: rgb(var(--palette-neutral-950));
+  --color-text-muted: rgb(var(--palette-neutral-600));
+  --color-text-subtle: rgb(var(--palette-neutral-500));
+  --color-text-disabled: rgb(var(--palette-neutral-400));
+  --color-border: rgb(var(--palette-neutral-200));
+  --color-border-strong: rgb(var(--palette-neutral-300));
+  --color-focus: rgb(var(--palette-brand-400));
+  --color-backdrop: rgb(var(--palette-neutral-950) / 0.6);
+  --color-control-strong: rgb(var(--palette-neutral-900));
+  --color-on-control-strong: white;
+  --color-inverse-overlay: 255 255 255;
+  --color-inverse-border: rgb(255 255 255 / 0.1);
+  --color-inverse-control: rgb(255 255 255 / 0.05);
+  --color-inverse-control-hover: rgb(255 255 255 / 0.1);
+  --color-inverse-control-text: rgb(var(--palette-neutral-200));
+  --color-on-action: white;
+  --color-dialog-edge: rgb(255 255 255 / 0.7);
+  --color-header: 16 27 36;
+  --color-pitch: 4 120 87;
+  --color-brand-subtle: rgb(var(--palette-brand-50));
+  --color-brand-muted: rgb(var(--palette-brand-100));
+  --color-brand-border: rgb(var(--palette-brand-200));
+  --color-brand-strong: rgb(var(--palette-brand-500));
+  --color-brand-hover: rgb(var(--palette-brand-600));
+  --color-brand-text: rgb(var(--palette-brand-700));
+  --color-danger-subtle: rgb(var(--palette-danger-50));
+  --color-danger-border: rgb(var(--palette-danger-200));
+  --color-danger-strong: rgb(var(--palette-danger-600));
+  --color-danger-text: rgb(var(--palette-danger-700));
+  --color-success-subtle: rgb(var(--palette-success-50));
+  --color-success-border: rgb(var(--palette-success-200));
+  --color-success-strong: rgb(var(--palette-success-600));
+  --color-success-text: rgb(var(--palette-success-700));
+  --color-warning-subtle: rgb(255 251 235);
+  --color-warning-border: rgb(253 230 138);
+  --color-warning-strong: rgb(245 158 11);
+  --color-warning-text: rgb(146 64 14);
+  --color-info-subtle: rgb(240 249 255);
+  --color-info-border: rgb(186 230 253);
+  --color-info-strong: rgb(14 165 233);
+  --color-info-text: rgb(3 105 161);
+  --color-accent-subtle: rgb(245 243 255);
+  --color-accent-border: rgb(221 214 254);
+  --color-accent-text: rgb(109 40 217);
+  --color-data-brand: rgb(var(--palette-brand-400));
+  --color-data-info: rgb(14 165 233);
+  --color-data-success: rgb(var(--palette-success-600));
+  --color-data-accent: rgb(139 92 246);
+  --color-print-paper: white;
+  --color-print-border: rgb(75 85 99);
+
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-micro: 0.625rem;
+  --font-size-eyebrow: 0.6875rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  --tracking-tight: -0.025em;
+  --tracking-wide: 0.025em;
+  --tracking-label: 0.075em;
+  --tracking-meta: 0.06em;
+  --tracking-table: 0.05em;
+  --tracking-compact: -0.08em;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --control-height-sm: 2rem;
+  --control-height-md: 2.5rem;
+  --control-height-lg: 2.75rem;
+  --control-padding-inline: 1rem;
+  --field-padding-inline: 0.875rem;
+  --field-padding-block: 0.625rem;
+  --page-gutter: 1rem;
+  --page-block: 2rem;
+  --panel-padding: 1.5rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-round: 9999px;
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-panel: 0 16px 40px -32px rgb(15 29 38 / 0.45);
+  --shadow-raised: 0 14px 36px -24px rgb(15 29 38 / 0.28);
+  --shadow-floating: 0 24px 60px -24px rgb(15 23 42 / 0.45);
+  --shadow-inset: inset 0 2px 4px rgb(15 23 42 / 0.15);
+  --shadow-dock: 0 -16px 40px -30px rgb(15 23 42 / 0.45);
+  --shadow-selected: 0 0 0 4px rgb(var(--palette-brand-400) / 0.35), 0 10px 24px -8px rgb(15 23 42 / 0.55);
+  --shadow-brand-halo: 0 0 0 4px rgb(var(--palette-brand-400) / 0.14);
+  --shadow-field: inset 0 1px 0 rgb(255 255 255 / 0.45), var(--shadow-sm);
+  --shadow-field-focus: 0 0 0 4px rgb(var(--palette-brand-400) / 0.14), 0 2px 8px rgb(15 23 42 / 0.08);
+  --shadow-switch: inset 0 1px 2px rgb(15 23 42 / 0.18);
+  --shadow-dialog: 0 30px 90px -24px rgb(15 23 42 / 0.65);
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --content-max: 80rem;
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --page-gutter: 1.5rem;
+    --page-block: 2.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --page-gutter: 2rem;
+  }
+}
+
+/* Consumers can opt in at any ancestor without changing component CSS. */
+[data-density='compact'] {
+  --control-height-sm: 1.75rem;
+  --control-height-md: 2.125rem;
+  --control-height-lg: 2.5rem;
+  --control-padding-inline: 0.75rem;
+  --field-padding-inline: 0.75rem;
+  --field-padding-block: 0.4rem;
+  --page-block: 1.5rem;
+  --panel-padding: 1rem;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --color-canvas: rgb(8 15 27);
+  --color-surface: 15 23 42;
+  --color-surface-subtle: rgb(30 41 59);
+  --color-surface-muted: rgb(51 65 85);
+  --color-surface-raised: 30 41 59;
+  --color-text: rgb(226 232 240);
+  --color-text-strong: rgb(248 250 252);
+  --color-text-muted: rgb(203 213 225);
+  --color-text-subtle: rgb(148 163 184);
+  --color-text-disabled: rgb(100 116 139);
+  --color-border: rgb(51 65 85);
+  --color-border-strong: rgb(71 85 105);
+  --color-backdrop: rgb(2 6 23 / 0.78);
+  --color-control-strong: rgb(var(--palette-neutral-100));
+  --color-on-control-strong: rgb(var(--palette-neutral-950));
+  --color-brand-subtle: rgb(var(--palette-brand-950));
+  --color-brand-muted: rgb(var(--palette-brand-900));
+  --color-brand-border: rgb(var(--palette-brand-800));
+  --color-brand-text: rgb(var(--palette-brand-300));
+  --color-danger-subtle: rgb(69 10 10);
+  --color-danger-border: rgb(127 29 29);
+  --color-danger-text: rgb(252 165 165);
+  --color-success-subtle: rgb(2 44 34);
+  --color-success-border: rgb(6 78 59);
+  --color-success-text: rgb(110 231 183);
+  --color-warning-subtle: rgb(69 26 3);
+  --color-warning-border: rgb(146 64 14);
+  --color-warning-text: rgb(253 230 138);
+  --color-info-subtle: rgb(8 47 73);
+  --color-info-border: rgb(7 89 133);
+  --color-info-text: rgb(125 211 252);
+  --color-accent-subtle: rgb(46 16 101);
+  --color-accent-border: rgb(91 33 182);
+  --color-accent-text: rgb(196 181 253);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-panel: 0 16px 40px -28px rgb(0 0 0 / 0.65);
+  --shadow-dialog: 0 30px 90px -18px rgb(0 0 0 / 0.8);
+}

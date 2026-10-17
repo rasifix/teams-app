@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Shirt } from '../types';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, Checkbox, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
 
 interface EditShirtModalProps {
   isOpen: boolean;
@@ -85,12 +84,9 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
         </ModalHeader>
 
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="number" className="form-label">
-                {t('shirtModal.fields.numberRequired')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
+              <Input
                 id="number"
                 name="number"
                 type="number"
@@ -100,24 +96,17 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 value={formData.number}
                 onChange={handleInputChange}
                 placeholder={t('shirtModal.placeholders.number')}
-                className={`input-field w-full ${errors.number ? 'border-red-500' : ''}`}
+                aria-invalid={Boolean(errors.number)}
               />
-              {errors.number && (
-                <p className="text-red-500 text-sm mt-1">{errors.number}</p>
-              )}
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="size" className="form-label">
-                {t('shirtModal.fields.sizeRequired')}
-              </label>
-              <select
+            <Field label={t('shirtModal.fields.sizeRequired')} htmlFor="size">
+              <Select
                 id="size"
                 name="size"
                 required
                 value={formData.size}
                 onChange={handleInputChange}
-                className="input-field w-full"
               >
                 <option value="128">128 - {t('shirtModal.size.kids')}</option>
                 <option value="140">140 - {t('shirtModal.size.kids')}</option>
@@ -128,28 +117,25 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 <option value="M">M - {t('shirtModal.size.medium')}</option>
                 <option value="L">L - {t('shirtModal.size.large')}</option>
                 <option value="XL">XL - {t('shirtModal.size.extraLarge')}</option>
-              </select>
-            </div>
+              </Select>
+            </Field>
 
             <div className="flex items-center">
-              <input
+              <Checkbox
                 id="isGoalkeeper"
                 name="isGoalkeeper"
-                type="checkbox"
                 checked={formData.isGoalkeeper}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
               />
-              <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-gray-700">
+              <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-content">
                 {t('shirtModal.fields.isGoalkeeper')}
               </label>
             </div>
 
             <div className="flex items-center">
-              <input
+              <Checkbox
                 id="isUnavailable"
                 name="status"
-                type="checkbox"
                 checked={formData.status === 'unavailable'}
                 onChange={(e) => {
                   setFormData(prev => ({
@@ -157,19 +143,18 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                     status: e.target.checked ? 'unavailable' : 'available'
                   }));
                 }}
-                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
               />
-              <label htmlFor="isUnavailable" className="ml-2 text-sm font-medium text-gray-700">
+              <label htmlFor="isUnavailable" className="ml-2 text-sm font-medium text-content">
                 {t('shirtModal.fields.isUnavailable')}
               </label>
             </div>
 
             {existingNumbers.length > 1 && (
-              <div className="bg-blue-50 border border-blue-200 rounded p-3">
-                <p className="text-sm text-blue-700">
+              <Alert tone="info">
+                <p>
                   <strong>{t('shirtModal.otherNumbers')}</strong> {existingNumbers.filter(num => num !== shirt.number).sort((a, b) => a - b).join(', ')}
                 </p>
-              </div>
+              </Alert>
             )}
           </div>
         </ModalBody>

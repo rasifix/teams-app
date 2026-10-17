@@ -4,6 +4,7 @@ import { formatDate } from '../utils/dateFormatter';
 import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
 import { getActivityDate, getActivityTime } from '../store/selectors/activitySelectors';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
+import { Button, Radio } from './ui';
 
 interface TeamPrintSummaryProps {
   event: Activity;
@@ -50,50 +51,49 @@ export default function TeamPrintSummary({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" onClick={handleBackdropClick}>
-      <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+    <div className="fixed inset-0 z-50 bg-backdrop bg-opacity-50 flex items-center justify-center" onClick={handleBackdropClick}>
+      <div className="bg-surface rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
+        <div className="sticky top-0 bg-surface border-b border-edge px-6 py-4">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold text-gray-900">{t('teamPrint.title')}</h2>
-            <div className="flex gap-2">
-              <button
+            <h2 className="text-xl font-semibold text-content-strong">{t('teamPrint.title')}</h2>
+            <div className="layout-cluster">
+              <Button
+                size="sm"
                 onClick={handlePrint}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
                 {t('teamPrint.print')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={onClose}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
               >
                 {t('common.actions.close')}
-              </button>
+              </Button>
             </div>
           </div>
           
           {/* Format Toggle */}
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">{t('teamPrint.formatLabel')}</span>
+            <span className="text-sm font-medium text-content">{t('teamPrint.formatLabel')}</span>
             <div className="flex gap-3">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
+                <Radio
                   name="format"
                   value="guardians"
                   checked={format === 'selection'}
                   onChange={() => setFormat('selection')}
-                  className="text-blue-600"
+                  className="text-info-text"
                 />
                 <span className="text-sm">{t('teamPrint.selectionFormat')}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
+                <Radio
                   name="format"
                   value="organizer"
                   checked={format === 'organizer'}
                   onChange={() => setFormat('organizer')}
-                  className="text-blue-600"
+                  className="text-info-text"
                 />
                 <span className="text-sm">{t('teamPrint.organizerFormat')}</span>
               </label>
@@ -118,20 +118,20 @@ export default function TeamPrintSummary({
                 });
 
               return (
-                <div key={team.id} className="border border-gray-300 rounded-lg p-4">
+                <div key={team.id} className="border border-edge-strong rounded-lg p-4">
                   {/* Header */}
-                  <div className="text-center mb-4 border-b border-gray-200 pb-3">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-1">{event.name}</h2>
-                    <h1 className="text-xl font-bold text-gray-900 mb-1">
+                  <div className="text-center mb-4 border-b border-edge pb-3">
+                    <h2 className="text-lg font-semibold text-content mb-1">{event.name}</h2>
+                    <h1 className="text-xl font-bold text-content-strong mb-1">
                       {format === 'organizer' && club ? `${club} - ` : ''} {team.name}
                     </h1>
-                    <div className="text-sm text-gray-600">
+                    <div className="body-muted">
                       <p>📅 {formatDate(getActivityDate(event))} {format === 'selection' && `🕐 ${event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}`}</p>
                       {resolvedLocation && format === 'selection' && (
                         <p>📍 {resolvedLocation}</p>
                       )}
                       {responsiblePeople.length > 0 && (
-                        <p className="text-blue-600 font-medium">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
+                        <p className="text-info-text font-medium">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
                       )}
                     </div>
                   </div>
@@ -139,7 +139,7 @@ export default function TeamPrintSummary({
                   {/* Players List */}
                   <div>
                     {playersData.length === 0 ? (
-                      <p className="text-gray-500 italic text-sm">{t('teamPrint.noPlayers')}</p>
+                      <p className="text-content-subtle italic text-sm">{t('teamPrint.noPlayers')}</p>
                     ) : (
                       <div className="space-y-2">
                         {playersData.map((player) => {
@@ -147,27 +147,27 @@ export default function TeamPrintSummary({
                           const shirtNumber = shirtAssignment?.shirtNumber;
                           
                           return (
-                            <div key={player!.id} className="border-b border-gray-100 pb-1">
+                            <div key={player!.id} className="border-b border-edge pb-1">
                               {format === 'selection' ? (
                                 <div className="flex items-center justify-center">
-                                  <p className="text-sm font-medium text-gray-900">
+                                  <p className="text-sm font-medium text-content-strong">
                                     {player!.firstName} {player!.lastName}
                                   </p>
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-sm font-medium text-content-strong">
                                       {player!.firstName} {player!.lastName}
                                     </p>
                                     {player!.birthDate && (
-                                      <p className="text-xs text-gray-600">
+                                      <p className="text-xs text-content-muted">
                                         {formatBirthDate(player!.birthDate)}
                                       </p>
                                     )}
                                   </div>
                                   {shirtNumber && shirtNumber > 0 && (
-                                    <span className="text-gray-800 text-sm font-bold">{shirtNumber}</span>
+                                    <span className="text-content-strong text-sm font-bold">{shirtNumber}</span>
                                   )}
                                 </div>
                               )}

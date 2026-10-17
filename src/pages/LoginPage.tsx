@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Alert, Button, Input, LoadingSpinner } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { LOGGED_OUT_REASON } from '../services/authSession';
 
@@ -51,31 +52,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-surface-subtle flex justify-center px-4 py-12">
+      <div className="auth-form layout-stack layout-stack--lg">
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2 className="text-center text-3xl font-bold text-content-strong">
             {isLogin ? t('auth.signInToAccount') : t('auth.createAccount')}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-content-muted">
             {isLogin ? t('auth.noAccountPrompt') : t('auth.hasAccountPrompt')}
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
               }}
-              className="font-medium text-orange-600 hover:text-orange-500"
             >
               {isLogin ? t('auth.signUp') : t('auth.signIn')}
-            </button>
+            </Button>
           </p>
         </div>
 
         {wasLoggedOut && (
-          <div className="rounded-md border border-blue-200 bg-blue-50 p-4" role="status">
-            <p className="text-sm font-medium text-blue-800">{t('auth.loggedOutMessage')}</p>
-          </div>
+          <Alert tone="info">{t('auth.loggedOutMessage')}</Alert>
         )}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -86,14 +86,13 @@ export default function LoginPage() {
                   <label htmlFor="firstName" className="sr-only">
                     {t('auth.firstName')}
                   </label>
-                  <input
+                  <Input
                     id="firstName"
                     name="firstName"
                     type="text"
                     required={!isLogin}
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                     placeholder={t('auth.firstName')}
                   />
                 </div>
@@ -101,14 +100,13 @@ export default function LoginPage() {
                   <label htmlFor="lastName" className="sr-only">
                     {t('auth.lastName')}
                   </label>
-                  <input
+                  <Input
                     id="lastName"
                     name="lastName"
                     type="text"
                     required={!isLogin}
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                     placeholder={t('auth.lastName')}
                   />
                 </div>
@@ -119,7 +117,7 @@ export default function LoginPage() {
               <label htmlFor="email-address" className="sr-only">
                 {t('auth.emailAddress')}
               </label>
-              <input
+              <Input
                 id="email-address"
                 name="email"
                 type="email"
@@ -127,7 +125,6 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder={t('auth.emailAddress')}
               />
             </div>
@@ -136,7 +133,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="sr-only">
                 {t('auth.password')}
               </label>
-              <input
+              <Input
                 id="password"
                 name="password"
                 type="password"
@@ -144,31 +141,17 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder={t('auth.password')}
               />
             </div>
           </div>
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {error && <Alert>{error}</Alert>}
 
           {isLogin && (
             <div className="flex items-center justify-end">
               <div className="text-sm">
-                <Link to="/reset-password" className="font-medium text-orange-600 hover:text-orange-500">
+                <Link to="/reset-password" className="font-medium text-brand-text hover:text-brand-text">
                   {t('auth.forgotPassword')}
                 </Link>
               </div>
@@ -176,23 +159,20 @@ export default function LoginPage() {
           )}
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
               {loading ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                  <LoadingSpinner size="sm" className="mr-3" />
                   {t('common.states.processing')}
                 </span>
               ) : (
                 isLogin ? t('auth.signIn') : t('auth.signUp')
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

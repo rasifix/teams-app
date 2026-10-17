@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DuplicateMemberGroup } from '../store/selectors/memberDuplicateSelectors';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 
 interface DuplicateMembersModalProps {
   isOpen: boolean;
@@ -65,28 +64,24 @@ export default function DuplicateMembersModal({
       </ModalHeader>
 
       <ModalBody>
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">{t('members.duplicates.description')}</p>
+        <div className="layout-stack">
+          <p className="body-muted">{t('members.duplicates.description')}</p>
 
-          {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          {error && <Alert>{error}</Alert>}
 
           {!hasDuplicates ? (
-            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-4 text-sm text-gray-600">
+            <div className="rounded-md border border-edge bg-surface-subtle px-3 py-4 text-sm text-content-muted">
               {t('members.duplicates.empty')}
             </div>
           ) : (
             <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
               {duplicateGroups.map((group) => (
-                <div key={group.key} className="rounded-lg border border-gray-200 p-3">
+                <div key={group.key} className="rounded-lg border border-edge p-3">
                   <div className="mb-3 flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-gray-900">
+                    <h3 className="text-sm font-semibold text-content-strong">
                       {group.firstName} {group.lastName}
                     </h3>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-content-subtle">
                       {t('members.duplicates.groupCount', {
                         trainerCount: group.trainers.length,
                         guardianCount: group.guardians.length,
@@ -94,13 +89,9 @@ export default function DuplicateMembersModal({
                     </span>
                   </div>
 
-                  <div className="mb-3">
-                    <label htmlFor={`target-trainer-${group.key}`} className="form-label">
-                      {t('members.duplicates.targetTrainerLabel')}
-                    </label>
-                    <select
+                  <Field className="mb-3" label={t('members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
+                    <Select
                       id={`target-trainer-${group.key}`}
-                      className="form-input"
                       value={selectedTrainerForGroup[group.key]}
                       onChange={(e) => {
                         setSelectedTrainerByGroupKey((previous) => ({
@@ -118,17 +109,17 @@ export default function DuplicateMembersModal({
                             : ''}
                         </option>
                       ))}
-                    </select>
-                  </div>
+                    </Select>
+                  </Field>
 
                   <div className="space-y-2">
                     {group.guardians.map((guardian) => (
-                      <div key={guardian.id} className="flex items-center justify-between gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-2">
+                      <div key={guardian.id} className="flex items-center justify-between gap-2 rounded-md border border-edge bg-surface-subtle px-3 py-2">
                         <div>
-                          <p className="text-sm text-gray-800">
+                          <p className="text-sm text-content-strong">
                             {guardian.firstName} {guardian.lastName}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-content-subtle">
                             {t('members.duplicates.linkedPlayers', { count: guardian.playerIds.length })}
                           </p>
                         </div>

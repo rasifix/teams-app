@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../store';
 import { usePlayers } from '../hooks/usePlayers';
@@ -9,6 +9,7 @@ import { selectPlayerActivityStatistics } from '../store/selectors/statisticsSel
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
 import { useSelectedStatisticsPeriod } from '../store';
 import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
+import { NavigationTab, NavigationTabs, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, SummaryCard, SummaryCardContent } from '../components/ui';
 
 interface StatisticsOutletContext {
   filteredEvents: Activity[];
@@ -55,80 +56,41 @@ export default function StatisticsPage() {
     : 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('statistics.title')}</h1>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('statistics.description')}</p>
-        </div>
-        <div className="shrink-0">
+    <Page>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>{t('statistics.title')}</PageTitle>
+          <PageDescription>{t('statistics.description')}</PageDescription>
+        </PageHeaderContent>
+        <PageActions>
           <StatisticsPeriodSelector />
-        </div>
-      </header>
+        </PageActions>
+      </PageHeader>
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
-          <div className="mb-3 h-1 w-8 rounded-full bg-orange-400" />
-          <p className="text-2xl font-semibold tracking-tight text-slate-950">{totalPlayers}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.totalPlayers')}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
-          <div className="mb-3 h-1 w-8 rounded-full bg-sky-400" />
-          <p className="text-2xl font-semibold tracking-tight text-slate-950">{totalEvents}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.totalEvents')}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
-          <div className="mb-3 h-1 w-8 rounded-full bg-emerald-400" />
-          <p className="text-2xl font-semibold tracking-tight text-slate-950">{avgAcceptances.toFixed(1)}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.avgAcceptancesPerPlayer')}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-[0_12px_30px_-26px_rgba(15,29,38,.5)] sm:px-5">
-          <div className="mb-3 h-1 w-8 rounded-full bg-violet-400" />
-          <p className="text-2xl font-semibold tracking-tight text-slate-950">{avgSelections.toFixed(1)}</p>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">{t('statistics.summary.avgSelectionsPerPlayer')}</p>
-        </div>
+        <SummaryCard><SummaryCardContent value={totalPlayers} label={t('statistics.summary.totalPlayers')} /></SummaryCard>
+        <SummaryCard tone="info"><SummaryCardContent value={totalEvents} label={t('statistics.summary.totalEvents')} /></SummaryCard>
+        <SummaryCard tone="success"><SummaryCardContent value={avgAcceptances.toFixed(1)} label={t('statistics.summary.avgAcceptancesPerPlayer')} /></SummaryCard>
+        <SummaryCard tone="accent"><SummaryCardContent value={avgSelections.toFixed(1)} label={t('statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
       </div>
 
-      <div className="mb-5 overflow-x-auto">
-        <nav className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-label={t('common.tabs')}>
-          <NavLink
-            to="/statistics/player-statistics"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+      <NavigationTabs label={t('common.tabs')} className="mb-5">
+          <NavigationTab to="/statistics/player-statistics">
             {t('statistics.tabs.playerStatistics')}
-          </NavLink>
-          <NavLink
-            to="/statistics/event-participation"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+          </NavigationTab>
+          <NavigationTab to="/statistics/event-participation">
             {t('statistics.tabs.eventParticipation')}
-          </NavLink>
-          <NavLink
-            to="/statistics/team-selections"
-            className={({ isActive }) => `rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-              isActive
-                ? 'bg-[#13212b] text-white shadow-sm'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-          >
+          </NavigationTab>
+          <NavigationTab to="/statistics/team-selections">
             {t('statistics.tabs.teamSelections')}
-          </NavLink>
-        </nav>
-      </div>
+          </NavigationTab>
+      </NavigationTabs>
 
       <Outlet context={{
         filteredEvents,
         statisticsPeriod,
         statisticsPlayers,
       } satisfies StatisticsOutletContext} />
-    </div>
+    </Page>
   );
 }

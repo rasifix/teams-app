@@ -4,6 +4,17 @@ import { useTranslation } from 'react-i18next';
 import { useStore, useSquads, useSquadsLoading, useSquadsError } from '../store/useStore';
 import AddSquadModal from '../components/AddSquadModal';
 import type { CreateSquadRequest } from '../types';
+import {
+  Alert,
+  Button,
+  ChevronRightIcon,
+  EmptyState,
+  LoadingState,
+  Panel,
+  PanelHeader,
+  PanelTitle,
+  PanelDescription,
+} from '../components/ui';
 
 export default function SquadSelectionPage() {
   const { t } = useTranslation();
@@ -49,87 +60,72 @@ export default function SquadSelectionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('squads.loading')}</h2>
-        </div>
+      <div className="auth-shell">
+        <LoadingState message={t('squads.loading')} size="lg" />
       </div>
     );
   }
 
   if (error && (!squads || squads.length === 0)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="auth-shell">
         <div className="text-center max-w-md">
-          <div className="text-red-500 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('squads.errors.failedToLoadTitle')}</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-          >
+          <Alert className="mb-4">
+            <strong>{t('squads.errors.failedToLoadTitle')}</strong>
+            <p className="mt-2">{error}</p>
+          </Alert>
+          <Button onClick={() => window.location.reload()}>
             {t('common.actions.retry')}
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('squads.selectTitle')}</h1>
-          <p className="text-gray-600">{t('squads.selectDescription')}</p>
-        </div>
+    <div className="auth-shell">
+      <Panel className="w-full max-w-md">
+        <PanelHeader className="block text-center">
+          <PanelTitle>{t('squads.selectTitle')}</PanelTitle>
+          <PanelDescription>{t('squads.selectDescription')}</PanelDescription>
+        </PanelHeader>
 
-        <button
-          type="button"
+        <Button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full mb-5 bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg text-sm font-medium"
+          className="mb-5 w-full"
         >
           {t('squads.createNew')}
-        </button>
+        </Button>
 
-        <div className="space-y-3">
+        <div className="layout-stack layout-stack--sm">
           {squads?.map((squad) => (
             <button
+              type="button"
               key={squad.id}
+              data-ui-control="composite"
               onClick={() => handleSquadSelect(squad.id)}
-              className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-colors group"
+              className="w-full p-4 text-left border border-edge rounded-lg hover:border-brand-border hover:bg-brand-subtle transition-colors group"
             >
-              <div className="flex items-center justify-between">
+              <div className="layout-split">
                 <div>
-                  <h3 className="font-medium text-gray-900">{squad.name}</h3>
+                  <h3 className="font-medium text-content-strong">{squad.name}</h3>
                   {squad.category && (
-                    <p className="text-sm text-gray-500">{t('squads.categoryLabel', { category: squad.category })}</p>
+                    <p className="body-muted">{t('squads.categoryLabel', { category: squad.category })}</p>
                   )}
-                  <p className="text-sm text-gray-500">{t('squads.idLabel', { id: squad.id })}</p>
+                  <p className="body-muted">{t('squads.idLabel', { id: squad.id })}</p>
                 </div>
-                <svg
-                  className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <ChevronRightIcon className="card-chevron" />
               </div>
             </button>
           ))}
         </div>
 
         {(!squads || squads.length === 0) && (
-          <div className="text-center text-gray-500 mt-8">
+          <EmptyState className="mt-8">
             <p>{t('squads.noneAvailable')}</p>
-          </div>
+          </EmptyState>
         )}
-      </div>
+      </Panel>
 
       <AddSquadModal
         isOpen={isAddModalOpen}

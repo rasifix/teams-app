@@ -547,7 +547,7 @@
     "members": "Mitglieder",
     "events": "Termine",
     "shirts": "Trikots",
-    "matchPlanning": "Einstellungen",
+    "squadSettings": "Mannschaftseinstellungen",
     "statistics": "Statistiken"
   },
   "statistics": {
@@ -761,26 +761,26 @@
     "addPlayersAction_one": "{{count}} Spieler hinzufügen",
     "addPlayersAction_other": "{{count}} Spieler hinzufügen"
   },
-  "groupSettings": {
-    "title": "Einstellungen",
-    "description": "Verwalte die Einstellungen und Integrationen dieser Gruppe.",
+  "squadSettings": {
+    "title": "Mannschaftseinstellungen",
+    "description": "Verwalte die Einstellungen und Integrationen dieser Mannschaft.",
     "spond": {
       "title": "Spond-Gruppe",
-      "description": "Verknüpfe diese Gruppe mit Spond, um Mitglieder und Termine zu importieren.",
+      "description": "Verknüpfe diese Mannschaft mit Spond, um Mitglieder und Termine zu importieren.",
       "openGroup": "Spond-Gruppe öffnen",
       "linkGroup": "Spond-Gruppe verknüpfen",
       "unlinkGroup": "Spond trennen",
       "unlinkTitle": "Spond-Gruppe trennen?",
-      "unlinkMessage": "Dadurch wird die Spond-Synchronisierung für diese Gruppe beendet. Bereits importierte Spieler und Termine bleiben unverändert.",
+      "unlinkMessage": "Dadurch wird die Spond-Synchronisierung für diese Mannschaft beendet. Bereits importierte Spieler und Termine bleiben unverändert.",
       "unlinkFailed": "Die Spond-Gruppe konnte nicht getrennt werden. Bitte versuche es erneut."
     },
     "deactivate": {
-      "title": "Gruppe deaktivieren",
-      "description": "Blende diese Gruppe aus, ohne Mitglieder, Termine oder den Verlauf zu löschen.",
-      "action": "Gruppe deaktivieren",
-      "confirmTitle": "Diese Gruppe deaktivieren?",
-      "confirmMessage": "Die Gruppe wird nicht mehr in der Gruppenauswahl angezeigt. Alle Daten bleiben im Backend gespeichert.",
-      "failed": "Die Gruppe konnte nicht deaktiviert werden. Bitte versuche es erneut."
+      "title": "Mannschaft deaktivieren",
+      "description": "Blende diese Mannschaft aus, ohne Mitglieder, Termine oder den Verlauf zu löschen.",
+      "action": "Mannschaft deaktivieren",
+      "confirmTitle": "Diese Mannschaft deaktivieren?",
+      "confirmMessage": "Die Mannschaft wird nicht mehr in der Mannschaftsauswahl angezeigt. Alle Daten bleiben im Backend gespeichert.",
+      "failed": "Die Mannschaft konnte nicht deaktiviert werden. Bitte versuche es erneut."
     },
     "periods": {
       "title": "Zeiträume",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 import ConfirmDialog from './ConfirmDialog';
 import { useSquad, useStore } from '../store';
 
@@ -120,60 +120,54 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
           <ModalTitle>{editingPeriodId ? t('statistics.period.editPeriod') : t('statistics.period.addPeriod')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-content-muted mb-4">
             {editingPeriodId
               ? t('statistics.period.editDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })
               : t('statistics.period.addDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })}
           </p>
-          <div className="rounded-lg border border-gray-200 p-4 space-y-4">
-            <div>
-              <label htmlFor="stats-period-name" className="form-label">{t('common.labels.name')}</label>
-              <input
+          <div className="rounded-lg border border-edge p-4 space-y-4">
+            <Field label={t('common.labels.name')} htmlFor="stats-period-name">
+              <Input
                 id="stats-period-name"
                 type="text"
                 value={periodNameInput}
                 onChange={(e) => setPeriodNameInput(e.target.value)}
                 placeholder={t('statistics.period.placeholders.name')}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="stats-period-start" className="form-label">{t('common.labels.startDate')}</label>
-              <input
+            <Field label={t('common.labels.startDate')} htmlFor="stats-period-start">
+              <Input
                 id="stats-period-start"
                 type="date"
                 value={startDateInput}
                 onChange={(e) => setStartDateInput(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="stats-period-end" className="form-label">{t('common.labels.endDate')}</label>
-              <input
+            <Field label={t('common.labels.endDate')} htmlFor="stats-period-end">
+              <Input
                 id="stats-period-end"
                 type="date"
                 value={endDateInput}
                 onChange={(e) => setEndDateInput(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </Field>
             {periodError && (
-              <p className="text-sm text-red-600">{periodError}</p>
+              <Alert>{periodError}</Alert>
             )}
           </div>
         </ModalBody>
         <ModalFooter>
-          <button onClick={handleClose} className="btn-secondary">{t('common.actions.cancel')}</button>
+          <Button type="button" variant="secondary" onClick={handleClose}>{t('common.actions.cancel')}</Button>
           {editingPeriodId && (
-            <button onClick={() => setDeletingPeriod(periodToEdit)} className="btn-secondary text-red-600">
+            <Button type="button" variant="dangerGhost" onClick={() => setDeletingPeriod(periodToEdit)}>
               {t('common.actions.delete')}
-            </button>
+            </Button>
           )}
-          <button onClick={handleSavePeriod} className="btn-primary" disabled={isSavingPeriod}>
+          <Button type="button" onClick={handleSavePeriod} disabled={isSavingPeriod}>
             {editingPeriodId ? t('statistics.period.updatePeriod') : t('statistics.period.addPeriod')}
-          </button>
+          </Button>
         </ModalFooter>
       </Modal>
 

@@ -5,7 +5,7 @@ import type { Activity, Player } from '../types';
 import { getActivityDate } from '../store/selectors/activitySelectors';
 import { selectEventParticipationRows } from '../store/selectors/statisticsSelectors';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import { DateColumn } from './ui';
+import { DateColumn, Panel } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
@@ -38,9 +38,9 @@ export default function EventParticipationMatrix({ players, events }: EventParti
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'selected':
-        return { icon: '✓', color: 'text-green-600', bg: 'bg-green-50' };
+        return { icon: '✓', color: 'text-success', bg: 'bg-success-subtle' };
       case 'accepted':
-        return { icon: invitationStatusMeta.accepted.icon, color: 'text-gray-400', bg: invitationStatusMeta.accepted.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.accepted.icon, color: 'text-content-disabled', bg: invitationStatusMeta.accepted.iconBackgroundClassName };
       case 'declined':
         return { icon: invitationStatusMeta.declined.icon, color: invitationStatusMeta.declined.iconClassName, bg: invitationStatusMeta.declined.iconBackgroundClassName };
       case 'injured':
@@ -52,7 +52,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
       case 'open':
         return { icon: invitationStatusMeta.open.icon, color: invitationStatusMeta.open.iconClassName, bg: invitationStatusMeta.open.iconBackgroundClassName };
       default:
-        return { icon: '-', color: 'text-gray-400', bg: 'bg-gray-50' };
+        return { icon: '-', color: 'text-content-disabled', bg: 'bg-surface-subtle' };
     }
   };
 
@@ -99,50 +99,50 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   if (events.length === 0 || players.length === 0) {
     return (
-      <section className="rounded-3xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-500 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <section className="rounded-3xl border border-edge bg-surface px-4 py-12 text-center text-sm text-content-subtle shadow-md">
             <p>{t('statistics.eventParticipation.emptyState')}</p>
       </section>
     );
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+    <Panel padding="none">
       <div className="p-4 sm:p-5">
         <LevelRangeSelector
           defaultRange={levelRange}
           onChange={setLevelRange}
         />
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-slate-500">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-content-subtle">
           <div className="flex items-center gap-1">
-            <span className="font-bold text-emerald-600">✓</span>
+            <span className="font-bold text-success">✓</span>
             <span>{t('statistics.playerTable.selected')}</span>
           </div>
           {invitationStatusOrder.map((status) => (
             <div key={status} className="flex items-center gap-1">
-              <span className={`${status === 'accepted' ? 'text-slate-400' : invitationStatusMeta[status].iconClassName} font-bold`}>
+              <span className={`${status === 'accepted' ? 'text-content-disabled' : invitationStatusMeta[status].iconClassName} font-bold`}>
                 {invitationStatusMeta[status].icon}
               </span>
               <span>{t(`invitationStatus.${status}`)}</span>
             </div>
           ))}
           <div className="flex items-center gap-1">
-            <span className="font-bold text-slate-400">-</span>
+            <span className="font-bold text-content-disabled">-</span>
             <span>{t('invitationStatus.notInvited')}</span>
           </div>
         </div>
       </div>
-        <div className="overflow-x-auto border-t border-slate-100" ref={scrollContainerRef}>
+        <div className="overflow-x-auto border-t border-edge" ref={scrollContainerRef}>
           <table className="min-w-full border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80">
-                <th className="sticky left-0 z-10 min-w-[220px] border-r border-slate-200 bg-slate-50 px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">
+              <tr className="border-b border-edge bg-surface-subtle">
+                <th className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface-subtle px-5 py-3 text-left text-eyebrow font-bold uppercase tracking-wide text-content-subtle">
                   {t('domain.player')}
                 </th>
                 {events.map(event => (
                   <th 
                     key={event.id} 
-                    className="min-w-[58px] px-2 py-2.5 text-center text-sm font-medium text-slate-900"
+                    className="min-w-[58px] px-2 py-2.5 text-center text-sm font-medium text-content-strong"
                     title={`${event.name} - ${formatDate(getActivityDate(event))}`}
                   >
                     <div 
@@ -159,11 +159,11 @@ export default function EventParticipationMatrix({ players, events }: EventParti
               {sortedData.map(({ player, attendance }) => (
                 <tr 
                   key={player.id} 
-                  className="max-h-[40px] cursor-pointer border-b border-slate-100 transition hover:bg-slate-50/80"
+                  className="max-h-[40px] cursor-pointer border-b border-edge transition hover:bg-surface-subtle"
                   onClick={() => handlePlayerClick(player.id)}
                 >
-                  <td className="sticky left-0 z-10 max-h-[40px] min-w-[220px] border-r border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-900">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <td className="sticky left-0 z-10 max-h-[40px] min-w-[220px] border-r border-edge bg-surface px-5 py-2.5 text-sm font-medium text-content-strong">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-content-strong">
                       <span>{player.firstName} {player.lastName}</span>
                       <Level level={player.level} className="text-xs" />
                     </div>
@@ -189,6 +189,6 @@ export default function EventParticipationMatrix({ players, events }: EventParti
             </tbody>
           </table>
         </div>
-    </section>
+    </Panel>
   );
 }

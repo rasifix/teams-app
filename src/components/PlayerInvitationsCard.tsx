@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
 import { isSpondManagedInvitation, selectAvailableInvitations, selectInvitationCounts, selectInvitationsByResponse } from '../store/selectors/activitySelectors';
 import Level from './Level';
+import { Button, EmptyState, IconButton, Panel, PanelActions, PanelHeader, PanelTitle, Select, Tab, TabList } from './ui';
 
 interface PlayerInvitationsCardProps {
   invitations: ActivityInvitation[];
@@ -37,60 +38,51 @@ export default function PlayerInvitationsCard({
   );
   const availableCount = selectAvailableInvitations(invitations, assignedPlayerIds).length;
 
-  return <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="text-lg font-semibold tracking-tight text-slate-950">{t('domain.players')}</h2>
-      {!readOnly && <button type="button" onClick={onInviteClick} className="btn-primary btn-sm">{t('playerInvitations.invite')}</button>}
-    </div>
-    <div className="mb-1 max-w-full overflow-x-auto" role="tablist" aria-label={t('domain.players')}>
-      <div className="inline-flex min-w-max gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+  return <Panel>
+    <PanelHeader>
+      <PanelTitle>{t('domain.players')}</PanelTitle>
+      {!readOnly && <PanelActions><Button type="button" size="sm" onClick={onInviteClick}>{t('playerInvitations.invite')}</Button></PanelActions>}
+    </PanelHeader>
+    <TabList label={t('domain.players')} className="mb-1">
       {(['available', 'open', 'declined'] as const).map((response) => {
         const isActive = activeResponse === response;
         const count = response === 'available' ? availableCount : counts[response];
-        return <button
+        return <Tab
           key={response}
-          type="button"
-          role="tab"
-          aria-selected={isActive}
+          selected={isActive}
           onClick={() => setActiveResponse(response)}
-          className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
-            isActive ? 'bg-[#13212b] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-          }`}
         >
           {t(`invitationStatus.${response}`)} ({count})
-        </button>;
+        </Tab>;
       })}
-      </div>
-    </div>
-    {visibleInvitations.length === 0 ? <p className="mt-3 rounded-2xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</p> : <ul className="mt-3 divide-y divide-slate-100">
+    </TabList>
+    {visibleInvitations.length === 0 ? <EmptyState className="mt-3">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</EmptyState> : <ul className="mt-3 divide-y divide-slate-100">
       {visibleInvitations.map((invitation) => {
         const player = players.find((entry) => entry.id === invitation.playerId);
         const assigned = assignedPlayerIds.includes(invitation.playerId);
         const isSpondManaged = readOnly || isSpondManagedInvitation(currentActivity, player);
         return <li key={invitation.id} className="flex min-h-11 items-center gap-2" data-testid="invitation-row">
-          <p className="min-w-0 flex-1 basis-32 truncate text-sm font-medium text-slate-900">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
+          <p className="min-w-0 flex-1 basis-32 truncate text-sm font-medium text-content-strong">{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</p>
           {player && <Level level={player.level} className="text-base leading-none" />}
-          {invitation.response === 'declined' && (readOnly ? <span className="text-xs text-slate-600">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+          {invitation.response === 'declined' && (readOnly ? <span className="text-xs text-content-muted">{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span> : <Select aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
             const reason = event.target.value as InvitationDeclineReason | '';
             setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
             onStatusChange(invitation.id, 'declined', reason || undefined);
           }} className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs">
             <option value="">{t('activity.declineReasons.unspecified')}</option>
             {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
-          </select>)}
-          {!assigned && !isSpondManaged && <button
-            type="button"
+          </Select>)}
+          {!assigned && !isSpondManaged && <IconButton
+            label={t('playerInvitations.remove')}
+            variant="danger"
             onClick={() => onRemoveInvitation(invitation.id)}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-            title={t('playerInvitations.remove')}
-            aria-label={t('playerInvitations.remove')}
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
             </svg>
-          </button>}
+          </IconButton>}
         </li>;
       })}
     </ul>}
-  </section>;
+  </Panel>;
 }

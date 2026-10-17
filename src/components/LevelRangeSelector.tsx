@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Select } from './ui';
 
 interface LevelRangeSelectorProps {
   minLevel?: number;
@@ -57,12 +58,12 @@ export default function LevelRangeSelector({
   };
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 ${className}`}>
-      <span className="mr-auto text-[11px] font-bold uppercase tracking-[0.075em] text-slate-500">{t('filters.playerLevel')}</span>
+    <div className={`flex flex-wrap items-center gap-2 rounded-xl border border-edge bg-surface-subtle px-3 py-2 ${className}`}>
+      <span className="mr-auto text-eyebrow font-bold uppercase tracking-label text-content-subtle">{t('filters.playerLevel')}</span>
       
       <div className="flex items-center gap-1.5">
-        <label htmlFor="minLevel" className="text-[11px] font-semibold leading-none text-slate-500">{t('filters.from')}</label>
-        <select
+        <label htmlFor="minLevel" className="text-eyebrow font-semibold leading-none text-content-subtle">{t('filters.from')}</label>
+        <Select
           id="minLevel"
           value={levelRange[0]}
           onChange={(e) => handleMinLevelChange(parseInt(e.target.value))}
@@ -70,12 +71,12 @@ export default function LevelRangeSelector({
           className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs"
         >
           {generateLevelOptions()}
-        </select>
+        </Select>
       </div>
 
       <div className="flex items-center gap-1.5">
-        <label htmlFor="maxLevel" className="text-[11px] font-semibold leading-none text-slate-500">{t('filters.to')}</label>
-        <select
+        <label htmlFor="maxLevel" className="text-eyebrow font-semibold leading-none text-content-subtle">{t('filters.to')}</label>
+        <Select
           id="maxLevel"
           value={levelRange[1]}
           onChange={(e) => handleMaxLevelChange(parseInt(e.target.value))}
@@ -83,7 +84,7 @@ export default function LevelRangeSelector({
           className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs"
         >
           {generateLevelOptions()}
-        </select>
+        </Select>
       </div>
     </div>
   );

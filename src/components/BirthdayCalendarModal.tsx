@@ -5,7 +5,7 @@ import {
   getBirthdayCalendarSubscription,
   revokeBirthdayCalendarSubscription,
 } from '../services/squadService';
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle } from './ui';
+import { Alert, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle } from './ui';
 
 interface BirthdayCalendarModalProps {
   isOpen: boolean;
@@ -93,20 +93,16 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
         <ModalSubtitle>{t('members.birthdayCalendar.description')}</ModalSubtitle>
       </ModalHeader>
       <ModalBody>
-        {error && (
-          <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        {error && <Alert className="mb-4">{error}</Alert>}
 
         {isLoading ? (
-          <p className="text-sm text-gray-600">{t('members.birthdayCalendar.loading')}</p>
+          <p className="body-muted">{t('members.birthdayCalendar.loading')}</p>
         ) : subscriptionUrl ? (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-700">{t('members.birthdayCalendar.subscriptionHelp')}</p>
+          <div className="layout-stack">
+            <p className="text-sm text-content">{t('members.birthdayCalendar.subscriptionHelp')}</p>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <input
-                className="form-input min-w-0 flex-1"
+              <Input
+                className="min-w-0 flex-1"
                 aria-label={t('members.birthdayCalendar.subscriptionUrl')}
                 readOnly
                 value={subscriptionUrl}
@@ -116,15 +112,15 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
                 {copied ? t('members.birthdayCalendar.copied') : t('members.birthdayCalendar.copy')}
               </Button>
             </div>
-            <p className="text-xs text-gray-500">{t('members.birthdayCalendar.privacyNote')}</p>
+            <p className="text-xs text-content-subtle">{t('members.birthdayCalendar.privacyNote')}</p>
             {!canSubscribeDirectly && (
-              <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <Alert tone="warning">
                 {t('members.birthdayCalendar.secureUrlRequired')}
-              </p>
+              </Alert>
             )}
           </div>
         ) : (
-          <p className="text-sm text-gray-700">{t('members.birthdayCalendar.notCreated')}</p>
+          <p className="text-sm text-content">{t('members.birthdayCalendar.notCreated')}</p>
         )}
       </ModalBody>
       <ModalFooter>

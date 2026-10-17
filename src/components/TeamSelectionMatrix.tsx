@@ -7,7 +7,7 @@ import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import Strength from './Strength';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Tab, TabList } from './ui';
 
 interface TeamSelectionMatrixProps {
   players: Player[];
@@ -64,7 +64,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (players.length === 0 || events.length === 0) {
     return (
-      <section className="rounded-3xl border border-slate-200 bg-white px-4 py-12 text-center text-sm text-slate-500 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <section className="rounded-3xl border border-edge bg-surface px-4 py-12 text-center text-sm text-content-subtle shadow-md">
         <p>{t('statistics.teamSelections.noData')}</p>
       </section>
     );
@@ -72,41 +72,29 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (matrixColumns.length === 0) {
     return (
-      <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-5">
+      <section className="rounded-3xl border border-edge bg-surface p-4 shadow-md sm:p-5">
           <LevelRangeSelector
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-content">
             <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-              <button
-                type="button"
+            <TabList label={t('statistics.teamSelections.groupBy')}>
+              <Tab
+                selected={groupByMode === 'strength'}
                 onClick={() => setGroupByMode('strength')}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  groupByMode === 'strength'
-                    ? 'bg-white text-orange-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                aria-pressed={groupByMode === 'strength'}
               >
                 {t('statistics.teamSelections.groupByStrength')}
-              </button>
-              <button
-                type="button"
+              </Tab>
+              <Tab
+                selected={groupByMode === 'teamName'}
                 onClick={() => setGroupByMode('teamName')}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  groupByMode === 'teamName'
-                    ? 'bg-white text-orange-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                aria-pressed={groupByMode === 'teamName'}
               >
                 {t('statistics.teamSelections.groupByTeamName')}
-              </button>
-            </div>
+              </Tab>
+            </TabList>
           </div>
-          <div className="py-12 text-center text-sm text-slate-500">
+          <div className="py-12 text-center text-sm text-content-subtle">
             <p>{t('statistics.teamSelections.noTeamsInPeriod')}</p>
           </div>
       </section>
@@ -115,44 +103,32 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   return (
     <>
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <Panel padding="none">
         <div className="p-4 sm:p-5">
           <LevelRangeSelector
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-content">
             <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-              <button
-                type="button"
+            <TabList label={t('statistics.teamSelections.groupBy')}>
+              <Tab
+                selected={groupByMode === 'strength'}
                 onClick={() => setGroupByMode('strength')}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  groupByMode === 'strength'
-                    ? 'bg-white text-orange-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                aria-pressed={groupByMode === 'strength'}
               >
                 {t('statistics.teamSelections.groupByStrength')}
-              </button>
-              <button
-                type="button"
+              </Tab>
+              <Tab
+                selected={groupByMode === 'teamName'}
                 onClick={() => setGroupByMode('teamName')}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors ${
-                  groupByMode === 'teamName'
-                    ? 'bg-white text-orange-700 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                aria-pressed={groupByMode === 'teamName'}
               >
                 {t('statistics.teamSelections.groupByTeamName')}
-              </button>
-            </div>
+              </Tab>
+            </TabList>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 px-1 text-xs text-slate-500">
+          <div className="mt-4 flex flex-wrap items-center gap-3 px-1 text-xs text-content-subtle">
             <span>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</span>
             <span aria-hidden="true">•</span>
             <span>
@@ -166,21 +142,21 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         </div>
 
           {matrixRows.length === 0 ? (
-            <div className="border-t border-slate-100 px-4 py-12 text-center text-sm text-slate-500">
+            <div className="border-t border-edge px-4 py-12 text-center text-sm text-content-subtle">
               <p>{t('statistics.teamSelections.noPlayersInLevelRange')}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border-t border-slate-100">
+            <div className="overflow-x-auto border-t border-edge">
               <table className="min-w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80">
-                    <th className="sticky left-0 z-10 min-w-[220px] border-r border-slate-200 bg-slate-50 px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">
+                  <tr className="border-b border-edge bg-surface-subtle">
+                    <th className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface-subtle px-5 py-3 text-left text-eyebrow font-bold uppercase tracking-wide text-content-subtle">
                       {t('domain.player')}
                     </th>
                     {matrixColumns.map((matrixColumn) => (
                       <th
                         key={matrixColumn.key}
-                        className="min-w-[88px] px-3 py-3 text-center text-sm font-semibold text-slate-900"
+                        className="min-w-[88px] px-3 py-3 text-center text-sm font-semibold text-content-strong"
                       >
                         {groupByMode === 'strength' && matrixColumn.strength !== undefined ? (
                           <span className="inline-flex items-center justify-center" title={matrixColumn.label}>
@@ -196,16 +172,17 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 </thead>
                 <tbody>
                   {matrixRows.map(({ player, selectedCount, acceptedCount, cells }) => (
-                    <tr key={player.id} className="border-b border-slate-100 transition hover:bg-slate-50/80">
-                      <td className="sticky left-0 z-10 min-w-[220px] border-r border-slate-200 bg-white px-5 py-2.5">
+                    <tr key={player.id} className="border-b border-edge transition hover:bg-surface-subtle">
+                      <td className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface px-5 py-2.5">
                         <button
                           type="button"
+                          data-ui-control="composite"
                           onClick={() => handlePlayerClick(player.id)}
-                          className="flex w-full items-center gap-2 text-left text-sm font-semibold text-slate-900 transition-opacity hover:opacity-70"
+                          className="flex w-full items-center gap-2 text-left text-sm font-semibold text-content-strong transition-opacity hover:opacity-70"
                         >
                           <span>{player.firstName} {player.lastName}</span>
                           <Level level={player.level} className="text-xs" />
-                          <span className="ml-auto text-xs font-semibold text-slate-500">
+                          <span className="ml-auto text-xs font-semibold text-content-subtle">
                             {selectedCount} / {acceptedCount}
                           </span>
                         </button>
@@ -214,11 +191,12 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                         <td key={`${cell.columnKey}-${index}`} className="px-3 py-2 text-center">
                           <button
                             type="button"
+                            data-ui-control="composite"
                             onClick={() => handleCellClick(player, matrixColumns[index].label, cell.events)}
                             className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition-colors ${
                               cell.count > 0
-                                ? 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
-                                : 'border-slate-200 bg-slate-50 text-slate-400 hover:bg-slate-100'
+                                ? 'border-brand-border bg-brand-subtle text-brand-text hover:bg-brand-muted'
+                                : 'border-edge bg-surface-subtle text-content-disabled hover:bg-surface-muted'
                             }`}
                             aria-label={t('statistics.teamSelections.cellAriaLabel', {
                               player: `${player.firstName} ${player.lastName}`,
@@ -236,7 +214,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
               </table>
             </div>
           )}
-      </section>
+      </Panel>
 
       <Modal isOpen={selectedCell !== null} onClose={() => setSelectedCell(null)}>
         <ModalHeader>
@@ -244,30 +222,31 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.groupLabel}` : t('statistics.teamSelections.selectionDetails')}
           </ModalTitle>
         </ModalHeader>
-        <ModalBody className="space-y-4">
+        <ModalBody className="layout-stack">
           {selectedCell && selectedCell.events.length > 0 ? (
-            <div className="space-y-3">
+            <div className="layout-stack layout-stack--sm">
               {selectedCell.events.map((selectionEvent) => (
                 <div
                   key={`${selectionEvent.eventId}-${selectionEvent.teamId}`}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 p-4"
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-edge p-4"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">{selectionEvent.eventName}</p>
-                    <p className="mt-0.5 text-sm text-slate-500">{formatDate(selectionEvent.eventDate)}</p>
+                    <p className="text-sm font-semibold text-content-strong">{selectionEvent.eventName}</p>
+                    <p className="mt-0.5 text-sm text-content-subtle">{formatDate(selectionEvent.eventDate)}</p>
                   </div>
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => handleOpenTeam(selectionEvent.eventId, selectionEvent.teamId)}
-                    className="btn-secondary whitespace-nowrap"
+                    className="whitespace-nowrap"
                   >
                     {t('statistics.teamSelections.openTeam')}
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="body-muted">
               {selectedCell?.mode === 'strength'
                 ? t('statistics.teamSelections.noSelectionStrength')
                 : t('statistics.teamSelections.noSelectionTeam')}
@@ -275,9 +254,9 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           )}
         </ModalBody>
         <ModalFooter>
-          <button type="button" onClick={() => setSelectedCell(null)} className="btn-secondary">
+          <Button type="button" variant="secondary" onClick={() => setSelectedCell(null)}>
             {t('common.actions.close')}
-          </button>
+          </Button>
         </ModalFooter>
       </Modal>
     </>

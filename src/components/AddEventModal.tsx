@@ -5,9 +5,8 @@ import { selectActivityFormConfiguration } from '../store/selectors/activityForm
 import { selectDefaultMatchFormat } from '../store/selectors/matchPlanningSelectors';
 import { toStartsAt } from '../store/selectors/activitySelectors';
 import type { ActivityKind, ActivityPayload, InvitationResponse, Team } from '../types';
-import Button from './ui/Button';
 import InvitePlayersModal from './InvitePlayersModal';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -101,58 +100,48 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       <ModalHeader><ModalTitle>{t('eventModal.addTitle')}</ModalTitle></ModalHeader>
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="activity-kind" className="form-label">{t('activity.fields.kind')}</label>
-              <select id="activity-kind" value={kind} onChange={(event) => setKind(event.target.value as ActivityKind)} className="form-input">
+          <div className="layout-stack">
+            <Field label={t('activity.fields.kind')} htmlFor="activity-kind">
+              <Select id="activity-kind" value={kind} onChange={(event) => setKind(event.target.value as ActivityKind)}>
                 <option value="match">{t('activity.kinds.match')}</option>
                 <option value="tournament">{t('activity.kinds.tournament')}</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="event-name" className="form-label">{t('eventModal.fields.eventNameRequired')}</label>
-              <input id="event-name" type="text" value={name} onChange={(event) => setName(event.target.value)} className="form-input" required autoFocus />
-            </div>
-            {config.showOpponent && <div>
-              <label htmlFor="activity-opponent" className="form-label">{t('activity.fields.opponent')}</label>
-              <input id="activity-opponent" type="text" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} className="form-input" />
-            </div>}
-            {config.showMatchFormat && <div>
-              <label htmlFor="activity-format" className="form-label">{t('activity.fields.matchFormat')}</label>
-              <select id="activity-format" value={matchFormatId} onChange={(event) => setMatchFormatId(event.target.value)} className="form-input">
+              </Select>
+            </Field>
+            <Field label={t('eventModal.fields.eventNameRequired')} htmlFor="event-name">
+              <Input id="event-name" type="text" value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
+            </Field>
+            {config.showOpponent && <Field label={t('activity.fields.opponent')} htmlFor="activity-opponent">
+              <Input id="activity-opponent" type="text" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} />
+            </Field>}
+            {config.showMatchFormat && <Field label={t('activity.fields.matchFormat')} htmlFor="activity-format">
+              <Select id="activity-format" value={matchFormatId} onChange={(event) => setMatchFormatId(event.target.value)}>
                 <option value="">{t('eventModal.fields.noMatchFormat')}</option>
                 {matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
-              </select>
-            </div>}
-            {config.showTeamCount && <div>
-              <label htmlFor="activity-teams" className="form-label">{t('eventModal.fields.numberOfTeamsRequired')}</label>
-              <input id="activity-teams" type="number" min={1} value={numberOfTeams} onChange={(event) => setNumberOfTeams(Math.max(1, Number(event.target.value) || 1))} className="form-input" required />
-            </div>}
-            <div>
-              <label htmlFor="event-date" className="form-label">{t('eventModal.fields.dateRequired')}</label>
-              <input id="event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} className="form-input" required />
-            </div>
-            <div>
-              <label htmlFor="event-time" className="form-label">{t('activity.fields.startTime')}</label>
-              <input id="event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} className="form-input" required />
-            </div>
-            <div>
-              <label htmlFor="event-location" className="form-label">{t('eventModal.fields.location')}</label>
-              <input id="event-location" type="text" value={location} onChange={(event) => setLocation(event.target.value)} className="form-input" />
-            </div>
-            <div>
-              <label htmlFor="max-players" className="form-label">{t('eventModal.fields.maxPlayersPerTeamRequired')}</label>
-              <input id="max-players" type="number" min={1} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} className="form-input" required />
-            </div>
-            <div>
-              <label htmlFor="min-players" className="form-label">{t('eventModal.fields.minPlayersPerTeamRequired')}</label>
-              <input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} className="form-input" required />
-            </div>
+              </Select>
+            </Field>}
+            {config.showTeamCount && <Field label={t('eventModal.fields.numberOfTeamsRequired')} htmlFor="activity-teams">
+              <Input id="activity-teams" type="number" min={1} value={numberOfTeams} onChange={(event) => setNumberOfTeams(Math.max(1, Number(event.target.value) || 1))} required />
+            </Field>}
+            <Field label={t('eventModal.fields.dateRequired')} htmlFor="event-date">
+              <Input id="event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
+            </Field>
+            <Field label={t('activity.fields.startTime')} htmlFor="event-time">
+              <Input id="event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required />
+            </Field>
+            <Field label={t('eventModal.fields.location')} htmlFor="event-location">
+              <Input id="event-location" type="text" value={location} onChange={(event) => setLocation(event.target.value)} />
+            </Field>
+            <Field label={t('eventModal.fields.maxPlayersPerTeamRequired')} htmlFor="max-players">
+              <Input id="max-players" type="number" min={1} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required />
+            </Field>
+            <Field label={t('eventModal.fields.minPlayersPerTeamRequired')} htmlFor="min-players">
+              <Input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required />
+            </Field>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-gray-700" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
-              <Button type="button" variant="secondary" className="btn-sm" onClick={() => setIsInviteOpen(true)}>{t('eventModal.invitePlayersAction')}</Button>
+              <span className="text-sm text-content" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('eventModal.invitePlayersAction')}</Button>
             </div>
-            {error && <div role="alert" className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+            {error && <Alert>{error}</Alert>}
           </div>
         </ModalBody>
         <ModalFooter>

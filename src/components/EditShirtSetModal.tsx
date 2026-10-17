@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ShirtSet } from '../types';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Button, ColorInput, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
 
 interface EditShirtSetModalProps {
   shirtSet: ShirtSet;
@@ -47,12 +46,9 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
         </ModalHeader>
 
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="sponsor" className="form-label">
-                {t('shirtSetModal.fields.sponsorRequired')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
+              <Input
                 id="sponsor"
                 name="sponsor"
                 type="text"
@@ -60,37 +56,28 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                 value={formData.sponsor}
                 onChange={handleInputChange}
                 placeholder={t('shirtSetModal.placeholders.sponsor')}
-                className="input-field w-full"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="color" className="form-label">
-                {t('shirtSetModal.fields.colorRequired')}
-              </label>
+            <Field label={t('shirtSetModal.fields.colorRequired')} htmlFor="color" hint={t('shirtSetModal.colorHint')}>
               <div className="flex items-center gap-3">
-                <input
+                <ColorInput
                   id="color"
                   name="color"
-                  type="color"
                   required
                   value={formData.color}
                   onChange={handleInputChange}
-                  className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
                 />
-                <input
+                <Input
                   type="text"
                   value={formData.color}
                   onChange={handleInputChange}
                   name="color"
                   placeholder={t('shirtSetModal.placeholders.color')}
-                  className="input-field flex-1"
+                  className="flex-1"
                 />
               </div>
-              <p className="text-sm text-gray-500 mt-1">
-                {t('shirtSetModal.colorHint')}
-              </p>
-            </div>
+            </Field>
           </div>
         </ModalBody>
 

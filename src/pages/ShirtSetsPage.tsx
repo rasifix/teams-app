@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useShirtSets } from "../hooks/useShirtSets";
-import Button from "../components/ui/Button";
+import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
 import AddShirtSetModal from "../components/AddShirtSetModal";
 import EditShirtSetModal from "../components/EditShirtSetModal";
 import AddShirtModal from "../components/AddShirtModal";
@@ -90,38 +90,40 @@ export default function ShirtSetsPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-500">
+      <Page>
+        <EmptyState>
           <p>{t('shirts.loading')}</p>
-        </div>
-      </div>
+        </EmptyState>
+      </Page>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('shirts.titleWithCount', { count: shirtSets.length })}</h1>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('shirts.subtitle')}</p>
-        </div>
-        <Button className="self-start !rounded-full !bg-orange-500 hover:!bg-orange-600" variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
+    <Page>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>{t('shirts.titleWithCount', { count: shirtSets.length })}</PageTitle>
+          <PageDescription>{t('shirts.subtitle')}</PageDescription>
+        </PageHeaderContent>
+        <PageActions>
+        <Button className="self-start" variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
           {t('common.actions.add')}
         </Button>
-      </header>
+        </PageActions>
+      </PageHeader>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <Alert>
           {error}
-        </div>
+        </Alert>
       )}
 
       {shirtSets.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white/60 py-12 text-center text-sm text-slate-500">
+        <EmptyState>
           <p>{t('shirts.emptyState')}</p>
-        </div>
+        </EmptyState>
       ) : (
-        <div className="space-y-3">
+        <div className="layout-stack layout-stack--sm">
           {shirtSets.map((shirtSet) => (
             <ShirtSetCard
               key={shirtSet.id}
@@ -200,6 +202,6 @@ export default function ShirtSetsPage() {
             .map(shirt => shirt.number) || []}
         />
       )}
-    </div>
+    </Page>
   );
 }

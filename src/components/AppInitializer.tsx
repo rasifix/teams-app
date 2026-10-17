@@ -11,6 +11,7 @@ import {
   useSquad,
 } from '../store/useStore';
 import type { Squad } from '../types';
+import { Alert, Button, LoadingState } from './ui';
 
 interface AppInitializerProps {
   children: ReactNode;
@@ -102,11 +103,8 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   // Wait for auth to initialize before doing anything
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('common.states.loading')}</h2>
-        </div>
+      <div className="auth-shell">
+        <LoadingState message={t('common.states.loading')} size="lg" />
       </div>
     );
   }
@@ -119,49 +117,40 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   // Do not let squad-scoped route guards redirect while restoring a saved squad.
   if (!squad && !hasResolvedInitialSquad) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('squads.loading')}</h2>
-        </div>
+      <div className="auth-shell">
+        <LoadingState message={t('squads.loading')} size="lg" />
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('appInitializer.loadingApplication')}</h2>
-          <p className="text-gray-600">{t('appInitializer.fetchingData')}</p>
-        </div>
+      <div className="auth-shell">
+        <LoadingState
+          message={t('appInitializer.loadingApplication')}
+          description={t('appInitializer.fetchingData')}
+          size="lg"
+        />
       </div>
     );
   }
 
   if (hasErrors) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="auth-shell">
         <div className="text-center max-w-md">
-          <div className="text-red-500 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('appInitializer.failedToLoadApplication')}</h2>
-          <div className="text-left text-sm text-gray-600 mb-4">
+          <Alert className="mb-4 text-left">
+            <strong>{t('appInitializer.failedToLoadApplication')}</strong>
+            <div className="mt-2">
             {errors.players && <p>• {t('domain.players')}: {errors.players}</p>}
             {errors.activities && <p>• {t('domain.events')}: {errors.activities}</p>}
             {errors.trainers && <p>• {t('domain.trainers')}: {errors.trainers}</p>}
             {errors.shirtSets && <p>• {t('domain.shirtSets')}: {errors.shirtSets}</p>}
-          </div>
-          <button
-            onClick={() => initializeApp()}
-            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-          >
+            </div>
+          </Alert>
+          <Button onClick={() => initializeApp()}>
             {t('common.actions.retry')}
-          </button>
+          </Button>
         </div>
       </div>
     );

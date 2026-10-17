@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateSquadRequest } from '../types';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Textarea } from './ui';
 import { useSfvCatalog } from '../store';
 import { selectSfvCategoryOptions } from '../store/selectors/sfvCatalogSelectors';
 
@@ -88,46 +87,32 @@ export default function AddSquadModal({
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="form-label">
-                {t('squadModal.fields.squadName')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('squadModal.fields.squadName')} htmlFor="name" error={nameError}>
+              <Input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="form-input"
                 placeholder={t('squadModal.placeholders.squadName')}
               />
-              {nameError && (
-                <p className="mt-1 text-sm text-red-600">{nameError}</p>
-              )}
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="club" className="form-label">
-                {t('squadModal.fields.clubOptional')}
-              </label>
-              <input
+            <Field label={t('squadModal.fields.clubOptional')} htmlFor="club">
+              <Input
                 type="text"
                 id="club"
                 name="club"
                 value={formData.club ?? ''}
                 onChange={handleChange}
-                className="form-input"
                 placeholder={t('squadModal.placeholders.club')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="category" className="form-label">
-                {t('squadModal.fields.categoryOptional')}
-              </label>
-              <select
+            <Field label={t('squadModal.fields.categoryOptional')} htmlFor="category">
+              <Select
                 id="category"
                 name="category"
                 value={formData.category ?? ''}
@@ -135,16 +120,15 @@ export default function AddSquadModal({
                   ...previous,
                   category: (event.target.value || null) as CreateSquadRequest['category'],
                 }))}
-                className="form-input"
               >
                 <option value="">{t('squadModal.fields.noCategory')}</option>
                 {categoryOptions.map((option) => (
                   <option key={option.code} value={option.code}>{option.code}</option>
                 ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-500">{t('squadModal.categoryHint')}</p>
+              </Select>
+              <p className="mt-1 text-xs text-content-subtle">{t('squadModal.categoryHint')}</p>
               {selectedOption?.matchFormat && (
-                <p className="mt-1 text-xs text-orange-700">
+                <p className="mt-1 text-xs text-brand-text">
                   {t('squadModal.officialFormatHint', {
                     format: selectedOption.matchFormat.name,
                     min: selectedOption.matchFormat.minPlayersPerTeam ?? '-',
@@ -153,28 +137,25 @@ export default function AddSquadModal({
                 </p>
               )}
               {selectedOption?.activityType === 'tournament' && !selectedOption.matchFormat && (
-                <p className="mt-1 text-xs text-gray-600">{t('squadModal.tournamentOnlyHint')}</p>
+                <p className="mt-1 text-xs text-content-muted">{t('squadModal.tournamentOnlyHint')}</p>
               )}
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="description" className="form-label">
-                {t('squadModal.fields.descriptionOptional')}
-              </label>
-              <textarea
+            <Field label={t('squadModal.fields.descriptionOptional')} htmlFor="description">
+              <Textarea
                 id="description"
                 name="description"
                 value={formData.description ?? ''}
                 onChange={handleChange}
-                className="form-input min-h-24"
+                className="min-h-24"
                 placeholder={t('squadModal.placeholders.description')}
               />
-            </div>
+            </Field>
 
             {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <Alert>
                 {error}
-              </div>
+              </Alert>
             )}
           </div>
         </ModalBody>

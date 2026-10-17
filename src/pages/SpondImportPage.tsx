@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardBody, CardTitle } from '../components/ui';
-import Button from '../components/ui/Button';
+import { Alert, Button, Card, CardBody, CardTitle, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from '../components/ui';
 import {
   SpondCredentialsStep,
   SpondGroupStep,
@@ -63,7 +62,7 @@ export default function SpondImportPage() {
   const isEventOnly = searchParams.get('scope') === 'events';
   const isPlayerOnly = searchParams.get('scope') === 'players';
   const isScopedSync = isEventOnly || isPlayerOnly;
-  const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/events' : '/match-planning';
+  const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/events' : '/squad-settings';
   const { user } = useAuth();
   const squad = useSquad();
   const sfvCatalog = useSfvCatalog();
@@ -330,25 +329,27 @@ export default function SpondImportPage() {
     : t(`spondSync.wizard.steps.${step}`);
 
   return (
-    <div className="page-container max-w-5xl">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+    <Page width="medium">
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>
             {t(isEventOnly ? "spondSync.eventsTitle" : isPlayerOnly ? "spondSync.playersTitle" : "spondSync.title")}
-          </h1>
-          <p className="mt-1 text-sm text-gray-600">{stepTitle}</p>
-        </div>
+          </PageTitle>
+          <PageDescription>{stepTitle}</PageDescription>
+        </PageHeaderContent>
+        <PageActions>
         <Button variant="secondary" onClick={() => navigate(closePath)}>{t("common.actions.close")}</Button>
-      </div>
+        </PageActions>
+      </PageHeader>
       <div className="mb-6 flex gap-2" aria-label={t("spondSync.wizard.progress")}>
         {progressSteps.map((item, index) => (
           <div
             key={item}
-            className={`h-2 flex-1 rounded ${item === step ? "bg-orange-600" : index < progressSteps.indexOf(step) ? "bg-orange-300" : "bg-gray-200"}`}
+            className={`h-2 flex-1 rounded ${item === step ? "bg-brand-hover" : index < progressSteps.indexOf(step) ? "bg-brand-border" : "bg-surface-muted"}`}
           />
         ))}
       </div>
-      {error && <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {error && <Alert className="mb-4">{error}</Alert>}
       <Card>
         <CardBody className="space-y-5 p-5 lg:p-8">
           <CardTitle>{stepTitle}</CardTitle>
@@ -441,6 +442,6 @@ export default function SpondImportPage() {
           )}
         </CardBody>
       </Card>
-    </div>
+    </Page>
   );
 }

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers } from '../store';
 import { selectAvailablePlayersForTeamSelection } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
-import { Button } from '../components/ui';
+import { Alert, Badge, Button, EmptyState, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select } from '../components/ui';
 import Level from '../components/Level';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 import { getBirthYear } from '../utils/birthDate';
@@ -76,9 +76,9 @@ export default function TeamPlayerSelectionPage() {
   
   if (!event || !team) {
     return (
-      <div className="page-container">
-        <div className="empty-state">{t('teamPlayerSelection.teamNotFound')}</div>
-      </div>
+      <Page width="medium">
+        <EmptyState>{t('teamPlayerSelection.teamNotFound')}</EmptyState>
+      </Page>
     );
   }
   
@@ -89,42 +89,41 @@ export default function TeamPlayerSelectionPage() {
     && removedPlayerIds.some((playerId) => !removalReasons[playerId]));
   
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 pb-32 sm:px-6 sm:py-10 sm:pb-32 lg:px-8">
-      <header className="mb-6">
-        <button 
+    <Page width="medium" className="pb-32 sm:pb-32">
+      <Button
+          variant="ghost"
+          size="sm"
           onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
-          className="mb-5 text-sm font-semibold text-slate-500 transition hover:text-slate-950"
+          className="mb-5"
         >
           ← {t('common.actions.cancel')}
-        </button>
-        
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{event.name}</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</h1>
-          </div>
-          <p className="text-sm font-medium text-slate-500 sm:text-right">
+      </Button>
+      <PageHeader>
+          <PageHeaderContent>
+            <p className="eyebrow">{event.name}</p>
+            <PageTitle>{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</PageTitle>
+          </PageHeaderContent>
+          <PageActions><p className="text-sm font-medium text-content-subtle sm:text-right">
           {t('teamPlayerSelection.slotsSummary', {
             current: currentPlayerCount,
             max: maxPlayersPerTeam,
             remaining: remainingSlots,
           })}
-          </p>
-        </div>
-      </header>
+          </p></PageActions>
+      </PageHeader>
 
       {!editState?.canEdit && (
-        <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+        <Alert className="mb-4">
           {t('teamPlayerSelection.eventPassedWarning')}
-        </div>
+        </Alert>
       )}
 
       {editState?.isSent && editState.canEdit && (
-        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
+        <Alert tone="warning" className="mb-4">
           {t('teamPlayerSelection.sentWarning', {
             dateTime: event.selectionSentAt ? formatInstantDateTime(event.selectionSentAt, i18n.language) : '',
           })}
-        </div>
+        </Alert>
       )}
       
       <LevelRangeSelector
@@ -136,35 +135,36 @@ export default function TeamPlayerSelectionPage() {
       />
 
       {currentPlayers.length > 0 && (
-        <section className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-5">
-          <h2 className="mb-3 text-lg font-semibold tracking-tight text-slate-950">{t('teamPlayerSelection.currentPlayers')}</h2>
-          <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
+        <Panel className="mb-4">
+          <PanelHeader><PanelTitle>{t('teamPlayerSelection.currentPlayers')}</PanelTitle></PanelHeader>
+          <ListFrame>
             {currentPlayers.map((playerId) => {
               const player = players.find((candidate) => candidate.id === playerId);
               if (!player) return null;
               const isRemoved = removedPlayerIds.includes(playerId);
               return (
-                <div key={playerId} className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm ${isRemoved ? 'bg-red-50 text-slate-500' : 'bg-white'}`}>
-                  <span className={`font-medium ${isRemoved ? 'line-through' : 'text-slate-900'}`}>{player.firstName} {player.lastName}</span>
-                  <div className="flex flex-wrap items-center gap-2">
-                  <button
+                <div key={playerId} className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm ${isRemoved ? 'bg-danger-subtle text-content-subtle' : 'bg-surface'}`}>
+                  <span className={`font-medium ${isRemoved ? 'line-through' : 'text-content-strong'}`}>{player.firstName} {player.lastName}</span>
+                  <div className="layout-cluster layout-cluster--wrap">
+                  <Button
                     type="button"
-                    className="text-xs font-semibold text-red-600 transition hover:text-red-800"
+                    variant="dangerGhost"
+                    size="sm"
                     disabled={!editState?.canEdit}
                     onClick={() => setRemovedPlayerIds((current) => isRemoved
                       ? current.filter((id) => id !== playerId)
                       : [...current, playerId])}
                   >
                     {isRemoved ? t('teamPlayerSelection.undoRemove') : t('teamPlayerSelection.removePlayer')}
-                  </button>
+                  </Button>
                   {isRemoved && editState?.requiresRemovalReason && (
-                    <select
+                    <Select
                       value={removalReasons[playerId] ?? ''}
                       onChange={(changeEvent) => setRemovalReasons((current) => ({
                         ...current,
                         [playerId]: changeEvent.target.value as SelectionRemovalReason | '',
                       }))}
-                      className="form-input !min-h-8 !w-auto !rounded-lg !py-1 !text-xs"
+                      className="!min-h-8 !w-auto !rounded-lg !py-1 !text-xs"
                       aria-label={t('teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
                       required
                     >
@@ -172,47 +172,49 @@ export default function TeamPlayerSelectionPage() {
                       {(['sick', 'injured', 'noShow', 'other'] as SelectionRemovalReason[]).map((reason) => (
                         <option key={reason} value={reason}>{t(`attendance.reasons.${reason}`)}</option>
                       ))}
-                    </select>
+                    </Select>
                   )}
                   </div>
                 </div>
               );
             })}
-          </div>
-        </section>
+          </ListFrame>
+        </Panel>
       )}
       
       {/* Selection Controls */}
       {availablePlayers.length > 0 && (
         <div className="mb-4 flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={handleSelectAll}
             disabled={!editState?.canEdit}
-            className="btn-secondary btn-sm"
           >
             {t('common.actions.selectAll')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={handleDeselectAll}
             disabled={!editState?.canEdit}
-            className="btn-secondary btn-sm"
           >
             {t('common.actions.deselectAll')}
-          </button>
-          <span className="ml-auto rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          </Button>
+          <Badge className="ml-auto">
             {t('teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
-          </span>
+          </Badge>
         </div>
       )}
       
       {/* Available Players List */}
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)]">
+      <Panel padding="none">
         {availablePlayers.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-slate-500">
+          <EmptyState className="m-4">
             {t('teamPlayerSelection.noPlayersInRange')}
-          </div>
+          </EmptyState>
         ) : (
           availablePlayers.map(player => {
             const isSelected = selectedPlayerIds.includes(player.id);
@@ -220,30 +222,32 @@ export default function TeamPlayerSelectionPage() {
             
             return (
               <button
+                type="button"
                 key={player.id}
+                data-ui-control="composite"
                 onClick={() => !isDisabled && handleTogglePlayer(player.id)}
                 disabled={isDisabled}
-                className={`flex w-full items-center justify-between gap-4 border-b border-slate-100 px-4 py-3.5 text-left transition-all last:border-b-0 ${
+                className={`flex w-full items-center justify-between gap-4 border-b border-edge px-4 py-3.5 text-left transition-all last:border-b-0 ${
                   isSelected
-                    ? 'bg-orange-50'
-                    : 'bg-white hover:bg-slate-50'
+                    ? 'bg-brand-subtle'
+                    : 'bg-surface hover:bg-surface-subtle'
                 } ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`flex h-5 w-5 items-center justify-center rounded-md border-2 ${
-                    isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'
+                    isSelected ? 'border-brand bg-brand' : 'border-edge-strong'
                   }`}>
                     {isSelected && (
-                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                      <svg className="w-3 h-3 text-content-inverse" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-semibold text-slate-900">
+                    <div className="text-sm font-semibold text-content-strong">
                       {player.firstName} {player.lastName}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-content-subtle">
                       {getBirthYear(player.birthDate)}
                     </div>
                   </div>
@@ -253,15 +257,15 @@ export default function TeamPlayerSelectionPage() {
             );
           })
         )}
-      </section>
+      </Panel>
       
       {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-16px_40px_-30px_rgba(15,23,42,.45)] backdrop-blur sm:px-6">
+      <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-edge bg-surface/95 px-4 py-3 shadow-dock backdrop-blur sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="text-sm font-medium text-slate-700">
+          <div className="text-sm font-medium text-content">
             {t('teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
             {!canAddMore && selectedPlayerIds.length > 0 && (
-              <div className="mt-1 text-xs text-red-600">
+              <div className="mt-1 text-xs text-danger">
                 {t('teamPlayerSelection.tooManySelected', { max: remainingSlots })}
               </div>
             )}
@@ -276,6 +280,6 @@ export default function TeamPlayerSelectionPage() {
           </Button>
         </div>
       </div>
-    </div>
+    </Page>
   );
 }

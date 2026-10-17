@@ -2,6 +2,7 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { withTranslation } from 'react-i18next';
 import type { WithTranslation } from 'react-i18next';
+import { Button } from './ui';
 
 interface Props extends WithTranslation {
   children?: ReactNode;
@@ -44,10 +45,10 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
+        <div className="min-h-screen flex items-center justify-center bg-surface-subtle py-12 px-4 sm:px-6 lg:px-8">
+          <div className="auth-form layout-stack layout-stack--lg">
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 text-red-500">
+              <div className="mx-auto h-12 w-12 text-danger">
                 <svg
                   fill="none"
                   stroke="currentColor"
@@ -62,36 +63,37 @@ class ErrorBoundary extends Component<Props, State> {
                   />
                 </svg>
               </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              <h2 className="mt-6 text-3xl font-extrabold text-content-strong">
                 {t('errorBoundary.title')}
               </h2>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-content-muted">
                 {t('errorBoundary.message')}
               </p>
               {this.state.error && (
                 <details className="mt-4 text-left">
-                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                  <summary className="cursor-pointer text-sm text-content-subtle hover:text-content">
                     {t('errorBoundary.showDetails')}
                   </summary>
-                  <pre className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded overflow-auto">
+                  <pre className="mt-2 text-xs text-danger bg-danger-subtle p-2 rounded overflow-auto">
                     {this.state.error.message}
                   </pre>
                 </details>
               )}
             </div>
             <div className="flex flex-col space-y-3">
-              <button
+              <Button
                 onClick={this.handleRetry}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full"
               >
                 {t('common.actions.retry')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => window.location.reload()}
-                className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full"
               >
                 {t('errorBoundary.reloadPage')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -102,4 +104,6 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default withTranslation()(ErrorBoundary);
+const TranslatedErrorBoundary = withTranslation()(ErrorBoundary);
+
+export default TranslatedErrorBoundary;

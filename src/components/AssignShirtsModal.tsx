@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Team, ShirtSet, Player } from '../types';
-import { Modal, ModalBody, ModalFooter, ModalHeader } from './ui/Modal';
-import Button from './ui/Button';
+import { Button, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 
 interface AssignShirtsModalProps {
   isOpen: boolean;
@@ -140,20 +139,17 @@ export default function AssignShirtsModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <h2 className="text-xl font-semibold">{t('assignShirts.title')}</h2>
+          <ModalTitle>{t('assignShirts.title')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="shirtSet" className="form-label">
-                {t('domain.shirtSets')}
-              </label>
-              <select
+          <div className="layout-stack layout-stack--lg">
+            <Field label={t('domain.shirtSets')} htmlFor="shirtSet">
+              <Select
                 id="shirtSet"
                 value={selectedShirtSetId}
                 onChange={(e) => setSelectedShirtSetId(e.target.value)}
-                className="form-input text-sm"
+                className="text-sm"
               >
                 <option value="">{t('assignShirts.selectSetPlaceholder')}</option>
                 {shirtSets.map(shirtSet => (
@@ -161,8 +157,8 @@ export default function AssignShirtsModal({
                     {shirtSet.sponsor}
                   </option>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </Field>
 
             {selectedShirtSet && (
               <div>
@@ -174,15 +170,15 @@ export default function AssignShirtsModal({
                     if (!player) return null;
                     
                     return (
-                      <div key={playerId} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                      <div key={playerId} className="flex items-center gap-3 p-2 bg-surface-subtle rounded">
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-medium truncate">{player.firstName} {player.lastName}</span>
                         </div>
                         <div className="w-32">
-                          <select
+                          <Select
                             value={currentAssignment?.shirtNumber || 0}
                             onChange={(e) => handleShirtAssignment(playerId, parseInt(e.target.value) || 0)}
-                            className="form-input w-full text-sm py-1"
+                            className="w-full text-sm py-1"
                           >
                             <option value={0}>{t('assignShirts.noShirt')}</option>
                             {selectedShirtSet.shirts
@@ -197,7 +193,7 @@ export default function AssignShirtsModal({
                                 #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? `(${t('shirts.goalkeeperShort')})` : ''}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                         </div>
                       </div>
                     );
@@ -205,17 +201,17 @@ export default function AssignShirtsModal({
                 </div>
 
                 {usedShirtsInOtherTeams.size > 0 && (
-                  <p className="text-xs text-gray-600 mt-2">
+                  <p className="text-xs text-content-muted mt-2">
                     {t('assignShirts.usedInOtherTeamsHint')}
                   </p>
                 )}
 
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-content-muted mt-1">
                   {t('assignShirts.unavailableHint')}
                 </p>
 
                 {team.selectedPlayers.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">
+                  <p className="text-content-subtle text-center py-4">
                     {t('assignShirts.noPlayersInTeam')}
                   </p>
                 )}

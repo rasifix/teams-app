@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Alert, Button, Input, LoadingSpinner } from '../components/ui';
 import { authService } from '../services/authService';
 
 export default function ResetPasswordPage() {
@@ -67,13 +68,13 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center px-4 py-12">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-surface-subtle flex justify-center px-4 py-12">
+      <div className="auth-form layout-stack layout-stack--lg">
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900">
+          <h2 className="text-center text-3xl font-bold text-content-strong">
             {isResetForm ? t('resetPassword.resetTitle') : t('resetPassword.requestTitle')}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-content-muted">
             {isResetForm
               ? t('resetPassword.resetDescription')
               : t('resetPassword.requestDescription')}
@@ -90,7 +91,7 @@ export default function ResetPasswordPage() {
                 <label htmlFor="email" className="sr-only">
                   {t('auth.emailAddress')}
                 </label>
-                <input
+                <Input
                   id="email"
                   name="email"
                   type="email"
@@ -98,7 +99,6 @@ export default function ResetPasswordPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                   placeholder={t('auth.emailAddress')}
                 />
               </div>
@@ -108,7 +108,7 @@ export default function ResetPasswordPage() {
                   <label htmlFor="newPassword" className="sr-only">
                     {t('resetPassword.newPassword')}
                   </label>
-                  <input
+                  <Input
                     id="newPassword"
                     name="newPassword"
                     type="password"
@@ -116,7 +116,6 @@ export default function ResetPasswordPage() {
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                     placeholder={t('resetPassword.newPassword')}
                   />
                 </div>
@@ -124,7 +123,7 @@ export default function ResetPasswordPage() {
                   <label htmlFor="confirmPassword" className="sr-only">
                     {t('resetPassword.confirmPassword')}
                   </label>
-                  <input
+                  <Input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
@@ -132,7 +131,6 @@ export default function ResetPasswordPage() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                     placeholder={t('resetPassword.confirmPassword')}
                   />
                 </div>
@@ -140,72 +138,19 @@ export default function ResetPasswordPage() {
             )}
           </div>
 
-          {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {error && <Alert>{error}</Alert>}
 
-          {success && (
-            <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">{success}</p>
-                </div>
-              </div>
-            </div>
-          )}
+          {success && <Alert tone="success">{success}</Alert>}
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
               {loading ? (
                 <span className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                  <LoadingSpinner size="sm" className="mr-3" />
                   {t('common.states.processing')}
                 </span>
               ) : isResetForm ? (
@@ -213,11 +158,11 @@ export default function ResetPasswordPage() {
               ) : (
                 t('resetPassword.sendLinkAction')
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="text-center">
-            <Link to="/login" className="font-medium text-sm text-orange-600 hover:text-orange-500">
+            <Link to="/login" className="font-medium text-sm text-brand-text hover:text-brand-text">
               {t('resetPassword.backToSignIn')}
             </Link>
           </div>

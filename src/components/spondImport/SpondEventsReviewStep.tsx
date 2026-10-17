@@ -7,7 +7,7 @@ import {
   type SpondEventRow,
 } from '../../store/selectors/spondSyncSelectors';
 import { formatWallClockDateTime } from '../../utils/dateFormatter';
-import Button from '../ui/Button';
+import { Button, Checkbox, Field, Input, Select } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
 interface SpondEventsReviewStepProps {
@@ -43,34 +43,32 @@ export default function SpondEventsReviewStep({
 
   return (
     <>
-      <p className="text-sm text-gray-600">{t('spondSync.wizard.eventsHelp')}</p>
+      <p className="body-muted">{t('spondSync.wizard.eventsHelp')}</p>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <label className="form-label" htmlFor="spond-event-filter">{t('spondSync.eventFilter.label')}</label>
-          <select
+        <Field label={t('spondSync.eventFilter.label')} htmlFor="spond-event-filter">
+          <Select
             id="spond-event-filter"
-            className="form-select"
             value={eventFilter}
             onChange={(event) => onFilterChange(event.target.value as SpondEventFilter)}
           >
             <option value="all">{t('spondSync.eventFilter.all')}</option>
             <option value="training">{t('spondSync.eventFilter.training')}</option>
             <option value="match">{t('spondSync.eventFilter.match')}</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
         {rows.length > 0 && (
-          <div className="flex gap-2">
+          <div className="layout-cluster">
             <Button variant="secondary" size="sm" onClick={onSelectAll}>{t('common.actions.selectAll')}</Button>
             <Button variant="secondary" size="sm" onClick={onSelectNone}>{t('common.actions.selectNone')}</Button>
           </div>
         )}
       </div>
       {rows.length === 0 ? (
-        <div className="rounded bg-gray-50 p-4 text-sm text-gray-600">
+        <div className="rounded bg-surface-subtle p-4 text-sm text-content-muted">
           {t('spondSync.wizard.noEventsToSync')}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="layout-stack layout-stack--sm">
           {rows.map((row) => {
             const draft = drafts[row.source.id];
             const selected = Boolean(draft && draft.action !== 'skip');
@@ -82,9 +80,8 @@ export default function SpondEventsReviewStep({
             return (
               <div key={row.source.id} className="rounded border p-4">
                 <label className="flex items-start gap-3">
-                  <input
+                  <Checkbox
                     className="mt-1"
-                    type="checkbox"
                     checked={selected}
                     onChange={(event) => onDraftChange(row.source.id, {
                       action: event.target.checked ? (match ? 'link' : 'create') : 'skip',
@@ -93,15 +90,14 @@ export default function SpondEventsReviewStep({
                   />
                   <span className="flex-1">
                     <span className="font-medium">{row.source.name}</span>
-                    <span className="block text-sm text-gray-600">
+                    <span className="block text-sm text-content-muted">
                       {formatWallClockDateTime(row.source.startsAt, i18n.language)}
                     </span>
                   </span>
                 </label>
                 {selected && draft && !row.linkedActivity && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <select
-                      className="form-select"
+                    <Select
                       value={draft.action}
                       onChange={(event) => onDraftChange(row.source.id, {
                         action: event.target.value as SpondActivityDraft['action'],
@@ -109,10 +105,9 @@ export default function SpondEventsReviewStep({
                     >
                       <option value="link">{t('spondSync.linkExisting')}</option>
                       <option value="create">{t('spondSync.createActivity')}</option>
-                    </select>
+                    </Select>
                     {draft.action === 'link' ? (
-                      <select
-                        className="form-select"
+                      <Select
                         value={draft.activityId}
                         onChange={(event) => onDraftChange(row.source.id, { activityId: event.target.value })}
                       >
@@ -121,11 +116,10 @@ export default function SpondEventsReviewStep({
                             {activity.name} · {activity.startsAt.slice(0, 10)}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     ) : (
                       <>
-                        <select
-                          className="form-select"
+                        <Select
                           value={draft.kind}
                           onChange={(event) => onDraftChange(row.source.id, {
                             kind: event.target.value as ActivityKind,
@@ -134,10 +128,9 @@ export default function SpondEventsReviewStep({
                           {(['match', 'tournament', 'training', 'social'] as ActivityKind[]).map((kind) => (
                             <option key={kind} value={kind}>{t(`activity.kinds.${kind}`)}</option>
                           ))}
-                        </select>
+                        </Select>
                         {draft.kind === 'training' && (
-                          <select
-                            className="form-select"
+                          <Select
                             value={draft.trainerIds[0] ?? ''}
                             onChange={(event) => onDraftChange(row.source.id, {
                               trainerIds: event.target.value ? [event.target.value] : [],
@@ -149,11 +142,10 @@ export default function SpondEventsReviewStep({
                                 {trainer.firstName} {trainer.lastName}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                         )}
                         {(['match', 'tournament'] as ActivityKind[]).includes(draft.kind) && (
-                          <input
-                            className="form-input"
+                          <Input
                             value={draft.teamName}
                             placeholder={t('spondSync.teamName')}
                             onChange={(event) => onDraftChange(row.source.id, { teamName: event.target.value })}
@@ -164,7 +156,7 @@ export default function SpondEventsReviewStep({
                   </div>
                 )}
                 {rowIssues.map((field) => (
-                  <p key={field} className="mt-2 text-sm text-red-700">
+                  <p key={field} className="mt-2 text-sm text-danger-text">
                     {t(`spondSync.requiredFields.${field}`)}
                   </p>
                 ))}

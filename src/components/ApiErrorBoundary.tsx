@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import i18n from '../i18n/config';
+import { Alert, Button } from './ui';
 
 interface Props {
   children?: ReactNode;
@@ -41,10 +43,10 @@ class ApiErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError && this.state.isApiError) {
       return (
-        <div className="min-h-96 flex items-center justify-center bg-yellow-50 py-8 px-4 sm:px-6 lg:px-8 rounded-lg border border-yellow-200">
+        <Alert tone="warning" className="flex min-h-96 items-center justify-center">
           <div className="max-w-md w-full space-y-6">
             <div className="text-center">
-              <div className="mx-auto h-10 w-10 text-yellow-500">
+              <div className="mx-auto h-10 w-10 text-warning">
                 <svg
                   fill="none"
                   stroke="currentColor"
@@ -59,23 +61,24 @@ class ApiErrorBoundary extends Component<Props, State> {
                   />
                 </svg>
               </div>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">
-                Server Connection Issue
+              <h3 className="mt-4 text-lg font-medium text-content-strong">
+                {i18n.t('common.states.serverDisconnected')}
               </h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Unable to connect to the server. Please check your internet connection or try again later.
+              <p className="mt-2 text-sm text-content-muted">
+                {i18n.t('errorBoundary.message')}
               </p>
             </div>
             <div className="flex flex-col space-y-3">
-              <button
+              <Button
+                type="button"
                 onClick={this.handleRetry}
-                className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                className="w-full"
               >
-                Retry Connection
-              </button>
+                {i18n.t('common.actions.retry')}
+              </Button>
             </div>
           </div>
-        </div>
+        </Alert>
       );
     }
 

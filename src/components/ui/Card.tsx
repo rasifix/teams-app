@@ -29,9 +29,14 @@ export function CardTitle({ children, className = '' }: CardProps) {
   );
 }
 
-export function SummaryCard({ children, className = '' }: CardProps) {
+interface SummaryCardProps extends CardProps {
+  tone?: 'brand' | 'info' | 'success' | 'accent';
+}
+
+export function SummaryCard({ children, className = '', tone = 'brand' }: SummaryCardProps) {
   return (
-    <div className={`summary-card ${className}`}>
+    <div className={`summary-card summary-card--${tone} ${className}`.trim()}>
+      <div className="summary-card__accent" />
       {children}
     </div>
   );
@@ -45,8 +50,8 @@ interface SummaryCardContentProps {
 export function SummaryCardContent({ label, value }: SummaryCardContentProps) {
   return (
     <>
-      <h3 className="summary-card-label">{label}</h3>
       <p className="summary-card-value">{value}</p>
+      <h3 className="summary-card-label">{label}</h3>
     </>
   );
 }

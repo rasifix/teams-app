@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
-import { Button } from '../components/ui';
+import { Alert, Button, EmptyState, Field, ListAction, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, Select } from '../components/ui';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
 import SelectionRemovalDialog from '../components/SelectionRemovalDialog';
@@ -155,148 +155,143 @@ export default function TeamDetailPage() {
   
   if (!event || !team) {
     return (
-      <div className="page-container">
-        <div className="empty-state">{t('teamDetail.teamNotFound')}</div>
-      </div>
+      <Page>
+        <EmptyState>{t('teamDetail.teamNotFound')}</EmptyState>
+      </Page>
     );
   }
   
   const playerToRemoveData = playerToRemove ? players.find(p => p.id === playerToRemove) : null;
   
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6">
-        <div className="mb-5 flex items-center justify-between border-b border-slate-200 pb-4">
-          <button 
+    <Page>
+      <PageToolbar>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(`/events/${eventId}`)}
-            className="text-sm font-semibold text-slate-500 transition hover:text-slate-950"
           >
             ← {t('common.actions.back')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setIsEditTeamModalOpen(true)}
-            className="btn-secondary btn-sm"
           >
             {t('common.actions.edit')}
-          </button>
-        </div>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.075em] text-orange-600">{event.name}</p>
+          </Button>
+      </PageToolbar>
+      <PageHeader>
+          <PageHeaderContent>
+            <p className="eyebrow">{event.name}</p>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{team.name}</h1>
+              <PageTitle>{team.name}</PageTitle>
               <Strength level={team.strength} className="text-sm" />
             </div>
-          </div>
+          </PageHeaderContent>
           {event.teams.length > 1 && (
-            <div className="w-full sm:w-auto sm:min-w-56">
-              <label htmlFor="team-switcher" className="form-label">{t('teamDetail.switchTeam')}</label>
-              <select
+            <PageActions className="w-full sm:w-auto sm:min-w-56">
+              <Field label={t('teamDetail.switchTeam')} htmlFor="team-switcher" className="w-full">
+              <Select
                 id="team-switcher"
                 value={team.id}
                 onChange={(event) => navigate(`/events/${eventId}/teams/${event.target.value}`)}
-                className="form-input !min-h-10 !rounded-xl !py-2 text-sm"
+                className="text-sm"
               >
                 {event.teams.map((eventTeam) => <option key={eventTeam.id} value={eventTeam.id}>{eventTeam.name}</option>)}
-              </select>
-            </div>
+              </Select>
+              </Field>
+            </PageActions>
           )}
-        </div>
-      </header>
+      </PageHeader>
       
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
+        <section className="overflow-hidden rounded-3xl border border-edge bg-surface p-4 shadow-md sm:p-6">
           <div className="divide-y divide-slate-100">
             
             <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="flex items-center gap-2">
+              <div className="layout-cluster">
                 <span>🕐</span>
-                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.startTime')}</span>
+                <span className="text-sm font-semibold text-content">{t('teamModal.fields.startTime')}</span>
               </div>
-              <div className="text-right text-sm font-medium text-slate-900">
+              <div className="text-right text-sm font-medium text-content-strong">
                 {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
               </div>
             </div>
             {(event.kind === 'match' ? event.location : team.location || event.location) && (
               <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-                <div className="flex items-center gap-2">
+                <div className="layout-cluster">
                   <span>📍</span>
-                  <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.locationOptional')}</span>
+                  <span className="text-sm font-semibold text-content">{t('teamModal.fields.locationOptional')}</span>
                 </div>
-                <span className="text-right text-sm font-medium text-slate-900">{event.kind === 'match' ? event.location : team.location || event.location}</span>
+                <span className="text-right text-sm font-medium text-content-strong">{event.kind === 'match' ? event.location : team.location || event.location}</span>
               </div>
             )}
 
             <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="flex items-center gap-2">
+              <div className="layout-cluster">
                 <span>💪</span>
-                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.strength')}</span>
+                <span className="text-sm font-semibold text-content">{t('teamModal.fields.strength')}</span>
               </div>
               <div className="text-sm">
                 <Strength level={team.strength} className="text-xs" />
               </div>
             </div>            
 
-            <button
-              type="button"
-              className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
+            <ListAction
               data-testid="team-responsible-people-row"
               onClick={() => setIsResponsibleModalOpen(true)}
             >
-              <div className="flex items-center gap-2">
+              <div className="layout-cluster">
                 <span>👤</span>
-                <span className="text-sm font-semibold text-slate-700">{t('teamModal.fields.responsiblePeople')}</span>
+                <span className="text-sm font-semibold text-content">{t('teamModal.fields.responsiblePeople')}</span>
               </div>
               {responsiblePeople.length > 0 ? (
-                <div className="text-right text-sm font-medium text-slate-900">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
+                <div className="text-right text-sm font-medium text-content-strong">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
               ) : (
-                <div className="text-right text-sm text-slate-500">{t('teamModal.noTrainerAssigned')}</div>
+                <div className="text-right text-sm text-content-subtle">{t('teamModal.noTrainerAssigned')}</div>
               )}
-            </button>
+            </ListAction>
 
-            <button
-              type="button"
-              className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
+            <ListAction
               data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
             >
-              <div className="flex items-center gap-2">
+              <div className="layout-cluster">
                 <span>👕</span>
-                <span className="text-sm font-semibold text-slate-700">{t('teamDetail.shirtSetLabel')}</span>
+                <span className="text-sm font-semibold text-content">{t('teamDetail.shirtSetLabel')}</span>
               </div>
               {shirtSet ? (
-                <div className="text-right text-sm font-medium text-slate-900">
+                <div className="text-right text-sm font-medium text-content-strong">
                   {shirtSet.sponsor}
                 </div>
               ) : (
-                <div className="text-right text-sm text-slate-500">{t('teamDetail.noShirtSetAssigned')}</div>
+                <div className="text-right text-sm text-content-subtle">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
-            </button>
+            </ListAction>
 
             {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
-              <button
-                type="button"
-                className="flex min-h-12 w-full items-center justify-between gap-4 py-3 text-left transition-colors hover:text-orange-700"
+              <ListAction
                 onClick={() => setIsAssignFormationModalOpen(true)}
               >
-                <div className="flex items-center gap-2">
+                <div className="layout-cluster">
                   <span>🧩</span>
-                  <span className="text-sm font-semibold text-slate-700">{t('teamDetail.formationLabel')}</span>
+                  <span className="text-sm font-semibold text-content">{t('teamDetail.formationLabel')}</span>
                 </div>
-                <span className={`text-right text-sm ${team.formationId ? 'font-medium text-slate-900' : 'text-slate-500'}`}>
+                <span className={`text-right text-sm ${team.formationId ? 'font-medium text-content-strong' : 'text-content-subtle'}`}>
                   {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
                 </span>
-              </button>
+              </ListAction>
             )}
 
             <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="flex items-center gap-2">
+              <div className="layout-cluster">
                 <span>📋</span>
-                <span className="text-sm font-semibold text-slate-700">{t('teamDetail.lineupLabel')}</span>
+                <span className="text-sm font-semibold text-content">{t('teamDetail.lineupLabel')}</span>
               </div>
               <div className="flex flex-wrap justify-end gap-2">
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
-                  <Button className="btn-sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
+                  <Button size="sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
                     {t('teamDetail.planLineupAction')}
                   </Button>
                 )}
@@ -305,32 +300,34 @@ export default function TeamDetailPage() {
           </div>
         </section>
         
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold tracking-tight text-slate-950">
+        <Panel>
+            <PanelHeader>
+              <PanelTitle>
                 {t('domain.players')} ({selectedPlayers.length}/{(event.maxPlayersPerTeam ?? players.length)})
-              </h2>
+              </PanelTitle>
+              <PanelActions>
               <Button 
                 onClick={handleAddPlayers}
                 disabled={!selectionEditState?.canEdit}
-                className='btn-sm'
+                size="sm"
               >
                 {t('common.actions.edit')}
               </Button>
-            </div>
-            {!selectionEditState?.canEdit && <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">{t('teamPlayerSelection.eventPassedWarning')}</p>}
+              </PanelActions>
+            </PanelHeader>
+            {!selectionEditState?.canEdit && <Alert className="mb-4">{t('teamPlayerSelection.eventPassedWarning')}</Alert>}
             
             {selectedPlayers.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">{t('teamDetail.noPlayersSelected')}</div>
+              <EmptyState>{t('teamDetail.noPlayersSelected')}</EmptyState>
             ) : (
-              <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
+              <ListFrame>
                 {selectedPlayers.map(player => {
                   const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player.id);
                   
                   return (
                     <div 
                       key={player.id}
-                      className="relative overflow-hidden bg-white"
+                      className="relative overflow-hidden bg-surface"
                     >
                       {/* Main content */}
                       <div
@@ -342,7 +339,7 @@ export default function TeamDetailPage() {
                         <div className="flex flex-1 items-center gap-2 text-sm">
                           {shirtAssignment && shirtSet && (
                             <span 
-                              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-sm"
+                              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full font-bold text-content-inverse shadow-sm"
                               style={{ 
                                 backgroundColor: shirtSet.color,
                                 fontSize: '10px'
@@ -351,10 +348,10 @@ export default function TeamDetailPage() {
                               {shirtAssignment.shirtNumber}
                             </span>
                           )}
-                          <span className="font-semibold text-slate-900">
+                          <span className="font-semibold text-content-strong">
                             {player.firstName} {player.lastName}
                           </span>
-                          <span className="text-slate-400">
+                          <span className="text-content-disabled">
                             {getBirthYear(player.birthDate)}
                           </span>
                         </div>
@@ -363,12 +360,14 @@ export default function TeamDetailPage() {
                       
                       {/* Delete button that appears on swipe */}
                       <div 
-                        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-red-600 transition-opacity duration-200 ${
+                        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-danger transition-opacity duration-200 ${
                           swipedPlayerId === player.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
                         }`}
                       >
                         <button
-                          className="flex items-center justify-center w-full h-full text-white font-medium text-sm"
+                          type="button"
+                          data-ui-control="composite"
+                          className="flex items-center justify-center w-full h-full text-content-inverse font-medium text-sm"
                           onClick={() => setPlayerToRemove(player.id)}
                         >
                           {t('teamDetail.removeAction')}
@@ -377,9 +376,9 @@ export default function TeamDetailPage() {
                     </div>
                   );
                 })}
-              </div>
+              </ListFrame>
             )}
-        </section>
+        </Panel>
       </div>
       
       <SelectionRemovalDialog
@@ -438,6 +437,6 @@ export default function TeamDetailPage() {
           />}
         </>
       )}
-    </div>
+    </Page>
   );
 }

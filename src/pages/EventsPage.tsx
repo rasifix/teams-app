@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import EventsList from '../components/EventsList';
 import AddEventModal from '../components/AddEventModal';
-import Button from '../components/ui/Button';
+import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle } from '../components/ui';
 import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities } from '../store/selectors/activitySelectors';
 import { useSquad, useTrainers } from '../store';
 import { useAuth } from '../hooks/useAuth';
 import { canAccessRestrictedManagement } from '../utils/permissions';
-import { selectIsSpondLinked } from '../store/selectors/groupSettingsSelectors';
+import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import SpondBadge from '../components/SpondBadge';
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 
@@ -28,41 +28,41 @@ export default function EventsPage() {
   const pastActivities = selectPastActivities(teamActivities);
 
   if (loading) {
-    return <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8"><div className="rounded-2xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-500"><p>{t('events.loading')}</p></div></div>;
+    return <Page><EmptyState><p>{t('events.loading')}</p></EmptyState></Page>;
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{t('events.title')}</h1>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">{t('events.subtitle')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <Page>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>{t('events.title')}</PageTitle>
+          <PageDescription>{t('events.subtitle')}</PageDescription>
+        </PageHeaderContent>
+        <PageActions>
           {canSyncSpond && spondLinked && (
-            <Button className="inline-flex items-center gap-1.5 !rounded-full !bg-slate-100 !text-slate-700 hover:!bg-slate-200" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}>
+            <Button className="gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}>
               <SpondBadge />{t('spondSync.syncAction')}
             </Button>
           )}
-          {!spondLinked && <Button className="!rounded-full !bg-orange-500 hover:!bg-orange-600" variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>}
-        </div>
-      </header>
+          {!spondLinked && <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>}
+        </PageActions>
+      </PageHeader>
 
       <SpondSyncResultBanner className="mb-4" />
-      {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
-      <div className="space-y-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-          <h2 className="mb-5 text-xl font-semibold tracking-tight text-slate-950">{t('events.futureTitle', { count: futureActivities.length })}</h2>
+      {error && <Alert>{error}</Alert>}
+      <div className="layout-stack layout-stack--lg">
+        <Panel>
+          <PanelHeader><PanelTitle>{t('events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
           <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
-        </section>
+        </Panel>
         {pastActivities.length > 0 && (
-          <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_16px_40px_-32px_rgba(15,29,38,.45)] sm:p-6">
-            <h2 className="mb-5 text-xl font-semibold tracking-tight text-slate-950">{t('events.pastTitle', { count: pastActivities.length })}</h2>
+          <Panel>
+            <PanelHeader><PanelTitle>{t('events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
             <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
-          </section>
+          </Panel>
         )}
       </div>
       {!spondLinked && <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />}
-    </div>
+    </Page>
   );
 }

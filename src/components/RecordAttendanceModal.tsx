@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 import type { ActivityAttendance } from '../types';
 import { ATTENDANCE_REASONS, toAttendanceRecords, type AttendanceDialogRow } from '../store/selectors/attendanceSelectors';
 
@@ -46,40 +45,39 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
         </ModalHeader>
         <ModalBody>
           {rows.length === 0 ? (
-            <p className="text-sm text-gray-500">{t('attendance.noSelectedPlayers')}</p>
+            <p className="body-muted">{t('attendance.noSelectedPlayers')}</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="layout-stack layout-stack--sm">
               {rows.map((row) => {
                 const isExcused = row.status === 'excused';
                 return (
                   <li key={row.playerId} data-testid="attendance-row">
                     <div className="flex items-center justify-between gap-3">
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{row.name}</span>
-                      <button
+                      <Button
                         type="button"
+                        variant={isExcused ? 'secondary' : 'success'}
+                        size="sm"
                         role="switch"
                         aria-checked={isExcused}
                         aria-label={`${row.name}: ${t('attendance.status.excused')}`}
                         onClick={() => update(row.playerId, { status: isExcused ? 'present' : 'excused', reason: '' })}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          isExcused ? 'border-amber-500 bg-amber-500 text-white' : 'border-green-600 bg-green-50 text-green-700'
-                        }`}
                       >
                         {t(`attendance.status.${row.status}`)}
-                      </button>
+                      </Button>
                     </div>
                     {isExcused && (
-                      <select
+                      <Select
                         value={row.reason}
                         onChange={(event) => update(row.playerId, { reason: event.target.value as AttendanceDialogRow['reason'] })}
                         aria-label={t('attendance.reasonPlaceholder')}
-                        className="form-input mt-2 text-sm"
+                        className="mt-2 text-sm"
                       >
                         <option value="">{t('attendance.reasonPlaceholder')}</option>
                         {ATTENDANCE_REASONS.map((reason) => (
                           <option key={reason} value={reason}>{t(`attendance.reasons.${reason}`)}</option>
                         ))}
-                      </select>
+                      </Select>
                     )}
                   </li>
                 );

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MatchFormat } from '../types';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 
 export interface MatchFormatFormData {
   name: string;
@@ -119,107 +118,88 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
           <ModalTitle>{isEditing ? t('matchFormatModal.editTitle') : t('matchFormatModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <div className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">{error}</div>
-            )}
+          <div className="layout-stack">
+            {error && <Alert>{error}</Alert>}
 
             {isOfficial && (
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded text-sm">
+              <Alert tone="info">
                 {t('matchFormatModal.officialNotice')}
-              </div>
+              </Alert>
             )}
 
-            <div>
-              <label htmlFor="playing-mode-name" className="form-label">{t('matchFormatModal.fields.name')}</label>
-              <input
+            <Field label={t('matchFormatModal.fields.name')} htmlFor="playing-mode-name">
+              <Input
                 id="playing-mode-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('matchFormatModal.placeholders.name')}
-                className="form-input"
                 autoFocus
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="playing-mode-periods" className="form-label">{t('matchFormatModal.fields.numberOfPeriods')}</label>
-              <input
+            <Field label={t('matchFormatModal.fields.numberOfPeriods')} htmlFor="playing-mode-periods">
+              <Input
                 id="playing-mode-periods"
                 type="number"
                 min={1}
                 value={numberOfPeriods}
                 onChange={(e) => setNumberOfPeriods(parseInt(e.target.value) || 0)}
-                className="form-input"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="playing-mode-length" className="form-label">{t('matchFormatModal.fields.periodLengthMinutes')}</label>
-              <input
+            <Field label={t('matchFormatModal.fields.periodLengthMinutes')} htmlFor="playing-mode-length">
+              <Input
                 id="playing-mode-length"
                 type="number"
                 min={1}
                 value={periodLengthMinutes}
                 onChange={(e) => setPeriodLengthMinutes(parseInt(e.target.value) || 0)}
-                className="form-input"
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="playing-mode-minimum-periods" className="form-label">
-                {t('matchFormatModal.fields.minimumPeriodsPerPlayer')}
-              </label>
-              <input
+            <Field label={t('matchFormatModal.fields.minimumPeriodsPerPlayer')} htmlFor="playing-mode-minimum-periods" hint={t('matchFormatModal.hints.minimumPeriodsPerPlayer')}>
+              <Input
                 id="playing-mode-minimum-periods"
                 type="number"
                 min={0}
                 max={numberOfPeriods}
                 value={minimumPeriodsPerPlayer}
                 onChange={(e) => setMinimumPeriodsPerPlayer(parseInt(e.target.value) || 0)}
-                className="form-input"
               />
-              <p className="mt-1 text-xs text-gray-500">{t('matchFormatModal.hints.minimumPeriodsPerPlayer')}</p>
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="playing-mode-on-field" className="form-label">{t('matchFormatModal.fields.playersOnField')}</label>
-              <input
+            <Field label={t('matchFormatModal.fields.playersOnField')} htmlFor="playing-mode-on-field">
+              <Input
                 id="playing-mode-on-field"
                 type="number"
                 min={1}
                 value={playersOnField}
                 onChange={(e) => setPlayersOnField(e.target.value)}
-                className="form-input"
               />
-            </div>
+            </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="playing-mode-min-players" className="form-label">{t('matchFormatModal.fields.minPlayersPerTeam')}</label>
-                <input
+              <Field label={t('matchFormatModal.fields.minPlayersPerTeam')} htmlFor="playing-mode-min-players">
+                <Input
                   id="playing-mode-min-players"
                   type="number"
                   min={1}
                   value={minPlayersPerTeam}
                   onChange={(e) => setMinPlayersPerTeam(e.target.value)}
-                  className="form-input"
                 />
-              </div>
-              <div>
-                <label htmlFor="playing-mode-max-players" className="form-label">{t('matchFormatModal.fields.maxPlayersPerTeam')}</label>
-                <input
+              </Field>
+              <Field label={t('matchFormatModal.fields.maxPlayersPerTeam')} htmlFor="playing-mode-max-players">
+                <Input
                   id="playing-mode-max-players"
                   type="number"
                   min={1}
                   value={maxPlayersPerTeam}
                   onChange={(e) => setMaxPlayersPerTeam(e.target.value)}
-                  className="form-input"
                 />
-              </div>
+              </Field>
             </div>
-            <p className="-mt-2 text-xs text-gray-500">{t('matchFormatModal.hints.playerLimits')}</p>
+            <p className="-mt-2 text-xs text-content-subtle">{t('matchFormatModal.hints.playerLimits')}</p>
           </div>
         </ModalBody>
         <ModalFooter>

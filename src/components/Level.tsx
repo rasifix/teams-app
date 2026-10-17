@@ -14,7 +14,7 @@ export default function Level({ level, className = '' }: LevelProps) {
   const stars = '★'.repeat(normalizedLevel);
   
   return (
-    <span className={`text-yellow-500 ${className}`} title={t('levels.title', { level: normalizedLevel })}>
+    <span className={`text-warning ${className}`} title={t('levels.title', { level: normalizedLevel })}>
       {stars}
     </span>
   );

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Button, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 
 interface AssignmentOption {
   value: string;
@@ -52,19 +51,19 @@ export default function AssignTeamPropertyModal({
           <ModalTitle>{title}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <label htmlFor="team-property-assignment" className="form-label">{label}</label>
-          <select
+          <Field label={label} htmlFor="team-property-assignment">
+          <Select
             id="team-property-assignment"
             value={selectedValue}
             onChange={(event) => setSelectedValue(event.target.value)}
-            className="form-input"
             autoFocus
           >
             <option value="">{emptyOptionLabel}</option>
             {options.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
-          </select>
+          </Select>
+          </Field>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">

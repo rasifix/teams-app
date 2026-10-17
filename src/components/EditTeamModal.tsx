@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
-import Button from './ui/Button';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
 
 interface EditTeamModalProps {
   isOpen: boolean;
@@ -54,65 +53,49 @@ export default function EditTeamModal({
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="teamName" className="form-label">
-                {t('teamModal.fields.teamName')}
-              </label>
-              <input
+          <div className="layout-stack">
+            <Field label={t('teamModal.fields.teamName')} htmlFor="teamName">
+              <Input
                 type="text"
                 id="teamName"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 required
-                className="form-input"
                 placeholder={t('teamModal.placeholders.teamName')}
                 autoFocus
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="strength" className="form-label">
-                {t('teamModal.fields.strength')}
-              </label>
-              <select
+            <Field label={t('teamModal.fields.strength')} htmlFor="strength">
+              <Select
                 id="strength"
                 value={strength}
                 onChange={(e) => setStrength(parseInt(e.target.value))}
-                className="form-input"
               >
                 <option value={1}>{t('teamModal.strength.highest')}</option>
                 <option value={2}>{t('teamModal.strength.medium')}</option>
                 <option value={3}>{t('teamModal.strength.lowest')}</option>
-              </select>
-            </div>
+              </Select>
+            </Field>
 
-            {showActivityOverrides && <div>
-              <label htmlFor="startTime" className="form-label">
-                {t('teamModal.fields.startTime')}
-              </label>
-              <input
+            {showActivityOverrides && <Field label={t('teamModal.fields.startTime')} htmlFor="startTime">
+              <Input
                 type="time"
                 id="startTime"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="form-input"
               />
-            </div>}
+            </Field>}
 
-            {showActivityOverrides && <div>
-              <label htmlFor="location" className="form-label">
-                {t('teamModal.fields.locationOptional')}
-              </label>
-              <input
+            {showActivityOverrides && <Field label={t('teamModal.fields.locationOptional')} htmlFor="location">
+              <Input
                 type="text"
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="form-input"
                 placeholder={t('teamModal.placeholders.location')}
               />
-            </div>}
+            </Field>}
           </div>
         </ModalBody>
 

@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Formation, FormationSlot, PositionCode } from '../types';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Alert, Button, Field, FieldLegend, IconButton, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 import { POSITION_CODES, getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
 
 interface FormationSlotDraft {
@@ -96,34 +95,31 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
           <ModalTitle>{isEditing ? t('formationModal.editTitle') : t('formationModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <div className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">{error}</div>
-            )}
+          <div className="layout-stack">
+            {error && <Alert>{error}</Alert>}
 
-            <div>
-              <label htmlFor="formation-name" className="form-label">{t('formationModal.fields.name')}</label>
-              <input
+            <Field label={t('formationModal.fields.name')} htmlFor="formation-name">
+              <Input
                 id="formation-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('formationModal.placeholders.name')}
-                className="form-input"
                 autoFocus
               />
-            </div>
+            </Field>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="form-label mb-0">{t('formationModal.fields.slots')}</span>
-                <button
+                <FieldLegend className="mb-0">{t('formationModal.fields.slots')}</FieldLegend>
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={handleAddSlot}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
                   + {t('formationModal.addSlot')}
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-2">
@@ -131,31 +127,30 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                   const draftId = slot.id ?? `draft-${index}`;
                   const displayIndex = displayIndexes.get(draftId);
                   return (
-                    <div key={draftId} className="flex items-center gap-2">
-                      <select
+                    <div key={draftId} className="layout-cluster">
+                      <Select
                         value={slot.positionCode}
                         onChange={(e) => handleSlotChange(index, e.target.value as PositionCode)}
-                        className="form-input flex-1"
+                        className="flex-1"
                       >
                         {POSITION_CODES.map((code) => (
                           <option key={code} value={code}>
                             {t(getPositionLabelKey(code))}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                       {displayIndex !== null && displayIndex !== undefined && (
-                        <span className="text-xs text-gray-500 w-6 text-center">{displayIndex}</span>
+                        <span className="text-xs text-content-subtle w-6 text-center">{displayIndex}</span>
                       )}
-                      <button
-                        type="button"
+                      <IconButton
+                        variant="danger"
+                        label={t('formationModal.removeSlot')}
                         onClick={() => handleRemoveSlot(index)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                        title={t('formationModal.removeSlot')}
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </button>
+                      </IconButton>
                     </div>
                   );
                 })}

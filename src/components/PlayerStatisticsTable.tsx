@@ -157,7 +157,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-surface">
+              <tbody className="divide-y divide-edge bg-surface">
                 {filteredPlayerStats.map((stat) => (
                   <tr 
                     key={stat.player.id} 

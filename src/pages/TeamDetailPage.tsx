@@ -207,7 +207,7 @@ export default function TeamDetailPage() {
       
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
         <section className="overflow-hidden rounded-3xl border border-edge bg-surface p-4 shadow-md sm:p-6">
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-edge">
             
             <div className="flex min-h-12 items-center justify-between gap-4 py-3">
               <div className="layout-cluster">

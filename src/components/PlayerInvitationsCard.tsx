@@ -56,7 +56,7 @@ export default function PlayerInvitationsCard({
         </Tab>;
       })}
     </TabList>
-    {visibleInvitations.length === 0 ? <EmptyState className="mt-3">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</EmptyState> : <ul className="mt-3 divide-y divide-slate-100">
+    {visibleInvitations.length === 0 ? <EmptyState className="mt-3">{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</EmptyState> : <ul className="mt-3 divide-y divide-edge">
       {visibleInvitations.map((invitation) => {
         const player = players.find((entry) => entry.id === invitation.playerId);
         const assigned = assignedPlayerIds.includes(invitation.playerId);

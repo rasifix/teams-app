@@ -121,15 +121,7 @@ export default function EventDetailPage() {
       <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
         <div className="min-w-0 flex-1">
           <div className="layout-cluster layout-cluster--wrap">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/events/${activity.id}/teams/${team.id}`)}
-              aria-label={t('events.openTeamDetails', { team: team.name })}
-            >
-              {team.name}
-            </Button>
+            {team.name}
             <Strength level={team.strength || 2} className="text-xs" />
             <Badge>👥 {selectedPlayers.length}/{activity.maxPlayersPerTeam ?? players.length}</Badge>
             {selectedPlayers.length > 0 && <Badge>⭐ {getTeamAverageLevel(team).toFixed(1)}</Badge>}
@@ -152,7 +144,7 @@ export default function EventDetailPage() {
         </IconButton>
       </div>
       <div className="border-t border-edge bg-surface px-4 py-2 sm:px-5">
-        {selectedPlayers.length > 0 ? <ul className="divide-y divide-slate-100">
+        {selectedPlayers.length > 0 ? <ul className="divide-y divide-edge">
           {selectedPlayers.map((player) => {
             const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
             return <li key={player.id} className="flex h-10 items-center gap-2 text-sm text-content">
@@ -167,7 +159,7 @@ export default function EventDetailPage() {
   };
 
   return <Page>
-    <div className="mb-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-edge pb-4 text-sm">
+    <div className="mb-5 flex items-center justify-between gap-3 border-b border-edge pb-4 text-sm">
         {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${previous.id}`)} className="min-w-0 truncate">← {previous.name}</Button> : <span />}
         <span className="hidden text-eyebrow font-bold uppercase tracking-label text-content-disabled sm:block">{t('eventDetail.navigationLabel')}</span>
         {next ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${next.id}`)} className="min-w-0 truncate">{next.name} →</Button> : <span />}

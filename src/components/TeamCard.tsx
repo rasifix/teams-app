@@ -112,14 +112,7 @@ export default function TeamCard({
         <div className="flex items-center flex-1 min-w-0">
           <div className="flex-1">
           <h3 className="font-semibold text-content-strong flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenTeam(team.id)}
-            >
-              {team.name}
-            </Button>
+            {team.name}
             <Strength level={team.strength || 2} className="text-xs" /> 
           </h3>
           <p className="body-muted">

@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
-import Button from './ui/Button';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
 
 interface UnsavedLineupDialogProps {
   isOpen: boolean;

@@ -19,5 +19,13 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/ui/*'],
+          message: 'Import UI components from the public components/ui barrel instead of implementation files.',
+        }],
+      }],
+    },
   },
 ])

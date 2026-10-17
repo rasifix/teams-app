@@ -185,7 +185,7 @@ export default function MembersGuardiansPage() {
             </div>
 
             <div className="hidden overflow-x-auto rounded-2xl border border-edge md:block">
-              <table className="min-w-full divide-y divide-slate-200">
+              <table className="min-w-full divide-y divide-edge">
                 <thead className="bg-surface-subtle">
                   <tr>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-content-subtle">
@@ -204,7 +204,7 @@ export default function MembersGuardiansPage() {
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-surface">
+                <tbody className="divide-y divide-edge bg-surface">
                   {guardians.map((row) => (
                     <tr key={row.guardian.id} className="transition-colors hover:bg-surface-subtle">
                       <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-content-strong">

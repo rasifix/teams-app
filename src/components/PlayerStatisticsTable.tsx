@@ -103,7 +103,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
 
   return (
     <Panel padding="none">
-      <div className="p-4 sm:p-5">
+      <div className="statistics-controls">
         <LevelRangeSelector
           defaultRange={levelRange}
           onChange={setLevelRange}
@@ -111,16 +111,16 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
       </div>
 
         {filteredPlayerStats.length === 0 ? (
-          <div className="border-t border-edge px-4 py-12 text-center text-sm text-content-subtle">
+          <div className="statistics-empty-section">
             <p>{t('statistics.playerTable.emptyState')}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto border-t border-edge">
-            <table className="min-w-full">
-              <thead className="hidden bg-surface-subtle md:table-header-group">
+          <div className="statistics-scroll">
+            <table className="player-stats-table">
+              <thead className="player-stats-head">
                 <tr>
                   <th 
-                    className="cursor-pointer px-5 py-3 text-left text-eyebrow font-bold uppercase tracking-wide text-content-subtle transition hover:bg-surface-muted"
+                    className="player-stats-name-heading"
                     onClick={() => handleSort('name')}
                   >
                     {t('domain.player')}{getSortIndicator('name')}
@@ -157,55 +157,55 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-edge bg-surface">
+              <tbody className="player-stats-body">
                 {filteredPlayerStats.map((stat) => (
                   <tr 
                     key={stat.player.id} 
-                    className="cursor-pointer transition hover:bg-surface-subtle"
+                    className="player-stats-row"
                     onClick={() => handlePlayerClick(stat.player.id)}
                   >
                     {/* Desktop view */}
-                    <td className="hidden whitespace-nowrap px-5 py-3.5 md:table-cell">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-content-strong">
+                    <td className="player-stats-desktop-cell">
+                      <div className="player-stats-player">
                         <span>{stat.player.firstName} {stat.player.lastName}</span>
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-content-muted md:table-cell">
+                    <td className="player-stats-desktop-cell">
                       {stat.invitedCount}
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-content-muted md:table-cell">
+                    <td className="player-stats-desktop-cell">
                       {stat.acceptedCount}
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm md:table-cell">
-                      <span className="font-semibold text-content-strong">{stat.selectedCount}</span>
+                    <td className="player-stats-desktop-cell player-stats-desktop-cell--strong">
+                      {stat.selectedCount}
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-content-muted md:table-cell">
+                    <td className="player-stats-desktop-cell">
                       {stat.acceptanceRate.toFixed(0)}%
                     </td>
-                    <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-content-muted md:table-cell">
+                    <td className="player-stats-desktop-cell">
                       {stat.selectionRate.toFixed(0)}%
                     </td>
                     
                     {/* Mobile view */}
-                    <td className="px-4 py-4 md:hidden" colSpan={6}>
-                      <div className="mb-3 flex items-center justify-center text-sm font-semibold text-content-strong">
+                    <td className="player-stats-mobile-cell" colSpan={6}>
+                      <div className="player-stats-mobile-player">
                         {stat.player.firstName} {stat.player.lastName}{' '}
-                        <span className="mx-2 text-xs font-normal text-content-disabled">{getBirthYear(stat.player.birthDate)}</span>{' '}
+                        <span className="player-stats-birth-year">{getBirthYear(stat.player.birthDate)}</span>{' '}
                         <Level level={stat.player.level} className="text-xs" />
                       </div>
-                      <div className="grid grid-cols-3 gap-2 rounded-2xl bg-surface-subtle p-3 text-xs">
-                        <div className="text-center">
-                          <div className="font-semibold text-content-strong">{stat.invitedCount}</div>
-                          <div className="mt-0.5 text-content-subtle">{t('statistics.playerTable.invited')}</div>
+                      <div className="player-stats-mobile-metrics">
+                        <div className="player-stats-metric">
+                          <div className="player-stats-metric-value">{stat.invitedCount}</div>
+                          <div className="player-stats-metric-label">{t('statistics.playerTable.invited')}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-semibold text-content-strong">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
-                          <div className="mt-0.5 text-content-subtle">{t('statistics.playerTable.accepted')}</div>
+                        <div className="player-stats-metric">
+                          <div className="player-stats-metric-value">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
+                          <div className="player-stats-metric-label">{t('statistics.playerTable.accepted')}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-semibold text-success">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
-                          <div className="mt-0.5 text-content-subtle">{t('statistics.playerTable.selected')}</div>
+                        <div className="player-stats-metric">
+                          <div className="player-stats-metric-value player-stats-metric-value--success">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
+                          <div className="player-stats-metric-label">{t('statistics.playerTable.selected')}</div>
                         </div>
                       </div>
                     </td>

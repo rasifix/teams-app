@@ -8,7 +8,7 @@ import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from 
 import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEvents } from '../store/selectors/homeSelectors';
 import type { CreateSquadRequest } from '../types';
-import { Alert, Button, ChevronRightIcon, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from '../components/ui';
+import { Alert, Button, ButtonLink, ChevronRightIcon, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from '../components/ui';
 
 const featureIcons = [
   <svg key="members" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -92,35 +92,35 @@ export default function HomePage() {
         </PageHeaderContent>
         {!isAuthenticated && (
           <PageActions>
-            <Link to="/login" className="inline-flex h-10 items-center justify-center rounded-full border border-edge bg-surface px-5 text-sm font-semibold text-content shadow-sm transition hover:border-edge-strong hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-brand">
+            <ButtonLink to="/login" variant="secondary">
               {t('auth.login')}
-            </Link>
-            <Link to="/login?register=true" className="inline-flex h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-content-inverse shadow-sm transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
+            </ButtonLink>
+            <ButtonLink to="/login?register=true">
               {t('auth.register')}
-            </Link>
+            </ButtonLink>
           </PageActions>
         )}
       </PageHeader>
 
       {!isAuthenticated ? (
-        <section className="grid gap-4 py-7 sm:grid-cols-3 sm:py-8" aria-label={t('home.featuresLabel')}>
+        <section className="home-feature-grid" aria-label={t('home.featuresLabel')}>
           {features.map((feature, index) => (
-            <article key={feature.title} className="group rounded-3xl border border-edge bg-surface p-6 shadow-md transition duration-300 hover:-translate-y-1 hover:border-brand-border hover:shadow-lg">
-              <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-subtle text-brand-text transition group-hover:bg-brand group-hover:text-content-inverse">
+            <article key={feature.title} className="home-feature-card">
+              <div className="home-feature-icon">
                 <span className="icon-md">{featureIcons[index]}</span>
               </div>
-              <h2 className="text-lg font-semibold tracking-tight text-content-strong">{feature.title}</h2>
+              <h2 className="home-feature-title">{feature.title}</h2>
               <p className="supporting-text">{feature.description}</p>
             </article>
           ))}
         </section>
       ) : (
-        <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,.85fr)] lg:py-10">
+        <div className="home-dashboard-grid">
           <section>
-            <div className="mb-5 flex items-end justify-between gap-4">
+            <div className="home-section-header">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-label text-brand-text">{t('home.scheduleLabel')}</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-content-strong">{t('home.upcomingEvents.title')}</h2>
+                <p className="home-section-eyebrow">{t('home.scheduleLabel')}</p>
+                <h2 className="home-section-title">{t('home.upcomingEvents.title')}</h2>
               </div>
               <Link to="/events" className="text-link">
                 {t('home.upcomingEvents.viewAll')}
@@ -135,20 +135,20 @@ export default function HomePage() {
           </section>
 
           <section>
-            <div className="mb-5 flex items-end justify-between gap-4">
+            <div className="home-section-header">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-label text-brand-text">{t('home.manageLabel')}</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-content-strong">{t('squads.title')}</h2>
+                <p className="home-section-eyebrow">{t('home.manageLabel')}</p>
+                <h2 className="home-section-title">{t('squads.title')}</h2>
               </div>
               <Button type="button" variant="secondary" onClick={() => setIsAddModalOpen(true)}>
                 <span className="text-lg leading-none" aria-hidden="true">+</span> {t('squads.createNew')}
               </Button>
             </div>
 
-            {squadsLoading && <div className="rounded-3xl border border-edge bg-surface p-6 text-content-muted shadow-sm">{t('squads.loading')}</div>}
+            {squadsLoading && <div className="home-loading-card">{t('squads.loading')}</div>}
             {!squadsLoading && squadsError && <Alert>{t('squads.errors.loadFailedWithReason', { error: squadsError })}</Alert>}
             {!squadsLoading && !squadsError && (
-              <div className="grid grid-cols-1 gap-3">
+              <div className="home-squad-list">
                 {squads.map((squadItem) => {
                   const isCurrentSquad = squad?.id === squadItem.id;
                   const isSwitching = switchingSquadId === squadItem.id;
@@ -159,22 +159,22 @@ export default function HomePage() {
                       onClick={() => handleSquadSwitch(squadItem.id)}
                       disabled={isCurrentSquad || !!switchingSquadId}
                       key={squadItem.id}
-                      className={`group relative flex items-start gap-3 overflow-hidden rounded-2xl border p-4 text-left transition duration-300 focus:outline-none focus:ring-2 focus:ring-brand ${isCurrentSquad ? 'border-edge-strong bg-control-strong text-content-inverse shadow-lg' : 'border-edge bg-surface text-content-strong hover:-translate-y-0.5 hover:border-brand-border hover:shadow-lg'}`}
+                      className={`home-squad-card${isCurrentSquad ? ' home-squad-card--current' : ''}`}
                     >
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isCurrentSquad ? 'bg-inverse-overlay/10 text-brand-inverse' : 'bg-brand-subtle text-brand-text'}`}>
+                      <span className="home-squad-icon">
                         <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 19a5 5 0 0 1 10 0M13 19a4 4 0 0 1 8 0" />
                         </svg>
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold tracking-tight">{squadItem.name}</p>
-                        <div className={`mt-0.5 flex flex-wrap gap-x-3 text-sm ${isCurrentSquad ? 'text-content-disabled' : 'text-content-subtle'}`}>
+                        <div className="home-squad-meta">
                           {squadItem.club && <span>{t('squads.clubLabel', { club: squadItem.club })}</span>}
                           {squadItem.category && <span>{t('squads.categoryLabel', { category: squadItem.category })}</span>}
                         </div>
                         {isSwitching && <p className="mt-1 text-xs text-content-subtle">{t('squads.switching')}</p>}
                       </div>
-                      {isCurrentSquad && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-brand shadow-brand-halo" />}
+                      {isCurrentSquad && <span className="home-current-indicator" />}
                     </button>
                   );
                 })}

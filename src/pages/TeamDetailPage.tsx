@@ -184,13 +184,13 @@ export default function TeamDetailPage() {
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="team-detail-title">
               <PageTitle>{team.name}</PageTitle>
               <Strength level={team.strength} className="text-sm" />
             </div>
           </PageHeaderContent>
           {event.teams.length > 1 && (
-            <PageActions className="w-full sm:w-auto sm:min-w-56">
+            <PageActions className="team-detail-switcher">
               <Field label={t('teamDetail.switchTeam')} htmlFor="team-switcher" className="w-full">
               <Select
                 id="team-switcher"
@@ -205,33 +205,33 @@ export default function TeamDetailPage() {
           )}
       </PageHeader>
       
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-        <section className="overflow-hidden rounded-3xl border border-edge bg-surface p-4 shadow-md sm:p-6">
-          <div className="divide-y divide-edge">
+      <div className="team-detail-grid">
+        <section className="team-detail-summary">
+          <div className="team-detail-list">
             
-            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="layout-cluster">
+            <div className="team-detail-row">
+              <div className="team-detail-label">
                 <span>🕐</span>
-                <span className="text-sm font-semibold text-content">{t('teamModal.fields.startTime')}</span>
+                <span>{t('teamModal.fields.startTime')}</span>
               </div>
-              <div className="text-right text-sm font-medium text-content-strong">
+              <div className="team-detail-value">
                 {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
               </div>
             </div>
             {(event.kind === 'match' ? event.location : team.location || event.location) && (
-              <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-                <div className="layout-cluster">
+              <div className="team-detail-row">
+                <div className="team-detail-label">
                   <span>📍</span>
-                  <span className="text-sm font-semibold text-content">{t('teamModal.fields.locationOptional')}</span>
+                  <span>{t('teamModal.fields.locationOptional')}</span>
                 </div>
-                <span className="text-right text-sm font-medium text-content-strong">{event.kind === 'match' ? event.location : team.location || event.location}</span>
+                <span className="team-detail-value">{event.kind === 'match' ? event.location : team.location || event.location}</span>
               </div>
             )}
 
-            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="layout-cluster">
+            <div className="team-detail-row">
+              <div className="team-detail-label">
                 <span>💪</span>
-                <span className="text-sm font-semibold text-content">{t('teamModal.fields.strength')}</span>
+                <span>{t('teamModal.fields.strength')}</span>
               </div>
               <div className="text-sm">
                 <Strength level={team.strength} className="text-xs" />
@@ -242,14 +242,14 @@ export default function TeamDetailPage() {
               data-testid="team-responsible-people-row"
               onClick={() => setIsResponsibleModalOpen(true)}
             >
-              <div className="layout-cluster">
+              <div className="team-detail-label">
                 <span>👤</span>
-                <span className="text-sm font-semibold text-content">{t('teamModal.fields.responsiblePeople')}</span>
+                <span>{t('teamModal.fields.responsiblePeople')}</span>
               </div>
               {responsiblePeople.length > 0 ? (
-                <div className="text-right text-sm font-medium text-content-strong">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
+                <div className="team-detail-value">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
               ) : (
-                <div className="text-right text-sm text-content-subtle">{t('teamModal.noTrainerAssigned')}</div>
+                <div className="team-detail-value team-detail-value--muted">{t('teamModal.noTrainerAssigned')}</div>
               )}
             </ListAction>
 
@@ -257,16 +257,16 @@ export default function TeamDetailPage() {
               data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
             >
-              <div className="layout-cluster">
+              <div className="team-detail-label">
                 <span>👕</span>
-                <span className="text-sm font-semibold text-content">{t('teamDetail.shirtSetLabel')}</span>
+                <span>{t('teamDetail.shirtSetLabel')}</span>
               </div>
               {shirtSet ? (
-                <div className="text-right text-sm font-medium text-content-strong">
+                <div className="team-detail-value">
                   {shirtSet.sponsor}
                 </div>
               ) : (
-                <div className="text-right text-sm text-content-subtle">{t('teamDetail.noShirtSetAssigned')}</div>
+                <div className="team-detail-value team-detail-value--muted">{t('teamDetail.noShirtSetAssigned')}</div>
               )}
             </ListAction>
 
@@ -274,22 +274,22 @@ export default function TeamDetailPage() {
               <ListAction
                 onClick={() => setIsAssignFormationModalOpen(true)}
               >
-                <div className="layout-cluster">
+                <div className="team-detail-label">
                   <span>🧩</span>
-                  <span className="text-sm font-semibold text-content">{t('teamDetail.formationLabel')}</span>
+                  <span>{t('teamDetail.formationLabel')}</span>
                 </div>
-                <span className={`text-right text-sm ${team.formationId ? 'font-medium text-content-strong' : 'text-content-subtle'}`}>
+                <span className={`team-detail-value${team.formationId ? '' : ' team-detail-value--muted'}`}>
                   {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
                 </span>
               </ListAction>
             )}
 
-            <div className="flex min-h-12 items-center justify-between gap-4 py-3">
-              <div className="layout-cluster">
+            <div className="team-detail-row">
+              <div className="team-detail-label">
                 <span>📋</span>
-                <span className="text-sm font-semibold text-content">{t('teamDetail.lineupLabel')}</span>
+                <span>{t('teamDetail.lineupLabel')}</span>
               </div>
-              <div className="flex flex-wrap justify-end gap-2">
+              <div className="team-detail-actions">
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
                   <Button size="sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
                     {t('teamDetail.planLineupAction')}
@@ -327,31 +327,28 @@ export default function TeamDetailPage() {
                   return (
                     <div 
                       key={player.id}
-                      className="relative overflow-hidden bg-surface"
+                      className="team-player-row"
                     >
                       {/* Main content */}
                       <div
-                        className={`flex items-center justify-between px-4 py-3.5 transition-transform duration-200 ${
-                          swipedPlayerId === player.id ? '-translate-x-20' : 'translate-x-0'
-                        }`}
+                        className={`team-player-main${swipedPlayerId === player.id ? ' team-player-main--swiped' : ''}`}
                         onTouchStart={(e) => selectionEditState?.canEdit && handleTouchStart(player.id, e)}
                       >
-                        <div className="flex flex-1 items-center gap-2 text-sm">
+                        <div className="team-player-identity">
                           {shirtAssignment && shirtSet && (
                             <span 
-                              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full font-bold text-content-inverse shadow-sm"
+                              className="team-player-shirt"
                               style={{ 
-                                backgroundColor: shirtSet.color,
-                                fontSize: '10px'
+                                backgroundColor: shirtSet.color
                               }}
                             >
                               {shirtAssignment.shirtNumber}
                             </span>
                           )}
-                          <span className="font-semibold text-content-strong">
+                          <span className="team-player-name">
                             {player.firstName} {player.lastName}
                           </span>
-                          <span className="text-content-disabled">
+                          <span className="team-player-year">
                             {getBirthYear(player.birthDate)}
                           </span>
                         </div>
@@ -360,14 +357,12 @@ export default function TeamDetailPage() {
                       
                       {/* Delete button that appears on swipe */}
                       <div 
-                        className={`absolute inset-y-0 right-0 flex items-center justify-center w-20 bg-danger transition-opacity duration-200 ${
-                          swipedPlayerId === player.id ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                        }`}
+                        className={`team-player-remove-tray${swipedPlayerId === player.id ? ' team-player-remove-tray--visible' : ''}`}
                       >
                         <button
                           type="button"
                           data-ui-control="composite"
-                          className="flex items-center justify-center w-full h-full text-content-inverse font-medium text-sm"
+                          className="team-player-remove-button"
                           onClick={() => setPlayerToRemove(player.id)}
                         >
                           {t('teamDetail.removeAction')}

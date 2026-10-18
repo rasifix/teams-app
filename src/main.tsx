@@ -4,6 +4,7 @@ import './index.css'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/recipes.css'
+import './styles/features.css'
 import App from './App.tsx'
 import './i18n/config'
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
-import { Alert, Badge, Button, ButtonLink, EmptyState, Field, getButtonClassName, IconButton, ListFrame, ListRow, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelTitle, Select, Switch } from '../components/ui';
+import { Alert, Badge, Button, ButtonLink, EmptyState, Field, getButtonClassName, IconButton, ListFrame, ListRow, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Switch } from '../components/ui';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
@@ -143,16 +143,16 @@ export default function SquadSettingsPage() {
         </PageHeaderContent>
       </PageHeader>
 
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-        <div className="space-y-5">
+      <div className="settings-grid">
+        <div className="settings-column">
           <Panel>
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-subtle text-brand-text ring-1 ring-brand-muted">
+            <div className="settings-intro">
+              <div className="settings-icon settings-icon--brand">
                 <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 12.75 10.5 15l5.25-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="settings-intro-content">
                 <PanelTitle>{t('squadSettings.spond.title')}</PanelTitle>
                 <p className="field-help">{t('squadSettings.spond.description')}</p>
               </div>
@@ -182,9 +182,9 @@ export default function SquadSettingsPage() {
           </Panel>
 
           <Panel>
-            <div className="mb-5 flex items-start justify-between gap-4">
-              <div className="flex min-w-0 items-start gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-info-subtle text-info-text ring-1 ring-info-border">
+            <PanelHeader>
+              <div className="settings-intro">
+                <div className="settings-icon settings-icon--info">
                   <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 9.75h16.5m-15-4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z" />
                   </svg>
@@ -203,7 +203,7 @@ export default function SquadSettingsPage() {
               >
                 {t('squadSettings.periods.add')}
               </Button>
-            </div>
+            </PanelHeader>
             {periods.length === 0 ? (
               <EmptyState>{t('squadSettings.periods.empty')}</EmptyState>
             ) : (
@@ -233,10 +233,10 @@ export default function SquadSettingsPage() {
           </Panel>
         </div>
 
-        <div className="space-y-5">
+        <div className="settings-column">
           <Panel>
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent-subtle text-accent-text ring-1 ring-accent-border">
+            <div className="settings-intro">
+              <div className="settings-icon settings-icon--accent">
                 <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75c-4.5 0-8.25 2.1-8.25 4.5S7.5 12.75 12 12.75s8.25-2.1 8.25-4.5S16.5 3.75 12 3.75Zm-8.25 4.5v7.5c0 2.4 3.75 4.5 8.25 4.5s8.25-2.1 8.25-4.5v-7.5" />
                 </svg>
@@ -246,7 +246,7 @@ export default function SquadSettingsPage() {
                 <p className="field-help">{t('matchPlanning.category.description')}</p>
               </div>
             </div>
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="settings-category-form">
               <Field className="flex-1" label={t('matchPlanning.category.label')} htmlFor="squad-category">
                 <Select
                   id="squad-category"
@@ -286,9 +286,9 @@ export default function SquadSettingsPage() {
           </Panel>
 
           <Panel>
-            <div className="flex items-start justify-between gap-5">
-              <div className="flex min-w-0 items-start gap-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-success-subtle text-success-text ring-1 ring-success-border">
+            <div className="settings-intro settings-intro--split">
+              <div className="settings-intro">
+                <div className="settings-icon settings-icon--success">
                   <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-18v18M3 12h18M5.64 5.64l12.72 12.72m0-12.72L5.64 18.36" />
                   </svg>
@@ -316,9 +316,9 @@ export default function SquadSettingsPage() {
       </div>
 
       {matchPlanningEnabled && (
-        <div className="mt-5 grid gap-5 lg:grid-cols-2 lg:items-start">
+        <div className="settings-grid settings-grid--secondary">
           <Panel>
-              <div className="mb-5 flex items-center justify-between gap-4">
+              <PanelHeader>
                 <PanelTitle>{t('matchPlanning.matchFormats.title')}</PanelTitle>
                 <Button
                   variant="primary"
@@ -330,7 +330,7 @@ export default function SquadSettingsPage() {
                 >
                   {t('common.actions.add')}
                 </Button>
-              </div>
+              </PanelHeader>
 
               {matchFormats.length === 0 ? (
                 <EmptyState>{t('matchPlanning.matchFormats.emptyState')}</EmptyState>
@@ -376,7 +376,7 @@ export default function SquadSettingsPage() {
                           })}
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-1">
+                      <div className="settings-list-actions">
                         {!matchFormat.isDefault && (
                           <Button
                             variant="ghost"
@@ -415,7 +415,7 @@ export default function SquadSettingsPage() {
           </Panel>
 
           <Panel>
-              <div className="mb-5 flex items-center justify-between gap-4">
+              <PanelHeader>
                 <PanelTitle>{t('matchPlanning.formations.title')}</PanelTitle>
                 <Button
                   variant="primary"
@@ -427,7 +427,7 @@ export default function SquadSettingsPage() {
                 >
                   {t('common.actions.add')}
                 </Button>
-              </div>
+              </PanelHeader>
 
               {formations.length === 0 ? (
                 <EmptyState>{t('matchPlanning.formations.emptyState')}</EmptyState>
@@ -440,7 +440,7 @@ export default function SquadSettingsPage() {
                         <div className="w-full">
                         <div className="layout-split">
                           <span className="font-semibold text-content-strong">{formation.name}</span>
-                          <div className="flex items-center gap-1">
+                          <div className="settings-list-actions">
                             <IconButton
                               label={t('common.actions.edit')}
                               onClick={() => {
@@ -463,7 +463,7 @@ export default function SquadSettingsPage() {
                             </IconButton>
                           </div>
                         </div>
-                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                        <div className="settings-formation-slots">
                           {formation.slots.map((slot) => {
                             const displayIndex = displayIndexes.get(slot.id);
                             return (

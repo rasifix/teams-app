@@ -7,7 +7,7 @@ import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import Strength from './Strength';
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Tab, TabList } from './ui';
+import { Button, EmptyState, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Tab, TabList } from './ui';
 
 interface TeamSelectionMatrixProps {
   players: Player[];
@@ -64,7 +64,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (players.length === 0 || events.length === 0) {
     return (
-      <section className="rounded-3xl border border-edge bg-surface px-4 py-12 text-center text-sm text-content-subtle shadow-md">
+      <section className="selection-matrix-empty">
         <p>{t('statistics.teamSelections.noData')}</p>
       </section>
     );
@@ -72,12 +72,12 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (matrixColumns.length === 0) {
     return (
-      <section className="rounded-3xl border border-edge bg-surface p-4 shadow-md sm:p-5">
+      <Panel padding="none" className="statistics-controls">
           <LevelRangeSelector
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-content">
+          <div className="selection-matrix-grouping">
             <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
             <TabList label={t('statistics.teamSelections.groupBy')}>
               <Tab
@@ -94,23 +94,23 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
               </Tab>
             </TabList>
           </div>
-          <div className="py-12 text-center text-sm text-content-subtle">
+          <EmptyState>
             <p>{t('statistics.teamSelections.noTeamsInPeriod')}</p>
-          </div>
-      </section>
+          </EmptyState>
+      </Panel>
     );
   }
 
   return (
     <>
       <Panel padding="none">
-        <div className="p-4 sm:p-5">
+        <div className="statistics-controls">
           <LevelRangeSelector
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-content">
+          <div className="selection-matrix-grouping">
             <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
             <TabList label={t('statistics.teamSelections.groupBy')}>
               <Tab
@@ -128,7 +128,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             </TabList>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 px-1 text-xs text-content-subtle">
+          <div className="selection-matrix-meta">
             <span>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</span>
             <span aria-hidden="true">•</span>
             <span>
@@ -142,21 +142,21 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
         </div>
 
           {matrixRows.length === 0 ? (
-            <div className="border-t border-edge px-4 py-12 text-center text-sm text-content-subtle">
+            <div className="statistics-empty-section">
               <p>{t('statistics.teamSelections.noPlayersInLevelRange')}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border-t border-edge">
-              <table className="min-w-full border-collapse">
+            <div className="statistics-scroll">
+              <table className="selection-matrix-table">
                 <thead>
-                  <tr className="border-b border-edge bg-surface-subtle">
-                    <th className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface-subtle px-5 py-3 text-left text-eyebrow font-bold uppercase tracking-wide text-content-subtle">
+                  <tr className="selection-matrix-heading-row">
+                    <th className="selection-matrix-player-heading">
                       {t('domain.player')}
                     </th>
                     {matrixColumns.map((matrixColumn) => (
                       <th
                         key={matrixColumn.key}
-                        className="min-w-[88px] px-3 py-3 text-center text-sm font-semibold text-content-strong"
+                        className="selection-matrix-column-heading"
                       >
                         {groupByMode === 'strength' && matrixColumn.strength !== undefined ? (
                           <span className="inline-flex items-center justify-center" title={matrixColumn.label}>
@@ -172,32 +172,28 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 </thead>
                 <tbody>
                   {matrixRows.map(({ player, selectedCount, acceptedCount, cells }) => (
-                    <tr key={player.id} className="border-b border-edge transition hover:bg-surface-subtle">
-                      <td className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface px-5 py-2.5">
+                    <tr key={player.id} className="selection-matrix-row">
+                      <td className="selection-matrix-player-cell">
                         <button
                           type="button"
                           data-ui-control="composite"
                           onClick={() => handlePlayerClick(player.id)}
-                          className="flex w-full items-center gap-2 text-left text-sm font-semibold text-content-strong transition-opacity hover:opacity-70"
+                          className="selection-matrix-player-button"
                         >
                           <span>{player.firstName} {player.lastName}</span>
                           <Level level={player.level} className="text-xs" />
-                          <span className="ml-auto text-xs font-semibold text-content-subtle">
+                          <span className="selection-matrix-player-count">
                             {selectedCount} / {acceptedCount}
                           </span>
                         </button>
                       </td>
                       {cells.map((cell, index) => (
-                        <td key={`${cell.columnKey}-${index}`} className="px-3 py-2 text-center">
+                        <td key={`${cell.columnKey}-${index}`} className="selection-matrix-cell">
                           <button
                             type="button"
                             data-ui-control="composite"
                             onClick={() => handleCellClick(player, matrixColumns[index].label, cell.events)}
-                            className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition-colors ${
-                              cell.count > 0
-                                ? 'border-brand-border bg-brand-subtle text-brand-text hover:bg-brand-muted'
-                                : 'border-edge bg-surface-subtle text-content-disabled hover:bg-surface-muted'
-                            }`}
+                            className={`selection-matrix-cell-button${cell.count > 0 ? ' selection-matrix-cell-button--selected' : ''}`}
                             aria-label={t('statistics.teamSelections.cellAriaLabel', {
                               player: `${player.firstName} ${player.lastName}`,
                               group: matrixColumns[index].label,
@@ -228,7 +224,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
               {selectedCell.events.map((selectionEvent) => (
                 <div
                   key={`${selectionEvent.eventId}-${selectionEvent.teamId}`}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-edge p-4"
+                  className="selection-matrix-event"
                 >
                   <div>
                     <p className="text-sm font-semibold text-content-strong">{selectionEvent.eventName}</p>

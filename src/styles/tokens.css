@@ -60,6 +60,8 @@
   --color-dialog-edge: rgb(255 255 255 / 0.7);
   --color-header: 16 27 36;
   --color-pitch: 4 120 87;
+  --color-pitch-start: 16 185 129;
+  --color-pitch-end: 4 120 87;
   --color-brand-subtle: rgb(var(--palette-brand-50));
   --color-brand-muted: rgb(var(--palette-brand-100));
   --color-brand-border: rgb(var(--palette-brand-200));

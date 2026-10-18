@@ -707,7 +707,7 @@
     "noPreviousEvent": "Kein vorheriges Termin",
     "noNextEvent": "Kein nächstes Termin",
     "teamsTitle": "Teams",
-    "markSelectionSent": "Aufgebot als versendet markieren",
+    "markSelectionSent": "Aufgebot versendet",
     "selectionSentAt": "Aufgebot versendet am {{dateTime}}",
     "printTeams": "Teams drucken",
     "noTeamsConfigured": "Noch keine Teams konfiguriert.",

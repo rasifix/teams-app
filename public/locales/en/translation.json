@@ -707,7 +707,7 @@
     "noPreviousEvent": "No previous event",
     "noNextEvent": "No next event",
     "teamsTitle": "Teams",
-    "markSelectionSent": "Mark selection as sent",
+    "markSelectionSent": "Selection sent",
     "selectionSentAt": "Selection sent on {{dateTime}}",
     "printTeams": "Print Teams",
     "noTeamsConfigured": "No teams configured yet.",

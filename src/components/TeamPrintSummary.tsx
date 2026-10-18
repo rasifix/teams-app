@@ -4,7 +4,7 @@ import { formatDate } from '../utils/dateFormatter';
 import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
 import { getActivityDate, getActivityTime } from '../store/selectors/activitySelectors';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
-import { Button, Radio } from './ui';
+import { Button, Modal, ModalBody, ModalHeader, ModalTitle, Radio } from './ui';
 
 interface TeamPrintSummaryProps {
   event: Activity;
@@ -44,18 +44,11 @@ export default function TeamPrintSummary({
     window.print();
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 bg-backdrop bg-opacity-50 flex items-center justify-center" onClick={handleBackdropClick}>
-      <div className="bg-surface rounded-lg shadow-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
-        <div className="sticky top-0 bg-surface border-b border-edge px-6 py-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold text-content-strong">{t('teamPrint.title')}</h2>
+    <Modal isOpen={isOpen} onClose={onClose} className="team-print-modal">
+        <ModalHeader className="team-print-header">
+          <div className="team-print-header-row">
+            <ModalTitle>{t('teamPrint.title')}</ModalTitle>
             <div className="layout-cluster">
               <Button
                 size="sm"
@@ -74,36 +67,36 @@ export default function TeamPrintSummary({
           </div>
           
           {/* Format Toggle */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-content">{t('teamPrint.formatLabel')}</span>
-            <div className="flex gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
+          <div className="team-print-format">
+            <span className="team-print-format-label">{t('teamPrint.formatLabel')}</span>
+            <div className="team-print-format-options">
+              <label className="team-print-format-option">
                 <Radio
                   name="format"
                   value="guardians"
                   checked={format === 'selection'}
                   onChange={() => setFormat('selection')}
-                  className="text-info-text"
+                  className="team-print-radio"
                 />
-                <span className="text-sm">{t('teamPrint.selectionFormat')}</span>
+                <span>{t('teamPrint.selectionFormat')}</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="team-print-format-option">
                 <Radio
                   name="format"
                   value="organizer"
                   checked={format === 'organizer'}
                   onChange={() => setFormat('organizer')}
-                  className="text-info-text"
+                  className="team-print-radio"
                 />
-                <span className="text-sm">{t('teamPrint.organizerFormat')}</span>
+                <span>{t('teamPrint.organizerFormat')}</span>
               </label>
             </div>
           </div>
-        </div>
+        </ModalHeader>
         
         {/* Print content */}
-        <div className="print-content p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <ModalBody className="team-print-content">
+          <div className="team-print-grid">
             {teams.map((team) => {
               const selectedPlayers = team.selectedPlayers || [];
               const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
@@ -118,11 +111,11 @@ export default function TeamPrintSummary({
                 });
 
               return (
-                <div key={team.id} className="border border-edge-strong rounded-lg p-4">
+                <div key={team.id} className="team-print-card">
                   {/* Header */}
-                  <div className="text-center mb-4 border-b border-edge pb-3">
-                    <h2 className="text-lg font-semibold text-content mb-1">{event.name}</h2>
-                    <h1 className="text-xl font-bold text-content-strong mb-1">
+                  <div className="team-print-team-header">
+                    <h2 className="team-print-event-name">{event.name}</h2>
+                    <h1 className="team-print-team-name">
                       {format === 'organizer' && club ? `${club} - ` : ''} {team.name}
                     </h1>
                     <div className="body-muted">
@@ -131,7 +124,7 @@ export default function TeamPrintSummary({
                         <p>📍 {resolvedLocation}</p>
                       )}
                       {responsiblePeople.length > 0 && (
-                        <p className="text-info-text font-medium">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
+                        <p className="team-print-responsible">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
                       )}
                     </div>
                   </div>
@@ -139,35 +132,35 @@ export default function TeamPrintSummary({
                   {/* Players List */}
                   <div>
                     {playersData.length === 0 ? (
-                      <p className="text-content-subtle italic text-sm">{t('teamPrint.noPlayers')}</p>
+                      <p className="team-print-empty">{t('teamPrint.noPlayers')}</p>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="team-print-player-list">
                         {playersData.map((player) => {
                           const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player!.id);
                           const shirtNumber = shirtAssignment?.shirtNumber;
                           
                           return (
-                            <div key={player!.id} className="border-b border-edge pb-1">
+                            <div key={player!.id} className="team-print-player-row">
                               {format === 'selection' ? (
-                                <div className="flex items-center justify-center">
-                                  <p className="text-sm font-medium text-content-strong">
+                                <div className="team-print-player-selection">
+                                  <p className="team-print-player-name">
                                     {player!.firstName} {player!.lastName}
                                   </p>
                                 </div>
                               ) : (
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-content-strong">
+                                <div className="team-print-player-organizer">
+                                  <div className="team-print-player-identity">
+                                    <p className="team-print-player-name">
                                       {player!.firstName} {player!.lastName}
                                     </p>
                                     {player!.birthDate && (
-                                      <p className="text-xs text-content-muted">
+                                      <p className="team-print-birth-date">
                                         {formatBirthDate(player!.birthDate)}
                                       </p>
                                     )}
                                   </div>
                                   {shirtNumber && shirtNumber > 0 && (
-                                    <span className="text-content-strong text-sm font-bold">{shirtNumber}</span>
+                                    <span className="team-print-shirt-number">{shirtNumber}</span>
                                   )}
                                 </div>
                               )}
@@ -181,55 +174,7 @@ export default function TeamPrintSummary({
               );
             })}
           </div>
-        </div>
-      </div>
-      
-      {/* Print-specific styles */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @media print {
-            .fixed, .sticky {
-              position: static !important;
-            }
-            
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-              background-color: white !important;
-            }
-            
-            .print-content {
-              padding: 0 !important;
-              margin: 0 !important;
-              background-color: white !important;
-            }
-            
-            /* Ensure 2-column layout on print */
-            .grid-cols-1.md\\:grid-cols-2 {
-              grid-template-columns: repeat(2, 1fr) !important;
-              gap: 1rem !important;
-            }
-            
-            /* Hide everything except print content */
-            body * {
-              visibility: hidden;
-              background-color: white !important;
-            }
-            
-            .print-content, .print-content * {
-              visibility: visible;
-              background-color: white !important;
-            }
-            
-            .print-content {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-          }
-        `
-      }} />
-    </div>
+        </ModalBody>
+    </Modal>
   );
 }

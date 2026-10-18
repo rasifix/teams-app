@@ -171,7 +171,8 @@
 /* Guardian directory */
 .guardian-duplicates { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
 .guardian-duplicate-list,
-.guardian-mobile-list { display: grid; gap: var(--space-2); }
+.guardian-mobile-list,
+.team-print-player-list { display: grid; gap: var(--space-2); }
 .guardian-duplicate-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); border: 1px solid var(--color-warning-border); border-radius: var(--radius-md); background: rgb(var(--color-surface)); padding: var(--space-2) var(--space-3); }
 .guardian-duplicate-content { min-width: 0; }
 .guardian-duplicate-name { overflow: hidden; color: var(--color-text-strong); font-size: var(--font-size-sm); text-overflow: ellipsis; white-space: nowrap; }
@@ -244,6 +245,30 @@
 .event-detail-panel-actions { flex-wrap: wrap; justify-content: flex-end; }
 .event-detail-selection-alert { margin-bottom: var(--space-4); }
 
+/* Team print summary */
+.team-print-modal { max-width: 56rem; }
+.team-print-header { background: rgb(var(--color-surface)); }
+.team-print-header-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.team-print-format { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); }
+.team-print-format-label { color: var(--color-text); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
+.team-print-format-options { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.team-print-format-option { display: flex; cursor: pointer; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); }
+.team-print-radio { color: var(--color-info-text); }
+.team-print-grid { display: grid; gap: var(--space-8); }
+.team-print-card { border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); padding: var(--space-4); }
+.team-print-team-header { margin-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-3); text-align: center; }
+.team-print-event-name { margin-bottom: var(--space-1); color: var(--color-text); font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
+.team-print-team-name { margin-bottom: var(--space-1); color: var(--color-text-strong); font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); }
+.team-print-responsible { color: var(--color-info-text); font-weight: var(--font-weight-medium); }
+.team-print-empty { color: var(--color-text-subtle); font-size: var(--font-size-sm); font-style: italic; }
+.team-print-player-row { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-1); }
+.team-print-player-selection { display: flex; align-items: center; justify-content: center; }
+.team-print-player-organizer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.team-print-player-identity { flex: 1; }
+.team-print-player-name { color: var(--color-text-strong); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
+.team-print-birth-date { color: var(--color-text-muted); font-size: var(--font-size-xs); line-height: 1.25; }
+.team-print-shirt-number { color: var(--color-text-strong); font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); }
+
 @media (min-width: 40rem) {
   .home-feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding-block: var(--space-8); }
   .statistics-controls { padding: var(--space-5); }
@@ -269,6 +294,7 @@
   .app-desktop-nav { display: flex; }
   .app-mobile-trigger,
   .app-mobile-menu { display: none; }
+  .team-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 64rem) {
@@ -285,7 +311,9 @@
   @page { size: A4 portrait; margin: 8mm; }
   body * { visibility: hidden; }
   .lineup-print-content,
-  .lineup-print-content * { visibility: visible; }
+  .lineup-print-content *,
+  .team-print-content,
+  .team-print-content * { visibility: visible; }
   #root > div > header { display: none !important; }
   .lineup-page { max-width: none !important; padding: 0 !important; }
   .lineup-page > *:not(.lineup-print-content) { display: none !important; }
@@ -296,5 +324,11 @@
   .lineup-shirt-page { display: block !important; break-before: page !important; page-break-before: always !important; padding-top: 4mm; }
   .lineup-shirt-grid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 3mm !important; }
   .lineup-shirt-row { min-height: 18mm; break-inside: avoid; padding: 2.5mm 3mm !important; }
+  .team-print-header { display: none !important; }
+  .modal-overlay:has(.team-print-content),
+  .team-print-modal { position: static !important; display: block !important; max-width: none !important; max-height: none !important; overflow: visible !important; border: 0 !important; background: var(--color-print-paper) !important; box-shadow: none !important; }
+  .team-print-content { position: absolute !important; top: 0; left: 0; width: 100%; margin: 0 !important; overflow: visible !important; background: var(--color-print-paper) !important; padding: 0 !important; }
+  .team-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: var(--space-4) !important; }
+  .team-print-card { break-inside: avoid; background: var(--color-print-paper) !important; }
   body { background: var(--color-print-paper) !important; }
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
-import { Alert, Button, EmptyState, Panel, PanelTitle } from '../components/ui';
+import { Alert, Button, EmptyState, Panel, PanelHeader, PanelTitle } from '../components/ui';
 import { usePlayers, useTrainers } from '../store';
 import { selectUniqueMemberGuardians, type MemberGuardianCard } from '../store/selectors/memberGuardiansSelectors';
 import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
@@ -91,25 +91,25 @@ export default function MembersGuardiansPage() {
 
   return (
     <Panel>
-        <div className="mb-5 flex items-center justify-between">
+        <PanelHeader>
           <PanelTitle>{t('members.allGuardiansTitle', { count: guardians.length })}</PanelTitle>
-        </div>
+        </PanelHeader>
 
         {!spondLinked && duplicateGuardianGroups.length > 0 && (
-          <Alert tone="warning" className="mb-5 space-y-2">
-            <p className="text-sm font-semibold text-warning-text">
+          <Alert tone="warning" className="guardian-duplicates">
+            <p className="font-semibold">
               {t('members.guardianDuplicates.detected', { count: duplicateGuardianGroups.length })}
             </p>
-            <div className="space-y-2">
+            <div className="guardian-duplicate-list">
               {duplicateGuardianGroups.map((group) => {
                 const isResolving = resolvingDuplicateKey === group.key;
                 return (
-                  <div key={group.key} className="flex items-center justify-between gap-3 rounded-xl border border-warning-border bg-surface px-3 py-2">
-                    <div className="min-w-0">
-                      <p className="text-sm text-content-strong truncate">
+                  <div key={group.key} className="guardian-duplicate-row">
+                    <div className="guardian-duplicate-content">
+                      <p className="guardian-duplicate-name">
                         {group.firstName} {group.lastName} ({group.email})
                       </p>
-                      <p className="text-xs text-content-muted">
+                      <p className="guardian-duplicate-meta">
                         {t('members.guardianDuplicates.groupMeta', {
                           guardianCount: group.guardians.length,
                           playerCount: group.linkedPlayerCount,
@@ -147,25 +147,25 @@ export default function MembersGuardiansPage() {
           </EmptyState>
         ) : (
           <>
-            <div className="space-y-2 md:hidden">
+            <div className="guardian-mobile-list">
               {guardians.map((row) => (
                 <div
                   key={row.guardian.id}
-                  className="rounded-2xl border border-edge bg-surface p-4"
+                  className="guardian-mobile-card"
                 >
-                  <p className="text-sm font-semibold text-content-strong">
+                  <p className="guardian-name">
                     {row.guardian.firstName} {row.guardian.lastName}
                   </p>
-                  <p className="mt-0.5 text-xs text-content-subtle">
+                  <p className="guardian-email">
                     {row.guardian.email || t('members.guardians.noEmail')}
                   </p>
-                  <div className="mt-2 text-xs text-content-muted">
+                  <div className="guardian-players">
                     <span className="font-medium">{t('members.guardians.tablePlayers')}:</span>{' '}
                     {row.playerRefs.map((playerRef, index) => (
                       <span key={playerRef.playerId}>
                         <Link
                           to={`/players/${playerRef.playerId}`}
-                          className="font-medium text-brand-text hover:text-brand-text hover:underline"
+                          className="guardian-player-link"
                         >
                           {playerRef.playerFirstName} {playerRef.playerLastName}
                         </Link>
@@ -174,7 +174,7 @@ export default function MembersGuardiansPage() {
                     ))}
                   </div>
                   {!spondLinked && (
-                    <div className="mt-3">
+                    <div className="guardian-mobile-actions">
                       <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
                         {t('common.actions.edit')}
                       </Button>
@@ -184,42 +184,42 @@ export default function MembersGuardiansPage() {
               ))}
             </div>
 
-            <div className="hidden overflow-x-auto rounded-2xl border border-edge md:block">
-              <table className="min-w-full divide-y divide-edge">
-                <thead className="bg-surface-subtle">
+            <div className="guardian-table-container">
+              <table className="guardian-table">
+                <thead className="guardian-table-head">
                   <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-content-subtle">
+                    <th scope="col" className="guardian-table-heading">
                       {t('members.guardians.tableGuardian')}
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-content-subtle">
+                    <th scope="col" className="guardian-table-heading">
                       {t('members.guardians.tableEmail')}
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-content-subtle">
+                    <th scope="col" className="guardian-table-heading">
                       {t('members.guardians.tablePlayers')}
                     </th>
                     {!spondLinked && (
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-content-subtle">
+                      <th scope="col" className="guardian-table-heading">
                         {t('members.guardians.tableActions')}
                       </th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-edge bg-surface">
+                <tbody className="guardian-table-body">
                   {guardians.map((row) => (
-                    <tr key={row.guardian.id} className="transition-colors hover:bg-surface-subtle">
-                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-content-strong">
+                    <tr key={row.guardian.id} className="guardian-table-row">
+                      <td className="guardian-table-cell guardian-table-cell--name">
                         {row.guardian.firstName} {row.guardian.lastName}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-content-subtle">
+                      <td className="guardian-table-cell guardian-table-cell--email">
                         {row.guardian.email || t('members.guardians.noEmail')}
                       </td>
-                      <td className="px-4 py-3 text-sm text-content-muted">
-                        <div className="flex flex-wrap gap-x-2 gap-y-1">
+                      <td className="guardian-table-cell">
+                        <div className="guardian-player-links">
                           {row.playerRefs.map((playerRef) => (
                             <Link
                               key={playerRef.playerId}
                               to={`/players/${playerRef.playerId}`}
-                              className="font-medium text-brand-text hover:text-brand-text hover:underline"
+                              className="guardian-player-link"
                             >
                               {playerRef.playerFirstName} {playerRef.playerLastName}
                             </Link>
@@ -227,7 +227,7 @@ export default function MembersGuardiansPage() {
                         </div>
                       </td>
                       {!spondLinked && (
-                        <td className="px-4 py-3 text-sm">
+                        <td className="guardian-table-cell">
                           <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
                             {t('common.actions.edit')}
                           </Button>

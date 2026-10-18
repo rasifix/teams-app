@@ -74,8 +74,8 @@ for (const file of componentFiles) {
 
 const limits = {
   // Ratchet these down as remaining feature screens move to semantic recipes.
-  classTokens: 2133,
-  longClassNames: 49,
+  classTokens: 2057,
+  longClassNames: 43,
 };
 
 if (duplicateGroups.length > 0) {

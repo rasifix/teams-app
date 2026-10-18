@@ -37,42 +37,38 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-edge-inverse bg-header/95 text-content-inverse shadow-lg backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-[4.5rem] items-center justify-between">
+    <header className="app-header">
+      <div className="app-header-container">
+        <div className="app-header-bar">
           {/* Logo/Title */}
-          <Link to="/" className="group flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand">
-            <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-brand shadow-lg  transition group-hover:rotate-3">
+          <Link to="/" className="app-brand">
+            <span className="app-brand-mark">
               <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="m8.5 10.25 3.5 1.8 3.5-1.8M12 12v4" />
               </svg>
             </span>
             <div>
-              <h1 className="text-base font-semibold tracking-tight sm:text-lg">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
-              <p className="hidden text-micro font-semibold uppercase tracking-label text-content-disabled sm:block">{t('app.tagline')}</p>
+              <h1 className="app-brand-title">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
+              <p className="app-brand-tagline">{t('app.tagline')}</p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-1.5 md:flex">
+          <nav className="app-desktop-nav">
             {isAuthenticated && navItems.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-surface text-content-strong shadow-sm'
-                      : 'text-content-disabled hover:bg-inverse-overlay/10 hover:text-content-inverse'
-                  }`}
+                  className={`app-nav-link${isActive ? ' app-nav-link--active' : ''}`}
                 >
                   {t(item.labelKey)}
                 </Link>
               );
             })}
-            <div className="ml-2 flex items-center gap-1 rounded-full border border-edge-inverse bg-inverse-overlay/5 p-1" aria-label={t('common.language')}>
+            <div className="app-language-switcher" aria-label={t('common.language')}>
               {SUPPORTED_LANGUAGES.map((language) => {
                 const isActive = activeLanguage === language;
                 return (
@@ -91,8 +87,8 @@ export default function Header() {
               })}
             </div>
             {isAuthenticated ? (
-              <div className="ml-2 flex items-center gap-3 border-l border-edge-inverse pl-3">
-                <span className="max-w-32 truncate text-sm text-content-disabled">
+              <div className="app-account">
+                <span className="app-account-name">
                   {user?.firstName} {user?.lastName}
                 </span>
                 <LogoutButton />
@@ -103,7 +99,7 @@ export default function Header() {
           </nav>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="app-mobile-trigger">
             <IconButton
               variant="inverse"
               label={t('common.openMainMenu')}
@@ -132,8 +128,8 @@ export default function Header() {
 
         {/* Mobile menu */}
         {isMobileMenuOpen && (
-          <div className="border-t border-edge-inverse py-3 md:hidden" id="mobile-menu">
-            <div className="space-y-1 px-1 pb-2 pt-1">
+          <div className="app-mobile-menu" id="mobile-menu">
+            <div className="app-mobile-menu-content">
               {isAuthenticated && navItems.map((item) => {
                 const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                 return (
@@ -141,18 +137,14 @@ export default function Header() {
                     key={item.path}
                     to={item.path}
                     onClick={closeMobileMenu}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                      isActive
-                      ? 'bg-surface text-content-strong'
-                      : 'text-content-disabled hover:bg-inverse-overlay/10 hover:text-content-inverse'
-                    }`}
+                    className={`app-mobile-nav-link${isActive ? ' app-mobile-nav-link--active' : ''}`}
                   >
                     {t(item.labelKey)}
                   </Link>
                 );
               })}
-              <div className="px-3 py-2">
-                <div className="mb-2 text-xs text-content-disabled">{t('common.language')}</div>
+              <div className="app-mobile-section">
+                <div className="app-mobile-label">{t('common.language')}</div>
                 <div className="layout-cluster">
                   {SUPPORTED_LANGUAGES.map((language) => {
                     const isActive = activeLanguage === language;
@@ -174,15 +166,15 @@ export default function Header() {
               </div>
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 py-2 text-base text-content-disabled">
+                  <div className="app-mobile-user">
                     {user?.firstName} {user?.lastName}
                   </div>
-                  <div className="px-3 py-2">
+                  <div className="app-mobile-section">
                     <LogoutButton />
                   </div>
                 </>
               ) : (
-                <div className="px-3 py-2">
+                <div className="app-mobile-section">
                   <LoginButton />
                 </div>
               )}

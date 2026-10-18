@@ -99,7 +99,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   if (events.length === 0 || players.length === 0) {
     return (
-      <section className="rounded-3xl border border-edge bg-surface px-4 py-12 text-center text-sm text-content-subtle shadow-md">
+      <section className="statistics-matrix-empty">
             <p>{t('statistics.eventParticipation.emptyState')}</p>
       </section>
     );
@@ -107,46 +107,46 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   return (
     <Panel padding="none">
-      <div className="p-4 sm:p-5">
+      <div className="statistics-controls">
         <LevelRangeSelector
           defaultRange={levelRange}
           onChange={setLevelRange}
         />
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 px-1 text-xs text-content-subtle">
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-success">✓</span>
+        <div className="participation-legend">
+          <div className="participation-legend-item">
+            <span className="participation-legend-icon text-success">✓</span>
             <span>{t('statistics.playerTable.selected')}</span>
           </div>
           {invitationStatusOrder.map((status) => (
-            <div key={status} className="flex items-center gap-1">
-              <span className={`${status === 'accepted' ? 'text-content-disabled' : invitationStatusMeta[status].iconClassName} font-bold`}>
+            <div key={status} className="participation-legend-item">
+              <span className={`participation-legend-icon ${status === 'accepted' ? 'text-content-disabled' : invitationStatusMeta[status].iconClassName}`}>
                 {invitationStatusMeta[status].icon}
               </span>
               <span>{t(`invitationStatus.${status}`)}</span>
             </div>
           ))}
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-content-disabled">-</span>
+          <div className="participation-legend-item">
+            <span className="participation-legend-icon text-content-disabled">-</span>
             <span>{t('invitationStatus.notInvited')}</span>
           </div>
         </div>
       </div>
-        <div className="overflow-x-auto border-t border-edge" ref={scrollContainerRef}>
-          <table className="min-w-full border-collapse">
+        <div className="statistics-scroll" ref={scrollContainerRef}>
+          <table className="statistics-matrix-table">
             <thead>
-              <tr className="border-b border-edge bg-surface-subtle">
-                <th className="sticky left-0 z-10 min-w-[220px] border-r border-edge bg-surface-subtle px-5 py-3 text-left text-eyebrow font-bold uppercase tracking-wide text-content-subtle">
+              <tr className="statistics-matrix-heading-row">
+                <th className="statistics-matrix-player-heading">
                   {t('domain.player')}
                 </th>
                 {events.map(event => (
                   <th 
                     key={event.id} 
-                    className="min-w-[58px] px-2 py-2.5 text-center text-sm font-medium text-content-strong"
+                    className="participation-event-heading"
                     title={`${event.name} - ${formatDate(getActivityDate(event))}`}
                   >
                     <div 
-                      className="flex cursor-pointer justify-center transition-opacity hover:opacity-70"
+                      className="participation-event-link"
                       onClick={(e) => handleEventClick(event.id, e)}
                     >
                       <DateColumn date={getActivityDate(event)} />
@@ -159,13 +159,13 @@ export default function EventParticipationMatrix({ players, events }: EventParti
               {sortedData.map(({ player, attendance }) => (
                 <tr 
                   key={player.id} 
-                  className="max-h-[40px] cursor-pointer border-b border-edge transition hover:bg-surface-subtle"
+                  className="statistics-matrix-row participation-player-row"
                   onClick={() => handlePlayerClick(player.id)}
                 >
-                  <td className="sticky left-0 z-10 max-h-[40px] min-w-[220px] border-r border-edge bg-surface px-5 py-2.5 text-sm font-medium text-content-strong">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-content-strong">
+                  <td className="statistics-matrix-player-cell participation-player-cell">
+                    <div className="participation-player">
                       <span>{player.firstName} {player.lastName}</span>
-                      <Level level={player.level} className="text-xs" />
+                      <Level level={player.level} className="participation-player-level" />
                     </div>
                   </td>
                   {attendance.map(({ status, event }, index) => {
@@ -173,11 +173,11 @@ export default function EventParticipationMatrix({ players, events }: EventParti
                     return (
                       <td 
                         key={index}
-                        className="max-h-[40px] px-3 py-2 text-center"
+                        className="participation-status-cell"
                         title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
                       >
-                        <div className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${statusInfo.bg}`}>
-                          <span className={`text-base font-bold ${statusInfo.color}`}>
+                        <div className={`participation-status ${statusInfo.bg}`}>
+                          <span className={`participation-status-icon ${statusInfo.color}`}>
                             {statusInfo.icon}
                           </span>
                         </div>

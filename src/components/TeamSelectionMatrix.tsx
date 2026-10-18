@@ -64,7 +64,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (players.length === 0 || events.length === 0) {
     return (
-      <section className="selection-matrix-empty">
+      <section className="statistics-matrix-empty">
         <p>{t('statistics.teamSelections.noData')}</p>
       </section>
     );
@@ -147,10 +147,10 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             </div>
           ) : (
             <div className="statistics-scroll">
-              <table className="selection-matrix-table">
+              <table className="statistics-matrix-table">
                 <thead>
-                  <tr className="selection-matrix-heading-row">
-                    <th className="selection-matrix-player-heading">
+                  <tr className="statistics-matrix-heading-row">
+                    <th className="statistics-matrix-player-heading">
                       {t('domain.player')}
                     </th>
                     {matrixColumns.map((matrixColumn) => (
@@ -172,8 +172,8 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 </thead>
                 <tbody>
                   {matrixRows.map(({ player, selectedCount, acceptedCount, cells }) => (
-                    <tr key={player.id} className="selection-matrix-row">
-                      <td className="selection-matrix-player-cell">
+                    <tr key={player.id} className="statistics-matrix-row">
+                      <td className="statistics-matrix-player-cell">
                         <button
                           type="button"
                           data-ui-control="composite"

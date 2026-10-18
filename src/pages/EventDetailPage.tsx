@@ -117,20 +117,20 @@ export default function EventDetailPage() {
     const selectedPlayers = selectTeamPlayersByName(team, players);
     const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
 
-    return <article key={team.id} aria-label={t('events.teamCardLabel', { team: team.name })} className="overflow-hidden rounded-2xl border border-edge bg-surface-subtle">
-      <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
-        <div className="min-w-0 flex-1">
+    return <article key={team.id} aria-label={t('events.teamCardLabel', { team: team.name })} className="event-detail-team-card">
+      <div className="event-detail-team-header">
+        <div className="event-detail-team-main">
           <div className="layout-cluster layout-cluster--wrap">
             {team.name}
-            <Strength level={team.strength || 2} className="text-xs" />
+            <Strength level={team.strength || 2} className="event-detail-team-strength" />
             <Badge>👥 {selectedPlayers.length}/{activity.maxPlayersPerTeam ?? players.length}</Badge>
             {selectedPlayers.length > 0 && <Badge>⭐ {getTeamAverageLevel(team).toFixed(1)}</Badge>}
           </div>
-          {(hasDifferentTime || hasDifferentLocation) && <p className="mt-2 text-sm text-content-subtle">
+          {(hasDifferentTime || hasDifferentLocation) && <p className="event-detail-team-overrides">
             {hasDifferentTime && <>🕐 {teamTime}</>}
-            {hasDifferentLocation && <span className={hasDifferentTime ? 'ml-3' : ''}>📍 {teamLocation}</span>}
+            {hasDifferentLocation && <span className={hasDifferentTime ? 'event-detail-location-offset' : ''}>📍 {teamLocation}</span>}
           </p>}
-          {responsiblePeople.length > 0 && <p className="mt-1 text-sm text-content-muted">
+          {responsiblePeople.length > 0 && <p className="event-detail-responsible">
             👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}
           </p>}
         </div>
@@ -143,26 +143,26 @@ export default function EventDetailPage() {
           </svg>
         </IconButton>
       </div>
-      <div className="border-t border-edge bg-surface px-4 py-2 sm:px-5">
-        {selectedPlayers.length > 0 ? <ul className="divide-y divide-edge">
+      <div className="event-detail-roster">
+        {selectedPlayers.length > 0 ? <ul className="event-detail-player-list">
           {selectedPlayers.map((player) => {
             const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
-            return <li key={player.id} className="flex h-10 items-center gap-2 text-sm text-content">
-            {shirtNumber && shirtNumber > 0 && <span className="w-6 text-xs font-extrabold text-content">{shirtNumber}</span>}
-            <span className="min-w-0 flex-1 truncate">{player.firstName} {player.lastName}</span>
-            <Level level={player.level} className="text-base" />
+            return <li key={player.id} className="event-detail-player-row">
+            {shirtNumber && shirtNumber > 0 && <span className="event-detail-shirt-number">{shirtNumber}</span>}
+            <span className="event-detail-player-name">{player.firstName} {player.lastName}</span>
+            <Level level={player.level} className="event-detail-player-level" />
           </li>;
           })}
-        </ul> : <p className="py-2 text-sm text-content-subtle">{t('teamDetail.noPlayersSelected')}</p>}
+        </ul> : <p className="event-detail-empty-roster">{t('teamDetail.noPlayersSelected')}</p>}
       </div>
     </article>;
   };
 
   return <Page>
-    <div className="mb-5 flex items-center justify-between gap-3 border-b border-edge pb-4 text-sm">
-        {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${previous.id}`)} className="min-w-0 truncate">← {previous.name}</Button> : <span />}
-        <span className="hidden text-eyebrow font-bold uppercase tracking-label text-content-disabled sm:block">{t('eventDetail.navigationLabel')}</span>
-        {next ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${next.id}`)} className="min-w-0 truncate">{next.name} →</Button> : <span />}
+    <div className="event-detail-navigation">
+        {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${previous.id}`)} className="event-detail-navigation-button">← {previous.name}</Button> : <span />}
+        <span className="event-detail-navigation-label">{t('eventDetail.navigationLabel')}</span>
+        {next ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${next.id}`)} className="event-detail-navigation-button">{next.name} →</Button> : <span />}
     </div>
     <PageHeader align="start">
         <PageHeaderContent>
@@ -171,12 +171,12 @@ export default function EventDetailPage() {
             <Badge tone="brand" size="sm">{t(`activity.kinds.${activity.kind}`)}</Badge>
             <Badge tone="info" size="sm" data-testid="activity-phase">{t(`eventDetail.phases.${phase}`)}</Badge>
           </div>
-          <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-content-muted">
+          <p className="event-detail-metadata">
             <span>📅 {formatDate(getActivityDate(activity))}</span>
             <span>🕐 {getActivityStartTime(activity)}</span>
             {activity.location && <span>📍 {activity.location}</span>}
           </p>
-          {activity.kind === 'match' && activity.opponentName && <p className="mt-2 text-sm font-medium text-content">{t('activity.fields.opponent')}: {activity.opponentName}</p>}
+          {activity.kind === 'match' && activity.opponentName && <p className="event-detail-opponent">{t('activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
         <PageActions>
           <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditOpen(true)}>{t('common.actions.edit')}</Button>
@@ -184,11 +184,11 @@ export default function EventDetailPage() {
         </PageActions>
     </PageHeader>
 
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
+    <div className="event-detail-grid">
       <Panel>
         <PanelHeader>
           <PanelTitle>{t('eventDetail.teamsTitle')}</PanelTitle>
-          <PanelActions className="flex-wrap justify-end">
+          <PanelActions className="event-detail-panel-actions">
             {activity.kind === 'tournament' && <Button type="button" variant="secondary" size="sm" onClick={handleAddTeam}>{t('common.actions.add')}</Button>}
             {!selectionEditState.isSent && selectionEditState.canEdit && activity.teams.length > 0 && (
               <Button type="button" size="sm" disabled={isSendingSelection} onClick={() => void handleMarkSelectionSent()}>
@@ -197,7 +197,7 @@ export default function EventDetailPage() {
             )}
           </PanelActions>
         </PanelHeader>
-        {activity.selectionSentAt && <Alert tone="success" className="mb-4">
+        {activity.selectionSentAt && <Alert tone="success" className="event-detail-selection-alert">
           {t('eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
         </Alert>}
         {activity.teams.length === 0 ? <Alert tone="warning">{t('activity.noTeamsLegacy')}</Alert> : <div className="layout-stack layout-stack--sm">

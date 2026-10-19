@@ -58,14 +58,15 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
             type="button"
             variant="ghost"
             size="sm"
+            data-team-field="name"
             onClick={() => navigate(`/events/${activity.id}/teams/${team.id}`)}
             aria-label={t('events.openTeamDetails', { team: team.name })}
           >
             {team.name}
           </Button>
-          <span title={t('events.playersAssignedToTeams')}>{team.selectedPlayerCount} <span aria-hidden="true">●</span></span>
-          {hasDifferentLocation && <span>{team.location}</span>}
-          {team.responsiblePeople.length > 0 && <span>
+          <span data-team-field="count" title={t('events.playersAssignedToTeams')}>{team.selectedPlayerCount} <span aria-hidden="true">●</span></span>
+          {hasDifferentLocation && <span data-team-field="location" title={team.location}>{team.location}</span>}
+          {team.responsiblePeople.length > 0 && <span data-team-field="people" title={team.responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}>
             {team.responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}
           </span>}
         </EntityMeta>

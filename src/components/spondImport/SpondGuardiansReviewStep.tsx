@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { SpondGuardianRow } from '../../store/selectors/spondSyncSelectors';
 import SpondWizardActions from './SpondWizardActions';
+import { EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle } from '../ui';
 
 interface SpondGuardiansReviewStepProps {
   rows: SpondGuardianRow[];
@@ -18,33 +19,32 @@ export default function SpondGuardiansReviewStep({
   return (
     <>
       <p className="body-muted">{t('spondSync.wizard.guardiansHelp')}</p>
-      <div className="layout-stack layout-stack--sm">
+      <EntityList variant="separated">
         {rows.map((row) => (
-          <div key={row.source.id} className="rounded border p-4">
-            <span className="min-w-0">
-              <span className="font-medium">{row.source.firstName} {row.source.lastName}</span>
-              <span className="block text-sm text-content-muted">
+          <EntityRow key={row.source.id} align="start">
+            <EntityContent>
+              <EntityTitle>{row.source.firstName} {row.source.lastName}</EntityTitle>
+              <EntityMeta><span>
                 {t('spondSync.wizard.guardianChildren', {
                   count: row.childNames.length,
                   names: row.childNames.join(', '),
                 })}
-              </span>
-              <span className="block text-sm text-content-muted">
+              </span><span>
                 {t('spondSync.wizard.guardianEmail', {
                   email: row.source.email ?? t('members.noEmail'),
                 })}
-              </span>
+              </span></EntityMeta>
               {row.linkedGuardian && (
-                <span className="block text-sm text-content-muted">
+                <EntityMeta><span>
                   {t('spondSync.wizard.alreadyExists', {
                     name: `${row.linkedGuardian.firstName} ${row.linkedGuardian.lastName}`,
                   })}
-                </span>
+                </span></EntityMeta>
               )}
-            </span>
-          </div>
+            </EntityContent>
+          </EntityRow>
         ))}
-      </div>
+      </EntityList>
       <SpondWizardActions back={onBack} next={onNext} />
     </>
   );

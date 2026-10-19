@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Select } from './ui';
+import { FilterBar, FilterGroup, FilterLabel, Select } from './ui';
 
 interface LevelRangeSelectorProps {
   minLevel?: number;
@@ -20,6 +20,7 @@ export default function LevelRangeSelector({
   disabled = false,
 }: LevelRangeSelectorProps) {
   const { t } = useTranslation();
+  const controlId = useId();
   const [levelRange, setLevelRange] = useState<[number, number]>(defaultRange);
 
   const handleMinLevelChange = (newMin: number) => {
@@ -57,35 +58,39 @@ export default function LevelRangeSelector({
     return options;
   };
 
+  const minControlId = `${controlId}-minimum`;
+  const maxControlId = `${controlId}-maximum`;
+
   return (
-    <div className={`flex flex-wrap items-center gap-2 rounded-xl border border-edge bg-surface-subtle px-3 py-2 ${className}`}>
-      <span className="mr-auto text-eyebrow font-bold uppercase tracking-label text-content-subtle">{t('filters.playerLevel')}</span>
-      
-      <div className="flex items-center gap-1.5">
-        <label htmlFor="minLevel" className="text-eyebrow font-semibold leading-none text-content-subtle">{t('filters.from')}</label>
+    <FilterBar className={`level-range-filter ${className}`.trim()}>
+      <FilterLabel className="level-range-label">{t('filters.playerLevel')}</FilterLabel>
+      <FilterGroup>
+        <label htmlFor={minControlId} className="level-range-bound-label">{t('filters.from')}</label>
         <Select
-          id="minLevel"
+          id={minControlId}
           value={levelRange[0]}
           onChange={(e) => handleMinLevelChange(parseInt(e.target.value))}
           disabled={disabled}
-          className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs"
+          controlSize="sm"
+          className="level-range-select"
         >
           {generateLevelOptions()}
         </Select>
-      </div>
+      </FilterGroup>
 
-      <div className="flex items-center gap-1.5">
-        <label htmlFor="maxLevel" className="text-eyebrow font-semibold leading-none text-content-subtle">{t('filters.to')}</label>
+      <FilterGroup>
+        <label htmlFor={maxControlId} className="level-range-bound-label">{t('filters.to')}</label>
         <Select
-          id="maxLevel"
+          id={maxControlId}
           value={levelRange[1]}
           onChange={(e) => handleMaxLevelChange(parseInt(e.target.value))}
           disabled={disabled}
-          className="!h-8 !min-h-0 !w-auto !rounded-lg !py-0 !pl-2.5 !pr-8 text-xs"
+          controlSize="sm"
+          className="level-range-select"
         >
           {generateLevelOptions()}
         </Select>
-      </div>
-    </div>
+      </FilterGroup>
+    </FilterBar>
   );
 }

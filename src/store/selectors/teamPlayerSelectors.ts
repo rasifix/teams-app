@@ -1,4 +1,5 @@
-import type { Activity, Player, Team } from '../../types';
+import type { Activity, Player, Team, Trainer } from '../../types';
+import { selectTeamResponsiblePeople } from './teamTrainerSelectors';
 
 function comparableName(value: string): string {
   return value.trim().toLocaleLowerCase();
@@ -18,6 +19,76 @@ export function selectTeamPlayersByName(team: Team, players: Player[]): Player[]
 
       return left.id.localeCompare(right.id);
     });
+}
+
+export function selectTeamPlayersInRosterOrder(team: Team, players: Player[]): Player[] {
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  return (team.selectedPlayers ?? [])
+    .map((playerId) => playersById.get(playerId))
+    .filter((player): player is Player => Boolean(player));
+}
+
+export interface TeamSelectionCapacity {
+  currentPlayerCount: number;
+  remainingSlots: number;
+  availableAdditionSlots: number;
+  canAddMore: boolean;
+}
+
+export function selectTeamSelectionCapacity(
+  team: Team,
+  maximumPlayers: number,
+  selectedPlayerIds: string[],
+  removedPlayerIds: string[],
+): TeamSelectionCapacity {
+  const currentPlayerCount = team.selectedPlayers?.length ?? 0;
+  const remainingSlots = Math.max(0, maximumPlayers - currentPlayerCount);
+  const availableAdditionSlots = remainingSlots + removedPlayerIds.length;
+  return {
+    currentPlayerCount,
+    remainingSlots,
+    availableAdditionSlots,
+    canAddMore: selectedPlayerIds.length <= availableAdditionSlots,
+  };
+}
+
+export interface TeamPrintSummary {
+  team: Team;
+  location?: string;
+  responsiblePeople: ReturnType<typeof selectTeamResponsiblePeople>;
+  players: Array<{ player: Player; shirtNumber?: number }>;
+}
+
+export function selectTeamPrintSummaries(
+  activity: Activity,
+  teams: Team[],
+  players: Player[],
+  trainers: Trainer[],
+): TeamPrintSummary[] {
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  return teams.map((team) => {
+    const shirtNumbersByPlayerId = new Map(
+      (team.shirtAssignments ?? []).map((assignment) => [assignment.playerId, assignment.shirtNumber]),
+    );
+    const selectedPlayers = (team.selectedPlayers ?? [])
+      .flatMap((playerId) => {
+        const player = playersById.get(playerId);
+        return player ? [{ player, shirtNumber: shirtNumbersByPlayerId.get(playerId) }] : [];
+      })
+      .sort((left, right) => (
+        comparableName(left.player.lastName).localeCompare(comparableName(right.player.lastName))
+        || comparableName(left.player.firstName).localeCompare(comparableName(right.player.firstName))
+        || left.player.id.localeCompare(right.player.id)
+      ));
+    return {
+      team,
+      location: activity.kind === 'match'
+        ? activity.location?.trim() || undefined
+        : team.location?.trim() || activity.location?.trim() || undefined,
+      responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players),
+      players: selectedPlayers,
+    };
+  });
 }
 
 

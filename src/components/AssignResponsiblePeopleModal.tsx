@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Checkbox, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Badge, Button, Checkbox, EmptyState, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Stack } from './ui';
 import type { Player, Trainer } from '../types';
 import { filterTeamAssignees, selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
 
@@ -53,51 +53,52 @@ export default function AssignResponsiblePeopleModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <form onSubmit={handleSubmit}>
         <ModalHeader>
           <ModalTitle>{t('teamModal.fields.responsiblePeople')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
+          <Stack>
           <Input
             type="search"
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
             placeholder={t('teamModal.filterPlaceholder')}
             aria-label={t('teamModal.filterPlaceholder')}
-            className="mb-3"
             data-testid="responsible-people-filter"
             autoFocus
           />
           {visibleOptions.length === 0 ? (
-            <p className="body-muted">{t('teamModal.noPersonsFound')}</p>
+            <EmptyState>{t('teamModal.noPersonsFound')}</EmptyState>
           ) : (
-            <ul className="space-y-1">
+            <EntityList variant="separated">
               {visibleOptions.map((option) => (
-                <li key={option.id}>
-                  <label className="flex items-center gap-2 rounded px-1 py-1.5 text-sm hover:bg-surface-subtle">
+                  <label key={option.id} className="responsible-person-option">
                     <Checkbox
                       checked={selectedIds.includes(option.id)}
                       onChange={() => toggle(option.id)}
                     />
-                    <span className="min-w-0 flex-1 truncate">
-                      {option.firstName} {option.lastName}
-                    </span>
-                    <span className="text-xs text-content-subtle">{t(`teamModal.assigneeSource.${option.source}`)}</span>
+                    <EntityRow>
+                    <EntityContent>
+                      <EntityTitle>{option.firstName} {option.lastName}</EntityTitle>
+                      <EntityMeta><span>{t(`teamModal.assigneeSource.${option.source}`)}</span></EntityMeta>
+                    </EntityContent>
                     {selectedIds[0] === option.id && (
-                      <span className="text-xs font-medium text-info-text">{t('teamModal.leadPerson')}</span>
+                      <Badge tone="info" size="sm">{t('teamModal.leadPerson')}</Badge>
                     )}
+                    </EntityRow>
                   </label>
-                </li>
               ))}
-            </ul>
+            </EntityList>
           )}
-          <p className="mt-3 text-xs text-content-subtle">{t('teamModal.responsiblePeopleHint')}</p>
+          <p className="field-help">{t('teamModal.responsiblePeopleHint')}</p>
+          </Stack>
         </ModalBody>
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving} className="flex-1">
+          <Button type="submit" variant="primary" disabled={isSaving}>
             {t('common.actions.save')}
           </Button>
         </ModalFooter>

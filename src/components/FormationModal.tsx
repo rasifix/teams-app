@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Formation, FormationSlot, PositionCode } from '../types';
-import { Alert, Button, Field, FieldLegend, IconButton, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Alert, Button, EntityActions, EntityContent, EntityList, EntityRow, Field, FieldLegend, IconButton, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
 import { POSITION_CODES, getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
 
 interface FormationSlotDraft {
@@ -95,7 +95,7 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
           <ModalTitle>{isEditing ? t('formationModal.editTitle') : t('formationModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             {error && <Alert>{error}</Alert>}
 
             <Field label={t('formationModal.fields.name')} htmlFor="formation-name">
@@ -110,8 +110,8 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
             </Field>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <FieldLegend className="mb-0">{t('formationModal.fields.slots')}</FieldLegend>
+              <Split gap="sm">
+                <FieldLegend>{t('formationModal.fields.slots')}</FieldLegend>
                 <Button
                   type="button"
                   variant="ghost"
@@ -120,18 +120,18 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                 >
                   + {t('formationModal.addSlot')}
                 </Button>
-              </div>
+              </Split>
 
-              <div className="space-y-2">
+              <EntityList variant="separated">
                 {slots.map((slot, index) => {
                   const draftId = slot.id ?? `draft-${index}`;
                   const displayIndex = displayIndexes.get(draftId);
                   return (
-                    <div key={draftId} className="layout-cluster">
+                    <EntityRow key={draftId} density="compact">
+                      <EntityContent>
                       <Select
                         value={slot.positionCode}
                         onChange={(e) => handleSlotChange(index, e.target.value as PositionCode)}
-                        className="flex-1"
                       >
                         {POSITION_CODES.map((code) => (
                           <option key={code} value={code}>
@@ -139,10 +139,11 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                           </option>
                         ))}
                       </Select>
+                      </EntityContent>
                       {displayIndex !== null && displayIndex !== undefined && (
-                        <span className="text-xs text-content-subtle w-6 text-center">{displayIndex}</span>
+                        <span className="formation-slot-index">{displayIndex}</span>
                       )}
-                      <IconButton
+                      <EntityActions><IconButton
                         variant="danger"
                         label={t('formationModal.removeSlot')}
                         onClick={() => handleRemoveSlot(index)}
@@ -150,19 +151,19 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                         <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                      </IconButton>
-                    </div>
+                      </IconButton></EntityActions>
+                    </EntityRow>
                   );
                 })}
-              </div>
+              </EntityList>
             </div>
-          </div>
+          </Stack>
         </ModalBody>
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving} className="flex-1">
+          <Button type="submit" variant="primary" disabled={isSaving}>
             {t('common.actions.save')}
           </Button>
         </ModalFooter>

@@ -39,6 +39,26 @@
       "endDate": "Enddatum"
     }
   },
+  "preferences": {
+    "account": "Konto",
+    "openMenu": "Einstellungen für {{name}} öffnen",
+    "language": "Sprache",
+    "theme": "Design",
+    "density": "Darstellungsdichte",
+    "system": "Systemeinstellung",
+    "languages": {
+      "en": "Englisch",
+      "de": "Deutsch"
+    },
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "densities": {
+      "default": "Normal",
+      "compact": "Kompakt"
+    }
+  },
   "domain": {
     "player": "Spieler",
     "players": "Spieler",
@@ -484,6 +504,7 @@
     "injured": "Verletzt",
     "sick": "Krank",
     "unavailable": "Abwesend",
+    "selected": "Ausgewählt",
     "notInvited": "Nicht eingeladen"
   },
   "playerInvitations": {
@@ -1104,5 +1125,56 @@
       "SPOND_REQUEST_FAILED": "Die Spond-Anfrage ist fehlgeschlagen.",
       "generic": "Die Spond-Synchronisierung konnte nicht abgeschlossen werden."
     }
+  },
+  "uiKit": {
+    "title": "UI-System",
+    "description": "Referenzkomponenten, Zustände, Designs und Darstellungsdichten.",
+    "theme": "Design",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "density": "Darstellungsdichte",
+    "defaultDensity": "Standard",
+    "compactDensity": "Kompakt",
+    "actions": "Aktionen",
+    "actionsDescription": "Gemeinsame Aktionshierarchie und Interaktionszustände.",
+    "primary": "Primär",
+    "secondary": "Sekundär",
+    "ghost": "Dezent",
+    "danger": "Gefahr",
+    "disabled": "Deaktiviert",
+    "loading": "Wird geladen",
+    "openDialog": "Dialog öffnen",
+    "forms": "Formulare",
+    "name": "Name",
+    "fieldHint": "Unterstützende Hinweise zum Feld erscheinen hier.",
+    "sampleName": "Alex Beispiel",
+    "role": "Rolle",
+    "notes": "Notizen",
+    "sampleNote": "Für das nächste Spiel verfügbar.",
+    "notifications": "Benachrichtigungen aktivieren",
+    "feedback": "Rückmeldungen und Status",
+    "successMessage": "Die Änderungen wurden gespeichert.",
+    "warningMessage": "Einige Angaben benötigen noch Aufmerksamkeit.",
+    "errorMessage": "Die Änderungen konnten nicht gespeichert werden.",
+    "brand": "Marke",
+    "ready": "Bereit",
+    "pending": "Ausstehend",
+    "failed": "Fehlgeschlagen",
+    "entities": "Entitätsliste",
+    "sampleMeta": "Spieler · Stufe 3",
+    "selectedEntity": "Ausgewähltes Mitglied",
+    "selectedMeta": "Aktuelle Auswahl",
+    "properties": "Eigenschaften und Metadaten",
+    "location": "Ort",
+    "sampleLocation": "Hauptplatz",
+    "responsible": "Verantwortliche Person",
+    "unassigned": "Nicht zugewiesen",
+    "sampleDate": "18. Oktober 2026",
+    "sampleTime": "14:30",
+    "table": "Datentabelle",
+    "status": "Status",
+    "empty": "Keine Einträge vorhanden.",
+    "dialogTitle": "Beispieldialog",
+    "dialogBody": "Dialoge verwenden in der gesamten Anwendung dieselbe Hierarchie, Abstände und Aktionen."
   }
 }

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, Route, RouterProvider, Routes } from 'react-router-dom';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiErrorBoundary from './components/ApiErrorBoundary';
 import AppInitializer from './components/AppInitializer';
@@ -8,6 +8,7 @@ import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import SelectedSquadRoute from './components/SelectedSquadRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import { PreferencesProvider } from './contexts/PreferencesContext';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import HomePage from './pages/HomePage';
@@ -31,10 +32,12 @@ import ShirtSetsPage from './pages/ShirtSetsPage';
 import SquadSettingsPage from './pages/SquadSettingsPage';
 import SquadSelectionPage from './pages/SquadSelectionPage';
 
+const UiKitPage = import.meta.env.DEV ? lazy(() => import('./pages/UiKitPage')) : null;
+
 function AppRoutes() {
   return (
     <AppInitializer>
-      <div className="min-h-screen bg-canvas">
+      <div className="app-shell">
         <Header />
         <ApiStatus />
         <ApiErrorBoundary>
@@ -44,6 +47,7 @@ function AppRoutes() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
                     <Route path="/" element={<HomePage />} />
+                    {UiKitPage && <Route path="/ui-kit" element={<Suspense fallback={null}><UiKitPage /></Suspense>} />}
                     
                     {/* Protected routes */}
                     <Route path="/squads" element={<ProtectedRoute><SquadSelectionPage /></ProtectedRoute>} />
@@ -105,9 +109,11 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <PreferencesProvider>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </PreferencesProvider>
     </ErrorBoundary>
   );
 }

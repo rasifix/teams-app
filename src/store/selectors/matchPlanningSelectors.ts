@@ -182,6 +182,11 @@ export function selectBenchedPlayerIds(team: Team, periodNumber: number): string
   return (team.selectedPlayers || []).filter((playerId) => !assignedPlayerIds.has(playerId));
 }
 
+export function selectBenchedPlayers(team: Team, players: Player[], periodNumber: number): Player[] {
+  const benchedIds = new Set(selectBenchedPlayerIds(team, periodNumber));
+  return players.filter((player) => benchedIds.has(player.id));
+}
+
 export function selectAssignablePlayersForSlot(
   team: Team,
   players: Player[],

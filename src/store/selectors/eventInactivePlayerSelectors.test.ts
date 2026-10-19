@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Activity, ActivityInvitation, Player, Team } from '../../types';
 import {
   isFutureEvent,
+  selectAvailableInvitePlayers,
   selectInactiveFutureEventPlayerIds,
   selectInviteablePlayers,
 } from './eventInactivePlayerSelectors';
@@ -62,6 +63,24 @@ describe('event inactive player selectors', () => {
     ]);
 
     expect(result.map((entry) => entry.id)).toEqual(['p1', 'p2']);
+  });
+
+  it('selects active and trial players within the level range who are not already invited', () => {
+    const result = selectAvailableInvitePlayers([
+      player({ id: 'p1', level: 2, status: 'active' }),
+      player({ id: 'p2', level: 3, status: 'trial' }),
+      player({ id: 'p3', level: 4, status: 'inactive' }),
+      player({ id: 'p4', level: 5, status: 'active' }),
+    ], ['p2'], [2, 4]);
+
+    expect(result.map((entry) => entry.id)).toEqual(['p1']);
+  });
+
+  it('returns an empty invite list when the range or exclusions remove every player', () => {
+    const players = [player({ id: 'p1', level: 1 }), player({ id: 'p2', level: 5 })];
+    expect(selectAvailableInvitePlayers(players, [], [2, 4])).toEqual([]);
+    expect(selectAvailableInvitePlayers(players, ['p1', 'p2'], [1, 5])).toEqual([]);
+    expect(selectAvailableInvitePlayers([], [], [1, 5])).toEqual([]);
   });
 
   it('detects future event dates only', () => {

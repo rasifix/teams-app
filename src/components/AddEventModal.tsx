@@ -6,7 +6,7 @@ import { selectDefaultMatchFormat } from '../store/selectors/matchPlanningSelect
 import { toStartsAt } from '../store/selectors/activitySelectors';
 import type { ActivityKind, ActivityPayload, InvitationResponse, Team } from '../types';
 import InvitePlayersModal from './InvitePlayersModal';
-import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -100,7 +100,7 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
       <ModalHeader><ModalTitle>{t('eventModal.addTitle')}</ModalTitle></ModalHeader>
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('activity.fields.kind')} htmlFor="activity-kind">
               <Select id="activity-kind" value={kind} onChange={(event) => setKind(event.target.value as ActivityKind)}>
                 <option value="match">{t('activity.kinds.match')}</option>
@@ -137,12 +137,12 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
             <Field label={t('eventModal.fields.minPlayersPerTeamRequired')} htmlFor="min-players">
               <Input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required />
             </Field>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm text-content" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
+            <Split gap="sm">
+              <span className="body-muted" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
               <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('eventModal.invitePlayersAction')}</Button>
-            </div>
+            </Split>
             {error && <Alert>{error}</Alert>}
-          </div>
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={onClose}>{t('common.actions.cancel')}</Button>

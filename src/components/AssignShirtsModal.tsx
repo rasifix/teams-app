@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Team, ShirtSet, Player } from '../types';
-import { Button, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Button, EmptyState, EntityContent, EntityList, EntityRow, EntityTitle, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Stack } from './ui';
+import { selectShirtAssignmentRows, selectShirtAssignmentSetup } from '../store/selectors/shirtSetSelectors';
 
 interface AssignShirtsModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function AssignShirtsModal({
   const { t } = useTranslation();
   const [selectedShirtSetId, setSelectedShirtSetId] = useState<string>(currentShirtSetId || '');
   const [selectedShirtSet, setSelectedShirtSet] = useState<ShirtSet | null>(null);
+  const [availableShirts, setAvailableShirts] = useState<ShirtSet['shirts']>([]);
   const [playerShirtAssignments, setPlayerShirtAssignments] = useState<Array<{ playerId: string; shirtNumber: number }>>([]);
   const [usedShirtsInOtherTeams, setUsedShirtsInOtherTeams] = useState<Set<number>>(new Set());
 
@@ -37,71 +39,15 @@ export default function AssignShirtsModal({
   }, [currentShirtSetId, isOpen]);
 
   useEffect(() => {
-    if (selectedShirtSetId) {
-      const shirtSet = shirtSets.find(s => s.id === selectedShirtSetId) || null;
-      setSelectedShirtSet(shirtSet);
-
-      const usedInOtherTeams = new Set<number>(usedShirtNumbersBySetId[selectedShirtSetId] ?? []);
-      setUsedShirtsInOtherTeams(usedInOtherTeams);
-
-      if (!shirtSet) {
-        setPlayerShirtAssignments([]);
-        setUsedShirtsInOtherTeams(new Set());
-        return;
-      }
-
-      const availableShirts = shirtSet.shirts.filter(shirt => shirt.status !== 'unavailable');
-      const shirtNumbersInSet = new Set(availableShirts.map(shirt => shirt.number));
-      const playersById = new Map(players.map(player => [player.id, player]));
-      const keepExistingAssignments = selectedShirtSetId === currentShirtSetId;
-      const usedShirtNumbers = new Set<number>();
-
-      // Preserve valid current assignments only when re-opening the same shirt set.
-      const initialAssignments = team.selectedPlayers.map(playerId => {
-        const existingAssignment = keepExistingAssignments
-          ? currentShirtAssignments?.find(a => a.playerId === playerId)
-          : undefined;
-
-        if (
-          existingAssignment &&
-          shirtNumbersInSet.has(existingAssignment.shirtNumber) &&
-          !usedShirtNumbers.has(existingAssignment.shirtNumber) &&
-          !usedInOtherTeams.has(existingAssignment.shirtNumber)
-        ) {
-          usedShirtNumbers.add(existingAssignment.shirtNumber);
-          return {
-            playerId,
-            shirtNumber: existingAssignment.shirtNumber
-          };
-        }
-
-        const preferredShirtNumber = playersById.get(playerId)?.preferredShirtNumber;
-        if (
-          preferredShirtNumber &&
-          shirtNumbersInSet.has(preferredShirtNumber) &&
-          !usedShirtNumbers.has(preferredShirtNumber) &&
-          !usedInOtherTeams.has(preferredShirtNumber)
-        ) {
-          usedShirtNumbers.add(preferredShirtNumber);
-          return {
-            playerId,
-            shirtNumber: preferredShirtNumber
-          };
-        }
-
-        return {
-          playerId,
-          shirtNumber: 0
-        };
-      });
-
-      setPlayerShirtAssignments(initialAssignments);
-    } else {
-      setSelectedShirtSet(null);
-      setPlayerShirtAssignments([]);
-      setUsedShirtsInOtherTeams(new Set());
-    }
-  }, [selectedShirtSetId, currentShirtSetId, team.selectedPlayers, currentShirtAssignments, shirtSets, players, usedShirtNumbersBySetId]);
+    const setup = selectShirtAssignmentSetup(
+      team, players, shirtSets, selectedShirtSetId, currentShirtSetId,
+      currentShirtAssignments, usedShirtNumbersBySetId,
+    );
+    setSelectedShirtSet(setup.shirtSet);
+    setAvailableShirts(setup.availableShirts);
+    setPlayerShirtAssignments(setup.assignments);
+    setUsedShirtsInOtherTeams(setup.usedInOtherTeams);
+  }, [selectedShirtSetId, currentShirtSetId, team, currentShirtAssignments, shirtSets, players, usedShirtNumbersBySetId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,6 +81,8 @@ export default function AssignShirtsModal({
     return usedShirtsInOtherTeams.has(shirtNumber);
   };
 
+  const assignmentRows = selectShirtAssignmentRows(team, players, playerShirtAssignments);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
@@ -143,13 +91,12 @@ export default function AssignShirtsModal({
         </ModalHeader>
 
         <ModalBody>
-          <div className="layout-stack layout-stack--lg">
+          <Stack gap="lg">
             <Field label={t('domain.shirtSets')} htmlFor="shirtSet">
               <Select
                 id="shirtSet"
                 value={selectedShirtSetId}
                 onChange={(e) => setSelectedShirtSetId(e.target.value)}
-                className="text-sm"
               >
                 <option value="">{t('assignShirts.selectSetPlaceholder')}</option>
                 {shirtSets.map(shirtSet => (
@@ -161,63 +108,50 @@ export default function AssignShirtsModal({
             </Field>
 
             {selectedShirtSet && (
-              <div>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {team.selectedPlayers.map(playerId => {
-                    const player = players.find(p => p.id === playerId);
-                    const currentAssignment = playerShirtAssignments.find(a => a.playerId === playerId);
-                    
-                    if (!player) return null;
-                    
-                    return (
-                      <div key={playerId} className="flex items-center gap-3 p-2 bg-surface-subtle rounded">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium truncate">{player.firstName} {player.lastName}</span>
-                        </div>
-                        <div className="w-32">
+              <Stack gap="sm">
+                <EntityList variant="separated" className="shirt-assignment-list">
+                  {assignmentRows.map(({ player, shirtNumber }) => (
+                      <EntityRow key={player.id} density="compact">
+                        <EntityContent><EntityTitle>{player.firstName} {player.lastName}</EntityTitle></EntityContent>
+                        <div className="shirt-assignment-control">
                           <Select
-                            value={currentAssignment?.shirtNumber || 0}
-                            onChange={(e) => handleShirtAssignment(playerId, parseInt(e.target.value) || 0)}
-                            className="w-full text-sm py-1"
+                            controlSize="sm"
+                            value={shirtNumber}
+                            onChange={(e) => handleShirtAssignment(player.id, parseInt(e.target.value) || 0)}
+                            aria-label={`${player.firstName} ${player.lastName}`}
                           >
                             <option value={0}>{t('assignShirts.noShirt')}</option>
-                            {selectedShirtSet.shirts
-                              .filter(shirt => shirt.status !== 'unavailable')
-                              .sort((a, b) => a.number - b.number)
-                              .map(shirt => (
+                            {availableShirts.map(shirt => (
                               <option 
                                 key={shirt.number} 
                                 value={shirt.number}
-                                disabled={isShirtAssigned(shirt.number, playerId) || isShirtUsedInOtherTeams(shirt.number)}
+                                disabled={isShirtAssigned(shirt.number, player.id) || isShirtUsedInOtherTeams(shirt.number)}
                               >
                                 #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? `(${t('shirts.goalkeeperShort')})` : ''}
                               </option>
                             ))}
                           </Select>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      </EntityRow>
+                  ))}
+                </EntityList>
 
                 {usedShirtsInOtherTeams.size > 0 && (
-                  <p className="text-xs text-content-muted mt-2">
+                  <p className="field-help">
                     {t('assignShirts.usedInOtherTeamsHint')}
                   </p>
                 )}
 
-                <p className="text-xs text-content-muted mt-1">
+                <p className="field-help">
                   {t('assignShirts.unavailableHint')}
                 </p>
 
                 {team.selectedPlayers.length === 0 && (
-                  <p className="text-content-subtle text-center py-4">
-                    {t('assignShirts.noPlayersInTeam')}
-                  </p>
+                  <EmptyState>{t('assignShirts.noPlayersInTeam')}</EmptyState>
                 )}
-              </div>
+              </Stack>
             )}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -225,14 +159,12 @@ export default function AssignShirtsModal({
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="flex-1"
           >
             {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="flex-1"
           >
             {t('assignShirts.assignAction')}
           </Button>

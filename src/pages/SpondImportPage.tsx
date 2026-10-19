@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Card, CardBody, CardTitle, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from '../components/ui';
+import { Alert, Button, Card, CardBody, CardTitle, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
 import {
   SpondCredentialsStep,
   SpondGroupStep,
@@ -18,12 +18,14 @@ import { createSpondReadClient, importSpondSnapshot } from '../services/spondSer
 import { useActivities, usePlayers, useSfvCatalog, useSquad, useSquadPeriods, useStore, useTrainers } from '../store';
 import {
   selectInitialSpondActivityDrafts,
+  selectInitialSpondGuardianSelection,
   selectInitialSpondMemberDrafts,
   selectFilteredSpondEventRows,
   selectNextSpondReviewStep,
   selectSpondActionableEventRows,
   selectSpondActionableGuardianRows,
   selectSpondActionableMemberRows,
+  selectSpondActivityDecisions,
   selectSpondLinkedGroup,
   selectSpondActivityDraftsWithSelection,
   selectSpondDateRangeError,
@@ -32,7 +34,9 @@ import {
   selectSpondGuardianRows,
   selectSpondImportPreview,
   selectSpondMemberRows,
+  selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
+  selectSpondReviewSteps,
   selectSpondSyncRange,
   selectSpondWizardProgressSteps,
   type SpondActivityDraft,
@@ -40,7 +44,7 @@ import {
   type SpondMemberDraft,
 } from '../store/selectors/spondSyncSelectors';
 import { selectDefaultActivityLimitsForCategory } from '../store/selectors/sfvCatalogSelectors';
-import type { SpondActivityDecision, SpondGroupSnapshot, SpondMemberDecision, SpondSnapshot } from '../types/spond';
+import type { SpondGroupSnapshot, SpondSnapshot } from '../types/spond';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { localDateStartToUtcISOString } from '../utils/dateFormatter';
 
@@ -115,7 +119,7 @@ export default function SpondImportPage() {
   );
   const dateRangeError = selectSpondDateRangeError(from, to);
   const canImport = Boolean(squad && canAccessRestrictedManagement(user, { squad, trainers }));
-  const reviewSteps = types.filter((type) => type !== 'guardians' || types.includes('players'));
+  const reviewSteps = selectSpondReviewSteps(types);
   const progressSteps = selectSpondWizardProgressSteps(reviewSteps, !isScopedSync) as Step[];
   const defaultActivityLimits = selectDefaultActivityLimitsForCategory(sfvCatalog, squad?.category);
 
@@ -198,7 +202,7 @@ export default function SpondImportPage() {
       setSnapshot(nextSnapshot);
       setMemberDrafts(selectInitialSpondMemberDrafts(nextMemberRows));
       setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
-      setGuardianSelection(Object.fromEntries(nextGuardianRows.map((row) => [row.source.id, !row.linkedGuardian])));
+      setGuardianSelection(selectInitialSpondGuardianSelection(nextGuardianRows));
       setPassword('');
       const firstReviewStep = reviewSteps.find((reviewStep) => (
         reviewStep === 'players' ? nextMemberRows.length > 0
@@ -259,31 +263,18 @@ export default function SpondImportPage() {
     }
   };
 
-  const buildMemberDecisions = (): SpondMemberDecision[] => memberRows.flatMap<SpondMemberDecision>((row) => {
-    const draft = memberDrafts[row.source.id];
-    if (!types.includes('players') || !draft || draft.action === 'skip') return [{ action: 'skip', spondMemberId: row.source.id }];
-    if (draft.action === 'link') return [{ action: 'link', spondMemberId: row.source.id, memberId: draft.memberId }];
-    const guardianIds = types.includes('guardians')
-      ? row.source.guardians.filter((guardian) => guardianSelection[guardian.id]).map((guardian) => guardian.id)
-      : [];
-    return [{ action: 'create-player', spondMemberId: row.source.id, birthDate: draft.birthDate, level: draft.level, status: 'active', guardianIds }];
-  });
-
-  const buildActivityDecisions = (): SpondActivityDecision[] => allEventRows.flatMap<SpondActivityDecision>((row) => {
-    if (!row.needsSync) return [{ action: 'skip', spondEventId: row.source.id }];
-    const draft = activityDrafts[row.source.id];
-    if (!types.includes('events') || !draft || draft.action === 'skip') return [{ action: 'skip', spondEventId: row.source.id }];
-    if (draft.action === 'link') return [{ action: 'link', spondEventId: row.source.id, activityId: draft.activityId }];
-    const needsTeam = draft.kind === 'match' || draft.kind === 'tournament';
-    return [{
-      action: 'create', spondEventId: row.source.id, kind: draft.kind,
-      trainerIds: draft.kind === 'training' ? draft.trainerIds : undefined,
-      teams: needsTeam && draft.teamName.trim() ? [{ name: draft.teamName.trim(), strength: 2, selectedPlayers: [] }] : undefined,
-    }];
-  });
-
-  const memberDecisions = buildMemberDecisions();
-  const activityDecisions = buildActivityDecisions();
+  const memberDecisions = selectSpondMemberDecisions(
+    memberRows,
+    memberDrafts,
+    types.includes('players'),
+    types.includes('guardians'),
+    guardianSelection,
+  );
+  const activityDecisions = selectSpondActivityDecisions(
+    allEventRows,
+    activityDrafts,
+    types.includes('events'),
+  );
   const decisionSummary = selectSpondDecisionSummary(memberRows, eventRows, memberDecisions, activityDecisions);
   const importPreview = selectSpondImportPreview(memberRows, guardianRows, eventRows, memberDecisions, activityDecisions);
 
@@ -341,17 +332,18 @@ export default function SpondImportPage() {
         <Button variant="secondary" onClick={() => navigate(closePath)}>{t("common.actions.close")}</Button>
         </PageActions>
       </PageHeader>
-      <div className="mb-6 flex gap-2" aria-label={t("spondSync.wizard.progress")}>
+      <div className="spond-wizard-progress" aria-label={t("spondSync.wizard.progress")}>
         {progressSteps.map((item, index) => (
           <div
             key={item}
-            className={`h-2 flex-1 rounded ${item === step ? "bg-brand-hover" : index < progressSteps.indexOf(step) ? "bg-brand-border" : "bg-surface-muted"}`}
+            className={`spond-wizard-progress-segment ${item === step ? "spond-wizard-progress-segment--active" : index < progressSteps.indexOf(step) ? "spond-wizard-progress-segment--complete" : ""}`}
           />
         ))}
       </div>
-      {error && <Alert className="mb-4">{error}</Alert>}
+      {error && <Alert className="spond-wizard-error">{error}</Alert>}
       <Card>
-        <CardBody className="space-y-5 p-5 lg:p-8">
+        <CardBody className="spond-wizard-body">
+          <Stack>
           <CardTitle>{stepTitle}</CardTitle>
           {step === "credentials" && (
             <SpondCredentialsStep
@@ -440,6 +432,7 @@ export default function SpondImportPage() {
               onApply={() => void apply()}
             />
           )}
+          </Stack>
         </CardBody>
       </Card>
     </Page>

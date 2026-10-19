@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Checkbox, Field, FieldLegend, Input, Radio, Select } from '../ui';
+import { Alert, Button, Checkbox, ChoiceCard, Cluster, ContentGrid, Field, FieldLegend, Input, Radio, Select, Stack } from '../ui';
 import type { Period } from '../../types';
 import type { SpondGroupSnapshot } from '../../types/spond';
 import SpondWizardActions from './SpondWizardActions';
@@ -45,11 +45,11 @@ export function SpondCredentialsStep({
           autoComplete="current-password"
         />
       </Field>
-      <div className="flex justify-end">
+      <Cluster align="end" className="spond-next-action">
         <Button disabled={busy || !email.trim() || !password} onClick={onNext}>
           {busy ? t('common.states.processing') : t('spondSync.wizard.next')}
         </Button>
-      </div>
+      </Cluster>
     </>
   );
 }
@@ -71,22 +71,21 @@ export function SpondGroupStep({
 }: SpondGroupStepProps) {
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <ContentGrid variant="equal">
         {groups.map((group) => (
-          <label
+          <ChoiceCard
             key={group.id}
-            className={`cursor-pointer rounded border p-4 ${groupId === group.id ? 'border-brand bg-brand-subtle' : 'border-edge'}`}
+            selected={groupId === group.id}
           >
             <Radio
-              className="mr-3"
               name="spond-group"
               checked={groupId === group.id}
               onChange={() => onGroupChange(group.id)}
             />
             {group.name}
-          </label>
+          </ChoiceCard>
         ))}
-      </div>
+      </ContentGrid>
       <SpondWizardActions back={onBack} next={onNext} nextDisabled={!groupId} />
     </>
   );
@@ -144,25 +143,25 @@ export function SpondImportTypesStep({
   return (
     <>
       {subGroups.length > 0 && !subGroupSelectionLocked && (
-        <div className="space-y-2">
+        <Stack gap="sm">
           <div>
-            <FieldLegend className="mb-0">{t('spondSync.wizard.subgroups.title')}</FieldLegend>
+            <FieldLegend>{t('spondSync.wizard.subgroups.title')}</FieldLegend>
             <p className="body-muted">{t('spondSync.wizard.subgroups.help')}</p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <ContentGrid variant="equal">
             {subGroups.map((subGroup) => (
-              <label key={subGroup.id} className="flex cursor-pointer items-center gap-2 rounded border border-edge p-3 hover:bg-surface-subtle">
+              <ChoiceCard key={subGroup.id} density="compact" selected={selectedSubGroupId === subGroup.id}>
                 <Radio
                   name="spond-subgroup"
                   checked={selectedSubGroupId === subGroup.id}
                   onChange={() => onSubGroupSelectionChange(subGroup.id)}
                 />
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: subGroup.color ?? 'var(--color-text-disabled)' }} aria-hidden="true" />
+                <span className="spond-subgroup-color" style={{ backgroundColor: subGroup.color ?? 'var(--color-text-disabled)' }} aria-hidden="true" />
                 <span>{subGroup.name}</span>
-              </label>
+              </ChoiceCard>
             ))}
-          </div>
-        </div>
+          </ContentGrid>
+        </Stack>
       )}
       {isEventOnly ? (
         <>
@@ -174,28 +173,27 @@ export function SpondImportTypesStep({
       ) : (
         <>
           <p className="body-muted">{t('spondSync.wizard.typesHelp')}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <ContentGrid variant="equal">
             {(['players', 'events'] as const).map((type) => (
-              <label
+              <ChoiceCard
                 key={type}
-                className={`cursor-pointer rounded border p-4 ${types.includes(type) ? 'border-brand bg-brand-subtle' : 'border-edge'}`}
+                selected={types.includes(type)}
               >
                 <Checkbox
-                  className="mr-3"
                   checked={types.includes(type)}
                   onChange={() => onToggleType(type)}
                 />
                 {t(`spondSync.wizard.importTypes.${type}`)}
-              </label>
+              </ChoiceCard>
             ))}
-          </div>
+          </ContentGrid>
         </>
       )}
       {!isEventOnly && hasEvents && (
         <SpondPeriodSelector periods={periods} periodId={periodId} onChange={onPeriodChange} />
       )}
       {hasEvents && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <ContentGrid variant="equal">
           <Field label={t('filters.from')} htmlFor="spond-from">
             <Input
               id="spond-from"
@@ -212,7 +210,7 @@ export function SpondImportTypesStep({
               onChange={(event) => onToChange(event.target.value)}
             />
           </Field>
-        </div>
+        </ContentGrid>
       )}
       {hasEvents && dateRangeError && <Alert>{t(`spondSync.dateErrors.${dateRangeError}`)}</Alert>}
       <SpondWizardActions

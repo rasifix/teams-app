@@ -1,5 +1,5 @@
-import type { Activity, InvitationStatus, Player, Trainer } from '../../types';
-import { getActivityDate, getActivityStartTime, getActivityTime, getInvitationStatus, selectInvitationCounts } from './activitySelectors';
+import type { Activity, ActivityInvitation, InvitationResponse, InvitationStatus, Player, Trainer } from '../../types';
+import { getActivityDate, getActivityStartTime, getActivityTime, getInvitationStatus, isSpondManagedInvitation, selectAvailableInvitations, selectInvitationCounts, selectInvitationsByResponse, sortActivities } from './activitySelectors';
 import { selectTeamResponsiblePeople } from './teamTrainerSelectors';
 
 export interface ActivityCardTeamSummary {
@@ -66,4 +66,48 @@ export function selectActivityCardSummary(
 
 export function selectMinimumActivityMaxPlayers(activity: Activity): number {
   return Math.max(1, ...(activity.teams ?? []).map((team) => team.selectedPlayers?.length ?? 0));
+}
+
+export function selectAdjacentActivities(activities: Activity[], activityId: string): {
+  previous?: Activity;
+  next?: Activity;
+} {
+  const sorted = sortActivities(activities);
+  const currentIndex = sorted.findIndex((activity) => activity.id === activityId);
+  if (currentIndex < 0) return {};
+  return {
+    previous: currentIndex > 0 ? sorted[currentIndex - 1] : undefined,
+    next: currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : undefined,
+  };
+}
+
+export interface InvitationViewRow {
+  invitation: ActivityInvitation;
+  player?: Player;
+  assigned: boolean;
+  managed: boolean;
+}
+
+export function selectInvitationViewRows(
+  activity: Activity,
+  players: Player[],
+  assignedPlayerIds: string[],
+  response: 'available' | InvitationResponse,
+  readOnly = false,
+): InvitationViewRow[] {
+  const assigned = new Set(assignedPlayerIds);
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  const invitations = response === 'available'
+    ? selectAvailableInvitations(activity.invitations, assignedPlayerIds)
+    : selectInvitationsByResponse(activity.invitations, response);
+
+  return invitations.map((invitation) => {
+    const player = playersById.get(invitation.playerId);
+    return {
+      invitation,
+      player,
+      assigned: assigned.has(invitation.playerId),
+      managed: readOnly || isSpondManagedInvitation(activity, player),
+    };
+  });
 }

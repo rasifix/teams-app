@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
 import DuplicateMembersModal from "../components/DuplicateMembersModal";
-import { Button, Panel, PanelTitle } from "../components/ui";
+import { Button, Cluster, Panel, SectionActions, SectionHeader, SectionHeaderContent, SectionTitle } from "../components/ui";
 import { useActivities, useTrainers } from "../store";
 import { selectDuplicateTrainerGuardianGroups } from "../store/selectors/memberDuplicateSelectors";
 import type { MembersOutletContext } from "./MembersPage";
@@ -26,9 +26,9 @@ export default function MembersTrainersPage() {
 
   return (
     <Panel>
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <PanelTitle>{t("members.allTrainersTitle", { count: trainers.length })}</PanelTitle>
-          <div className="layout-cluster layout-cluster--wrap">
+        <SectionHeader>
+          <SectionHeaderContent><SectionTitle>{t("members.allTrainersTitle", { count: trainers.length })}</SectionTitle></SectionHeaderContent>
+          <SectionActions><Cluster gap="sm">
             {!spondLinked && (
               <>
                 <Button variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
@@ -39,8 +39,8 @@ export default function MembersTrainersPage() {
                 </Button>
               </>
             )}
-          </div>
-        </div>
+          </Cluster></SectionActions>
+        </SectionHeader>
 
         <MembersList members={trainers} onDelete={spondLinked ? undefined : requestDeleteTrainer} memberType="trainers" />
 

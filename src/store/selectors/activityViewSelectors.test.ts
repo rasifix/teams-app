@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity } from '../../types';
-import { selectActivityCardSummary, selectMinimumActivityMaxPlayers } from './activityViewSelectors';
+import { selectActivityCardSummary, selectAdjacentActivities, selectInvitationViewRows, selectMinimumActivityMaxPlayers } from './activityViewSelectors';
 
 const baseActivity: Activity = {
   id: 'activity-1', squadId: 'squad-1', kind: 'match', name: 'Match', startsAt: '2026-05-01T18:30:00.000Z',
@@ -60,5 +60,34 @@ describe('activity view selectors', () => {
   it('reports at least one required player even when teams are empty', () => {
     expect(selectMinimumActivityMaxPlayers({ ...baseActivity, teams: [] })).toBe(1);
     expect(selectMinimumActivityMaxPlayers({ ...baseActivity, teams: [{ ...baseActivity.teams[0], selectedPlayers: ['a', 'b'] }] })).toBe(2);
+  });
+
+  it('selects adjacent activities in chronological order with boundary fallbacks', () => {
+    const earlier = { ...baseActivity, id: 'earlier', startsAt: '2026-04-01T18:30:00.000Z' };
+    const later = { ...baseActivity, id: 'later', startsAt: '2026-06-01T18:30:00.000Z' };
+    expect(selectAdjacentActivities([later, baseActivity, earlier], baseActivity.id)).toEqual({ previous: earlier, next: later });
+    expect(selectAdjacentActivities([baseActivity, later], baseActivity.id)).toEqual({ previous: undefined, next: later });
+    expect(selectAdjacentActivities([baseActivity], 'missing')).toEqual({});
+  });
+
+  it('builds invitation rows with player, assignment, and managed-state fallbacks', () => {
+    const activity = {
+      ...baseActivity,
+      spondId: 'spond-event',
+      invitations: [
+        { id: 'i-1', playerId: 'p-1', response: 'accepted' as const, spondId: 'spond-invite' },
+        { id: 'i-2', playerId: 'missing', response: 'declined' as const },
+      ],
+    };
+    const players = [{ id: 'p-1', firstName: 'Ada', lastName: 'One', birthDate: '2014-01-01', level: 3, status: 'active' as const, spondId: 'spond-player' }];
+
+    expect(selectInvitationViewRows(activity, players, [], 'available')).toMatchObject([
+      { invitation: { id: 'i-1' }, player: { id: 'p-1' }, assigned: false, managed: true },
+    ]);
+    expect(selectInvitationViewRows(activity, players, ['p-1'], 'available')).toEqual([]);
+    expect(selectInvitationViewRows(activity, players, [], 'declined')).toMatchObject([
+      { invitation: { id: 'i-2' }, player: undefined, assigned: false, managed: false },
+    ]);
+    expect(selectInvitationViewRows(activity, players, [], 'declined', true)[0].managed).toBe(true);
   });
 });

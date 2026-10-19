@@ -7,7 +7,7 @@ export default function LoginButton() {
   return (
     <ButtonLink
       to="/login"
-      className="ml-2 gap-2"
+      className="app-login-button"
       title={t('auth.login')}
     >
       <svg

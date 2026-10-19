@@ -4,7 +4,7 @@ import { useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { getActivityDate, getActivityTime, toStartsAt } from '../store/selectors/activitySelectors';
 import type { Activity, ActivityKind, ActivityPayload } from '../types';
-import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Stack } from './ui';
 
 interface EditEventModalProps {
   isOpen: boolean;
@@ -74,7 +74,7 @@ export default function EditEventModal({ isOpen, onClose, onSave, currentActivit
       <ModalHeader><ModalTitle>{t('editEventModal.title')}</ModalTitle></ModalHeader>
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             {isSpondManaged && <Alert tone="info">{t('spondSync.managedFields')}</Alert>}
             {canChangeMatchType && <Field label={t('activity.fields.kind')} htmlFor="edit-event-kind"><Select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as 'match' | 'tournament'; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }}><option value="match">{t('activity.kinds.match')}</option><option value="tournament">{t('activity.kinds.tournament')}</option></Select></Field>}
             <Field label={t('eventModal.fields.eventName')} htmlFor="edit-event-name"><Input id="edit-event-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={isSpondManaged} /></Field>
@@ -86,7 +86,7 @@ export default function EditEventModal({ isOpen, onClose, onSave, currentActivit
             <Field label={t('eventModal.fields.maxPlayersPerTeam')} htmlFor="edit-max-players"><Input id="edit-max-players" type="number" min={Math.max(minMaxPlayers, 1)} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
             <Field label={t('eventModal.fields.minPlayersPerTeam')} htmlFor="edit-min-players"><Input id="edit-min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
             {error && <Alert>{error}</Alert>}
-          </div>
+          </Stack>
         </ModalBody>
         <ModalFooter><Button type="button" variant="secondary" onClick={onClose}>{t('common.actions.cancel')}</Button><Button type="submit" variant="primary">{t('common.actions.save')}</Button></ModalFooter>
       </form>

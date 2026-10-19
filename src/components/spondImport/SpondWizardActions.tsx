@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Button } from '../ui';
+import { Button, Split } from '../ui';
 
 interface SpondWizardActionsProps {
   back: () => void;
@@ -19,11 +19,11 @@ export default function SpondWizardActions({
   const { t } = useTranslation();
 
   return (
-    <div className="flex justify-between border-t pt-5">
+    <Split className="spond-wizard-actions">
       <Button variant="secondary" onClick={back}>{t('common.actions.back')}</Button>
       <Button disabled={nextDisabled || busy} onClick={next}>
         {busy ? t('common.states.processing') : nextLabel ?? t('spondSync.wizard.next')}
       </Button>
-    </div>
+    </Split>
   );
 }

@@ -185,7 +185,7 @@ export default function MembersPage() {
       )}
 
       {/* Tab Navigation */}
-      <NavigationTabs label={t('common.tabs')} className="mb-5">
+      <NavigationTabs label={t('common.tabs')} className="members-tabs">
           <NavigationTab to="/members/players">
             {t('domain.players')} ({players.length})
           </NavigationTab>

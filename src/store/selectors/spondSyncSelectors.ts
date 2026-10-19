@@ -45,6 +45,10 @@ export function selectSpondWizardProgressSteps(
   return ['credentials', ...(includeGroupSelection ? ['group'] as const : []), 'types', ...reviewSteps, 'summary'];
 }
 
+export function selectSpondReviewSteps(types: SpondReviewStep[]): SpondReviewStep[] {
+  return types.filter((type) => type !== 'guardians' || types.includes('players'));
+}
+
 export function selectNextSpondReviewStep(steps: SpondReviewStep[], current: SpondReviewStep): SpondReviewStep | 'summary' {
   const index = steps.indexOf(current);
   return index >= 0 && index < steps.length - 1 ? steps[index + 1] : 'summary';
@@ -232,6 +236,70 @@ export function selectSpondActivityDraftsWithSelection(
       : { ...current, action: 'skip' };
   });
   return next;
+}
+
+export function selectInitialSpondGuardianSelection(
+  rows: SpondGuardianRow[],
+): Record<string, boolean> {
+  return Object.fromEntries(rows.map((row) => [row.source.id, !row.linkedGuardian]));
+}
+
+export function selectSpondMemberDecisions(
+  rows: SpondMemberRow[],
+  drafts: Record<string, SpondMemberDraft>,
+  importPlayers: boolean,
+  importGuardians: boolean,
+  guardianSelection: Record<string, boolean>,
+): SpondMemberDecision[] {
+  return rows.flatMap<SpondMemberDecision>((row) => {
+    const draft = drafts[row.source.id];
+    if (!importPlayers || !draft || draft.action === 'skip') {
+      return [{ action: 'skip', spondMemberId: row.source.id }];
+    }
+    if (draft.action === 'link') {
+      return [{ action: 'link', spondMemberId: row.source.id, memberId: draft.memberId }];
+    }
+    const guardianIds = importGuardians
+      ? row.source.guardians
+        .filter((guardian) => guardianSelection[guardian.id])
+        .map((guardian) => guardian.id)
+      : [];
+    return [{
+      action: 'create-player',
+      spondMemberId: row.source.id,
+      birthDate: draft.birthDate,
+      level: draft.level,
+      status: 'active',
+      guardianIds,
+    }];
+  });
+}
+
+export function selectSpondActivityDecisions(
+  rows: SpondEventRow[],
+  drafts: Record<string, SpondActivityDraft>,
+  importEvents: boolean,
+): SpondActivityDecision[] {
+  return rows.flatMap<SpondActivityDecision>((row) => {
+    if (!row.needsSync) return [{ action: 'skip', spondEventId: row.source.id }];
+    const draft = drafts[row.source.id];
+    if (!importEvents || !draft || draft.action === 'skip') {
+      return [{ action: 'skip', spondEventId: row.source.id }];
+    }
+    if (draft.action === 'link') {
+      return [{ action: 'link', spondEventId: row.source.id, activityId: draft.activityId }];
+    }
+    const needsTeam = draft.kind === 'match' || draft.kind === 'tournament';
+    return [{
+      action: 'create',
+      spondEventId: row.source.id,
+      kind: draft.kind,
+      trainerIds: draft.kind === 'training' ? draft.trainerIds : undefined,
+      teams: needsTeam && draft.teamName.trim()
+        ? [{ name: draft.teamName.trim(), strength: 2, selectedPlayers: [] }]
+        : undefined,
+    }];
+  });
 }
 
 export interface SpondDecisionSummary {

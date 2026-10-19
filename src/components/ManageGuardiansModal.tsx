@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Guardian } from '../types';
 import type { ExistingGuardianUserOption } from '../store/selectors/guardianAssignmentSelectors';
 import { hasDuplicateGuardian } from '../utils/guardians';
-import { Alert, Button, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, Select } from './ui';
+import { Alert, Button, ChoiceGroup, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, Select, Stack } from './ui';
 
 interface ManageGuardiansModalProps {
   isOpen: boolean;
@@ -187,8 +187,8 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
-            <div className="flex gap-4">
+          <Stack>
+            <ChoiceGroup>
               <label className="checkbox-label">
                 <Radio
                   name="guardianMode"
@@ -213,7 +213,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                 />
                 {t('guardians.newGuardian')}
               </label>
-            </div>
+            </ChoiceGroup>
 
             {mode === 'existing' ? (
               <div>
@@ -232,13 +232,13 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                   ))}
                 </Select>
                 {availableExistingUsers.length === 0 && (
-                  <p className="text-xs text-content-subtle mt-2">{t('guardians.noAvailableUsers')}</p>
+                  <p className="field-help">{t('guardians.noAvailableUsers')}</p>
                 )}
                 {isEditMode && (
-                  <p className="text-xs text-content-subtle mt-2">{t('guardians.selectionLocked')}</p>
+                  <p className="field-help">{t('guardians.selectionLocked')}</p>
                 )}
                 {isEditMode && (
-                <div className="mt-3 grid grid-cols-1 gap-3">
+                <Stack gap="sm" className="guardian-edit-fields">
                   <div>
                     <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}</FieldLabel>
                     <Input
@@ -272,7 +272,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                       required={mode === 'existing'}
                     />
                   </div>
-                </div>
+                </Stack>
                 )}
               </div>
             ) : (
@@ -309,19 +309,19 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     placeholder={t('guardians.placeholderEmail')}
                   />
                 </div>
-                <p className="text-xs text-content-subtle">{t('guardians.documentedHint')}</p>
+                <p className="field-help">{t('guardians.documentedHint')}</p>
               </>
             )}
 
             {error && <Alert>{error}</Alert>}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={handleClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" className="flex-1" disabled={isSubmitting}>
+          <Button type="submit" variant="primary" disabled={isSubmitting}>
             {isEditMode ? t('common.actions.save') : t('guardians.assignAction')}
           </Button>
         </ModalFooter>

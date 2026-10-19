@@ -7,6 +7,12 @@ export interface GroupedPlayerEventHistory {
   eventHistory: PlayerEventHistoryItem[];
 }
 
+export interface GroupedDatedHistory<T> {
+  id: string;
+  title: string;
+  eventHistory: T[];
+}
+
 const toComparableDate = (dateString: string): string | null => {
   if (!dateString) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
@@ -51,18 +57,24 @@ export const selectGroupedPlayerEventHistory = (
   squadPeriods: Period[],
   playerEventHistory: PlayerEventHistoryItem[],
   outsidePeriodsTitle: string
-): GroupedPlayerEventHistory[] | null => {
+): GroupedPlayerEventHistory[] | null => selectGroupedDatedHistory(squadPeriods, playerEventHistory, outsidePeriodsTitle);
+
+export const selectGroupedDatedHistory = <T extends { eventDate: string }>(
+  squadPeriods: Period[],
+  eventHistory: T[],
+  outsidePeriodsTitle: string,
+): GroupedDatedHistory<T>[] | null => {
   const validPeriods = squadPeriods.filter(isValidPeriod);
   if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) return null;
 
-  const groupedByPeriod: GroupedPlayerEventHistory[] = validPeriods.map((period) => ({
+  const groupedByPeriod: GroupedDatedHistory<T>[] = validPeriods.map((period) => ({
     id: period.id,
     title: period.name,
     eventHistory: [],
   }));
-  const outsidePeriods: PlayerEventHistoryItem[] = [];
+  const outsidePeriods: T[] = [];
 
-  playerEventHistory.forEach((historyItem) => {
+  eventHistory.forEach((historyItem) => {
     const eventDate = toComparableDate(historyItem.eventDate);
     if (!eventDate) {
       outsidePeriods.push(historyItem);

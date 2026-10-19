@@ -6,11 +6,11 @@ import { useAuth } from '../hooks/useAuth';
 import { selectHeaderNavItems } from '../store/selectors/navigationSelectors';
 import LoginButton from './LoginButton';
 import LogoutButton from './LogoutButton';
-import { SUPPORTED_LANGUAGES } from '../i18n/config';
-import { Button, IconButton } from './ui';
+import { IconButton } from './ui';
+import UserPreferencesMenu from './UserPreferencesMenu';
 
 export default function Header() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const squad = useSquad();
@@ -30,11 +30,7 @@ export default function Header() {
     [user, squad, trainers],
   );
 
-  const activeLanguage = i18n.language.startsWith('de') ? 'de' : 'en';
-
-  const handleLanguageChange = (language: 'en' | 'de') => {
-    void i18n.changeLanguage(language);
-  };
+  const userName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || t('preferences.account');
 
   return (
     <header className="app-header">
@@ -49,7 +45,7 @@ export default function Header() {
               </svg>
             </span>
             <div>
-              <h1 className="app-brand-title">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</h1>
+              <span className="app-brand-title">{isAuthenticated ? (squad?.name || t('app.name')) : t('app.name')}</span>
               <p className="app-brand-tagline">{t('app.tagline')}</p>
             </div>
           </Link>
@@ -68,29 +64,9 @@ export default function Header() {
                 </Link>
               );
             })}
-            <div className="app-language-switcher" aria-label={t('common.language')}>
-              {SUPPORTED_LANGUAGES.map((language) => {
-                const isActive = activeLanguage === language;
-                return (
-                  <Button
-                    key={language}
-                    type="button"
-                    variant={isActive ? 'primary' : 'inverse'}
-                    size="sm"
-                    onClick={() => handleLanguageChange(language)}
-                    className="min-w-8 px-2 text-eyebrow"
-                    aria-pressed={isActive}
-                  >
-                    {language.toUpperCase()}
-                  </Button>
-                );
-              })}
-            </div>
             {isAuthenticated ? (
               <div className="app-account">
-                <span className="app-account-name">
-                  {user?.firstName} {user?.lastName}
-                </span>
+                <UserPreferencesMenu userName={userName} />
                 <LogoutButton />
               </div>
             ) : (
@@ -143,31 +119,10 @@ export default function Header() {
                   </Link>
                 );
               })}
-              <div className="app-mobile-section">
-                <div className="app-mobile-label">{t('common.language')}</div>
-                <div className="layout-cluster">
-                  {SUPPORTED_LANGUAGES.map((language) => {
-                    const isActive = activeLanguage === language;
-                    return (
-                      <Button
-                        key={language}
-                        type="button"
-                        variant={isActive ? 'primary' : 'inverse'}
-                        size="sm"
-                        onClick={() => handleLanguageChange(language)}
-                        className="px-2 text-xs"
-                        aria-pressed={isActive}
-                      >
-                        {language.toUpperCase()}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
               {isAuthenticated ? (
                 <>
-                  <div className="app-mobile-user">
-                    {user?.firstName} {user?.lastName}
+                  <div className="app-mobile-section">
+                    <UserPreferencesMenu userName={userName} mobile />
                   </div>
                   <div className="app-mobile-section">
                     <LogoutButton />

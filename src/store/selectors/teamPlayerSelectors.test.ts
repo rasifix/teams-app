@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Player, Team } from '../../types';
-import { selectAvailablePlayersForTeamSelection, selectTeamPlayersByName } from './teamPlayerSelectors';
+import { selectAvailablePlayersForTeamSelection, selectTeamPlayersByName, selectTeamPlayersInRosterOrder, selectTeamPrintSummaries, selectTeamSelectionCapacity } from './teamPlayerSelectors';
 
 function player(id: string, firstName: string, lastName: string): Player {
   return { id, firstName, lastName, birthDate: '2015-06-15', level: 3, status: 'active' };
@@ -37,6 +37,69 @@ describe('selectTeamPlayersByName', () => {
       player('outside', 'Ben', 'Zulu'),
     ]).map((entry) => entry.id)).toEqual(['p1']);
     expect(selectTeamPlayersByName(team(), [])).toEqual([]);
+  });
+});
+
+describe('team selection view selectors', () => {
+  it('resolves current players in roster order and ignores missing ids', () => {
+    expect(selectTeamPlayersInRosterOrder(team(['p2', 'missing', 'p1']), [
+      player('p1', 'Ada', 'One'),
+      player('p2', 'Ben', 'Two'),
+    ]).map((entry) => entry.id)).toEqual(['p2', 'p1']);
+    expect(selectTeamPlayersInRosterOrder(team(), [])).toEqual([]);
+  });
+
+  it('calculates free capacity and lets pending removals offset additions', () => {
+    expect(selectTeamSelectionCapacity(team(['p1', 'p2']), 3, ['p3'], [])).toEqual({
+      currentPlayerCount: 2,
+      remainingSlots: 1,
+      availableAdditionSlots: 1,
+      canAddMore: true,
+    });
+    expect(selectTeamSelectionCapacity(team(['p1', 'p2']), 2, ['p3'], [])).toMatchObject({ canAddMore: false });
+    expect(selectTeamSelectionCapacity(team(['p1', 'p2']), 2, ['p3'], ['p1'])).toMatchObject({ canAddMore: true });
+  });
+
+  it('clamps remaining capacity when a roster already exceeds the configured maximum', () => {
+    expect(selectTeamSelectionCapacity(team(['p1', 'p2']), 1, [], [])).toEqual({
+      currentPlayerCount: 2,
+      remainingSlots: 0,
+      availableAdditionSlots: 0,
+      canAddMore: true,
+    });
+  });
+});
+
+describe('selectTeamPrintSummaries', () => {
+  const activity: Activity = {
+    id: 'a1', squadId: 's1', kind: 'tournament', name: 'Cup', startsAt: '2026-01-01T10:00:00Z',
+    location: ' Main field ', teams: [], invitations: [],
+  };
+
+  it('resolves sorted players, shirts, responsible people, and team location overrides', () => {
+    const printableTeam = {
+      ...team(['p1', 'p2']), location: ' Field 2 ', responsiblePersonIds: ['trainer-1'],
+      shirtAssignments: [{ playerId: 'p1', shirtNumber: 7 }],
+    };
+    const summaries = selectTeamPrintSummaries(activity, [printableTeam], [
+      player('p1', 'Ada', 'Zulu'), player('p2', 'Ben', 'Alpha'),
+    ], [{ id: 'trainer-1', firstName: 'Sam', lastName: 'Coach' }]);
+    expect(summaries[0]).toMatchObject({
+      location: 'Field 2',
+      responsiblePeople: [{ id: 'trainer-1', firstName: 'Sam' }],
+      players: [{ player: { id: 'p2' } }, { player: { id: 'p1' }, shirtNumber: 7 }],
+    });
+  });
+
+  it('uses the event location for matches and omits missing players', () => {
+    const printableTeam = { ...team(['missing']), location: 'Override' };
+    expect(selectTeamPrintSummaries({ ...activity, kind: 'match' }, [printableTeam], [], [])[0]).toMatchObject({
+      location: 'Main field', players: [], responsiblePeople: [],
+    });
+  });
+
+  it('returns an empty fallback for no teams', () => {
+    expect(selectTeamPrintSummaries(activity, [], [], [])).toEqual([]);
   });
 });
 

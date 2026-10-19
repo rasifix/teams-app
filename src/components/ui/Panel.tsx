@@ -25,6 +25,14 @@ export function PanelHeader({ className, ...props }: HTMLAttributes<HTMLDivEleme
   return <div className={classNames('ui-panel-header', className)} {...props} />;
 }
 
+export interface PanelBodyProps extends HTMLAttributes<HTMLDivElement> {
+  padding?: 'default' | 'compact';
+}
+
+export function PanelBody({ padding = 'default', className, ...props }: PanelBodyProps) {
+  return <div className={classNames('ui-panel-body', padding === 'compact' && 'ui-panel-body--compact', className)} {...props} />;
+}
+
 export function PanelTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return <h2 className={classNames('ui-panel-title', className)} {...props} />;
 }

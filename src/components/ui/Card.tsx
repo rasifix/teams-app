@@ -1,41 +1,29 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes } from 'react';
+import { classNames } from './classNames';
 
-interface CardProps {
-  children: ReactNode;
-  className?: string;
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'interactive' | 'selected' | 'print';
 }
 
-export function Card({ children, className = '' }: CardProps) {
-  return (
-    <div className={`card ${className}`}>
-      {children}
-    </div>
-  );
+export function Card({ variant = 'default', className, ...props }: CardProps) {
+  return <div className={classNames('card', variant !== 'default' && `card--${variant}`, className)} {...props} />;
 }
 
-export function CardBody({ children, className = '' }: CardProps) {
-  return (
-    <div className={`card-body ${className}`}>
-      {children}
-    </div>
-  );
+export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={classNames('card-body', className)} {...props} />;
 }
 
-export function CardTitle({ children, className = '' }: CardProps) {
-  return (
-    <h2 className={`card-title ${className}`}>
-      {children}
-    </h2>
-  );
+export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={classNames('card-title', className)} {...props} />;
 }
 
-interface SummaryCardProps extends CardProps {
+interface SummaryCardProps extends HTMLAttributes<HTMLDivElement> {
   tone?: 'brand' | 'info' | 'success' | 'accent';
 }
 
-export function SummaryCard({ children, className = '', tone = 'brand' }: SummaryCardProps) {
+export function SummaryCard({ children, className, tone = 'brand', ...props }: SummaryCardProps) {
   return (
-    <div className={`summary-card summary-card--${tone} ${className}`.trim()}>
+    <div className={classNames('summary-card', `summary-card--${tone}`, className)} {...props}>
       <div className="summary-card__accent" />
       {children}
     </div>

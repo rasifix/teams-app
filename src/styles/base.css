@@ -8,8 +8,21 @@ html {
   min-width: 20rem;
   background: var(--color-canvas);
   color: var(--color-text);
+  line-height: var(--leading-normal);
+  tab-size: 4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 body {
@@ -19,6 +32,18 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
 }
+
+:where(h1, h2, h3, h4, h5, h6, p, blockquote, figure, pre, dl, dd) { margin: 0; }
+:where(ol, ul, menu) { margin: 0; padding: 0; list-style: none; }
+:where(a) { color: inherit; text-decoration: inherit; }
+:where(button) { cursor: pointer; border: 0; background: transparent; padding: 0; color: inherit; }
+:where(button:disabled) { cursor: default; }
+:where(fieldset) { margin: 0; border: 0; padding: 0; }
+:where(legend) { padding: 0; }
+:where(table) { border-collapse: collapse; border-color: inherit; text-indent: 0; }
+:where(img, svg, video, canvas, audio, iframe, embed, object) { display: block; vertical-align: middle; }
+:where(img, video) { max-width: 100%; height: auto; }
+:where([hidden]) { display: none !important; }
 
 ::selection {
   background: var(--color-brand-muted);
@@ -73,11 +98,7 @@ body {
   accent-color: var(--color-brand-strong);
 }
 
-/*
- * Tailwind's preflight resets form padding with element selectors. These
- * element-level defaults intentionally match that specificity, occur later,
- * and still allow class utilities or feature styles to override them.
- */
+/* Element-level control defaults remain overridable by component recipes. */
 input,
 select {
   min-height: var(--control-height-lg);

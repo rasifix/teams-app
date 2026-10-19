@@ -8,7 +8,7 @@ import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from 
 import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEvents } from '../store/selectors/homeSelectors';
 import type { CreateSquadRequest } from '../types';
-import { Alert, Button, ButtonLink, ChevronRightIcon, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from '../components/ui';
+import { ActionCard, ActionCardTitle, Alert, Button, ButtonLink, ChevronRightIcon, ContentGrid, EmptyState, EntityMeta, IconTile, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, SectionActions, SectionEyebrow, SectionHeader, SectionHeaderContent, SectionTitle, Stack, StatusMarker } from '../components/ui';
 
 const featureIcons = [
   <svg key="members" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -81,7 +81,7 @@ export default function HomePage() {
 
   return (
     <Page>
-      <PageHeader className="border-b border-edge pb-7">
+      <PageHeader>
         <PageHeaderContent>
           <PageTitle>
             {t(isAuthenticated ? 'home.overviewTitle' : 'home.publicTitle')}
@@ -103,85 +103,81 @@ export default function HomePage() {
       </PageHeader>
 
       {!isAuthenticated ? (
-        <section className="home-feature-grid" aria-label={t('home.featuresLabel')}>
+        <ContentGrid variant="threeColumn" className="home-feature-grid" aria-label={t('home.featuresLabel')}>
           {features.map((feature, index) => (
-            <article key={feature.title} className="home-feature-card">
-              <div className="home-feature-icon">
-                <span className="icon-md">{featureIcons[index]}</span>
-              </div>
-              <h2 className="home-feature-title">{feature.title}</h2>
-              <p className="supporting-text">{feature.description}</p>
-            </article>
+            <Panel key={feature.title}>
+              <Stack>
+                <IconTile tone="brand"><span className="icon-md">{featureIcons[index]}</span></IconTile>
+                <div><SectionTitle>{feature.title}</SectionTitle><p className="supporting-text">{feature.description}</p></div>
+              </Stack>
+            </Panel>
           ))}
-        </section>
+        </ContentGrid>
       ) : (
-        <div className="home-dashboard-grid">
+        <ContentGrid variant="dashboard" className="home-dashboard-grid">
           <section>
-            <div className="home-section-header">
-              <div>
-                <p className="home-section-eyebrow">{t('home.scheduleLabel')}</p>
-                <h2 className="home-section-title">{t('home.upcomingEvents.title')}</h2>
-              </div>
+            <SectionHeader>
+              <SectionHeaderContent>
+                <SectionEyebrow>{t('home.scheduleLabel')}</SectionEyebrow>
+                <SectionTitle>{t('home.upcomingEvents.title')}</SectionTitle>
+              </SectionHeaderContent>
+              <SectionActions>
               <Link to="/events" className="text-link">
                 {t('home.upcomingEvents.viewAll')}
                 <ChevronRightIcon className="icon-xs" />
               </Link>
-            </div>
+              </SectionActions>
+            </SectionHeader>
             {upcomingEvents.length === 0 ? (
               <EmptyState>{t('home.upcomingEvents.empty')}</EmptyState>
             ) : (
-              <div className="layout-stack layout-stack--sm">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</div>
+              <Stack gap="sm">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</Stack>
             )}
           </section>
 
           <section>
-            <div className="home-section-header">
-              <div>
-                <p className="home-section-eyebrow">{t('home.manageLabel')}</p>
-                <h2 className="home-section-title">{t('squads.title')}</h2>
-              </div>
+            <SectionHeader>
+              <SectionHeaderContent>
+                <SectionEyebrow>{t('home.manageLabel')}</SectionEyebrow>
+                <SectionTitle>{t('squads.title')}</SectionTitle>
+              </SectionHeaderContent>
+              <SectionActions>
               <Button type="button" variant="secondary" onClick={() => setIsAddModalOpen(true)}>
-                <span className="text-lg leading-none" aria-hidden="true">+</span> {t('squads.createNew')}
+                <span aria-hidden="true">+</span> {t('squads.createNew')}
               </Button>
-            </div>
+              </SectionActions>
+            </SectionHeader>
 
             {squadsLoading && <div className="home-loading-card">{t('squads.loading')}</div>}
             {!squadsLoading && squadsError && <Alert>{t('squads.errors.loadFailedWithReason', { error: squadsError })}</Alert>}
             {!squadsLoading && !squadsError && (
-              <div className="home-squad-list">
+              <Stack gap="sm">
                 {squads.map((squadItem) => {
                   const isCurrentSquad = squad?.id === squadItem.id;
                   const isSwitching = switchingSquadId === squadItem.id;
                   return (
-                    <button
-                      type="button"
-                      data-ui-control="composite"
+                    <ActionCard
                       onClick={() => handleSquadSwitch(squadItem.id)}
                       disabled={isCurrentSquad || !!switchingSquadId}
                       key={squadItem.id}
-                      className={`home-squad-card${isCurrentSquad ? ' home-squad-card--current' : ''}`}
+                      selected={isCurrentSquad}
+                      showChevron={false}
+                      leading={<IconTile tone="brand" size="sm"><svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 19a5 5 0 0 1 10 0M13 19a4 4 0 0 1 8 0" /></svg></IconTile>}
+                      trailing={isCurrentSquad ? <StatusMarker tone="brand" aria-hidden="true">✓</StatusMarker> : undefined}
                     >
-                      <span className="home-squad-icon">
-                        <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 19a5 5 0 0 1 10 0M13 19a4 4 0 0 1 8 0" />
-                        </svg>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold tracking-tight">{squadItem.name}</p>
-                        <div className="home-squad-meta">
+                        <ActionCardTitle>{squadItem.name}</ActionCardTitle>
+                        <EntityMeta>
                           {squadItem.club && <span>{t('squads.clubLabel', { club: squadItem.club })}</span>}
                           {squadItem.category && <span>{t('squads.categoryLabel', { category: squadItem.category })}</span>}
-                        </div>
-                        {isSwitching && <p className="mt-1 text-xs text-content-subtle">{t('squads.switching')}</p>}
-                      </div>
-                      {isCurrentSquad && <span className="home-current-indicator" />}
-                    </button>
+                          {isSwitching && <span>{t('squads.switching')}</span>}
+                        </EntityMeta>
+                    </ActionCard>
                   );
                 })}
-              </div>
+              </Stack>
             )}
           </section>
-        </div>
+        </ContentGrid>
       )}
 
       <AddSquadModal isOpen={isAddModalOpen} isSubmitting={isSubmitting} error={createError} onClose={() => { setCreateError(null); setIsAddModalOpen(false); }} onSave={handleCreateSquad} />

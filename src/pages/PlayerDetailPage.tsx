@@ -5,7 +5,7 @@ import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useSquad, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
-import { ActionCard, ActionCardTitle, Alert, Badge, Button, DateColumn, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle } from '../components/ui';
+import { ActionCard, ActionCardTitle, Alert, Badge, Button, Cluster, ContentGrid, DateColumn, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import PlayerEventHistory from '../components/PlayerEventHistory';
@@ -244,7 +244,7 @@ export default function PlayerDetailPage() {
           >
             ← {t('common.actions.back')}
           </Button>
-          <div className="layout-cluster">
+          <Cluster gap="sm">
             <Button
               variant="secondary"
               size="sm"
@@ -261,7 +261,7 @@ export default function PlayerDetailPage() {
                 {t('common.actions.delete')}
               </Button>
             )}
-          </div>
+          </Cluster>
       </PageToolbar>
       <PageHeader>
           <PageHeaderContent>
@@ -287,13 +287,18 @@ export default function PlayerDetailPage() {
       </PageHeader>
 
       {deleteActionError && (
-        <Alert className="mb-5">
+        <Alert className="member-detail-alert">
           {deleteActionError}
         </Alert>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-start">
-        <Panel className="lg:col-start-2">
+      <ContentGrid variant="sidebarEnd">
+        <PlayerEventHistory
+          eventHistory={playerEventHistory}
+          groupedEventHistory={groupedPlayerEventHistory ?? undefined}
+        />
+
+        <Panel>
             <PanelHeader>
               <PanelTitle>{t('playerDetail.guardians.title', { count: guardians.length })}</PanelTitle>
               <PanelActions>
@@ -313,20 +318,21 @@ export default function PlayerDetailPage() {
               </PanelActions>
             </PanelHeader>
 
+            <Stack gap="sm">
             {!spondLinked && !canManagePlayerGuardians && (
-              <Alert tone="warning" className="mb-3">
+              <Alert tone="warning">
                 {t('playerDetail.guardians.onlyManagersManage')}
               </Alert>
             )}
 
             {!spondLinked && !underageForGuardianAssignment && (
-              <Alert tone="info" className="mb-3">
+              <Alert tone="info">
                 {t('playerDetail.guardians.onlyUnderage')}
               </Alert>
             )}
 
             {guardianActionError && (
-              <Alert className="mb-3">
+              <Alert>
                 {guardianActionError}
               </Alert>
             )}
@@ -334,19 +340,19 @@ export default function PlayerDetailPage() {
             {guardians.length === 0 ? (
               <EmptyState>{t('playerDetail.guardians.empty')}</EmptyState>
             ) : (
-              <div className="space-y-2">
+              <EntityList variant="separated">
                 {guardians.map((guardian) => (
-                  <div key={guardian.id} className="rounded-2xl border border-edge bg-surface-subtle p-4">
-                    <div>
-                      <p className="text-sm font-semibold text-content-strong">
+                  <EntityRow key={guardian.id} align="start">
+                    <EntityContent>
+                      <EntityTitle>
                         {guardian.firstName} {guardian.lastName}
-                      </p>
+                      </EntityTitle>
                       {guardian.email && (
-                        <p className="mt-1 text-xs text-content-subtle">{guardian.email}</p>
+                        <EntityMeta>{guardian.email}</EntityMeta>
                       )}
-                    </div>
+                    </EntityContent>
                     {canManagePlayerGuardians && (
-                      <div className="mt-3 flex items-center gap-3">
+                      <EntityActions>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -365,26 +371,21 @@ export default function PlayerDetailPage() {
                         >
                           {t('playerDetail.guardians.removeAction')}
                         </Button>
-                      </div>
+                      </EntityActions>
                     )}
-                  </div>
+                  </EntityRow>
                 ))}
-              </div>
+              </EntityList>
             )}
+            </Stack>
         </Panel>
-
-        <PlayerEventHistory
-          eventHistory={playerEventHistory}
-          groupedEventHistory={groupedPlayerEventHistory ?? undefined}
-          className="lg:col-start-1 lg:row-start-1"
-        />
-      </div>
+      </ContentGrid>
 
       {/* Available Future Events Section */}
       {futureEventsWithoutInvitation.length > 0 && (
-        <Panel className="mt-5">
+        <Panel className="member-detail-section">
               <PanelHeader><PanelTitle>{t('playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
-              <div className="grid max-w-3xl grid-cols-1 gap-3">
+              <Stack gap="sm" className="member-event-list">
                 {futureEventsWithoutInvitation.map((event) => (
                   <ActionCard
                     key={event.id}
@@ -392,14 +393,14 @@ export default function PlayerDetailPage() {
                     onClick={() => navigate(`/events/${event.id}`)}
                   >
                           <ActionCardTitle title={event.name}>{event.name}</ActionCardTitle>
-                          <div className="mt-2">
+                          <div className="member-event-status">
                             <Badge>
                               {t('invitationStatus.notInvited')}
                             </Badge>
                           </div>
                   </ActionCard>
                 ))}
-              </div>
+              </Stack>
         </Panel>
       )}
 

@@ -1,4 +1,5 @@
 import type { Player, Trainer } from '../../types';
+import { getBirthYear } from '../../utils/birthDate';
 
 export type SquadMember = Player | Trainer;
 
@@ -92,4 +93,28 @@ export function mergeMembersFromCollections(players: Player[], trainers: Trainer
   });
 
   return Array.from(membersById.values()).sort(compareByName);
+}
+
+export interface PlayerFilters {
+  levels: number[];
+  birthYear: number | null;
+  includeTrial: boolean;
+  includeInactive: boolean;
+}
+
+export function selectPlayerBirthYears(players: Player[]): number[] {
+  return Array.from(new Set(players
+    .map((player) => getBirthYear(player.birthDate))
+    .filter((year): year is number => year !== undefined)))
+    .sort((left, right) => right - left);
+}
+
+export function selectFilteredPlayers(players: Player[], filters: PlayerFilters): Player[] {
+  return players.filter((player) => {
+    if (filters.levels.length > 0 && !filters.levels.includes(player.level)) return false;
+    if (filters.birthYear !== null && getBirthYear(player.birthDate) !== filters.birthYear) return false;
+    if (!filters.includeTrial && player.status === 'trial') return false;
+    if (!filters.includeInactive && player.status === 'inactive') return false;
+    return true;
+  });
 }

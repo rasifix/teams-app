@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, LoadingSpinner } from './ui';
+import { Alert, Button, Cluster, FloatingStatus, LoadingSpinner } from './ui';
 
 interface ApiStatusProps {
   className?: string;
@@ -41,26 +41,30 @@ export function ApiStatus({ className = '' }: ApiStatusProps) {
   }
 
   return (
-    <div className={`fixed top-4 right-4 z-50 ${className}`}>
+    <FloatingStatus className={className}>
       {isChecking ? (
-        <Alert tone="warning" className="flex items-center gap-2">
-          <LoadingSpinner size="sm" />
-          <span>{t('common.states.checkingConnection')}</span>
+        <Alert tone="warning">
+          <Cluster gap="sm" wrap={false}>
+            <LoadingSpinner size="sm" />
+            <span>{t('common.states.checkingConnection')}</span>
+          </Cluster>
         </Alert>
       ) : (
-        <Alert className="flex items-center gap-2">
-          <span className="dot" aria-hidden="true" />
-          <span>{t('common.states.serverDisconnected')}</span>
-          <Button
-            type="button"
-            variant="dangerGhost"
-            size="sm"
-            onClick={checkApiHealth}
-          >
-            {t('common.actions.retry')}
-          </Button>
+        <Alert>
+          <Cluster gap="sm" wrap={false}>
+            <span className="dot" aria-hidden="true" />
+            <span>{t('common.states.serverDisconnected')}</span>
+            <Button
+              type="button"
+              variant="dangerGhost"
+              size="sm"
+              onClick={checkApiHealth}
+            >
+              {t('common.actions.retry')}
+            </Button>
+          </Cluster>
         </Alert>
       )}
-    </div>
+    </FloatingStatus>
   );
 }

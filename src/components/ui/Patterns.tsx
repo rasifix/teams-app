@@ -3,6 +3,7 @@ import type {
   HTMLAttributes,
   ReactNode,
 } from 'react';
+import { Link, type LinkProps } from 'react-router-dom';
 import ChevronRightIcon from './icons/ChevronRightIcon';
 import { classNames } from './classNames';
 
@@ -12,15 +13,35 @@ export function PageToolbar({ className, ...props }: HTMLAttributes<HTMLDivEleme
 
 interface ActionCardProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   leading?: ReactNode;
+  trailing?: ReactNode;
+  selected?: boolean;
+  showChevron?: boolean;
 }
 
-export function ActionCard({ leading, children, className, type = 'button', ...props }: ActionCardProps) {
+export function ActionCard({ leading, trailing, selected, showChevron = true, children, className, type = 'button', ...props }: ActionCardProps) {
   return (
-    <button type={type} className={classNames('ui-action-card', className)} {...props}>
+    <button type={type} className={classNames('ui-action-card', selected && 'ui-action-card--selected', className)} aria-pressed={selected} {...props}>
       {leading}
       <span className="ui-action-card__content">{children}</span>
-      <ChevronRightIcon className="ui-action-card__chevron" />
+      {trailing ?? (showChevron && <ChevronRightIcon className="ui-action-card__chevron" />)}
     </button>
+  );
+}
+
+export interface ActionCardLinkProps extends Omit<LinkProps, 'className'> {
+  leading?: ReactNode;
+  trailing?: ReactNode;
+  showChevron?: boolean;
+  className?: string;
+}
+
+export function ActionCardLink({ leading, trailing, showChevron = true, children, className, ...props }: ActionCardLinkProps) {
+  return (
+    <Link className={classNames('ui-action-card', className)} {...props}>
+      {leading}
+      <span className="ui-action-card__content">{children}</span>
+      {trailing ?? (showChevron && <ChevronRightIcon className="ui-action-card__chevron" />)}
+    </Link>
   );
 }
 
@@ -54,4 +75,36 @@ export function FilterGroup({ className, ...props }: HTMLAttributes<HTMLDivEleme
 
 export function FilterLabel({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
   return <span className={classNames('ui-filter-label', className)} {...props} />;
+}
+
+export function VisuallyHidden({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
+  return <span className={classNames('ui-visually-hidden', className)} {...props} />;
+}
+
+export function MenuSurface({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={classNames('ui-menu', className)} role="menu" {...props} />;
+}
+
+export function MenuLabel({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={classNames('ui-menu__label', className)} {...props} />;
+}
+
+export interface MenuItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  selected?: boolean;
+}
+
+export function MenuItem({ selected = false, className, type = 'button', ...props }: MenuItemProps) {
+  return <button type={type} role="menuitemradio" aria-checked={selected} className={classNames('ui-menu__item', selected && 'ui-menu__item--selected', className)} {...props} />;
+}
+
+export function MenuItemTitle({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
+  return <span className={classNames('ui-menu__item-title', className)} {...props} />;
+}
+
+export function MenuItemDescription({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {
+  return <span className={classNames('ui-menu__item-description', className)} {...props} />;
+}
+
+export function MenuDivider({ className, ...props }: HTMLAttributes<HTMLHRElement>) {
+  return <hr className={classNames('ui-menu__divider', className)} {...props} />;
 }

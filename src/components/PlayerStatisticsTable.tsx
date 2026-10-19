@@ -1,220 +1,157 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Player } from '../types';
+import { getBirthYear } from '../utils/birthDate';
+import {
+  selectVisiblePlayerStatistics,
+  type PlayerActivityStatistics,
+  type PlayerStatisticsSortField,
+  type SortDirection,
+} from '../store/selectors/statisticsSelectors';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
-import { getBirthYear } from '../utils/birthDate';
-import { Panel } from './ui';
-
-interface PlayerStats {
-  player: Player;
-  invitedCount: number;
-  acceptedCount: number;
-  selectedCount: number;
-  acceptanceRate: number;
-  selectionRate: number;
-}
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableHeaderCell,
+  DataTableRow,
+  DataTableSortButton,
+  EmptyState,
+  ListAction,
+  ListFrame,
+  Panel,
+  PanelBody,
+  ResponsiveView,
+  StickyMatrix,
+} from './ui';
 
 interface PlayerStatisticsTableProps {
-  playerStats: PlayerStats[];
+  playerStats: PlayerActivityStatistics[];
 }
-
-type SortField = 'name' | 'invited' | 'accepted' | 'selected' | 'acceptanceRate' | 'selectionRate';
-type SortDirection = 'asc' | 'desc';
 
 export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
-  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortField, setSortField] = useState<PlayerStatisticsSortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  const [minLevel, maxLevel] = levelRange;
+  const visiblePlayerStats = useMemo(
+    () => selectVisiblePlayerStatistics(playerStats, levelRange, sortField, sortDirection),
+    [levelRange, playerStats, sortDirection, sortField],
+  );
 
-  const handleSort = (field: SortField) => {
+  const handleSort = (field: PlayerStatisticsSortField) => {
     if (sortField === field) {
-      // Toggle direction if clicking the same field
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      // Set new field with default descending for numeric fields, ascending for name
-      setSortField(field);
-      setSortDirection(field === 'name' ? 'asc' : 'desc');
+      setSortDirection((current) => current === 'asc' ? 'desc' : 'asc');
+      return;
     }
+    setSortField(field);
+    setSortDirection(field === 'name' ? 'asc' : 'desc');
   };
 
-  // Helper function to compare by full name
-  const compareByName = (a: PlayerStats, b: PlayerStats) => {
-    const nameA = `${a.player.lastName} ${a.player.firstName}`.toLowerCase();
-    const nameB = `${b.player.lastName} ${b.player.firstName}`.toLowerCase();
-    return nameA.localeCompare(nameB);
-  };
+  const sortHeader = (field: PlayerStatisticsSortField, label: string) => (
+    <DataTableHeaderCell aria-sort={sortField === field ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}>
+      <DataTableSortButton
+        active={sortField === field}
+        direction={sortDirection}
+        onClick={() => handleSort(field)}
+      >
+        {label}
+      </DataTableSortButton>
+    </DataTableHeaderCell>
+  );
 
-  // Filter and sort player stats
-  const filteredPlayerStats = useMemo(() => {
-    const filtered = playerStats.filter(stat => 
-      stat.player.level >= minLevel && stat.player.level <= maxLevel
-    );
-
-    // Sort the filtered data
-    const sorted = [...filtered].sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortField) {
-        case 'name':
-          comparison = compareByName(a, b);
-          break;
-        case 'invited':
-          comparison = a.invitedCount - b.invitedCount;
-          break;
-        case 'accepted':
-          comparison = a.acceptedCount - b.acceptedCount;
-          break;
-        case 'selected':
-          comparison = a.selectedCount - b.selectedCount;
-          break;
-        case 'acceptanceRate':
-          comparison = a.acceptanceRate - b.acceptanceRate;
-          break;
-        case 'selectionRate':
-          comparison = a.selectionRate - b.selectionRate;
-          break;
-      }
-
-      // If values are equal, use name as secondary sort
-      if (comparison === 0 && sortField !== 'name') {
-        comparison = compareByName(a, b);
-      }
-
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-
-    return sorted;
-  }, [playerStats, minLevel, maxLevel, sortField, sortDirection]);
-
-  const handlePlayerClick = (playerId: string) => {
-    navigate(`/players/${playerId}`);
-  };
-
-  const getSortIndicator = (field: SortField) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? ' ↑' : ' ↓';
-  };
+  const openPlayer = (playerId: string) => navigate(`/players/${playerId}`);
 
   return (
     <Panel padding="none">
-      <div className="statistics-controls">
-        <LevelRangeSelector
-          defaultRange={levelRange}
-          onChange={setLevelRange}
-        />
-      </div>
+      <PanelBody>
+        <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+      </PanelBody>
 
-        {filteredPlayerStats.length === 0 ? (
-          <div className="statistics-empty-section">
-            <p>{t('statistics.playerTable.emptyState')}</p>
-          </div>
-        ) : (
-          <div className="statistics-scroll">
-            <table className="player-stats-table">
-              <thead className="player-stats-head">
-                <tr>
-                  <th 
-                    className="player-stats-name-heading"
-                    onClick={() => handleSort('name')}
+      {visiblePlayerStats.length === 0 ? (
+        <PanelBody>
+          <EmptyState>{t('statistics.playerTable.emptyState')}</EmptyState>
+        </PanelBody>
+      ) : (
+        <>
+          <ResponsiveView show="desktop">
+            <StickyMatrix>
+              <DataTable>
+                <DataTableHead>
+                  <DataTableRow>
+                    {sortHeader('name', t('domain.player'))}
+                    {sortHeader('invited', t('statistics.playerTable.invited'))}
+                    {sortHeader('accepted', t('statistics.playerTable.accepted'))}
+                    {sortHeader('selected', t('statistics.playerTable.selected'))}
+                    {sortHeader('acceptanceRate', t('statistics.playerTable.acceptanceRate'))}
+                    {sortHeader('selectionRate', t('statistics.playerTable.selectionRate'))}
+                  </DataTableRow>
+                </DataTableHead>
+                <DataTableBody>
+                  {visiblePlayerStats.map((statistic) => (
+                    <DataTableRow key={statistic.player.id} highlight>
+                      <DataTableCell>
+                        <button
+                          type="button"
+                          data-ui-control="composite"
+                          className="player-statistics-link"
+                          onClick={() => openPlayer(statistic.player.id)}
+                        >
+                          <span>{statistic.player.firstName} {statistic.player.lastName}</span>
+                          <Level level={statistic.player.level} />
+                        </button>
+                      </DataTableCell>
+                      <DataTableCell>{statistic.invitedCount}</DataTableCell>
+                      <DataTableCell>{statistic.acceptedCount}</DataTableCell>
+                      <DataTableCell strong>{statistic.selectedCount}</DataTableCell>
+                      <DataTableCell>{statistic.acceptanceRate.toFixed(0)}%</DataTableCell>
+                      <DataTableCell>{statistic.selectionRate.toFixed(0)}%</DataTableCell>
+                    </DataTableRow>
+                  ))}
+                </DataTableBody>
+              </DataTable>
+            </StickyMatrix>
+          </ResponsiveView>
+
+          <ResponsiveView show="mobile">
+            <PanelBody padding="compact">
+              <ListFrame>
+                {visiblePlayerStats.map((statistic) => (
+                  <ListAction
+                    key={statistic.player.id}
+                    className="player-statistics-mobile-action"
+                    onClick={() => openPlayer(statistic.player.id)}
                   >
-                    {t('domain.player')}{getSortIndicator('name')}
-                  </th>
-                  <th 
-                    className="list-header-button"
-                    onClick={() => handleSort('invited')}
-                  >
-                    {t('statistics.playerTable.invited')}{getSortIndicator('invited')}
-                  </th>
-                  <th 
-                    className="list-header-button"
-                    onClick={() => handleSort('accepted')}
-                  >
-                    {t('statistics.playerTable.accepted')}{getSortIndicator('accepted')}
-                  </th>
-                  <th 
-                    className="list-header-button"
-                    onClick={() => handleSort('selected')}
-                  >
-                    {t('statistics.playerTable.selected')}{getSortIndicator('selected')}
-                  </th>
-                  <th 
-                    className="list-header-button"
-                    onClick={() => handleSort('acceptanceRate')}
-                  >
-                    {t('statistics.playerTable.acceptanceRate')}{getSortIndicator('acceptanceRate')}
-                  </th>
-                  <th 
-                    className="list-header-button"
-                    onClick={() => handleSort('selectionRate')}
-                  >
-                    {t('statistics.playerTable.selectionRate')}{getSortIndicator('selectionRate')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="player-stats-body">
-                {filteredPlayerStats.map((stat) => (
-                  <tr 
-                    key={stat.player.id} 
-                    className="player-stats-row"
-                    onClick={() => handlePlayerClick(stat.player.id)}
-                  >
-                    {/* Desktop view */}
-                    <td className="player-stats-desktop-cell">
-                      <div className="player-stats-player">
-                        <span>{stat.player.firstName} {stat.player.lastName}</span>
-                        <Level level={stat.player.level} className="text-xs" />
-                      </div>
-                    </td>
-                    <td className="player-stats-desktop-cell">
-                      {stat.invitedCount}
-                    </td>
-                    <td className="player-stats-desktop-cell">
-                      {stat.acceptedCount}
-                    </td>
-                    <td className="player-stats-desktop-cell player-stats-desktop-cell--strong">
-                      {stat.selectedCount}
-                    </td>
-                    <td className="player-stats-desktop-cell">
-                      {stat.acceptanceRate.toFixed(0)}%
-                    </td>
-                    <td className="player-stats-desktop-cell">
-                      {stat.selectionRate.toFixed(0)}%
-                    </td>
-                    
-                    {/* Mobile view */}
-                    <td className="player-stats-mobile-cell" colSpan={6}>
-                      <div className="player-stats-mobile-player">
-                        {stat.player.firstName} {stat.player.lastName}{' '}
-                        <span className="player-stats-birth-year">{getBirthYear(stat.player.birthDate)}</span>{' '}
-                        <Level level={stat.player.level} className="text-xs" />
-                      </div>
-                      <div className="player-stats-mobile-metrics">
-                        <div className="player-stats-metric">
-                          <div className="player-stats-metric-value">{stat.invitedCount}</div>
-                          <div className="player-stats-metric-label">{t('statistics.playerTable.invited')}</div>
-                        </div>
-                        <div className="player-stats-metric">
-                          <div className="player-stats-metric-value">{stat.acceptedCount} ({stat.acceptanceRate.toFixed(0)}%)</div>
-                          <div className="player-stats-metric-label">{t('statistics.playerTable.accepted')}</div>
-                        </div>
-                        <div className="player-stats-metric">
-                          <div className="player-stats-metric-value player-stats-metric-value--success">{stat.selectedCount} ({stat.selectionRate.toFixed(0)}%)</div>
-                          <div className="player-stats-metric-label">{t('statistics.playerTable.selected')}</div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
+                    <span className="player-statistics-mobile-title">
+                      <span>{statistic.player.firstName} {statistic.player.lastName}</span>
+                      <span className="player-statistics-birth-year">{getBirthYear(statistic.player.birthDate)}</span>
+                      <Level level={statistic.player.level} />
+                    </span>
+                    <span className="player-statistics-metrics">
+                      <span className="player-statistics-metric">
+                        <strong>{statistic.invitedCount}</strong>
+                        <span>{t('statistics.playerTable.invited')}</span>
+                      </span>
+                      <span className="player-statistics-metric">
+                        <strong>{statistic.acceptedCount} ({statistic.acceptanceRate.toFixed(0)}%)</strong>
+                        <span>{t('statistics.playerTable.accepted')}</span>
+                      </span>
+                      <span className="player-statistics-metric player-statistics-metric--success">
+                        <strong>{statistic.selectedCount} ({statistic.selectionRate.toFixed(0)}%)</strong>
+                        <span>{t('statistics.playerTable.selected')}</span>
+                      </span>
+                    </span>
+                  </ListAction>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </ListFrame>
+            </PanelBody>
+          </ResponsiveView>
+        </>
+      )}
     </Panel>
   );
 }

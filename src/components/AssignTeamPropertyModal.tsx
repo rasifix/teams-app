@@ -66,10 +66,10 @@ export default function AssignTeamPropertyModal({
           </Field>
         </ModalBody>
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving} className="flex-1">
+          <Button type="submit" variant="primary" disabled={isSaving}>
             {t('common.actions.save')}
           </Button>
         </ModalFooter>

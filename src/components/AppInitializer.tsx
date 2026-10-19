@@ -11,31 +11,11 @@ import {
   useSquad,
 } from '../store/useStore';
 import type { Squad } from '../types';
-import { Alert, Button, LoadingState } from './ui';
+import { Alert, Button, LoadingState, PageState, PageStateContent, Stack } from './ui';
+import { selectInitializationErrors, selectNewestSquad } from '../store/selectors/squadSelectors';
 
 interface AppInitializerProps {
   children: ReactNode;
-}
-
-function getNewestSquad(squads: Squad[]): Squad | null {
-  if (squads.length === 0) {
-    return null;
-  }
-
-  const withTimestamp = squads
-    .map((squad) => ({
-      squad,
-      timestamp: Date.parse(squad.createdAt ?? squad.updatedAt ?? ''),
-    }))
-    .filter((item) => !Number.isNaN(item.timestamp));
-
-  if (withTimestamp.length === 0) {
-    return squads[squads.length - 1];
-  }
-
-  return withTimestamp.reduce((latest, current) => (
-    current.timestamp > latest.timestamp ? current : latest
-  )).squad;
 }
 
 export default function AppInitializer({ children }: AppInitializerProps) {
@@ -83,7 +63,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
           } else if (savedSquadExists) {
             squadToSelect = squads.find((squad) => squad.id === savedSquadId)!;
           } else {
-            squadToSelect = getNewestSquad(squads) ?? squads[0];
+            squadToSelect = selectNewestSquad(squads) ?? squads[0];
           }
 
           await selectSquad(squadToSelect.id);
@@ -136,23 +116,25 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   }
 
   if (hasErrors) {
+    const initializationErrors = selectInitializationErrors(errors);
     return (
-      <div className="auth-shell">
-        <div className="text-center max-w-md">
-          <Alert className="mb-4 text-left">
+      <PageState>
+        <PageStateContent>
+          <Stack>
+          <Alert>
             <strong>{t('appInitializer.failedToLoadApplication')}</strong>
-            <div className="mt-2">
-            {errors.players && <p>• {t('domain.players')}: {errors.players}</p>}
-            {errors.activities && <p>• {t('domain.events')}: {errors.activities}</p>}
-            {errors.trainers && <p>• {t('domain.trainers')}: {errors.trainers}</p>}
-            {errors.shirtSets && <p>• {t('domain.shirtSets')}: {errors.shirtSets}</p>}
+            <div className="initialization-error-list">
+              {initializationErrors.map(({ domain, message }) => (
+                <p key={domain}>• {t(`domain.${domain === 'activities' ? 'events' : domain}`)}: {message}</p>
+              ))}
             </div>
           </Alert>
           <Button onClick={() => initializeApp()}>
             {t('common.actions.retry')}
           </Button>
-        </div>
-      </div>
+          </Stack>
+        </PageStateContent>
+      </PageState>
     );
   }
 

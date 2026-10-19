@@ -12,14 +12,18 @@ import {
   selectSpondActionableGuardianRows,
   selectSpondActionableMemberRows,
   selectInitialSpondActivityDrafts,
+  selectInitialSpondGuardianSelection,
   selectInitialSpondMemberDrafts,
+  selectSpondActivityDecisions,
   selectSpondImportPreview,
   selectSpondMemberRows,
+  selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
   selectNextSpondReviewStep,
   selectSpondSyncRange,
   selectSpondWizardProgressSteps,
   selectSpondLinkedGroup,
+  selectSpondReviewSteps,
 } from './spondSyncSelectors';
 
 const player = (overrides: Partial<Player> = {}): Player => ({
@@ -93,6 +97,12 @@ describe('Spond member selectors', () => {
 });
 
 describe('Spond wizard progress', () => {
+  it('keeps guardians only when player import is selected', () => {
+    expect(selectSpondReviewSteps(['players', 'guardians', 'events'])).toEqual(['players', 'guardians', 'events']);
+    expect(selectSpondReviewSteps(['guardians', 'events'])).toEqual(['events']);
+    expect(selectSpondReviewSteps([])).toEqual([]);
+  });
+
   it('includes group selection for linking but omits it for scoped synchronization', () => {
     expect(selectSpondWizardProgressSteps(['players', 'guardians'], true)).toEqual([
       'credentials', 'group', 'types', 'players', 'guardians', 'summary',
@@ -229,6 +239,55 @@ describe('Spond import defaults', () => {
       player({ guardians: [{ id: 'g1', spondId: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] }),
     ]);
     expect(selectSpondActionableGuardianRows(rows)).toEqual([]);
+  });
+
+  it('initially selects unlinked guardians and excludes linked guardians', () => {
+    const source = { id: 'sg1', firstName: 'Grace', lastName: 'Lovelace' };
+    const unlinked = selectSpondGuardianRows([member({ guardians: [source] })], []);
+    const linked = selectSpondGuardianRows([member({ guardians: [source] })], [
+      player({ guardians: [{ id: 'g1', spondId: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] }),
+    ]);
+    expect(selectInitialSpondGuardianSelection(unlinked)).toEqual({ sg1: true });
+    expect(selectInitialSpondGuardianSelection(linked)).toEqual({ sg1: false });
+    expect(selectInitialSpondGuardianSelection([])).toEqual({});
+  });
+
+  it('builds player link, creation, and fallback skip decisions', () => {
+    const source = member({ guardians: [{ id: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] });
+    const rows = selectSpondMemberRows([source], []);
+    const createDrafts = selectInitialSpondMemberDrafts(rows);
+    expect(selectSpondMemberDecisions(rows, createDrafts, true, true, { sg1: true })).toEqual([{
+      action: 'create-player', spondMemberId: 'sm1', birthDate: '2014-01-02', level: 1, status: 'active', guardianIds: ['sg1'],
+    }]);
+    expect(selectSpondMemberDecisions(rows, createDrafts, true, false, { sg1: true })[0]).toMatchObject({ guardianIds: [] });
+    expect(selectSpondMemberDecisions(rows, {}, true, true, {})).toEqual([{ action: 'skip', spondMemberId: 'sm1' }]);
+    expect(selectSpondMemberDecisions(rows, createDrafts, false, true, {})).toEqual([{ action: 'skip', spondMemberId: 'sm1' }]);
+
+    const linkDrafts = { sm1: { ...createDrafts.sm1, action: 'link' as const, memberId: 'p1' } };
+    expect(selectSpondMemberDecisions(rows, linkDrafts, true, false, {})).toEqual([
+      { action: 'link', spondMemberId: 'sm1', memberId: 'p1' },
+    ]);
+  });
+
+  it('builds event link, creation, unchanged, and fallback skip decisions', () => {
+    const createRows = selectSpondEventRows([event()], []);
+    const createDrafts = selectInitialSpondActivityDrafts(createRows);
+    createDrafts.se1 = { ...createDrafts.se1, kind: 'match', teamName: ' First ', trainerIds: [] };
+    expect(selectSpondActivityDecisions(createRows, createDrafts, true)).toEqual([{
+      action: 'create', spondEventId: 'se1', kind: 'match', trainerIds: undefined,
+      teams: [{ name: 'First', strength: 2, selectedPlayers: [] }],
+    }]);
+    expect(selectSpondActivityDecisions(createRows, {}, true)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
+    expect(selectSpondActivityDecisions(createRows, createDrafts, false)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
+
+    const linkedActivity = activity({ spondId: 'se1' });
+    const unchangedRows = selectSpondEventRows([event()], [linkedActivity]);
+    expect(selectSpondActivityDecisions(unchangedRows, {}, true)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
+    const changedRows = selectSpondEventRows([event({ location: 'New pitch' })], [linkedActivity]);
+    const linkDrafts = selectInitialSpondActivityDrafts(changedRows);
+    expect(selectSpondActivityDecisions(changedRows, linkDrafts, true)).toEqual([
+      { action: 'link', spondEventId: 'se1', activityId: 'a1' },
+    ]);
   });
 
   it('previews concrete actions and excludes guardians absent from final player decisions', () => {

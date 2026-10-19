@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Activity, ActivityInvitation, Period, PlayerEventHistoryItem, Team } from '../../types';
 import {
   selectFutureEventsWithoutInvitation,
+  selectGroupedDatedHistory,
   selectGroupedPlayerEventHistory,
   selectPlayerEventHistory,
 } from './playerDetailSelectors';
@@ -116,6 +117,17 @@ describe('player detail selectors', () => {
     const grouped = selectGroupedPlayerEventHistory(overlappingPeriods, [], 'Outside periods');
 
     expect(grouped).toBeNull();
+  });
+
+  it('uses the outside-period fallback for invalid dates and returns null for empty history', () => {
+    const periods: Period[] = [
+      { id: 'p1', name: 'One', startDate: '2026-01-01', endDate: '2026-04-01' },
+    ];
+
+    expect(selectGroupedDatedHistory(periods, [{ eventDate: 'not-a-date', id: 'invalid' }], 'Outside')).toEqual([
+      { id: 'outside-periods', title: 'Outside', eventHistory: [{ eventDate: 'not-a-date', id: 'invalid' }] },
+    ]);
+    expect(selectGroupedDatedHistory(periods, [], 'Outside')).toBeNull();
   });
 
   it('selects only future events where player is not invited, sorted soonest first', () => {

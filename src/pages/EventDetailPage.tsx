@@ -14,15 +14,15 @@ import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
-import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, sortActivities } from '../store/selectors/activitySelectors';
+import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds } from '../store/selectors/activitySelectors';
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
-import { selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
+import { selectAdjacentActivities, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState } from '../store/selectors/selectionSelectors';
 import Strength from '../components/Strength';
 import Level from '../components/Level';
-import { Alert, Badge, Button, EmptyState, IconButton, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle } from '../components/ui';
+import { AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, EntityContent, EntityList, EntityRow, EntityTitle, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
 export default function EventDetailPage() {
   const { t, i18n } = useTranslation();
@@ -44,10 +44,7 @@ export default function EventDetailPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isSendingSelection, setIsSendingSelection] = useState(false);
-  const sortedActivities = sortActivities(activities);
-  const currentIndex = activity ? sortedActivities.findIndex((entry) => entry.id === activity.id) : -1;
-  const previous = currentIndex > 0 ? sortedActivities[currentIndex - 1] : undefined;
-  const next = currentIndex >= 0 ? sortedActivities[currentIndex + 1] : undefined;
+  const { previous, next } = selectAdjacentActivities(activities, activity?.id ?? '');
   const error = !id ? t('eventDetail.errors.noEventId') : errors.activities || (hasErrors ? t('eventDetail.errors.failedToLoadData') : null);
 
   const persistTeams = async (teams: Team[]) => {
@@ -101,7 +98,7 @@ export default function EventDetailPage() {
   };
 
   if (loading) return <Page><EmptyState><p>{t('eventDetail.loading')}</p></EmptyState></Page>;
-  if (error) return <Page><EmptyState><p className="text-danger">{error}</p></EmptyState></Page>;
+  if (error) return <Page><EmptyState><Alert>{error}</Alert></EmptyState></Page>;
   if (!activity) return <Page><EmptyState><p>{t('eventDetail.notFound')}</p></EmptyState></Page>;
 
   const phase = selectActivityPhase(activity);
@@ -120,12 +117,12 @@ export default function EventDetailPage() {
     return <article key={team.id} aria-label={t('events.teamCardLabel', { team: team.name })} className="event-detail-team-card">
       <div className="event-detail-team-header">
         <div className="event-detail-team-main">
-          <div className="layout-cluster layout-cluster--wrap">
+          <Cluster gap="sm">
             {team.name}
             <Strength level={team.strength || 2} className="event-detail-team-strength" />
             <Badge>👥 {selectedPlayers.length}/{activity.maxPlayersPerTeam ?? players.length}</Badge>
             {selectedPlayers.length > 0 && <Badge>⭐ {getTeamAverageLevel(team).toFixed(1)}</Badge>}
-          </div>
+          </Cluster>
           {(hasDifferentTime || hasDifferentLocation) && <p className="event-detail-team-overrides">
             {hasDifferentTime && <>🕐 {teamTime}</>}
             {hasDifferentLocation && <span className={hasDifferentTime ? 'event-detail-location-offset' : ''}>📍 {teamLocation}</span>}
@@ -144,38 +141,38 @@ export default function EventDetailPage() {
         </IconButton>
       </div>
       <div className="event-detail-roster">
-        {selectedPlayers.length > 0 ? <ul className="event-detail-player-list">
+        {selectedPlayers.length > 0 ? <EntityList variant="bare">
           {selectedPlayers.map((player) => {
             const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
-            return <li key={player.id} className="event-detail-player-row">
+            return <EntityRow key={player.id} density="compact">
             {shirtNumber && shirtNumber > 0 && <span className="event-detail-shirt-number">{shirtNumber}</span>}
-            <span className="event-detail-player-name">{player.firstName} {player.lastName}</span>
+            <EntityContent><EntityTitle>{player.firstName} {player.lastName}</EntityTitle></EntityContent>
             <Level level={player.level} className="event-detail-player-level" />
-          </li>;
+          </EntityRow>;
           })}
-        </ul> : <p className="event-detail-empty-roster">{t('teamDetail.noPlayersSelected')}</p>}
+        </EntityList> : <p className="event-detail-empty-roster">{t('teamDetail.noPlayersSelected')}</p>}
       </div>
     </article>;
   };
 
   return <Page>
-    <div className="event-detail-navigation">
+    <AdjacentNavigation aria-label={t('eventDetail.navigationLabel')}>
         {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${previous.id}`)} className="event-detail-navigation-button">← {previous.name}</Button> : <span />}
-        <span className="event-detail-navigation-label">{t('eventDetail.navigationLabel')}</span>
+        <AdjacentNavigationLabel>{t('eventDetail.navigationLabel')}</AdjacentNavigationLabel>
         {next ? <Button variant="ghost" size="sm" onClick={() => navigate(`/events/${next.id}`)} className="event-detail-navigation-button">{next.name} →</Button> : <span />}
-    </div>
+    </AdjacentNavigation>
     <PageHeader align="start">
         <PageHeaderContent>
-          <div className="layout-cluster layout-cluster--wrap">
+          <Cluster gap="sm">
             <PageTitle>{activity.name}</PageTitle>
             <Badge tone="brand" size="sm">{t(`activity.kinds.${activity.kind}`)}</Badge>
             <Badge tone="info" size="sm" data-testid="activity-phase">{t(`eventDetail.phases.${phase}`)}</Badge>
-          </div>
-          <p className="event-detail-metadata">
-            <span>📅 {formatDate(getActivityDate(activity))}</span>
-            <span>🕐 {getActivityStartTime(activity)}</span>
-            {activity.location && <span>📍 {activity.location}</span>}
-          </p>
+          </Cluster>
+          <MetadataList>
+            <MetadataItem>📅 {formatDate(getActivityDate(activity))}</MetadataItem>
+            <MetadataItem>🕐 {getActivityStartTime(activity)}</MetadataItem>
+            {activity.location && <MetadataItem>📍 {activity.location}</MetadataItem>}
+          </MetadataList>
           {activity.kind === 'match' && activity.opponentName && <p className="event-detail-opponent">{t('activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
         <PageActions>
@@ -184,7 +181,7 @@ export default function EventDetailPage() {
         </PageActions>
     </PageHeader>
 
-    <div className="event-detail-grid">
+    <ContentGrid variant="equal">
       <Panel>
         <PanelHeader>
           <PanelTitle>{t('eventDetail.teamsTitle')}</PanelTitle>
@@ -200,9 +197,9 @@ export default function EventDetailPage() {
         {activity.selectionSentAt && <Alert tone="success" className="event-detail-selection-alert">
           {t('eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
         </Alert>}
-        {activity.teams.length === 0 ? <Alert tone="warning">{t('activity.noTeamsLegacy')}</Alert> : <div className="layout-stack layout-stack--sm">
+        {activity.teams.length === 0 ? <Alert tone="warning">{t('activity.noTeamsLegacy')}</Alert> : <Stack gap="sm">
           {activity.kind === 'match' ? renderTeam(activity.teams[0]) : activity.teams.map(renderTeam)}
-        </div>}
+        </Stack>}
       </Panel>
       {sections.invitations && <PlayerInvitationsCard
         invitations={activity.invitations}
@@ -215,7 +212,7 @@ export default function EventDetailPage() {
         assignedPlayerIds={assignedIds}
       />}
       {canManage && sections.attendance && <ActivityAttendanceCard activity={activity} players={players} onSave={handleRecordAttendance} />}
-    </div>
+    </ContentGrid>
 
     {!spondLinked && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
     <EditEventModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />

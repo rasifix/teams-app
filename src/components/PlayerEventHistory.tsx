@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ActionCard, ActionCardTitle, Badge, EmptyState, Panel, PanelHeader, PanelTitle, type BadgeTone } from './ui';
+import { ActionCard, ActionCardTitle, Badge, Cluster, EmptyState, Panel, PanelHeader, PanelTitle, SectionEyebrow, Stack, type BadgeTone } from './ui';
 import type { PlayerEventHistoryItem } from '../types';
 import { DateColumn } from './ui';
 
@@ -31,7 +31,7 @@ export default function PlayerEventHistory({
   };
 
   const renderEventCards = (items: PlayerEventHistoryItem[]) => (
-    <div className="grid grid-cols-1 gap-3">
+    <Stack gap="sm">
       {items.map((item) => (
         <ActionCard
           key={item.eventId}
@@ -39,18 +39,18 @@ export default function PlayerEventHistory({
           onClick={() => navigate(`/events/${item.eventId}`)}
         >
                 <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
-                <div className="mt-2">
+                <div className="member-event-status">
                   {item.isSelected ? (
-                    <div className="space-y-1">
+                    <Cluster gap="sm">
                       <Badge tone="success">
                         {t('statistics.playerTable.selected')}
                       </Badge>
-                      <p className="text-xs text-content-muted">
+                      <span className="member-meta-text">
                         {t('playerDetail.assignedTeam', {
                           teamName: item.teamName || t('team.unknownTeam'),
                         })}
-                      </p>
-                    </div>
+                      </span>
+                    </Cluster>
                   ) : (
                     <Badge tone={invitationTone(item.invitationStatus)}>
                       {t(`invitationStatus.${item.invitationStatus}`)}
@@ -59,7 +59,7 @@ export default function PlayerEventHistory({
                 </div>
         </ActionCard>
       ))}
-    </div>
+    </Stack>
   );
 
   return (
@@ -70,16 +70,16 @@ export default function PlayerEventHistory({
             <p>{t('players.eventHistory.empty')}</p>
           </EmptyState>
         ) : (
-          <div className="mt-4">
+          <div className="member-event-history-content">
             {groupedEventHistory && groupedEventHistory.length > 0 ? (
-              <div className="layout-stack layout-stack--lg">
+              <Stack gap="lg">
                 {groupedEventHistory.map((group) => (
                   <section key={group.id}>
-                    <h3 className="mb-3 text-eyebrow font-bold uppercase tracking-label text-content-subtle">{group.title}</h3>
+                    <SectionEyebrow className="member-event-group-title">{group.title}</SectionEyebrow>
                     {renderEventCards(group.eventHistory)}
                   </section>
                 ))}
-              </div>
+              </Stack>
             ) : renderEventCards(eventHistory)}
           </div>
         )}

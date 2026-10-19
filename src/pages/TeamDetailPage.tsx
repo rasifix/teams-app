@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
-import { Alert, Button, EmptyState, Field, ListAction, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, Select } from '../components/ui';
+import { Alert, Button, Cluster, ContentGrid, EmptyState, Field, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, PropertyAction, PropertyActions, PropertyLabel, PropertyList, PropertyRow, PropertyValue, Select } from '../components/ui';
 import Level from '../components/Level';
 import Strength from '../components/Strength';
 import SelectionRemovalDialog from '../components/SelectionRemovalDialog';
@@ -184,19 +184,18 @@ export default function TeamDetailPage() {
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
-            <div className="team-detail-title">
+            <Cluster>
               <PageTitle>{team.name}</PageTitle>
-              <Strength level={team.strength} className="text-sm" />
-            </div>
+              <Strength level={team.strength} />
+            </Cluster>
           </PageHeaderContent>
           {event.teams.length > 1 && (
             <PageActions className="team-detail-switcher">
-              <Field label={t('teamDetail.switchTeam')} htmlFor="team-switcher" className="w-full">
+              <Field label={t('teamDetail.switchTeam')} htmlFor="team-switcher">
               <Select
                 id="team-switcher"
                 value={team.id}
                 onChange={(event) => navigate(`/events/${eventId}/teams/${event.target.value}`)}
-                className="text-sm"
               >
                 {event.teams.map((eventTeam) => <option key={eventTeam.id} value={eventTeam.id}>{eventTeam.name}</option>)}
               </Select>
@@ -205,100 +204,98 @@ export default function TeamDetailPage() {
           )}
       </PageHeader>
       
-      <div className="team-detail-grid">
-        <section className="team-detail-summary">
-          <div className="team-detail-list">
+      <ContentGrid variant="sidebar">
+        <Panel>
+          <PropertyList>
             
-            <div className="team-detail-row">
-              <div className="team-detail-label">
+            <PropertyRow>
+              <PropertyLabel>
                 <span>🕐</span>
                 <span>{t('teamModal.fields.startTime')}</span>
-              </div>
-              <div className="team-detail-value">
+              </PropertyLabel>
+              <PropertyValue>
                 {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
-              </div>
-            </div>
+              </PropertyValue>
+            </PropertyRow>
             {(event.kind === 'match' ? event.location : team.location || event.location) && (
-              <div className="team-detail-row">
-                <div className="team-detail-label">
+              <PropertyRow>
+                <PropertyLabel>
                   <span>📍</span>
                   <span>{t('teamModal.fields.locationOptional')}</span>
-                </div>
-                <span className="team-detail-value">{event.kind === 'match' ? event.location : team.location || event.location}</span>
-              </div>
+                </PropertyLabel>
+                <PropertyValue>{event.kind === 'match' ? event.location : team.location || event.location}</PropertyValue>
+              </PropertyRow>
             )}
 
-            <div className="team-detail-row">
-              <div className="team-detail-label">
+            <PropertyRow>
+              <PropertyLabel>
                 <span>💪</span>
                 <span>{t('teamModal.fields.strength')}</span>
-              </div>
-              <div className="text-sm">
-                <Strength level={team.strength} className="text-xs" />
-              </div>
-            </div>            
+              </PropertyLabel>
+              <PropertyValue><Strength level={team.strength} /></PropertyValue>
+            </PropertyRow>
 
-            <ListAction
+            <PropertyAction
               data-testid="team-responsible-people-row"
               onClick={() => setIsResponsibleModalOpen(true)}
             >
-              <div className="team-detail-label">
+              <PropertyLabel>
                 <span>👤</span>
                 <span>{t('teamModal.fields.responsiblePeople')}</span>
-              </div>
+              </PropertyLabel>
               {responsiblePeople.length > 0 ? (
-                <div className="team-detail-value">{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</div>
+                <PropertyValue>{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</PropertyValue>
               ) : (
-                <div className="team-detail-value team-detail-value--muted">{t('teamModal.noTrainerAssigned')}</div>
+                <PropertyValue muted>{t('teamModal.noTrainerAssigned')}</PropertyValue>
               )}
-            </ListAction>
+            </PropertyAction>
 
-            <ListAction
+            <PropertyAction
               data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
             >
-              <div className="team-detail-label">
+              <PropertyLabel>
                 <span>👕</span>
                 <span>{t('teamDetail.shirtSetLabel')}</span>
-              </div>
+              </PropertyLabel>
               {shirtSet ? (
-                <div className="team-detail-value">
+                <PropertyValue>
                   {shirtSet.sponsor}
-                </div>
+                </PropertyValue>
               ) : (
-                <div className="team-detail-value team-detail-value--muted">{t('teamDetail.noShirtSetAssigned')}</div>
+                <PropertyValue muted>{t('teamDetail.noShirtSetAssigned')}</PropertyValue>
               )}
-            </ListAction>
+            </PropertyAction>
 
             {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
-              <ListAction
+              <PropertyAction
                 onClick={() => setIsAssignFormationModalOpen(true)}
               >
-                <div className="team-detail-label">
+                <PropertyLabel>
                   <span>🧩</span>
                   <span>{t('teamDetail.formationLabel')}</span>
-                </div>
-                <span className={`team-detail-value${team.formationId ? '' : ' team-detail-value--muted'}`}>
+                </PropertyLabel>
+                <PropertyValue muted={!team.formationId}>
                   {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
-                </span>
-              </ListAction>
+                </PropertyValue>
+              </PropertyAction>
             )}
 
-            <div className="team-detail-row">
-              <div className="team-detail-label">
+            <PropertyRow>
+              <PropertyLabel>
                 <span>📋</span>
                 <span>{t('teamDetail.lineupLabel')}</span>
-              </div>
-              <div className="team-detail-actions">
+              </PropertyLabel>
+              <PropertyActions>
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
                   <Button size="sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
                     {t('teamDetail.planLineupAction')}
                   </Button>
                 )}
-              </div>
-            </div>
-          </div>
-        </section>
+              </PropertyActions>
+            </PropertyRow>
+          </PropertyList>
+        </Panel>
         
         <Panel>
             <PanelHeader>
@@ -315,7 +312,7 @@ export default function TeamDetailPage() {
               </Button>
               </PanelActions>
             </PanelHeader>
-            {!selectionEditState?.canEdit && <Alert className="mb-4">{t('teamPlayerSelection.eventPassedWarning')}</Alert>}
+            {!selectionEditState?.canEdit && <Alert className="team-detail-player-alert">{t('teamPlayerSelection.eventPassedWarning')}</Alert>}
             
             {selectedPlayers.length === 0 ? (
               <EmptyState>{t('teamDetail.noPlayersSelected')}</EmptyState>
@@ -357,7 +354,7 @@ export default function TeamDetailPage() {
                       
                       {/* Delete button that appears on swipe */}
                       <div 
-                        className={`team-player-remove-tray${swipedPlayerId === player.id ? ' team-player-remove-tray--visible' : ''}`}
+                        className={`ui-swipe-action-tray${swipedPlayerId === player.id ? ' ui-swipe-action-tray--visible' : ''}`}
                       >
                         <button
                           type="button"
@@ -374,7 +371,7 @@ export default function TeamDetailPage() {
               </ListFrame>
             )}
         </Panel>
-      </div>
+      </ContentGrid>
       
       <SelectionRemovalDialog
         isOpen={Boolean(playerToRemove)}

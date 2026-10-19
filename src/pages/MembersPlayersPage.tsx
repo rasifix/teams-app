@@ -2,13 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
-import { Button, FilterBar, FilterGroup, FilterLabel, Panel, PanelTitle, Switch } from "../components/ui";
+import { Button, ChoiceGroup, Cluster, FilterBar, FilterGroup, FilterLabel, Panel, SectionActions, SectionHeader, SectionHeaderContent, SectionTitle, Switch } from "../components/ui";
 import SpondBadge from "../components/SpondBadge";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
-import { getBirthYear } from '../utils/birthDate';
 import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
 import { useSquad } from '../store';
+import { selectFilteredPlayers, selectPlayerBirthYears } from '../store/selectors/memberSelectors';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
@@ -22,65 +22,37 @@ export default function MembersPlayersPage() {
   const [showInactivePlayers, setShowInactivePlayers] = useState(false);
   const [isBirthdayCalendarOpen, setIsBirthdayCalendarOpen] = useState(false);
 
-  const availableYears = useMemo(() => {
-    const years = new Set<number>();
-    players.forEach((player) => {
-      const year = getBirthYear(player.birthDate);
-      if (year !== undefined) {
-        years.add(year);
-      }
-    });
-    return Array.from(years).sort((a, b) => b - a);
-  }, [players]);
+  const availableYears = useMemo(() => selectPlayerBirthYears(players), [players]);
 
-  const filteredPlayers = useMemo(() => {
-    return players.filter((player) => {
-      if (selectedLevels.length > 0 && !selectedLevels.includes(player.level)) {
-        return false;
-      }
-
-      if (selectedYear !== null) {
-        const year = getBirthYear(player.birthDate);
-        if (year !== selectedYear) {
-          return false;
-        }
-      }
-
-      if (!showTrialPlayers && player.status === "trial") {
-        return false;
-      }
-
-      if (!showInactivePlayers && player.status === "inactive") {
-        return false;
-      }
-
-      return true;
-    });
-  }, [players, selectedLevels, selectedYear, showTrialPlayers, showInactivePlayers]);
+  const filteredPlayers = useMemo(() => selectFilteredPlayers(players, {
+    levels: selectedLevels,
+    birthYear: selectedYear,
+    includeTrial: showTrialPlayers,
+    includeInactive: showInactivePlayers,
+  }), [players, selectedLevels, selectedYear, showTrialPlayers, showInactivePlayers]);
 
   return (
     <>
-      <SpondSyncResultBanner className="mb-4" />
+      <SpondSyncResultBanner className="members-banner" />
       <Panel>
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <PanelTitle>
+        <SectionHeader>
+          <SectionHeaderContent><SectionTitle>
             {selectedLevels.length > 0 || selectedYear !== null || !showTrialPlayers
               ? t("members.allPlayersFilteredTitle", {
                   filteredCount: filteredPlayers.length,
                   totalCount: players.length,
                 })
               : t("members.allPlayersTitle", { count: filteredPlayers.length })}
-          </PanelTitle>
-          <div className="layout-cluster layout-cluster--wrap">
+          </SectionTitle></SectionHeaderContent>
+          <SectionActions><Cluster gap="sm">
             {canManageBirthdayCalendar && squad && (
               <Button variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
                 {t('members.birthdayCalendar.openAction')}
               </Button>
             )}
             {canImportFromSpond && (
-              <Button className="gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
-                <SpondBadge />
-                {t('spondSync.syncAction')}
+              <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
+                <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
               </Button>
             )}
             {!spondLinked && (
@@ -88,13 +60,13 @@ export default function MembersPlayersPage() {
                 {t("common.actions.add")}
               </Button>
             )}
-          </div>
-        </div>
+          </Cluster></SectionActions>
+        </SectionHeader>
 
         <FilterBar>
           <FilterGroup>
             <FilterLabel>{t("members.levelFilter")}</FilterLabel>
-            <div className="flex gap-1.5">
+            <ChoiceGroup>
               {[1, 2, 3, 4, 5].map((level) => (
                 <Button
                   type="button"
@@ -107,7 +79,7 @@ export default function MembersPlayersPage() {
                       prev.includes(level) ? prev.filter((entry) => entry !== level) : [...prev, level]
                     );
                   }}
-                  className="min-w-8 px-2"
+                  className="member-level-filter"
                 >
                   {level}
                 </Button>
@@ -117,13 +89,13 @@ export default function MembersPlayersPage() {
                   {t("common.actions.clear")}
                 </Button>
               )}
-            </div>
+            </ChoiceGroup>
           </FilterGroup>
 
           {availableYears.length > 0 && (
             <FilterGroup>
               <FilterLabel>{t("members.yearFilter")}</FilterLabel>
-              <div className="flex gap-1.5">
+              <ChoiceGroup>
                 {availableYears.map((year) => (
                   <Button
                     type="button"
@@ -141,7 +113,7 @@ export default function MembersPlayersPage() {
                     {t("common.actions.clear")}
                   </Button>
                 )}
-              </div>
+              </ChoiceGroup>
             </FilterGroup>
           )}
 

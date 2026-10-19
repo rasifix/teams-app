@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MatchFormat } from '../types';
-import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Alert, Button, ContentGrid, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Stack } from './ui';
 
 export interface MatchFormatFormData {
   name: string;
@@ -118,7 +118,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
           <ModalTitle>{isEditing ? t('matchFormatModal.editTitle') : t('matchFormatModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             {error && <Alert>{error}</Alert>}
 
             {isOfficial && (
@@ -179,7 +179,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <div className="grid grid-cols-2 gap-3">
+            <ContentGrid variant="equal">
               <Field label={t('matchFormatModal.fields.minPlayersPerTeam')} htmlFor="playing-mode-min-players">
                 <Input
                   id="playing-mode-min-players"
@@ -198,15 +198,15 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
                   onChange={(e) => setMaxPlayersPerTeam(e.target.value)}
                 />
               </Field>
-            </div>
-            <p className="-mt-2 text-xs text-content-subtle">{t('matchFormatModal.hints.playerLimits')}</p>
-          </div>
+            </ContentGrid>
+            <p className="field-help">{t('matchFormatModal.hints.playerLimits')}</p>
+          </Stack>
         </ModalBody>
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving} className="flex-1">
+          <Button type="submit" variant="primary" disabled={isSaving}>
             {t('common.actions.save')}
           </Button>
         </ModalFooter>

@@ -7,7 +7,7 @@ import {
   type SpondEventRow,
 } from '../../store/selectors/spondSyncSelectors';
 import { formatWallClockDateTime } from '../../utils/dateFormatter';
-import { Button, Checkbox, Field, Input, Select } from '../ui';
+import { Button, Checkbox, Cluster, ContentGrid, EmptyState, EntityContent, EntityMeta, EntityTitle, Field, Input, Panel, Select, Split, Stack } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
 interface SpondEventsReviewStepProps {
@@ -44,7 +44,7 @@ export default function SpondEventsReviewStep({
   return (
     <>
       <p className="body-muted">{t('spondSync.wizard.eventsHelp')}</p>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <Split align="end">
         <Field label={t('spondSync.eventFilter.label')} htmlFor="spond-event-filter">
           <Select
             id="spond-event-filter"
@@ -57,18 +57,18 @@ export default function SpondEventsReviewStep({
           </Select>
         </Field>
         {rows.length > 0 && (
-          <div className="layout-cluster">
+          <Cluster gap="sm">
             <Button variant="secondary" size="sm" onClick={onSelectAll}>{t('common.actions.selectAll')}</Button>
             <Button variant="secondary" size="sm" onClick={onSelectNone}>{t('common.actions.selectNone')}</Button>
-          </div>
+          </Cluster>
         )}
-      </div>
+      </Split>
       {rows.length === 0 ? (
-        <div className="rounded bg-surface-subtle p-4 text-sm text-content-muted">
+        <EmptyState>
           {t('spondSync.wizard.noEventsToSync')}
-        </div>
+        </EmptyState>
       ) : (
-        <div className="layout-stack layout-stack--sm">
+        <Stack gap="sm">
           {rows.map((row) => {
             const draft = drafts[row.source.id];
             const selected = Boolean(draft && draft.action !== 'skip');
@@ -78,25 +78,24 @@ export default function SpondEventsReviewStep({
             const rowIssues = issues[row.source.id] ?? [];
 
             return (
-              <div key={row.source.id} className="rounded border p-4">
-                <label className="flex items-start gap-3">
+              <Panel key={row.source.id} padding="compact">
+                <label className="spond-review-option">
                   <Checkbox
-                    className="mt-1"
                     checked={selected}
                     onChange={(event) => onDraftChange(row.source.id, {
                       action: event.target.checked ? (match ? 'link' : 'create') : 'skip',
                       activityId: event.target.checked ? match?.id ?? '' : '',
                     })}
                   />
-                  <span className="flex-1">
-                    <span className="font-medium">{row.source.name}</span>
-                    <span className="block text-sm text-content-muted">
+                  <EntityContent>
+                    <EntityTitle>{row.source.name}</EntityTitle>
+                    <EntityMeta><span>
                       {formatWallClockDateTime(row.source.startsAt, i18n.language)}
-                    </span>
-                  </span>
+                    </span></EntityMeta>
+                  </EntityContent>
                 </label>
                 {selected && draft && !row.linkedActivity && (
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <ContentGrid variant="equal" className="spond-review-fields">
                     <Select
                       value={draft.action}
                       onChange={(event) => onDraftChange(row.source.id, {
@@ -153,17 +152,17 @@ export default function SpondEventsReviewStep({
                         )}
                       </>
                     )}
-                  </div>
+                  </ContentGrid>
                 )}
                 {rowIssues.map((field) => (
-                  <p key={field} className="mt-2 text-sm text-danger-text">
+                  <p key={field} className="spond-review-error">
                     {t(`spondSync.requiredFields.${field}`)}
                   </p>
                 ))}
-              </div>
+              </Panel>
             );
           })}
-        </div>
+        </Stack>
       )}
       <SpondWizardActions
         back={onBack}

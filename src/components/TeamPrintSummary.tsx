@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/dateFormatter';
 import type { Activity, Team, Player, Trainer, ShirtSet } from '../types';
 import { getActivityDate, getActivityTime } from '../store/selectors/activitySelectors';
-import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
-import { Button, Modal, ModalBody, ModalHeader, ModalTitle, Radio } from './ui';
+import { selectTeamPrintSummaries } from '../store/selectors/teamPlayerSelectors';
+import { Button, ChoiceGroup, Cluster, Modal, ModalBody, ModalHeader, ModalTitle, Radio } from './ui';
 
 interface TeamPrintSummaryProps {
   event: Activity;
@@ -32,13 +32,7 @@ export default function TeamPrintSummary({
   const [format, setFormat] = useState<PrintFormat>('selection');
   if (!isOpen) return null;
 
-  const formatBirthDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
+  const printSummaries = selectTeamPrintSummaries(event, teams, players, trainers);
 
   const handlePrint = () => {
     window.print();
@@ -49,7 +43,7 @@ export default function TeamPrintSummary({
         <ModalHeader className="team-print-header">
           <div className="team-print-header-row">
             <ModalTitle>{t('teamPrint.title')}</ModalTitle>
-            <div className="layout-cluster">
+            <Cluster gap="sm">
               <Button
                 size="sm"
                 onClick={handlePrint}
@@ -63,20 +57,19 @@ export default function TeamPrintSummary({
               >
                 {t('common.actions.close')}
               </Button>
-            </div>
+            </Cluster>
           </div>
           
           {/* Format Toggle */}
           <div className="team-print-format">
             <span className="team-print-format-label">{t('teamPrint.formatLabel')}</span>
-            <div className="team-print-format-options">
+            <ChoiceGroup>
               <label className="team-print-format-option">
                 <Radio
                   name="format"
                   value="guardians"
                   checked={format === 'selection'}
                   onChange={() => setFormat('selection')}
-                  className="team-print-radio"
                 />
                 <span>{t('teamPrint.selectionFormat')}</span>
               </label>
@@ -86,30 +79,17 @@ export default function TeamPrintSummary({
                   value="organizer"
                   checked={format === 'organizer'}
                   onChange={() => setFormat('organizer')}
-                  className="team-print-radio"
                 />
                 <span>{t('teamPrint.organizerFormat')}</span>
               </label>
-            </div>
+            </ChoiceGroup>
           </div>
         </ModalHeader>
         
         {/* Print content */}
         <ModalBody className="team-print-content">
           <div className="team-print-grid">
-            {teams.map((team) => {
-              const selectedPlayers = team.selectedPlayers || [];
-              const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players);
-              const resolvedLocation = event.kind === 'match' ? event.location?.trim() : team.location?.trim() || event.location?.trim();
-              const playersData = selectedPlayers
-                .map(playerId => players.find(p => p.id === playerId))
-                .filter(Boolean)
-                .sort((a, b) => {
-                  const lastNameCompare = a!.lastName.toLowerCase().localeCompare(b!.lastName.toLowerCase());
-                  if (lastNameCompare !== 0) return lastNameCompare;
-                  return a!.firstName.toLowerCase().localeCompare(b!.firstName.toLowerCase());
-                });
-
+            {printSummaries.map(({ team, location, responsiblePeople, players: playerRows }) => {
               return (
                 <div key={team.id} className="team-print-card">
                   {/* Header */}
@@ -120,8 +100,8 @@ export default function TeamPrintSummary({
                     </h1>
                     <div className="body-muted">
                       <p>📅 {formatDate(getActivityDate(event))} {format === 'selection' && `🕐 ${event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}`}</p>
-                      {resolvedLocation && format === 'selection' && (
-                        <p>📍 {resolvedLocation}</p>
+                      {location && format === 'selection' && (
+                        <p>📍 {location}</p>
                       )}
                       {responsiblePeople.length > 0 && (
                         <p className="team-print-responsible">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
@@ -131,31 +111,28 @@ export default function TeamPrintSummary({
 
                   {/* Players List */}
                   <div>
-                    {playersData.length === 0 ? (
+                    {playerRows.length === 0 ? (
                       <p className="team-print-empty">{t('teamPrint.noPlayers')}</p>
                     ) : (
                       <div className="team-print-player-list">
-                        {playersData.map((player) => {
-                          const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player!.id);
-                          const shirtNumber = shirtAssignment?.shirtNumber;
-                          
+                        {playerRows.map(({ player, shirtNumber }) => {
                           return (
-                            <div key={player!.id} className="team-print-player-row">
+                            <div key={player.id} className="team-print-player-row">
                               {format === 'selection' ? (
                                 <div className="team-print-player-selection">
                                   <p className="team-print-player-name">
-                                    {player!.firstName} {player!.lastName}
+                                    {player.firstName} {player.lastName}
                                   </p>
                                 </div>
                               ) : (
                                 <div className="team-print-player-organizer">
                                   <div className="team-print-player-identity">
                                     <p className="team-print-player-name">
-                                      {player!.firstName} {player!.lastName}
+                                      {player.firstName} {player.lastName}
                                     </p>
-                                    {player!.birthDate && (
+                                    {player.birthDate && (
                                       <p className="team-print-birth-date">
-                                        {formatBirthDate(player!.birthDate)}
+                                        {formatDate(player.birthDate)}
                                       </p>
                                     )}
                                   </div>

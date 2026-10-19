@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ShirtSet } from '../types';
-import { Button, ColorInput, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
+import { Button, Cluster, ColorInput, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Stack } from './ui';
 
 interface EditShirtSetModalProps {
   shirtSet: ShirtSet;
@@ -46,7 +46,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
         </ModalHeader>
 
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
               <Input
                 id="sponsor"
@@ -60,7 +60,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
             </Field>
 
             <Field label={t('shirtSetModal.fields.colorRequired')} htmlFor="color" hint={t('shirtSetModal.colorHint')}>
-              <div className="flex items-center gap-3">
+              <Cluster gap="sm" wrap={false}>
                 <ColorInput
                   id="color"
                   name="color"
@@ -74,22 +74,19 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                   onChange={handleInputChange}
                   name="color"
                   placeholder={t('shirtSetModal.placeholders.color')}
-                  className="flex-1"
                 />
-              </div>
+              </Cluster>
             </Field>
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
-          <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
               {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
               {t('shirtModal.saveChanges')}
             </Button>
-          </div>
         </ModalFooter>
       </form>
     </Modal>

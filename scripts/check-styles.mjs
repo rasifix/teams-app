@@ -17,9 +17,13 @@ function collect(directory) {
 collect(sourceRoot);
 
 const declarations = new Map();
+const tailwindDirectiveViolations = [];
 
 for (const file of cssFiles) {
   const css = fs.readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  if (/@(?:tailwind|apply|config|plugin)\b/.test(css)) {
+    tailwindDirectiveViolations.push(path.relative(process.cwd(), file));
+  }
 
   for (const match of css.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
     const selector = match[1].trim();
@@ -38,13 +42,22 @@ for (const file of cssFiles) {
   }
 }
 
-const duplicateGroups = [...declarations.values()].filter(occurrences => occurrences.length > 1);
+const duplicateGroups = [...declarations.values()].filter(occurrences => {
+  if (occurrences.length < 2) return false;
+  const intentionalThemeOverride = occurrences.every(occurrence =>
+    occurrence.startsWith('src/styles/tokens.css') &&
+    (occurrence.includes(':root') || occurrence.includes("[data-theme='"))
+  );
+  return !intentionalThemeOverride;
+});
 let literalClassNames = 0;
 let classTokens = 0;
 let longClassNames = 0;
 const nativeButtonRecipeViolations = [];
 const nativeButtonBypasses = [];
 const rawVisualTokenViolations = [];
+const tailwindUtilityViolations = [];
+const tailwindUtilityPattern = /^(?:(?:sm|md|lg|xl|2xl|dark|hover|focus|focus-visible|disabled):)*!?(?:m[trblxy]?|p[trblxy]?|w|h|min-w|min-h|max-w|max-h|flex|grid|inline-flex|items|justify|self|place-items|space-[xy]|gap|rounded|shadow|bg|border|font|leading|tracking|overflow|absolute|relative|fixed|sticky|inset|top|right|bottom|left|z|block|inline|hidden|opacity|transition|duration|translate|rotate|scale)(?:-|$)/;
 
 for (const file of componentFiles) {
   const source = fs.readFileSync(file, 'utf8');
@@ -58,6 +71,9 @@ for (const file of componentFiles) {
     literalClassNames += 1;
     classTokens += tokens.length;
     if (tokens.length > 6) longClassNames += 1;
+    if (tokens.some(token => tailwindUtilityPattern.test(token))) {
+      tailwindUtilityViolations.push(path.relative(process.cwd(), file));
+    }
   }
 
   if (!file.includes(`${path.sep}components${path.sep}ui${path.sep}`)) {
@@ -74,9 +90,15 @@ for (const file of componentFiles) {
 
 const limits = {
   // Ratchet these down as remaining feature screens move to semantic recipes.
-  classTokens: 1846,
-  longClassNames: 32,
+  classTokens: 432,
+  longClassNames: 0,
 };
+
+const removedInfrastructure = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.ts', 'postcss.config.js', 'postcss.config.cjs'];
+const legacyInfrastructureViolations = removedInfrastructure.filter(file => fs.existsSync(path.resolve(file)));
+const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
+const directPackages = { ...packageJson.dependencies, ...packageJson.devDependencies };
+const forbiddenPackageViolations = ['tailwindcss', 'autoprefixer'].filter(packageName => packageName in directPackages);
 
 if (duplicateGroups.length > 0) {
   console.error('Duplicate CSS declaration groups found:');
@@ -101,7 +123,19 @@ if (rawVisualTokenViolations.length > 0) {
   console.error(`Raw palette or arbitrary visual utilities bypass semantic design tokens:\n- ${[...new Set(rawVisualTokenViolations)].join('\n- ')}`);
 }
 
-if (duplicateGroups.length > 0 || classTokens > limits.classTokens || longClassNames > limits.longClassNames || nativeButtonRecipeViolations.length > 0 || nativeButtonBypasses.length > 0 || rawVisualTokenViolations.length > 0) {
+if (tailwindDirectiveViolations.length > 0) {
+  console.error(`Tailwind/PostCSS directives remain in CSS:\n- ${[...new Set(tailwindDirectiveViolations)].join('\n- ')}`);
+}
+
+if (tailwindUtilityViolations.length > 0) {
+  console.error(`Tailwind-style utility markup bypasses semantic UI recipes:\n- ${[...new Set(tailwindUtilityViolations)].join('\n- ')}`);
+}
+
+if (legacyInfrastructureViolations.length > 0 || forbiddenPackageViolations.length > 0) {
+  console.error(`Removed Tailwind infrastructure returned:\n- ${[...legacyInfrastructureViolations, ...forbiddenPackageViolations].join('\n- ')}`);
+}
+
+if (duplicateGroups.length > 0 || classTokens > limits.classTokens || longClassNames > limits.longClassNames || nativeButtonRecipeViolations.length > 0 || nativeButtonBypasses.length > 0 || rawVisualTokenViolations.length > 0 || tailwindDirectiveViolations.length > 0 || tailwindUtilityViolations.length > 0 || legacyInfrastructureViolations.length > 0 || forbiddenPackageViolations.length > 0) {
   process.exit(1);
 }
 

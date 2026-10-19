@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Input, LoadingSpinner } from '../components/ui';
+import { Alert, Button, Field, Input, Panel, Stack } from '../components/ui';
 import { useAuth } from '../hooks/useAuth';
 import { LOGGED_OUT_REASON } from '../services/authSession';
 
@@ -52,13 +52,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-subtle flex justify-center px-4 py-12">
-      <div className="auth-form layout-stack layout-stack--lg">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-content-strong">
+    <main className="auth-shell">
+      <Panel className="auth-form">
+        <Stack gap="lg">
+        <header className="auth-header">
+          <h1 className="auth-title">
             {isLogin ? t('auth.signInToAccount') : t('auth.createAccount')}
-          </h2>
-          <p className="mt-2 text-center text-sm text-content-muted">
+          </h1>
+          <p className="auth-description">
             {isLogin ? t('auth.noAccountPrompt') : t('auth.hasAccountPrompt')}
             <Button
               type="button"
@@ -72,20 +73,18 @@ export default function LoginPage() {
               {isLogin ? t('auth.signUp') : t('auth.signIn')}
             </Button>
           </p>
-        </div>
+        </header>
 
         {wasLoggedOut && (
           <Alert tone="info">{t('auth.loggedOutMessage')}</Alert>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+        <form onSubmit={handleSubmit}>
+          <Stack gap="lg">
+          <Stack>
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="sr-only">
-                    {t('auth.firstName')}
-                  </label>
+              <div className="auth-name-grid">
+                <Field label={t('auth.firstName')} htmlFor="firstName">
                   <Input
                     id="firstName"
                     name="firstName"
@@ -95,11 +94,8 @@ export default function LoginPage() {
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder={t('auth.firstName')}
                   />
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="sr-only">
-                    {t('auth.lastName')}
-                  </label>
+                </Field>
+                <Field label={t('auth.lastName')} htmlFor="lastName">
                   <Input
                     id="lastName"
                     name="lastName"
@@ -109,14 +105,11 @@ export default function LoginPage() {
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder={t('auth.lastName')}
                   />
-                </div>
+                </Field>
               </div>
             )}
 
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                {t('auth.emailAddress')}
-              </label>
+            <Field label={t('auth.emailAddress')} htmlFor="email-address">
               <Input
                 id="email-address"
                 name="email"
@@ -127,12 +120,9 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('auth.emailAddress')}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="password" className="sr-only">
-                {t('auth.password')}
-              </label>
+            <Field label={t('auth.password')} htmlFor="password">
               <Input
                 id="password"
                 name="password"
@@ -143,39 +133,30 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('auth.password')}
               />
-            </div>
-          </div>
+            </Field>
+          </Stack>
 
           {error && <Alert>{error}</Alert>}
 
           {isLogin && (
-            <div className="flex items-center justify-end">
-              <div className="text-sm">
-                <Link to="/reset-password" className="font-medium text-brand-text hover:text-brand-text">
+            <div className="auth-forgot">
+                <Link to="/reset-password" className="text-link">
                   {t('auth.forgotPassword')}
                 </Link>
-              </div>
             </div>
           )}
 
-          <div>
             <Button
               type="submit"
-              disabled={loading}
-              className="w-full"
+              loading={loading}
+              className="auth-submit"
             >
-              {loading ? (
-                <span className="flex items-center">
-                  <LoadingSpinner size="sm" className="mr-3" />
-                  {t('common.states.processing')}
-                </span>
-              ) : (
-                isLogin ? t('auth.signIn') : t('auth.signUp')
-              )}
+              {loading ? t('common.states.processing') : isLogin ? t('auth.signIn') : t('auth.signUp')}
             </Button>
-          </div>
+          </Stack>
         </form>
-      </div>
-    </div>
+        </Stack>
+      </Panel>
+    </main>
   );
 }

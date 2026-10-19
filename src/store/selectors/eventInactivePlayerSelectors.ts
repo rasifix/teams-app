@@ -4,6 +4,20 @@ import { getActivityDate } from './activitySelectors';
 export const selectInviteablePlayers = (players: Player[]): Player[] =>
   players.filter((player) => player.status !== 'inactive');
 
+export const selectAvailableInvitePlayers = (
+  players: Player[],
+  alreadyInvitedPlayerIds: string[],
+  levelRange: [number, number],
+): Player[] => {
+  const alreadyInvited = new Set(alreadyInvitedPlayerIds);
+  const [minimumLevel, maximumLevel] = levelRange;
+  return selectInviteablePlayers(players).filter((player) => (
+    !alreadyInvited.has(player.id)
+    && player.level >= minimumLevel
+    && player.level <= maximumLevel
+  ));
+};
+
 export const isFutureEvent = (eventDate: string, now: Date = new Date()): boolean => {
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);

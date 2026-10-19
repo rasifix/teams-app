@@ -39,6 +39,26 @@
       "endDate": "End date"
     }
   },
+  "preferences": {
+    "account": "Account",
+    "openMenu": "Open preferences for {{name}}",
+    "language": "Language",
+    "theme": "Theme",
+    "density": "Density",
+    "system": "System default",
+    "languages": {
+      "en": "English",
+      "de": "German"
+    },
+    "themes": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "densities": {
+      "default": "Normal",
+      "compact": "Compact"
+    }
+  },
   "domain": {
     "player": "Player",
     "players": "Players",
@@ -484,6 +504,7 @@
     "injured": "Injured",
     "sick": "Sick",
     "unavailable": "Unavailable",
+    "selected": "Selected",
     "notInvited": "Not Invited"
   },
   "playerInvitations": {
@@ -1102,5 +1123,56 @@
       "SPOND_REQUEST_FAILED": "The Spond request failed.",
       "generic": "The Spond synchronization could not be completed."
     }
+  },
+  "uiKit": {
+    "title": "UI system",
+    "description": "Reference components, states, themes, and density settings.",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "density": "Density",
+    "defaultDensity": "Default",
+    "compactDensity": "Compact",
+    "actions": "Actions",
+    "actionsDescription": "Shared action hierarchy and interaction states.",
+    "primary": "Primary",
+    "secondary": "Secondary",
+    "ghost": "Ghost",
+    "danger": "Danger",
+    "disabled": "Disabled",
+    "loading": "Loading",
+    "openDialog": "Open dialog",
+    "forms": "Forms",
+    "name": "Name",
+    "fieldHint": "Supporting field guidance appears here.",
+    "sampleName": "Alex Example",
+    "role": "Role",
+    "notes": "Notes",
+    "sampleNote": "Available for the next match.",
+    "notifications": "Enable notifications",
+    "feedback": "Feedback and status",
+    "successMessage": "The changes were saved.",
+    "warningMessage": "Some information still needs attention.",
+    "errorMessage": "The changes could not be saved.",
+    "brand": "Brand",
+    "ready": "Ready",
+    "pending": "Pending",
+    "failed": "Failed",
+    "entities": "Entity list",
+    "sampleMeta": "Player · Level 3",
+    "selectedEntity": "Selected member",
+    "selectedMeta": "Current selection",
+    "properties": "Properties and metadata",
+    "location": "Location",
+    "sampleLocation": "Main pitch",
+    "responsible": "Responsible person",
+    "unassigned": "Not assigned",
+    "sampleDate": "18 October 2026",
+    "sampleTime": "14:30",
+    "table": "Data table",
+    "status": "Status",
+    "empty": "No entries are available.",
+    "dialogTitle": "Example dialog",
+    "dialogBody": "Dialogs use the same hierarchy, spacing, and actions throughout the application."
   }
 }

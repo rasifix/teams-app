@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Shirt } from '../types';
-import { Alert, Button, Checkbox, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
+import { Alert, Button, Checkbox, ChoiceGroup, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
 
 interface EditShirtModalProps {
   isOpen: boolean;
@@ -84,7 +84,7 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
         </ModalHeader>
 
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
               <Input
                 id="number"
@@ -120,19 +120,19 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
               </Select>
             </Field>
 
-            <div className="flex items-center">
+            <ChoiceGroup>
               <Checkbox
                 id="isGoalkeeper"
                 name="isGoalkeeper"
                 checked={formData.isGoalkeeper}
                 onChange={handleInputChange}
               />
-              <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-content">
+              <label htmlFor="isGoalkeeper" className="checkbox-label">
                 {t('shirtModal.fields.isGoalkeeper')}
               </label>
-            </div>
+            </ChoiceGroup>
 
-            <div className="flex items-center">
+            <ChoiceGroup>
               <Checkbox
                 id="isUnavailable"
                 name="status"
@@ -144,23 +144,22 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                   }));
                 }}
               />
-              <label htmlFor="isUnavailable" className="ml-2 text-sm font-medium text-content">
+              <label htmlFor="isUnavailable" className="checkbox-label">
                 {t('shirtModal.fields.isUnavailable')}
               </label>
-            </div>
+            </ChoiceGroup>
 
-            {existingNumbers.length > 1 && (
+            {existingNumbers.length > 0 && (
               <Alert tone="info">
                 <p>
-                  <strong>{t('shirtModal.otherNumbers')}</strong> {existingNumbers.filter(num => num !== shirt.number).sort((a, b) => a - b).join(', ')}
+                  <strong>{t('shirtModal.otherNumbers')}</strong> {existingNumbers.join(', ')}
                 </p>
               </Alert>
             )}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
-          <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
               {t('common.actions.cancel')}
             </Button>
@@ -171,7 +170,6 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
             >
               {t('shirtModal.saveChanges')}
             </Button>
-          </div>
         </ModalFooter>
       </form>
     </Modal>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useShirtSets } from "../hooks/useShirtSets";
-import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
+import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from "../components/ui";
 import AddShirtSetModal from "../components/AddShirtSetModal";
 import EditShirtSetModal from "../components/EditShirtSetModal";
 import AddShirtModal from "../components/AddShirtModal";
@@ -9,6 +9,7 @@ import EditShirtModal from "../components/EditShirtModal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import ShirtSetCard from "../components/ShirtSetCard";
 import type { ShirtSet, Shirt } from "../types";
+import { selectShirtNumbersForSet } from '../store/selectors/shirtSetSelectors';
 
 export default function ShirtSetsPage() {
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ export default function ShirtSetsPage() {
           <PageDescription>{t('shirts.subtitle')}</PageDescription>
         </PageHeaderContent>
         <PageActions>
-        <Button className="self-start" variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
+        <Button variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
           {t('common.actions.add')}
         </Button>
         </PageActions>
@@ -123,7 +124,7 @@ export default function ShirtSetsPage() {
           <p>{t('shirts.emptyState')}</p>
         </EmptyState>
       ) : (
-        <div className="layout-stack layout-stack--sm">
+        <Stack gap="sm">
           {shirtSets.map((shirtSet) => (
             <ShirtSetCard
               key={shirtSet.id}
@@ -137,7 +138,7 @@ export default function ShirtSetsPage() {
               onRemoveShirt={(shirtId, shirtNumber) => handleRemoveShirt(shirtSet.id, shirtId, shirtNumber)}
             />
           ))}
-        </div>
+        </Stack>
       )}
 
       {/* Add Shirt Set Modal */}
@@ -162,7 +163,7 @@ export default function ShirtSetsPage() {
         <AddShirtModal
           onClose={() => setAddingShirtToSet(null)}
           onSubmit={(shirtData) => handleAddShirt(addingShirtToSet, shirtData)}
-          existingNumbers={shirtSets.find(set => set.id === addingShirtToSet)?.shirts.map(shirt => shirt.number) || []}
+          existingNumbers={selectShirtNumbersForSet(shirtSets, addingShirtToSet)}
         />
       )}
 
@@ -197,9 +198,7 @@ export default function ShirtSetsPage() {
           onClose={() => setEditingShirt(null)}
           onSave={(updatedShirt) => handleEditShirt(editingShirt.shirtSetId, updatedShirt)}
           shirt={editingShirt.shirt}
-          existingNumbers={shirtSets.find(set => set.id === editingShirt.shirtSetId)?.shirts
-            .filter(s => s.number !== editingShirt.shirt.number)
-            .map(shirt => shirt.number) || []}
+          existingNumbers={selectShirtNumbersForSet(shirtSets, editingShirt.shirtSetId, editingShirt.shirt.number)}
         />
       )}
     </Page>

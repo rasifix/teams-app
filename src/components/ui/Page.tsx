@@ -3,10 +3,11 @@ import { classNames } from './classNames';
 
 export interface PageProps extends HTMLAttributes<HTMLDivElement> {
   width?: 'default' | 'medium' | 'narrow';
+  actionDock?: boolean;
 }
 
-export function Page({ width = 'default', className, ...props }: PageProps) {
-  return <main className={classNames('ui-page', width !== 'default' && `ui-page--${width}`, className)} {...props} />;
+export function Page({ width = 'default', actionDock = false, className, ...props }: PageProps) {
+  return <main className={classNames('ui-page', width !== 'default' && `ui-page--${width}`, actionDock && 'ui-page--action-dock', className)} {...props} />;
 }
 
 export interface PageHeaderProps extends HTMLAttributes<HTMLElement> {

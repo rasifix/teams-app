@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DuplicateMemberGroup } from '../store/selectors/memberDuplicateSelectors';
-import { Alert, Button, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Alert, Button, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Field, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
 
 interface DuplicateMembersModalProps {
   isOpen: boolean;
@@ -64,32 +64,32 @@ export default function DuplicateMembersModal({
       </ModalHeader>
 
       <ModalBody>
-        <div className="layout-stack">
+        <Stack>
           <p className="body-muted">{t('members.duplicates.description')}</p>
 
           {error && <Alert>{error}</Alert>}
 
           {!hasDuplicates ? (
-            <div className="rounded-md border border-edge bg-surface-subtle px-3 py-4 text-sm text-content-muted">
+            <EmptyState>
               {t('members.duplicates.empty')}
-            </div>
+            </EmptyState>
           ) : (
-            <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+            <div className="duplicate-member-list">
               {duplicateGroups.map((group) => (
-                <div key={group.key} className="rounded-lg border border-edge p-3">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-content-strong">
+                <section key={group.key} className="duplicate-member-group">
+                  <Split gap="sm">
+                    <h3 className="duplicate-member-title">
                       {group.firstName} {group.lastName}
                     </h3>
-                    <span className="text-xs text-content-subtle">
+                    <span className="member-meta-text">
                       {t('members.duplicates.groupCount', {
                         trainerCount: group.trainers.length,
                         guardianCount: group.guardians.length,
                       })}
                     </span>
-                  </div>
+                  </Split>
 
-                  <Field className="mb-3" label={t('members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
+                  <Field className="duplicate-member-target" label={t('members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
                     <Select
                       id={`target-trainer-${group.key}`}
                       value={selectedTrainerForGroup[group.key]}
@@ -112,18 +112,18 @@ export default function DuplicateMembersModal({
                     </Select>
                   </Field>
 
-                  <div className="space-y-2">
+                  <EntityList variant="separated">
                     {group.guardians.map((guardian) => (
-                      <div key={guardian.id} className="flex items-center justify-between gap-2 rounded-md border border-edge bg-surface-subtle px-3 py-2">
-                        <div>
-                          <p className="text-sm text-content-strong">
+                      <EntityRow key={guardian.id} density="compact">
+                        <EntityContent>
+                          <EntityTitle>
                             {guardian.firstName} {guardian.lastName}
-                          </p>
-                          <p className="text-xs text-content-subtle">
+                          </EntityTitle>
+                          <EntityMeta>
                             {t('members.duplicates.linkedPlayers', { count: guardian.playerIds.length })}
-                          </p>
-                        </div>
-                        <Button
+                          </EntityMeta>
+                        </EntityContent>
+                        <EntityActions><Button
                           size="sm"
                           variant="primary"
                           disabled={isSubmitting}
@@ -132,19 +132,19 @@ export default function DuplicateMembersModal({
                           }}
                         >
                           {t('members.duplicates.mergeAction')}
-                        </Button>
-                      </div>
+                        </Button></EntityActions>
+                      </EntityRow>
                     ))}
-                  </div>
-                </div>
+                  </EntityList>
+                </section>
               ))}
             </div>
           )}
-        </div>
+        </Stack>
       </ModalBody>
 
       <ModalFooter>
-        <Button type="button" variant="secondary" onClick={handleClose} className="flex-1" disabled={isSubmitting}>
+        <Button type="button" variant="secondary" onClick={handleClose} disabled={isSubmitting}>
           {t('common.actions.close')}
         </Button>
       </ModalFooter>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
-import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Stack } from './ui';
 import ConfirmDialog from './ConfirmDialog';
 import { useSquad, useStore } from '../store';
 
@@ -120,12 +120,14 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
           <ModalTitle>{editingPeriodId ? t('statistics.period.editPeriod') : t('statistics.period.addPeriod')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
-          <p className="text-sm text-content-muted mb-4">
+          <Stack>
+          <p className="body-muted">
             {editingPeriodId
               ? t('statistics.period.editDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })
               : t('statistics.period.addDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })}
           </p>
-          <div className="rounded-lg border border-edge p-4 space-y-4">
+          <Panel padding="compact">
+            <Stack>
             <Field label={t('common.labels.name')} htmlFor="stats-period-name">
               <Input
                 id="stats-period-name"
@@ -156,7 +158,9 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
             {periodError && (
               <Alert>{periodError}</Alert>
             )}
-          </div>
+            </Stack>
+          </Panel>
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose}>{t('common.actions.cancel')}</Button>

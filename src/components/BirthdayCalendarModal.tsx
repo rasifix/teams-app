@@ -5,7 +5,7 @@ import {
   getBirthdayCalendarSubscription,
   revokeBirthdayCalendarSubscription,
 } from '../services/squadService';
-import { Alert, Button, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle } from './ui';
+import { Alert, Button, ButtonAnchor, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle, Stack } from './ui';
 
 interface BirthdayCalendarModalProps {
   isOpen: boolean;
@@ -93,16 +93,16 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
         <ModalSubtitle>{t('members.birthdayCalendar.description')}</ModalSubtitle>
       </ModalHeader>
       <ModalBody>
-        {error && <Alert className="mb-4">{error}</Alert>}
+        {error && <Alert className="birthday-calendar-error">{error}</Alert>}
 
         {isLoading ? (
           <p className="body-muted">{t('members.birthdayCalendar.loading')}</p>
         ) : subscriptionUrl ? (
-          <div className="layout-stack">
-            <p className="text-sm text-content">{t('members.birthdayCalendar.subscriptionHelp')}</p>
-            <div className="flex flex-col gap-2 sm:flex-row">
+          <Stack>
+            <p>{t('members.birthdayCalendar.subscriptionHelp')}</p>
+            <div className="birthday-subscription-actions">
               <Input
-                className="min-w-0 flex-1"
+                className="birthday-subscription-input"
                 aria-label={t('members.birthdayCalendar.subscriptionUrl')}
                 readOnly
                 value={subscriptionUrl}
@@ -112,15 +112,15 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
                 {copied ? t('members.birthdayCalendar.copied') : t('members.birthdayCalendar.copy')}
               </Button>
             </div>
-            <p className="text-xs text-content-subtle">{t('members.birthdayCalendar.privacyNote')}</p>
+            <p className="field-help">{t('members.birthdayCalendar.privacyNote')}</p>
             {!canSubscribeDirectly && (
               <Alert tone="warning">
                 {t('members.birthdayCalendar.secureUrlRequired')}
               </Alert>
             )}
-          </div>
+          </Stack>
         ) : (
-          <p className="text-sm text-content">{t('members.birthdayCalendar.notCreated')}</p>
+          <p>{t('members.birthdayCalendar.notCreated')}</p>
         )}
       </ModalBody>
       <ModalFooter>
@@ -133,9 +133,9 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
               {isSaving ? t('members.birthdayCalendar.revoking') : t('members.birthdayCalendar.revoke')}
             </Button>
             {canSubscribeDirectly && (
-              <a className="btn-primary" href={webcalUrl}>
+              <ButtonAnchor href={webcalUrl}>
                 {t('members.birthdayCalendar.subscribe')}
-              </a>
+              </ButtonAnchor>
             )}
           </>
         ) : (

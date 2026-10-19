@@ -5,6 +5,7 @@ import {
   selectAssignmentsForPeriod,
   selectAssignablePlayersForSlot,
   selectBenchedPlayerIds,
+  selectBenchedPlayers,
   selectDefaultMatchFormat,
   selectFormationById,
   selectMatchFormatById,
@@ -231,6 +232,22 @@ describe('selectAssignablePlayersForSlot', () => {
 
   it('ignores players who are not selected for the team', () => {
     expect(selectAssignablePlayersForSlot(team({ selectedPlayers: [] }), roster, 1, 'gk')).toEqual([]);
+  });
+});
+
+describe('selectBenchedPlayers', () => {
+  it('resolves benched roster members and preserves the player-list order', () => {
+    const roster = team({
+      selectedPlayers: ['p1', 'p2', 'missing'],
+      lineup: [{ periodNumber: 1, assignments: [{ slotId: 'gk', playerId: 'p1' }] }],
+    });
+    expect(selectBenchedPlayers(roster, [player('p2', 'Ben'), player('p1', 'Ada')], 1).map((entry) => entry.id)).toEqual(['p2']);
+  });
+
+  it('returns every resolved roster member for an unplanned period and an empty fallback for an empty roster', () => {
+    const players = [player('p2', 'Ben'), player('p1', 'Ada')];
+    expect(selectBenchedPlayers(team({ selectedPlayers: ['p1', 'p2'] }), players, 2).map((entry) => entry.id)).toEqual(['p2', 'p1']);
+    expect(selectBenchedPlayers(team({}), players, 1)).toEqual([]);
   });
 });
 

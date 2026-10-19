@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
+import { Button, EntityContent, EntityList, EntityRow, EntityTitle, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
 import type { ActivityAttendance } from '../types';
 import { ATTENDANCE_REASONS, toAttendanceRecords, type AttendanceDialogRow } from '../store/selectors/attendanceSelectors';
 
@@ -39,7 +39,7 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <form onSubmit={handleSubmit}>
         <ModalHeader>
           <ModalTitle>{t('attendance.recordTitle')}</ModalTitle>
         </ModalHeader>
@@ -47,13 +47,15 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
           {rows.length === 0 ? (
             <p className="body-muted">{t('attendance.noSelectedPlayers')}</p>
           ) : (
-            <ul className="layout-stack layout-stack--sm">
+            <EntityList variant="separated">
               {rows.map((row) => {
                 const isExcused = row.status === 'excused';
                 return (
-                  <li key={row.playerId} data-testid="attendance-row">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{row.name}</span>
+                  <EntityRow key={row.playerId} align="start" data-testid="attendance-row">
+                    <EntityContent>
+                    <Stack gap="sm">
+                    <Split gap="sm">
+                      <EntityTitle>{row.name}</EntityTitle>
                       <Button
                         type="button"
                         variant={isExcused ? 'secondary' : 'success'}
@@ -65,13 +67,12 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
                       >
                         {t(`attendance.status.${row.status}`)}
                       </Button>
-                    </div>
+                    </Split>
                     {isExcused && (
                       <Select
                         value={row.reason}
                         onChange={(event) => update(row.playerId, { reason: event.target.value as AttendanceDialogRow['reason'] })}
                         aria-label={t('attendance.reasonPlaceholder')}
-                        className="mt-2 text-sm"
                       >
                         <option value="">{t('attendance.reasonPlaceholder')}</option>
                         {ATTENDANCE_REASONS.map((reason) => (
@@ -79,17 +80,19 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
                         ))}
                       </Select>
                     )}
-                  </li>
+                    </Stack>
+                    </EntityContent>
+                  </EntityRow>
                 );
               })}
-            </ul>
+            </EntityList>
           )}
         </ModalBody>
         <ModalFooter>
-          <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>
-          <Button type="submit" variant="primary" disabled={isSaving || rows.length === 0} className="flex-1">
+          <Button type="submit" variant="primary" disabled={isSaving || rows.length === 0}>
             {t('common.actions.save')}
           </Button>
         </ModalFooter>

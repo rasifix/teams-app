@@ -18,7 +18,6 @@ export default function LogoutButton() {
       variant="inverse"
       size="sm"
       onClick={handleLogout}
-      className="gap-2"
       title={t('auth.logout')}
     >
       <svg

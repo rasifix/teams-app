@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import EventsList from '../components/EventsList';
 import AddEventModal from '../components/AddEventModal';
-import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle } from '../components/ui';
+import { Alert, Button, Cluster, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Stack } from '../components/ui';
 import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities } from '../store/selectors/activitySelectors';
 import { useSquad, useTrainers } from '../store';
 import { useAuth } from '../hooks/useAuth';
@@ -40,17 +40,17 @@ export default function EventsPage() {
         </PageHeaderContent>
         <PageActions>
           {canSyncSpond && spondLinked && (
-            <Button className="gap-1.5" variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}>
-              <SpondBadge />{t('spondSync.syncAction')}
+            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}>
+              <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
             </Button>
           )}
           {!spondLinked && <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>{t('common.actions.add')}</Button>}
         </PageActions>
       </PageHeader>
 
-      <SpondSyncResultBanner className="mb-4" />
-      {error && <Alert>{error}</Alert>}
-      <div className="layout-stack layout-stack--lg">
+      <Stack gap="lg">
+        <SpondSyncResultBanner />
+        {error && <Alert>{error}</Alert>}
         <Panel>
           <PanelHeader><PanelTitle>{t('events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
           <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
@@ -61,7 +61,7 @@ export default function EventsPage() {
             <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
           </Panel>
         )}
-      </div>
+      </Stack>
       {!spondLinked && <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />}
     </Page>
   );

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
-import { Alert, Badge, Button, ButtonLink, EmptyState, Field, getButtonClassName, IconButton, ListFrame, ListRow, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Switch } from '../components/ui';
+import { Alert, Badge, Button, ButtonAnchor, ButtonLink, Cluster, ContentGrid, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Field, IconButton, IconTile, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Split, Stack, Switch } from '../components/ui';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
@@ -135,7 +135,7 @@ export default function SquadSettingsPage() {
 
   return (
     <Page>
-      <SpondSyncResultBanner className="mb-4" />
+      <SpondSyncResultBanner className="settings-banner" />
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>{t('squadSettings.title')}</PageTitle>
@@ -143,32 +143,32 @@ export default function SquadSettingsPage() {
         </PageHeaderContent>
       </PageHeader>
 
-      <div className="settings-grid">
-        <div className="settings-column">
+      <ContentGrid variant="equal">
+        <Stack>
           <Panel>
-            <div className="settings-intro">
-              <div className="settings-icon settings-icon--brand">
+            <Cluster align="start" gap="sm" wrap={false}>
+              <IconTile tone="brand">
                 <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 12.75 10.5 15l5.25-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
-              </div>
-              <div className="settings-intro-content">
+              </IconTile>
+              <EntityContent>
                 <PanelTitle>{t('squadSettings.spond.title')}</PanelTitle>
                 <p className="field-help">{t('squadSettings.spond.description')}</p>
-              </div>
-            </div>
-            {unlinkSpondError && <Alert className="mt-4">{unlinkSpondError}</Alert>}
-            <div className="mt-5 flex flex-wrap gap-2">
+              </EntityContent>
+            </Cluster>
+            {unlinkSpondError && <Alert className="settings-panel-alert">{unlinkSpondError}</Alert>}
+            <Cluster gap="sm" className="settings-panel-actions">
             {spondGroupUrl ? (
               <>
-                <a
-                  className={getButtonClassName({ size: 'sm' })}
+                <ButtonAnchor
+                  size="sm"
                   href={spondGroupUrl}
                   target="_blank"
                   rel="noreferrer"
                 >
                   {t('squadSettings.spond.openGroup')}
-                </a>
+                </ButtonAnchor>
                 <Button variant="danger" size="sm" onClick={() => setIsUnlinkSpondDialogOpen(true)}>
                   {t('squadSettings.spond.unlinkGroup')}
                 </Button>
@@ -178,22 +178,22 @@ export default function SquadSettingsPage() {
                 {t('squadSettings.spond.linkGroup')}
               </ButtonLink>
             )}
-          </div>
+            </Cluster>
           </Panel>
 
           <Panel>
             <PanelHeader>
-              <div className="settings-intro">
-                <div className="settings-icon settings-icon--info">
+              <Cluster align="start" gap="sm" wrap={false}>
+                <IconTile tone="info">
                   <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 9.75h16.5m-15-4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z" />
                   </svg>
-                </div>
-                <div>
+                </IconTile>
+                <EntityContent>
                   <PanelTitle>{t('squadSettings.periods.title')}</PanelTitle>
                   <p className="field-help">{t('squadSettings.periods.description')}</p>
-                </div>
-              </div>
+                </EntityContent>
+              </Cluster>
               <Button
                 size="sm"
                 onClick={() => {
@@ -207,16 +207,16 @@ export default function SquadSettingsPage() {
             {periods.length === 0 ? (
               <EmptyState>{t('squadSettings.periods.empty')}</EmptyState>
             ) : (
-              <ListFrame>
+              <EntityList>
                 {periods.map((period) => (
-                  <ListRow key={period.id}>
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-content-strong">{period.name}</p>
-                      <p className="mt-0.5 text-sm text-content-subtle">
+                  <EntityRow key={period.id}>
+                    <EntityContent>
+                      <EntityTitle>{period.name}</EntityTitle>
+                      <EntityMeta>
                         {t('squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
-                      </p>
-                    </div>
-                    <Button
+                      </EntityMeta>
+                    </EntityContent>
+                    <EntityActions><Button
                       variant="secondary"
                       size="sm"
                       onClick={() => {
@@ -225,29 +225,29 @@ export default function SquadSettingsPage() {
                       }}
                     >
                       {t('common.actions.edit')}
-                    </Button>
-                  </ListRow>
+                    </Button></EntityActions>
+                  </EntityRow>
                 ))}
-              </ListFrame>
+              </EntityList>
             )}
           </Panel>
-        </div>
+        </Stack>
 
-        <div className="settings-column">
+        <Stack>
           <Panel>
-            <div className="settings-intro">
-              <div className="settings-icon settings-icon--accent">
+            <Cluster align="start" gap="sm" wrap={false}>
+              <IconTile tone="brand">
                 <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75c-4.5 0-8.25 2.1-8.25 4.5S7.5 12.75 12 12.75s8.25-2.1 8.25-4.5S16.5 3.75 12 3.75Zm-8.25 4.5v7.5c0 2.4 3.75 4.5 8.25 4.5s8.25-2.1 8.25-4.5v-7.5" />
                 </svg>
-              </div>
-              <div>
+              </IconTile>
+              <EntityContent>
                 <PanelTitle>{t('matchPlanning.category.title')}</PanelTitle>
                 <p className="field-help">{t('matchPlanning.category.description')}</p>
-              </div>
-            </div>
+              </EntityContent>
+            </Cluster>
             <div className="settings-category-form">
-              <Field className="flex-1" label={t('matchPlanning.category.label')} htmlFor="squad-category">
+              <Field className="settings-category-field" label={t('matchPlanning.category.label')} htmlFor="squad-category">
                 <Select
                   id="squad-category"
                   value={selectedCategory}
@@ -271,52 +271,51 @@ export default function SquadSettingsPage() {
                 {isSavingCategory ? t('matchPlanning.category.saving') : t('common.actions.save')}
               </Button>
             </div>
-            {categorySaveError && <Alert className="mt-3">{categorySaveError}</Alert>}
+            {categorySaveError && <Alert className="settings-category-alert">{categorySaveError}</Alert>}
             {selectedCategory && selectedOfficialFormat(selectedCategory) && (
-              <Alert tone="warning" className="mt-3">
+              <Alert tone="warning" className="settings-category-alert">
                 {t('matchPlanning.category.officialModeHint', { mode: selectedOfficialFormat(selectedCategory)?.name })}
               </Alert>
             )}
             {selectedCategory && selectIsTournamentOnlyCategory(sfvCatalog, selectedCategory) && (
-              <Alert tone="info" className="mt-3">{t('matchPlanning.category.tournamentOnlyHint')}</Alert>
+              <Alert tone="info" className="settings-category-alert">{t('matchPlanning.category.tournamentOnlyHint')}</Alert>
             )}
             {selectedCategory === 'FF14' && (
-              <Alert tone="info" className="mt-3">{t('matchPlanning.category.ff14Hint')}</Alert>
+              <Alert tone="info" className="settings-category-alert">{t('matchPlanning.category.ff14Hint')}</Alert>
             )}
           </Panel>
 
           <Panel>
-            <div className="settings-intro settings-intro--split">
-              <div className="settings-intro">
-                <div className="settings-icon settings-icon--success">
+            <Split align="start">
+              <Cluster align="start" gap="sm" wrap={false}>
+                <IconTile tone="success">
                   <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-18v18M3 12h18M5.64 5.64l12.72 12.72m0-12.72L5.64 18.36" />
                   </svg>
-                </div>
-                <div>
+                </IconTile>
+                <EntityContent>
                   <PanelTitle>{t('matchPlanning.title')}</PanelTitle>
                   <p className="field-help">{t('matchPlanning.description')}</p>
-                </div>
-              </div>
+                </EntityContent>
+              </Cluster>
             <Switch
               checked={matchPlanningEnabled}
               label={t('matchPlanning.title')}
               disabled={isTogglingEnabled}
               onClick={handleToggleEnabled}
-              className="mt-1"
             />
-          </div>
+            </Split>
             {!matchPlanningEnabled && (
-              <Alert tone="info" className="mt-5">
+              <Alert tone="info" className="settings-disabled-alert">
                 {t('matchPlanning.disabledState')}
               </Alert>
             )}
           </Panel>
-        </div>
-      </div>
+        </Stack>
+      </ContentGrid>
 
       {matchPlanningEnabled && (
-        <div className="settings-grid settings-grid--secondary">
+        <ContentGrid variant="equal" className="settings-grid--secondary">
           <Panel>
               <PanelHeader>
                 <PanelTitle>{t('matchPlanning.matchFormats.title')}</PanelTitle>
@@ -335,15 +334,15 @@ export default function SquadSettingsPage() {
               {matchFormats.length === 0 ? (
                 <EmptyState>{t('matchPlanning.matchFormats.emptyState')}</EmptyState>
               ) : (
-                <ListFrame>
+                <EntityList>
                   {matchFormats.map((matchFormat) => (
-                    <ListRow
+                    <EntityRow
                       key={matchFormat.id}
                       align="start"
                     >
-                      <div className="min-w-0">
-                        <div className="layout-cluster layout-cluster--wrap">
-                          <span className="font-semibold text-content-strong">{matchFormat.name}</span>
+                      <EntityContent>
+                        <Cluster gap="sm">
+                          <EntityTitle>{matchFormat.name}</EntityTitle>
                           {matchFormat.isDefault && (
                             <Badge tone="brand" size="sm">
                               {t('matchPlanning.matchFormats.defaultBadge')}
@@ -354,35 +353,34 @@ export default function SquadSettingsPage() {
                               {t('matchPlanning.matchFormats.officialBadge')}
                             </Badge>
                           )}
-                        </div>
+                        </Cluster>
                         {matchFormat.playersOnField !== undefined && (
-                          <div className="field-help">
+                          <EntityMeta>
                             {t('matchPlanning.matchFormats.players', {
                               onField: matchFormat.playersOnField,
                               min: matchFormat.minPlayersPerTeam ?? '-',
                               max: matchFormat.maxPlayersPerTeam ?? '-',
                             })}
-                          </div>
+                          </EntityMeta>
                         )}
-                        <div className="body-muted">
+                        <EntityMeta>
                           {t('matchPlanning.matchFormats.summary', {
                             periods: matchFormat.numberOfPeriods,
                             minutes: matchFormat.periodLengthMinutes,
                           })}
-                        </div>
-                        <div className="body-muted">
+                        </EntityMeta>
+                        <EntityMeta>
                           {t('matchPlanning.matchFormats.minimumPeriods', {
                             count: matchFormat.minimumPeriodsPerPlayer ?? 0,
                           })}
-                        </div>
-                      </div>
-                      <div className="settings-list-actions">
+                        </EntityMeta>
+                      </EntityContent>
+                      <EntityActions>
                         {!matchFormat.isDefault && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setDefaultMatchFormat(matchFormat.id)}
-                            className="mr-1"
                           >
                             {t('matchPlanning.matchFormats.setDefault')}
                           </Button>
@@ -407,10 +405,10 @@ export default function SquadSettingsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                           </svg>
                         </IconButton>
-                      </div>
-                    </ListRow>
+                      </EntityActions>
+                    </EntityRow>
                   ))}
-                </ListFrame>
+                </EntityList>
               )}
           </Panel>
 
@@ -432,15 +430,15 @@ export default function SquadSettingsPage() {
               {formations.length === 0 ? (
                 <EmptyState>{t('matchPlanning.formations.emptyState')}</EmptyState>
               ) : (
-                <ListFrame>
+                <EntityList>
                   {formations.map((formation) => {
                     const displayIndexes = selectSlotDisplayIndexes(formation.slots);
                     return (
-                      <ListRow key={formation.id}>
-                        <div className="w-full">
-                        <div className="layout-split">
-                          <span className="font-semibold text-content-strong">{formation.name}</span>
-                          <div className="settings-list-actions">
+                      <EntityRow key={formation.id} align="start">
+                        <EntityContent>
+                        <Split>
+                          <EntityTitle>{formation.name}</EntityTitle>
+                          <EntityActions>
                             <IconButton
                               label={t('common.actions.edit')}
                               onClick={() => {
@@ -461,8 +459,8 @@ export default function SquadSettingsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                               </svg>
                             </IconButton>
-                          </div>
-                        </div>
+                          </EntityActions>
+                        </Split>
                         <div className="settings-formation-slots">
                           {formation.slots.map((slot) => {
                             const displayIndex = displayIndexes.get(slot.id);
@@ -474,21 +472,21 @@ export default function SquadSettingsPage() {
                             );
                           })}
                         </div>
-                        </div>
-                      </ListRow>
+                        </EntityContent>
+                      </EntityRow>
                     );
                   })}
-                </ListFrame>
+                </EntityList>
               )}
           </Panel>
-        </div>
+        </ContentGrid>
       )}
 
-      <Panel tone="danger" className="mt-5">
+      <Panel tone="danger" className="settings-danger-panel">
         <PanelTitle>{t('squadSettings.deactivate.title')}</PanelTitle>
         <PanelDescription>{t('squadSettings.deactivate.description')}</PanelDescription>
-        {deactivateError && <Alert className="mt-3">{deactivateError}</Alert>}
-        <Button className="mt-4" variant="danger" size="sm" onClick={() => setIsDeactivateDialogOpen(true)}>
+        {deactivateError && <Alert className="settings-danger-alert">{deactivateError}</Alert>}
+        <Button className="settings-danger-action" variant="danger" size="sm" onClick={() => setIsDeactivateDialogOpen(true)}>
           {t('squadSettings.deactivate.action')}
         </Button>
       </Panel>

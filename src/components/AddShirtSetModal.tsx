@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ShirtSet, Shirt } from '../types';
-import { Button, Checkbox, ColorInput, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
+import { Button, Checkbox, ChoiceGroup, Cluster, ColorInput, ContentGrid, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Split, Stack } from './ui';
+import { selectGeneratedShirts } from '../store/selectors/shirtSetSelectors';
 
 interface AddShirtSetModalProps {
   onClose: () => void;
@@ -13,7 +14,6 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
   const [formData, setFormData] = useState({
     sponsor: '',
     color: '#000000', // Default color
-    shirts: []
   });
 
   const [shirtOptions, setShirtOptions] = useState({
@@ -28,43 +28,16 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.sponsor.trim() && formData.color.trim()) {
-      const shirts: Shirt[] = [];
-      
-      // Create shirts based on options
-      if (shirtOptions.createShirts) {
-        // Create regular shirts in the range
-        for (let num = shirtOptions.startNumber; num <= shirtOptions.endNumber; num++) {
-          // Skip goalkeeper number if creating separate goalkeeper shirt
-          if (shirtOptions.includeGoalkeeper && num === shirtOptions.goalkeeperNumber) {
-            continue;
-          }
-          
-          shirts.push({
-            number: num,
-            size: shirtOptions.size,
-            isGoalkeeper: false,
-            status: 'available'
-          });
-        }
-        
-        // Add goalkeeper shirt if requested
-        if (shirtOptions.includeGoalkeeper) {
-          shirts.push({
-            number: shirtOptions.goalkeeperNumber,
-            size: shirtOptions.size,
-            isGoalkeeper: true,
-            status: 'available'
-          });
-        }
-      }
-      
       onSubmit({
         sponsor: formData.sponsor.trim(),
         color: formData.color,
-        shirts: shirts
+        shirts: generatedShirts,
       });
     }
   };
+
+  const generatedShirts: Shirt[] = selectGeneratedShirts(shirtOptions);
+  const regularShirtCount = generatedShirts.filter((shirt) => !shirt.isGoalkeeper).length;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -89,7 +62,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
         </ModalHeader>
 
         <ModalBody>
-          <div className="layout-stack layout-stack--sm">
+          <Stack gap="sm">
             <Field label={t('shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
               <Input
                 id="sponsor"
@@ -103,7 +76,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
             </Field>
 
             <Field label={t('shirtSetModal.fields.colorRequired')} htmlFor="color">
-              <div className="flex items-center gap-3">
+              <Cluster gap="sm" wrap={false}>
                 <ColorInput
                   id="color"
                   name="color"
@@ -117,28 +90,27 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   onChange={handleInputChange}
                   name="color"
                   placeholder={t('shirtSetModal.placeholders.color')}
-                  className="flex-1"
                 />
-              </div>
+              </Cluster>
             </Field>
 
             {/* Shirt creation options */}
-            <div className="border-t pt-3">
-              <div className="flex items-center mb-3">
+            <div className="shirt-generation-options">
+              <ChoiceGroup>
                 <Checkbox
                   id="createShirts"
                   name="createShirts"
                   checked={shirtOptions.createShirts}
                   onChange={handleShirtOptionChange}
                 />
-                <label htmlFor="createShirts" className="ml-2 text-sm font-medium text-content">
+                <label htmlFor="createShirts" className="checkbox-label">
                   {t('shirtSetModal.fields.createAutomatically')}
                 </label>
-              </div>
+              </ChoiceGroup>
 
               {shirtOptions.createShirts && (
-                <div className="space-y-3 pl-4 border-l-2 border-edge">
-                  <div className="grid grid-cols-3 gap-3">
+                <Stack className="shirt-generation-fields">
+                  <ContentGrid variant="threeColumn">
                     <Field label={t('shirtSetModal.fields.startNumber')} htmlFor="startNumber">
                       <Input
                         id="startNumber"
@@ -148,7 +120,6 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         max="99"
                         value={shirtOptions.startNumber}
                         onChange={handleShirtOptionChange}
-                        className="text-sm"
                       />
                     </Field>
                     <Field label={t('shirtSetModal.fields.endNumber')} htmlFor="endNumber">
@@ -160,7 +131,6 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         max="99"
                         value={shirtOptions.endNumber}
                         onChange={handleShirtOptionChange}
-                        className="text-sm"
                       />
                     </Field>
                     <Field label={t('shirtSetModal.fields.size')} htmlFor="size">
@@ -169,7 +139,6 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         name="size"
                         value={shirtOptions.size}
                         onChange={handleShirtOptionChange}
-                        className="text-sm"
                       >
                         <option value="128">128</option>
                         <option value="140">140</option>
@@ -182,24 +151,24 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         <option value="XL">XL</option>
                       </Select>
                     </Field>
-                  </div>
+                  </ContentGrid>
 
-                  <div className="layout-split">
-                    <div className="flex items-center">
+                  <Split gap="sm">
+                    <ChoiceGroup>
                       <Checkbox
                         id="includeGoalkeeper"
                         name="includeGoalkeeper"
                         checked={shirtOptions.includeGoalkeeper}
                         onChange={handleShirtOptionChange}
                       />
-                      <label htmlFor="includeGoalkeeper" className="ml-2 text-sm text-content">
+                      <label htmlFor="includeGoalkeeper" className="checkbox-label">
                         {t('shirtSetModal.fields.includeGoalkeeper')}
                       </label>
-                    </div>
+                    </ChoiceGroup>
                     
                     {shirtOptions.includeGoalkeeper && (
-                      <div className="layout-cluster">
-                        <label htmlFor="goalkeeperNumber" className="text-xs text-content">
+                      <Cluster gap="sm" wrap={false}>
+                        <label htmlFor="goalkeeperNumber" className="shirt-goalkeeper-label">
                           {t('shirtSetModal.fields.goalkeeperNumber')}
                         </label>
                         <Input
@@ -210,35 +179,28 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                           max="99"
                           value={shirtOptions.goalkeeperNumber}
                           onChange={handleShirtOptionChange}
-                          className="!w-16 text-sm"
+                          className="shirt-goalkeeper-number"
                         />
-                      </div>
+                      </Cluster>
                     )}
-                  </div>
+                  </Split>
 
-                  <div className="text-xs text-content-muted bg-surface-subtle p-2 rounded">
-                    {t('shirtSetModal.preview.prefix')} {
-                      Math.max(0, shirtOptions.endNumber - shirtOptions.startNumber + 1 - 
-                        (shirtOptions.includeGoalkeeper && 
-                         shirtOptions.goalkeeperNumber >= shirtOptions.startNumber && 
-                         shirtOptions.goalkeeperNumber <= shirtOptions.endNumber ? 1 : 0))
-                    } {t('shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('shirtSetModal.preview.size', { size: shirtOptions.size })})
+                  <div className="shirt-generation-preview">
+                    {t('shirtSetModal.preview.prefix')} {regularShirtCount} {t('shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('shirtSetModal.preview.size', { size: shirtOptions.size })})
                   </div>
-                </div>
+                </Stack>
               )}
             </div>
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
-          <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
               {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
               {t('shirtSetModal.createAction')}
             </Button>
-          </div>
         </ModalFooter>
       </form>
     </Modal>

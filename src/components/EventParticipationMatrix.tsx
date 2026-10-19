@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Player } from '../types';
 import { getActivityDate } from '../store/selectors/activitySelectors';
-import { selectEventParticipationRows } from '../store/selectors/statisticsSelectors';
+import { selectEventParticipationRows, selectNextUpcomingEventIndex } from '../store/selectors/statisticsSelectors';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import { DateColumn, Panel } from './ui';
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, DateColumn, EmptyState, Legend, LegendItem, Panel, PanelBody, Stack, StatusMarker, StickyMatrix, type SemanticTone } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
@@ -35,24 +35,24 @@ export default function EventParticipationMatrix({ players, events }: EventParti
     [players, events, levelRange]
   );
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): { icon: string; tone: SemanticTone } => {
     switch (status) {
       case 'selected':
-        return { icon: '✓', color: 'text-success', bg: 'bg-success-subtle' };
+        return { icon: '✓', tone: 'success' };
       case 'accepted':
-        return { icon: invitationStatusMeta.accepted.icon, color: 'text-content-disabled', bg: invitationStatusMeta.accepted.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.accepted.icon, tone: 'neutral' };
       case 'declined':
-        return { icon: invitationStatusMeta.declined.icon, color: invitationStatusMeta.declined.iconClassName, bg: invitationStatusMeta.declined.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.declined.icon, tone: 'danger' };
       case 'injured':
-        return { icon: invitationStatusMeta.injured.icon, color: invitationStatusMeta.injured.iconClassName, bg: invitationStatusMeta.injured.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.injured.icon, tone: 'accent' };
       case 'sick':
-        return { icon: invitationStatusMeta.sick.icon, color: invitationStatusMeta.sick.iconClassName, bg: invitationStatusMeta.sick.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.sick.icon, tone: 'brand' };
       case 'unavailable':
-        return { icon: invitationStatusMeta.unavailable.icon, color: invitationStatusMeta.unavailable.iconClassName, bg: invitationStatusMeta.unavailable.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.unavailable.icon, tone: 'neutral' };
       case 'open':
-        return { icon: invitationStatusMeta.open.icon, color: invitationStatusMeta.open.iconClassName, bg: invitationStatusMeta.open.iconBackgroundClassName };
+        return { icon: invitationStatusMeta.open.icon, tone: 'warning' };
       default:
-        return { icon: '-', color: 'text-content-disabled', bg: 'bg-surface-subtle' };
+        return { icon: '-', tone: 'neutral' };
     }
   };
 
@@ -61,15 +61,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
     if (events.length === 0 || players.length === 0) return;
     if (!scrollContainerRef.current) return;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Find the index of the next upcoming event
-    const nextEventIndex = events.findIndex(event => {
-      const eventDate = new Date(getActivityDate(event));
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate >= today;
-    });
+    const nextEventIndex = selectNextUpcomingEventIndex(events, new Date());
 
     // If we found an upcoming event, scroll to it
     if (nextEventIndex > 0) {
@@ -99,96 +91,88 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   if (events.length === 0 || players.length === 0) {
     return (
-      <section className="statistics-matrix-empty">
-            <p>{t('statistics.eventParticipation.emptyState')}</p>
-      </section>
+      <EmptyState>{t('statistics.eventParticipation.emptyState')}</EmptyState>
     );
   }
 
   return (
     <Panel padding="none">
-      <div className="statistics-controls">
-        <LevelRangeSelector
-          defaultRange={levelRange}
-          onChange={setLevelRange}
-        />
-
-        <div className="participation-legend">
-          <div className="participation-legend-item">
-            <span className="participation-legend-icon text-success">✓</span>
-            <span>{t('statistics.playerTable.selected')}</span>
-          </div>
-          {invitationStatusOrder.map((status) => (
-            <div key={status} className="participation-legend-item">
-              <span className={`participation-legend-icon ${status === 'accepted' ? 'text-content-disabled' : invitationStatusMeta[status].iconClassName}`}>
-                {invitationStatusMeta[status].icon}
-              </span>
-              <span>{t(`invitationStatus.${status}`)}</span>
-            </div>
-          ))}
-          <div className="participation-legend-item">
-            <span className="participation-legend-icon text-content-disabled">-</span>
-            <span>{t('invitationStatus.notInvited')}</span>
-          </div>
-        </div>
-      </div>
-        <div className="statistics-scroll" ref={scrollContainerRef}>
-          <table className="statistics-matrix-table">
-            <thead>
-              <tr className="statistics-matrix-heading-row">
-                <th className="statistics-matrix-player-heading">
+      <PanelBody>
+        <Stack gap="sm">
+          <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+          <Legend>
+            <LegendItem>
+              <StatusMarker tone="success">✓</StatusMarker>
+              <span>{t('statistics.playerTable.selected')}</span>
+            </LegendItem>
+            {invitationStatusOrder.map((status) => (
+              <LegendItem key={status}>
+                <StatusMarker tone={getStatusIcon(status).tone}>{invitationStatusMeta[status].icon}</StatusMarker>
+                <span>{t(`invitationStatus.${status}`)}</span>
+              </LegendItem>
+            ))}
+            <LegendItem>
+              <StatusMarker>-</StatusMarker>
+              <span>{t('invitationStatus.notInvited')}</span>
+            </LegendItem>
+          </Legend>
+        </Stack>
+      </PanelBody>
+        <StickyMatrix ref={scrollContainerRef}>
+          <DataTable density="compact">
+            <DataTableHead>
+              <DataTableRow>
+                <DataTableHeaderCell sticky className="statistics-matrix-player-heading">
                   {t('domain.player')}
-                </th>
+                </DataTableHeaderCell>
                 {events.map(event => (
-                  <th 
+                  <DataTableHeaderCell
                     key={event.id} 
+                    align="center"
                     className="participation-event-heading"
                     title={`${event.name} - ${formatDate(getActivityDate(event))}`}
                   >
-                    <div 
+                    <button
+                      type="button"
+                      data-ui-control="composite"
                       className="participation-event-link"
                       onClick={(e) => handleEventClick(event.id, e)}
                     >
                       <DateColumn date={getActivityDate(event)} />
-                    </div>
-                  </th>
+                    </button>
+                  </DataTableHeaderCell>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </DataTableRow>
+            </DataTableHead>
+            <DataTableBody>
               {sortedData.map(({ player, attendance }) => (
-                <tr 
+                <DataTableRow
                   key={player.id} 
-                  className="statistics-matrix-row participation-player-row"
-                  onClick={() => handlePlayerClick(player.id)}
+                  highlight
                 >
-                  <td className="statistics-matrix-player-cell participation-player-cell">
-                    <div className="participation-player">
+                  <DataTableCell sticky className="statistics-matrix-player-cell">
+                    <button type="button" data-ui-control="composite" className="statistics-player-link" onClick={() => handlePlayerClick(player.id)}>
                       <span>{player.firstName} {player.lastName}</span>
                       <Level level={player.level} className="participation-player-level" />
-                    </div>
-                  </td>
-                  {attendance.map(({ status, event }, index) => {
+                    </button>
+                  </DataTableCell>
+                  {attendance.map(({ status, event }) => {
                     const statusInfo = getStatusIcon(status);
                     return (
-                      <td 
-                        key={index}
-                        className="participation-status-cell"
+                      <DataTableCell
+                        key={event.id}
+                        align="center"
                         title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
                       >
-                        <div className={`participation-status ${statusInfo.bg}`}>
-                          <span className={`participation-status-icon ${statusInfo.color}`}>
-                            {statusInfo.icon}
-                          </span>
-                        </div>
-                      </td>
+                        <StatusMarker tone={statusInfo.tone}>{statusInfo.icon}</StatusMarker>
+                      </DataTableCell>
                     );
                   })}
-                </tr>
+                </DataTableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTableBody>
+          </DataTable>
+        </StickyMatrix>
     </Panel>
   );
 }

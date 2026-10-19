@@ -26,14 +26,14 @@ export default function UnsavedLineupDialog({
       <ModalBody>
         <p className="body-muted">{t('teamLineup.unsavedChangesMessage')}</p>
       </ModalBody>
-      <ModalFooter className="flex-col sm:flex-row">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving} className="flex-1">
+      <ModalFooter>
+        <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>
           {t('common.actions.cancel')}
         </Button>
-        <Button type="button" variant="secondary" onClick={onDiscard} disabled={isSaving} className="flex-1">
+        <Button type="button" variant="secondary" onClick={onDiscard} disabled={isSaving}>
           {t('teamLineup.discardChanges')}
         </Button>
-        <Button type="button" variant="primary" onClick={onSave} disabled={isSaving} className="flex-1">
+        <Button type="button" variant="primary" onClick={onSave} disabled={isSaving}>
           {t('teamLineup.saveAndLeave')}
         </Button>
       </ModalFooter>

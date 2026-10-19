@@ -1,7 +1,7 @@
 import type { Activity } from '../types';
 import { useTranslation } from 'react-i18next';
 import EventCard from './EventCard';
-import { EmptyState } from './ui';
+import { ContentGrid, EmptyState } from './ui';
 
 interface EventsListProps {
   activities: Activity[];
@@ -15,7 +15,7 @@ export default function EventsList({ activities, onActivityClick }: EventsListPr
     return <EmptyState><p>{t('events.list.emptyState')}</p></EmptyState>;
   }
 
-  return <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+  return <ContentGrid variant="equal">
     {activities.map((activity) => <EventCard key={activity.id} activity={activity} onClick={onActivityClick} />)}
-  </div>;
+  </ContentGrid>;
 }

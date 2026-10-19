@@ -6,14 +6,18 @@ import AddSquadModal from '../components/AddSquadModal';
 import type { CreateSquadRequest } from '../types';
 import {
   Alert,
+  ActionCard,
+  ActionCardTitle,
   Button,
-  ChevronRightIcon,
   EmptyState,
+  EntityMeta,
   LoadingState,
+  PageStateContent,
   Panel,
   PanelHeader,
   PanelTitle,
   PanelDescription,
+  Stack,
 } from '../components/ui';
 
 export default function SquadSelectionPage() {
@@ -69,59 +73,53 @@ export default function SquadSelectionPage() {
   if (error && (!squads || squads.length === 0)) {
     return (
       <div className="auth-shell">
-        <div className="text-center max-w-md">
-          <Alert className="mb-4">
+        <PageStateContent className="squad-selection-error">
+          <Alert>
             <strong>{t('squads.errors.failedToLoadTitle')}</strong>
-            <p className="mt-2">{error}</p>
+            <p>{error}</p>
           </Alert>
           <Button onClick={() => window.location.reload()}>
             {t('common.actions.retry')}
           </Button>
-        </div>
+        </PageStateContent>
       </div>
     );
   }
 
   return (
     <div className="auth-shell">
-      <Panel className="w-full max-w-md">
-        <PanelHeader className="block text-center">
+      <Panel className="squad-selection-panel">
+        <PanelHeader className="squad-selection-header">
           <PanelTitle>{t('squads.selectTitle')}</PanelTitle>
           <PanelDescription>{t('squads.selectDescription')}</PanelDescription>
         </PanelHeader>
 
         <Button
           onClick={() => setIsAddModalOpen(true)}
-          className="mb-5 w-full"
+          className="squad-selection-create"
         >
           {t('squads.createNew')}
         </Button>
 
-        <div className="layout-stack layout-stack--sm">
+        <Stack gap="sm">
           {squads?.map((squad) => (
-            <button
-              type="button"
+            <ActionCard
               key={squad.id}
-              data-ui-control="composite"
               onClick={() => handleSquadSelect(squad.id)}
-              className="w-full p-4 text-left border border-edge rounded-lg hover:border-brand-border hover:bg-brand-subtle transition-colors group"
             >
-              <div className="layout-split">
-                <div>
-                  <h3 className="font-medium text-content-strong">{squad.name}</h3>
+                  <ActionCardTitle>{squad.name}</ActionCardTitle>
+                  <EntityMeta>
                   {squad.category && (
-                    <p className="body-muted">{t('squads.categoryLabel', { category: squad.category })}</p>
+                    <span>{t('squads.categoryLabel', { category: squad.category })}</span>
                   )}
-                  <p className="body-muted">{t('squads.idLabel', { id: squad.id })}</p>
-                </div>
-                <ChevronRightIcon className="card-chevron" />
-              </div>
-            </button>
+                  <span>{t('squads.idLabel', { id: squad.id })}</span>
+                  </EntityMeta>
+            </ActionCard>
           ))}
-        </div>
+        </Stack>
 
         {(!squads || squads.length === 0) && (
-          <EmptyState className="mt-8">
+          <EmptyState className="squad-selection-empty">
             <p>{t('squads.noneAvailable')}</p>
           </EmptyState>
         )}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player, PlayerStatus } from '../types';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
 
 interface AddPlayerModalProps {
   isOpen: boolean;
@@ -100,7 +100,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('auth.firstName')} htmlFor="firstName">
               <Input
                 type="text"
@@ -178,7 +178,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 placeholder={t('playerModal.placeholders.preferredShirtNumber')}
               />
             </Field>
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -186,14 +186,12 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="flex-1"
           >
             {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="flex-1"
           >
             {isEditMode ? t('playerModal.updateAction') : t('playerModal.addAction')}
           </Button>

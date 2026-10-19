@@ -1,5 +1,6 @@
-import type { Activity, Player } from '../../types';
+import type { Activity, Period, Player } from '../../types';
 import { getActivityDate, getInvitationStatus, isTeamActivity } from './activitySelectors';
+import { filterEventsByStatisticsPeriod } from '../../utils/statisticsPeriod';
 
 export interface PlayerActivityStatistics {
   player: Player;
@@ -8,6 +9,23 @@ export interface PlayerActivityStatistics {
   selectedCount: number;
   acceptanceRate: number;
   selectionRate: number;
+}
+
+export type PlayerStatisticsSortField = 'name' | 'invited' | 'accepted' | 'selected' | 'acceptanceRate' | 'selectionRate';
+export type SortDirection = 'asc' | 'desc';
+
+export interface StatisticsSummary {
+  totalPlayers: number;
+  totalEvents: number;
+  averageAcceptances: number;
+  averageSelections: number;
+}
+
+export interface StatisticsViewData {
+  filteredEvents: Activity[];
+  statisticsPlayers: Player[];
+  playerStatistics: PlayerActivityStatistics[];
+  summary: StatisticsSummary;
 }
 
 export interface EventParticipationRow {
@@ -71,6 +89,72 @@ export function selectPlayerActivityStatistics(activities: Activity[], players: 
       selectionRate: acceptedCount > 0 ? (selectedCount / acceptedCount) * 100 : 0,
     };
   }).sort((left, right) => comparePlayers(left.player, right.player));
+}
+
+export function selectStatisticsViewData(
+  activities: Activity[],
+  players: Player[],
+  period: Period | null,
+): StatisticsViewData {
+  const statisticsPlayers = players.filter((player) => player.status !== 'trial');
+  const filteredEvents = filterEventsByStatisticsPeriod(activities.filter(isTeamActivity), period);
+  const playerStatistics = selectPlayerActivityStatistics(filteredEvents, statisticsPlayers);
+  const totalPlayers = playerStatistics.length;
+
+  return {
+    filteredEvents,
+    statisticsPlayers,
+    playerStatistics,
+    summary: {
+      totalPlayers,
+      totalEvents: filteredEvents.length,
+      averageAcceptances: totalPlayers > 0
+        ? playerStatistics.reduce((sum, statistic) => sum + statistic.acceptedCount, 0) / totalPlayers
+        : 0,
+      averageSelections: totalPlayers > 0
+        ? playerStatistics.reduce((sum, statistic) => sum + statistic.selectedCount, 0) / totalPlayers
+        : 0,
+    },
+  };
+}
+
+export function selectVisiblePlayerStatistics(
+  playerStatistics: PlayerActivityStatistics[],
+  levelRange: [number, number],
+  sortField: PlayerStatisticsSortField,
+  sortDirection: SortDirection,
+): PlayerActivityStatistics[] {
+  const comparisonFor = (left: PlayerActivityStatistics, right: PlayerActivityStatistics): number => {
+    switch (sortField) {
+      case 'invited': return left.invitedCount - right.invitedCount;
+      case 'accepted': return left.acceptedCount - right.acceptedCount;
+      case 'selected': return left.selectedCount - right.selectedCount;
+      case 'acceptanceRate': return left.acceptanceRate - right.acceptanceRate;
+      case 'selectionRate': return left.selectionRate - right.selectionRate;
+      case 'name': return comparePlayers(left.player, right.player);
+    }
+  };
+
+  return playerStatistics
+    .filter(({ player }) => player.level >= levelRange[0] && player.level <= levelRange[1])
+    .sort((left, right) => {
+      const primary = comparisonFor(left, right);
+      const comparison = primary === 0 && sortField !== 'name'
+        ? comparePlayers(left.player, right.player)
+        : primary;
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+}
+
+export function selectNextUpcomingEventIndex(events: Activity[], now: Date): number {
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  return events.findIndex((event) => {
+    const eventDate = new Date(getActivityDate(event));
+    if (Number.isNaN(eventDate.getTime())) return false;
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
 }
 
 export function selectEventParticipationRows(

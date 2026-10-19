@@ -3,13 +3,20 @@ import { useTranslation } from 'react-i18next';
 import type { Player, InvitationResponse } from '../types';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
-import { selectInviteablePlayers } from '../store/selectors/eventInactivePlayerSelectors';
+import { selectAvailableInvitePlayers } from '../store/selectors/eventInactivePlayerSelectors';
 import { getBirthYear } from '../utils/birthDate';
 import {
   Alert,
   Button,
   Checkbox,
+  ChoiceGroup,
+  Cluster,
   EmptyState,
+  EntityContent,
+  EntityList,
+  EntityMeta,
+  EntityRow,
+  EntityTitle,
   Modal,
   ModalBody,
   ModalFooter,
@@ -18,6 +25,8 @@ import {
   ModalTitle,
   Panel,
   Radio,
+  Split,
+  Stack,
 } from './ui';
 
 interface InvitePlayersModalProps {
@@ -61,10 +70,7 @@ export default function InvitePlayersModal({
   };
 
   const handleSelectAll = () => {
-    const availablePlayerIds = selectInviteablePlayers(players)
-      .filter(p => !alreadyInvitedPlayerIds.includes(p.id))
-      .filter(p => p.level >= levelRange[0] && p.level <= levelRange[1])
-      .map(p => p.id);
+    const availablePlayerIds = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, levelRange).map((player) => player.id);
     setSelectedPlayerIds(new Set(availablePlayerIds));
   };
 
@@ -89,11 +95,7 @@ export default function InvitePlayersModal({
     onClose();
   };
 
-  const inviteablePlayers = selectInviteablePlayers(players);
-
-  const availablePlayers = inviteablePlayers
-    .filter(p => !alreadyInvitedPlayerIds.includes(p.id))
-    .filter(p => p.level >= levelRange[0] && p.level <= levelRange[1]);
+  const availablePlayers = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, levelRange);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -101,11 +103,12 @@ export default function InvitePlayersModal({
         <ModalHeader>
           <ModalTitle>{t('invitePlayers.title')}</ModalTitle>
           <ModalSubtitle>{t('invitePlayers.subtitle')}</ModalSubtitle>
-          <Alert tone="warning" className="mt-3">{t('invitePlayers.inactiveExcludedHint')}</Alert>
+          <Alert tone="warning" className="invite-player-header-alert">{t('invitePlayers.inactiveExcludedHint')}</Alert>
         </ModalHeader>
 
         <ModalBody>
-          <Panel padding="compact" className="mb-4">
+          <Stack>
+          <Panel padding="compact">
             <LevelRangeSelector
               minLevel={1}
               maxLevel={5}
@@ -116,20 +119,20 @@ export default function InvitePlayersModal({
             {availablePlayers.length === 0 ? (
               <EmptyState>
                 <p>{t('invitePlayers.noPlayers')}</p>
-                <p className="text-sm mt-2">{t('invitePlayers.noPlayersDetail')}</p>
+                <p className="field-help">{t('invitePlayers.noPlayersDetail')}</p>
               </EmptyState>
             ) : (
               <>
-                <Alert tone="info" className="mb-4">
-                  <p className="text-sm font-medium text-content-strong mb-2">{t('invitePlayers.defaultStatus')}</p>
-                  <div className="flex gap-4">
+                <Alert tone="info">
+                  <Stack gap="sm">
+                  <p className="invite-player-status-title">{t('invitePlayers.defaultStatus')}</p>
+                  <ChoiceGroup>
                     <label className="checkbox-label">
                       <Radio
                         name="invitationStatus"
                         value="accepted"
                         checked={invitationStatus === 'accepted'}
                         onChange={() => setInvitationResponse('accepted')}
-                        className="w-4 h-4 text-success focus:ring-2 focus:ring-success"
                       />
                       {t('invitationStatus.accepted')}
                     </label>
@@ -139,14 +142,15 @@ export default function InvitePlayersModal({
                         value="open"
                         checked={invitationStatus === 'open'}
                         onChange={() => setInvitationResponse('open')}
-                        className="w-4 h-4 text-success focus:ring-2 focus:ring-success"
                       />
                       {t('invitationStatus.open')}
                     </label>
-                  </div>
+                  </ChoiceGroup>
+                  </Stack>
                 </Alert>
 
-                <div className="flex gap-2 mb-4">
+                <Split gap="sm">
+                  <Cluster gap="sm">
                   <Button
                     type="button"
                     variant="secondary"
@@ -163,40 +167,35 @@ export default function InvitePlayersModal({
                   >
                     {t('invitePlayers.deselectAll')}
                   </Button>
-                  <span className="ml-auto text-sm text-content-muted">
+                  </Cluster>
+                  <span className="body-muted">
                     {t('invitePlayers.selectedCount', { count: selectedPlayerIds.size })}
                   </span>
-                </div>
+                </Split>
 
-                <div className="space-y-2">
+                <EntityList variant="separated">
                   {availablePlayers.map((player) => (
                     <label
                       key={player.id}
-                      className="flex items-center p-3 border border-edge rounded-lg hover:bg-surface-subtle cursor-pointer"
+                      className="invite-player-option"
                     >
                       <Checkbox
                         checked={selectedPlayerIds.has(player.id)}
                         onChange={() => handleTogglePlayer(player.id)}
-                        className="w-4 h-4 text-success rounded focus:ring-2 focus:ring-success"
                       />
-                      <div className="ml-3 flex-1">
-                        <div className="layout-split">
-                          <div className="layout-cluster">
-                            <span className="font-medium text-content-strong">
-                              {player.firstName} {player.lastName}
-                            </span>
-                            <span className="body-muted">{getBirthYear(player.birthDate)}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-content-muted">
-                            <Level level={player.level} />
-                          </div>
-                        </div>
-                      </div>
+                      <EntityRow>
+                        <EntityContent>
+                          <EntityTitle>{player.firstName} {player.lastName}</EntityTitle>
+                          <EntityMeta><span>{getBirthYear(player.birthDate)}</span></EntityMeta>
+                        </EntityContent>
+                        <Level level={player.level} />
+                      </EntityRow>
                     </label>
                   ))}
-                </div>
+                </EntityList>
               </>
             )}
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -204,7 +203,6 @@ export default function InvitePlayersModal({
               type="button"
               variant="secondary"
               onClick={handleClose}
-              className="flex-1"
             >
               {t('common.actions.cancel')}
             </Button>
@@ -212,7 +210,6 @@ export default function InvitePlayersModal({
               type="submit"
               variant="success"
               disabled={selectedPlayerIds.size === 0}
-              className="flex-1"
             >
               {t('invitePlayers.inviteAction')} {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
             </Button>

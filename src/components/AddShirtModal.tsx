@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Shirt } from '../types';
-import { Alert, Button, Checkbox, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
+import { Alert, Button, Checkbox, ChoiceGroup, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
 
 interface AddShirtModalProps {
   onClose: () => void;
@@ -82,7 +82,7 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
         </ModalHeader>
 
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
               <Input
                 id="number"
@@ -118,19 +118,19 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
               </Select>
             </Field>
 
-            <div className="flex items-center">
+            <ChoiceGroup>
               <Checkbox
                 id="isGoalkeeper"
                 name="isGoalkeeper"
                 checked={formData.isGoalkeeper}
                 onChange={handleInputChange}
               />
-              <label htmlFor="isGoalkeeper" className="ml-2 text-sm font-medium text-content">
+              <label htmlFor="isGoalkeeper" className="checkbox-label">
                 {t('shirtModal.fields.isGoalkeeper')}
               </label>
-            </div>
+            </ChoiceGroup>
 
-            <div className="flex items-center">
+            <ChoiceGroup>
               <Checkbox
                 id="isUnavailable"
                 name="status"
@@ -142,23 +142,22 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
                   }));
                 }}
               />
-              <label htmlFor="isUnavailable" className="ml-2 text-sm font-medium text-content">
+              <label htmlFor="isUnavailable" className="checkbox-label">
                 {t('shirtModal.fields.isUnavailable')}
               </label>
-            </div>
+            </ChoiceGroup>
 
             {existingNumbers.length > 0 && (
               <Alert tone="info">
                 <p>
-                  <strong>{t('shirtModal.existingNumbers')}</strong> {existingNumbers.sort((a, b) => a - b).join(', ')}
+                  <strong>{t('shirtModal.existingNumbers')}</strong> {existingNumbers.join(', ')}
                 </p>
               </Alert>
             )}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
-          <div className="flex justify-end space-x-3">
             <Button type="button" variant="secondary" onClick={onClose}>
               {t('common.actions.cancel')}
             </Button>
@@ -169,7 +168,6 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
             >
               {t('shirtModal.addAction')}
             </Button>
-          </div>
         </ModalFooter>
       </form>
     </Modal>

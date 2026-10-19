@@ -1,0 +1,6 @@
+@layer design-tokens, foundation, ui-components, feature-compositions;
+
+@import url('./tokens.css') layer(design-tokens);
+@import url('./base.css') layer(foundation);
+@import url('./recipes.css') layer(ui-components);
+@import url('./compositions.css') layer(feature-compositions);

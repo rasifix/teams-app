@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { createContext, useContext, useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 interface ModalProps {
@@ -6,10 +6,25 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  size?: 'sm' | 'md';
 }
 
-export function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
+const ModalTitleIdContext = createContext<string | undefined>(undefined);
+
+export function Modal({ isOpen, onClose, children, className = '', size = 'md' }: ModalProps) {
   const isPointerDownOnOverlay = useRef(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const focusable = dialog?.querySelector<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])');
+    (focusable ?? dialog)?.focus();
+
+    return () => previouslyFocused?.focus();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -35,6 +50,31 @@ export function Modal({ isOpen, onClose, children, className = '' }: ModalProps)
     isPointerDownOnOverlay.current = false;
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])') ?? []);
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialogRef.current?.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <div
       className="modal-overlay"
@@ -43,8 +83,8 @@ export function Modal({ isOpen, onClose, children, className = '' }: ModalProps)
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className={`modal-content ${className}`} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-        {children}
+      <div ref={dialogRef} className={`modal-content modal-content--${size} ${className}`.trim()} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onClick={(e) => e.stopPropagation()} onKeyDown={handleKeyDown}>
+        <ModalTitleIdContext.Provider value={titleId}>{children}</ModalTitleIdContext.Provider>
       </div>
     </div>
   );
@@ -64,8 +104,9 @@ export function ModalHeader({ children, className = '' }: ModalSectionProps) {
 }
 
 export function ModalTitle({ children, className = '' }: ModalSectionProps) {
+  const titleId = useContext(ModalTitleIdContext);
   return (
-    <h2 className={`modal-title ${className}`}>
+    <h2 id={titleId} className={`modal-title ${className}`}>
       {children}
     </h2>
   );

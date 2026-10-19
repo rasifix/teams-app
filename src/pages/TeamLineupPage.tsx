@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
-import { Alert, Card, CardBody, CardTitle, Button, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PanelTitle, Tab, TabList } from '../components/ui';
+import { ActionDock, ActionDockContent, Alert, Card, CardBody, CardTitle, Button, ContentGrid, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, PanelTitle, Tab, TabList } from '../components/ui';
 import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
 import {
   selectMatchFormatById,
   selectFormationById,
-  selectBenchedPlayerIds,
+  selectBenchedPlayers,
   selectAssignablePlayersForSlot,
   selectPlannedPeriodCounts,
   selectMinimumPeriodViolations,
@@ -77,11 +77,6 @@ export default function TeamLineupPage() {
 
   const draftTeam: Team | null = team ? { ...team, lineup: draftLineup } : null;
 
-  const selectedPlayers = useMemo(
-    () => players.filter((p) => team?.selectedPlayers?.includes(p.id)),
-    [players, team]
-  );
-
   if (!isInitialized || isLoading) {
     return (
       <Page>
@@ -107,7 +102,7 @@ export default function TeamLineupPage() {
   }
 
   const activePeriod = typeof activeTab === 'number' ? activeTab : 1;
-  const benchedPlayerIds = selectBenchedPlayerIds(draftTeam, activePeriod);
+  const benchedPlayers = selectBenchedPlayers(draftTeam, players, activePeriod);
   const plannedPeriodCounts = selectPlannedPeriodCounts(draftTeam);
   const minimumPeriodViolations = selectMinimumPeriodViolations(
     draftTeam,
@@ -174,24 +169,23 @@ export default function TeamLineupPage() {
   };
 
   return (
-    <Page className="lineup-page pb-32">
-      <Button
+    <Page actionDock className="lineup-page">
+      <PageToolbar><Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
-          className="mb-5"
         >
           ← {t('common.actions.cancel')}
-      </Button>
+      </Button></PageToolbar>
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
             <PageTitle>{t('teamLineup.title', { team: team.name })}</PageTitle>
           </PageHeaderContent>
-          <PageActions><p className="text-sm font-medium text-content-subtle sm:text-right">{matchFormat.name} · {formation.name}</p></PageActions>
+          <PageActions><p className="lineup-context">{matchFormat.name} · {formation.name}</p></PageActions>
       </PageHeader>
 
-      <TabList label={t('teamLineup.title', { team: team.name })} className="mb-5">
+      <TabList label={t('teamLineup.title', { team: team.name })} className="lineup-tabs">
         {Array.from({ length: matchFormat.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
           <Tab
             key={periodNumber}
@@ -216,7 +210,7 @@ export default function TeamLineupPage() {
       </TabList>
 
       {activeTab !== 'summary' && activePeriod > 1 && (
-        <div className="mb-4 flex justify-end">
+        <div className="lineup-toolbar">
           <Button variant="secondary" size="sm" onClick={handleCopyPreviousPeriod}>
             {t('teamLineup.copyPreviousPeriod')}
           </Button>
@@ -224,23 +218,23 @@ export default function TeamLineupPage() {
       )}
 
       {activeTab !== 'summary' && hasMismatch && (
-        <Alert tone="warning" className="mb-4">
+        <Alert tone="warning" className="lineup-alert">
           {t('teamLineup.rosterMismatchWarning')}
         </Alert>
       )}
 
       {activeTab === 'summary' ? (
         <div className="lineup-print-content">
-          <div className="mb-4 flex items-center justify-between print:hidden">
+          <div className="lineup-print-actions">
             <PanelTitle>{t('teamLineup.summaryTitle')}</PanelTitle>
             <Button variant="secondary" onClick={() => window.print()}>
               {t('teamLineup.printSummary')}
             </Button>
           </div>
           {minimumPeriodViolations.length > 0 && (
-            <Alert className="mb-4">
-              <div className="font-semibold">{t('teamLineup.minimumPeriodsViolationTitle')}</div>
-              <ul className="mt-1 list-disc pl-5">
+            <Alert className="lineup-alert">
+              <div className="lineup-violation-title">{t('teamLineup.minimumPeriodsViolationTitle')}</div>
+              <ul className="lineup-violation-list">
                 {minimumPeriodViolations.map((violation) => (
                   <li key={violation.playerId}>
                     {t('teamLineup.minimumPeriodsViolation', {
@@ -253,13 +247,13 @@ export default function TeamLineupPage() {
               </ul>
             </Alert>
           )}
-          <div className="hidden print:block mb-5">
-            <h1 className="text-2xl font-bold">{t('teamLineup.title', { team: team.name })}</h1>
+          <div className="lineup-print-heading">
+            <h1 className="lineup-print-title">{t('teamLineup.title', { team: team.name })}</h1>
             <p>{matchFormat.name} · {formation.name}</p>
           </div>
           <div className="lineup-summary-grid">
             {lineupSummary.map((period) => (
-              <Card key={period.periodNumber} className="lineup-period-card break-inside-avoid">
+              <Card key={period.periodNumber} className="lineup-period-card">
                 <CardBody className="lineup-period-body">
                   <CardTitle className="lineup-period-title">{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
                   <div className="lineup-pitch lineup-pitch--summary">
@@ -303,28 +297,28 @@ export default function TeamLineupPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center text-xs text-content-subtle">{t('teamLineup.noBenchedPlayers')}</div>
+                      <div className="lineup-empty-bench">{t('teamLineup.noBenchedPlayers')}</div>
                     )}
                   </div>
                 </CardBody>
               </Card>
             ))}
           </div>
-          <section className="lineup-shirt-page hidden print:block">
-            <header className="mb-6 text-center">
-              <h1 className="text-3xl font-bold text-content-strong">{team.name}</h1>
-              <h2 className="mt-1 text-2xl font-semibold text-content">{t('teamLineup.shirtNumbersTitle')}</h2>
+          <section className="lineup-shirt-page">
+            <header className="lineup-shirt-header">
+              <h1 className="lineup-shirt-title">{team.name}</h1>
+              <h2 className="lineup-shirt-subtitle">{t('teamLineup.shirtNumbersTitle')}</h2>
             </header>
-            <div className="lineup-shirt-grid grid grid-cols-2 gap-3">
+            <div className="lineup-shirt-grid">
               {shirtNumberRows.map((row) => (
                 <div
                   key={row.playerId}
                   className="lineup-shirt-row"
                 >
-                  <span className="w-14 flex-none text-center text-4xl font-black text-content-strong">
+                  <span className="lineup-shirt-number">
                     {row.shirtNumber ?? t('teamLineup.noShirtNumber')}
                   </span>
-                  <span className="min-w-0 text-xl font-semibold text-content-strong">
+                  <span className="lineup-shirt-name">
                     {row.playerName ?? t('teamLineup.unknownPlayer')}
                   </span>
                 </div>
@@ -334,7 +328,7 @@ export default function TeamLineupPage() {
         </div>
       ) : (
       <>
-      <div className="lineup-editor-grid">
+      <ContentGrid variant="editor">
       <Card className="lineup-editor-card">
         <CardBody className="lineup-editor-body">
           <CardTitle className="lineup-editor-title">{t('teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
@@ -419,14 +413,12 @@ export default function TeamLineupPage() {
 
       <Card className="lineup-editor-card">
         <CardBody className="lineup-editor-body">
-          <CardTitle className="lineup-editor-title">{t('teamLineup.benchTitle', { count: benchedPlayerIds.length })}</CardTitle>
-          {benchedPlayerIds.length === 0 ? (
+          <CardTitle className="lineup-editor-title">{t('teamLineup.benchTitle', { count: benchedPlayers.length })}</CardTitle>
+          {benchedPlayers.length === 0 ? (
             <EmptyState>{t('teamLineup.noBenchedPlayers')}</EmptyState>
           ) : (
             <div className="lineup-bench-list" role="list">
-              {selectedPlayers
-                .filter((player) => benchedPlayerIds.includes(player.id))
-                .map((player) => (
+              {benchedPlayers.map((player) => (
                   <div
                     key={player.id}
                     role="listitem"
@@ -438,12 +430,12 @@ export default function TeamLineupPage() {
                     onDragEnd={() => setDragOverSlotId(null)}
                     className="lineup-bench-player"
                   >
-                    <span className="flex shrink-0 flex-col gap-0.5 text-content-disabled" aria-hidden="true">
-                      <span className="flex gap-0.5"><span className="dot" /><span className="dot" /></span>
-                      <span className="flex gap-0.5"><span className="dot" /><span className="dot" /></span>
-                      <span className="flex gap-0.5"><span className="dot" /><span className="dot" /></span>
+                    <span className="lineup-drag-handle" aria-hidden="true">
+                      <span className="lineup-drag-dot-row"><span className="dot" /><span className="dot" /></span>
+                      <span className="lineup-drag-dot-row"><span className="dot" /><span className="dot" /></span>
+                      <span className="lineup-drag-dot-row"><span className="dot" /><span className="dot" /></span>
                     </span>
-                    <span className="min-w-0 flex-1 truncate font-semibold text-content-strong">{player.firstName} {player.lastName}</span>
+                    <span className="lineup-bench-name">{player.firstName} {player.lastName}</span>
                     <span
                       className="lineup-period-count"
                       aria-label={t('teamLineup.plannedPeriods', {
@@ -459,18 +451,18 @@ export default function TeamLineupPage() {
           )}
         </CardBody>
       </Card>
-      </div>
+      </ContentGrid>
       </>
       )}
 
-      <div className="lineup-save-dock">
-        <div className="lineup-save-content">
-          {saveError ? <p className="text-sm text-danger" role="alert">{saveError}</p> : <span className="text-sm font-medium text-content-subtle">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
+      <ActionDock>
+        <ActionDockContent>
+          {saveError ? <p className="lineup-save-error" role="alert">{saveError}</p> : <span className="lineup-save-status">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
           <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving}>
             {t('common.actions.save')}
           </Button>
-        </div>
-      </div>
+        </ActionDockContent>
+      </ActionDock>
       <UnsavedLineupDialog
         isOpen={navigationBlocker.state === 'blocked'}
         isSaving={isSaving}

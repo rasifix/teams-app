@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Trainer } from '../types';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Stack } from './ui';
 
 interface AddTrainerModalProps {
   isOpen: boolean;
@@ -82,7 +82,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('auth.firstName')} htmlFor="firstName">
               <Input
                 type="text"
@@ -117,7 +117,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 placeholder={t('trainerModal.placeholders.email')}
               />
             </Field>
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -125,14 +125,12 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="flex-1"
           >
             {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="flex-1"
           >
             {isEditMode ? t('trainerModal.updateAction') : t('trainerModal.addAction')}
           </Button>

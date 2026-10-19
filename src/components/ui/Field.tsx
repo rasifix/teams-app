@@ -1,4 +1,5 @@
 import { forwardRef, type HTMLAttributes, type InputHTMLAttributes, type LabelHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { classNames } from './classNames';
 
 export interface FieldProps extends HTMLAttributes<HTMLDivElement> {
   label: ReactNode;
@@ -32,11 +33,15 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   return <input ref={ref} className={`ui-input ${className}`.trim()} {...props} />;
 });
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(
-  { className = '', ...props },
+export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  controlSize?: 'sm' | 'md';
+}
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { className, controlSize = 'md', ...props },
   ref,
 ) {
-  return <select ref={ref} className={`ui-select ${className}`.trim()} {...props} />;
+  return <select ref={ref} className={classNames('ui-select', controlSize === 'sm' && 'ui-select--sm', className)} {...props} />;
 });
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(function Textarea(

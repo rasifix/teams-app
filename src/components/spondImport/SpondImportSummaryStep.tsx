@@ -4,6 +4,7 @@ import type {
   SpondImportPreviewItem,
 } from '../../store/selectors/spondSyncSelectors';
 import SpondWizardActions from './SpondWizardActions';
+import { Badge, EmptyState, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle } from '../ui';
 
 interface SpondImportSummaryStepProps {
   items: SpondImportPreviewItem[];
@@ -26,33 +27,33 @@ export default function SpondImportSummaryStep({
     <>
       <p className="body-muted">{t('spondSync.wizard.summaryHelp')}</p>
       {!decisionSummary.isReady && (
-        <p className="text-sm text-danger-text">{t('spondSync.requiredFields.summary')}</p>
+        <p className="spond-review-error">{t('spondSync.requiredFields.summary')}</p>
       )}
       {items.length === 0 ? (
-        <div className="rounded bg-surface-subtle p-4 text-sm text-content-muted">
+        <EmptyState>
           {t('spondSync.wizard.noChanges')}
-        </div>
+        </EmptyState>
       ) : (
-        <div className="divide-y rounded border">
+        <EntityList>
           {items.map((item) => (
-            <div key={item.id} className="flex items-start gap-3 p-4">
-              <span className={`mt-0.5 rounded px-2 py-0.5 text-xs font-medium ${item.action === 'create' ? 'bg-success-subtle text-success-text' : 'bg-info-subtle text-info-text'}`}>
+            <EntityRow key={item.id} align="start">
+              <Badge tone={item.action === 'create' ? 'success' : 'info'} size="sm">
                 {t(`spondSync.wizard.actions.${item.action}`)}
-              </span>
-              <div>
-                <p className="font-medium">{item.sourceName}</p>
-                <p className="body-muted">
+              </Badge>
+              <EntityContent>
+                <EntityTitle>{item.sourceName}</EntityTitle>
+                <EntityMeta><span>
                   {t(`spondSync.wizard.preview.${item.kind}.${item.action}`, {
                     target: item.targetName,
                     changes: item.changes
                       ?.map((change) => t(`spondSync.wizard.changedFields.${change}`))
                       .join(', '),
                   })}
-                </p>
-              </div>
-            </div>
+                </span></EntityMeta>
+              </EntityContent>
+            </EntityRow>
           ))}
-        </div>
+        </EntityList>
       )}
       <SpondWizardActions
         back={onBack}

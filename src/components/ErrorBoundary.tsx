@@ -2,7 +2,7 @@ import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { withTranslation } from 'react-i18next';
 import type { WithTranslation } from 'react-i18next';
-import { Button } from './ui';
+import { Button, PageState, PageStateContent, StateActions, StateDescription, StateDetails, StateDetailsContent, StateDetailsSummary, StateIcon, StateTitle } from './ui';
 
 interface Props extends WithTranslation {
   children?: ReactNode;
@@ -45,10 +45,9 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-surface-subtle py-12 px-4 sm:px-6 lg:px-8">
-          <div className="auth-form layout-stack layout-stack--lg">
-            <div className="text-center">
-              <div className="mx-auto h-12 w-12 text-danger">
+        <PageState>
+          <PageStateContent>
+              <StateIcon>
                 <svg
                   fill="none"
                   stroke="currentColor"
@@ -62,41 +61,40 @@ class ErrorBoundary extends Component<Props, State> {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.982 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
-              </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-content-strong">
+              </StateIcon>
+              <StateTitle>
                 {t('errorBoundary.title')}
-              </h2>
-              <p className="mt-2 text-sm text-content-muted">
+              </StateTitle>
+              <StateDescription>
                 {t('errorBoundary.message')}
-              </p>
+              </StateDescription>
               {this.state.error && (
-                <details className="mt-4 text-left">
-                  <summary className="cursor-pointer text-sm text-content-subtle hover:text-content">
+                <StateDetails>
+                  <StateDetailsSummary>
                     {t('errorBoundary.showDetails')}
-                  </summary>
-                  <pre className="mt-2 text-xs text-danger bg-danger-subtle p-2 rounded overflow-auto">
+                  </StateDetailsSummary>
+                  <StateDetailsContent>
                     {this.state.error.message}
-                  </pre>
-                </details>
+                  </StateDetailsContent>
+                </StateDetails>
               )}
-            </div>
-            <div className="flex flex-col space-y-3">
+            <StateActions>
               <Button
                 onClick={this.handleRetry}
-                className="w-full"
+                width="full"
               >
                 {t('common.actions.retry')}
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => window.location.reload()}
-                className="w-full"
+                width="full"
               >
                 {t('errorBoundary.reloadPage')}
               </Button>
-            </div>
-          </div>
-        </div>
+            </StateActions>
+          </PageStateContent>
+        </PageState>
       );
     }
 

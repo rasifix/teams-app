@@ -3,11 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useSquad, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
-import type { Period, Trainer } from '../types';
-import { ActionCard, ActionCardTitle, Alert, Button, DateColumn, EmptyState, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelDescription, PanelHeader, PanelTitle } from '../components/ui';
+import type { Trainer } from '../types';
+import { ActionCard, ActionCardTitle, Alert, Button, Cluster, ContentGrid, DateColumn, EmptyState, MetadataItem, MetadataList, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelDescription, PanelHeader, PanelTitle, SectionEyebrow } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Strength from '../components/Strength';
+import { selectGroupedDatedHistory } from '../store/selectors/playerDetailSelectors';
 
 interface TrainerEventHistoryItem {
   eventId: string;
@@ -18,56 +19,6 @@ interface TrainerEventHistoryItem {
   teamName?: string;
   teamStrength: number;
 }
-
-interface GroupedTrainerEventHistory {
-  id: string;
-  title: string;
-  eventHistory: TrainerEventHistoryItem[];
-}
-
-const toComparableDate = (dateString: string): string | null => {
-  if (!dateString) return null;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    return dateString;
-  }
-
-  const parsed = new Date(dateString);
-  if (Number.isNaN(parsed.getTime())) return null;
-
-  const year = parsed.getFullYear();
-  const month = String(parsed.getMonth() + 1).padStart(2, '0');
-  const day = String(parsed.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const isValidPeriod = (period: Period): boolean => period.startDate < period.endDate;
-
-const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
-  if (periods.length < 2) {
-    return true;
-  }
-
-  const sortedPeriods = [...periods].sort((left, right) => {
-    const startCompare = left.startDate.localeCompare(right.startDate);
-    if (startCompare !== 0) {
-      return startCompare;
-    }
-
-    return left.endDate.localeCompare(right.endDate);
-  });
-
-  for (let index = 1; index < sortedPeriods.length; index += 1) {
-    const previous = sortedPeriods[index - 1];
-    const current = sortedPeriods[index];
-
-    if (current.startDate < previous.endDate) {
-      return false;
-    }
-  }
-
-  return true;
-};
 
 export default function TrainerDetailPage() {
   const { t } = useTranslation();
@@ -96,55 +47,10 @@ export default function TrainerDetailPage() {
     [getTrainerEventHistory, trainer]
   );
 
-  const groupedTrainerEventHistory = useMemo<GroupedTrainerEventHistory[] | null>(() => {
-    if (!trainer) {
-      return null;
-    }
-
-    const validPeriods = squadPeriods.filter(isValidPeriod);
-
-    if (validPeriods.length === 0 || !hasNonOverlappingPeriods(validPeriods)) {
-      return null;
-    }
-
-    const groupedByPeriod: GroupedTrainerEventHistory[] = validPeriods.map((period) => ({
-      id: period.id,
-      title: period.name,
-      eventHistory: [],
-    }));
-
-    const outsidePeriods: TrainerEventHistoryItem[] = [];
-
-    trainerEventHistory.forEach((historyItem) => {
-      const eventDate = toComparableDate(historyItem.eventDate);
-      if (!eventDate) {
-        outsidePeriods.push(historyItem);
-        return;
-      }
-
-      const matchingIndex = validPeriods.findIndex((period) => (
-        eventDate >= period.startDate && eventDate < period.endDate
-      ));
-
-      if (matchingIndex >= 0) {
-        groupedByPeriod[matchingIndex].eventHistory.push(historyItem);
-      } else {
-        outsidePeriods.push(historyItem);
-      }
-    });
-
-    const nonEmptySquads = groupedByPeriod.filter((group) => group.eventHistory.length > 0);
-
-    if (outsidePeriods.length > 0) {
-      nonEmptySquads.push({
-        id: 'outside-periods',
-        title: t('statistics.period.outsidePeriods'),
-        eventHistory: outsidePeriods,
-      });
-    }
-
-    return nonEmptySquads.length > 0 ? nonEmptySquads.reverse() : null;
-  }, [squadPeriods, t, trainer, trainerEventHistory]);
+  const groupedTrainerEventHistory = useMemo(
+    () => trainer ? selectGroupedDatedHistory(squadPeriods, trainerEventHistory, t('statistics.period.outsidePeriods')) : null,
+    [squadPeriods, t, trainer, trainerEventHistory],
+  );
 
   // Determine loading and error states
   const loading = isLoading;
@@ -244,7 +150,7 @@ export default function TrainerDetailPage() {
             ← {t('common.actions.back')}
           </Button>
           {!spondLinked && (
-            <div className="layout-cluster">
+            <Cluster gap="sm">
               <Button
                 variant="secondary"
                 size="sm"
@@ -259,7 +165,7 @@ export default function TrainerDetailPage() {
               >
                 {t('common.actions.delete')}
               </Button>
-            </div>
+            </Cluster>
           )}
       </PageToolbar>
       <PageHeader>
@@ -271,7 +177,7 @@ export default function TrainerDetailPage() {
       </PageHeader>
 
       {deleteActionError && (
-        <Alert className="mb-5">
+        <Alert className="member-detail-alert">
           {deleteActionError}
         </Alert>
       )}
@@ -285,11 +191,11 @@ export default function TrainerDetailPage() {
               </PanelDescription>
               </div></PanelHeader>
               {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
-                <div key={group.id} className="mb-6 last:mb-0">
+                <section key={group.id} className="member-event-group">
                   {groupedTrainerEventHistory && (
-                    <h3 className="mb-3 text-eyebrow font-bold uppercase tracking-label text-content-subtle">{group.title}</h3>
+                    <SectionEyebrow className="member-event-group-title">{group.title}</SectionEyebrow>
                   )}
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  <ContentGrid variant="threeColumn">
                     {group.eventHistory.map((item) => (
                       <ActionCard
                         key={item.eventId}
@@ -297,24 +203,24 @@ export default function TrainerDetailPage() {
                         onClick={() => navigate(`/events/${item.eventId}`)}
                       >
                               <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
-                              <div className="flex items-center gap-4 mt-2">
+                              <MetadataList className="member-event-meta-list">
                                 {item.startTime && (
-                                  <span className="body-muted">🕐 {item.startTime}</span>
+                                  <MetadataItem>🕐 {item.startTime}</MetadataItem>
                                 )}
                                 {item.location && (
-                                  <span className="body-muted">📍 {item.location}</span>
+                                  <MetadataItem>📍 {item.location}</MetadataItem>
                                 )}
-                              </div>
-                              <div className="flex items-center gap-4 mt-2">
-                                <span className="body-muted">
+                              </MetadataList>
+                              <MetadataList className="member-event-meta-list">
+                                <MetadataItem>
                                   👥 {item.teamName || t('team.unknownTeam')}
-                                </span>
-                                <Strength level={item.teamStrength} className="text-xs" />
-                              </div>
+                                </MetadataItem>
+                                <Strength level={item.teamStrength} />
+                              </MetadataList>
                       </ActionCard>
                     ))}
-                  </div>
-                </div>
+                  </ContentGrid>
+                </section>
               ))}
         </Panel>
       )}

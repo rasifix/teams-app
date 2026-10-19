@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateSquadRequest } from '../types';
-import { Alert, Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Textarea } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack, Textarea } from './ui';
 import { useSfvCatalog } from '../store';
 import { selectSfvCategoryOptions } from '../store/selectors/sfvCatalogSelectors';
 
@@ -87,7 +87,7 @@ export default function AddSquadModal({
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('squadModal.fields.squadName')} htmlFor="name" error={nameError}>
               <Input
                 type="text"
@@ -126,9 +126,9 @@ export default function AddSquadModal({
                   <option key={option.code} value={option.code}>{option.code}</option>
                 ))}
               </Select>
-              <p className="mt-1 text-xs text-content-subtle">{t('squadModal.categoryHint')}</p>
+              <p className="field-help">{t('squadModal.categoryHint')}</p>
               {selectedOption?.matchFormat && (
-                <p className="mt-1 text-xs text-brand-text">
+                <p className="squad-format-hint squad-format-hint--official">
                   {t('squadModal.officialFormatHint', {
                     format: selectedOption.matchFormat.name,
                     min: selectedOption.matchFormat.minPlayersPerTeam ?? '-',
@@ -137,7 +137,7 @@ export default function AddSquadModal({
                 </p>
               )}
               {selectedOption?.activityType === 'tournament' && !selectedOption.matchFormat && (
-                <p className="mt-1 text-xs text-content-muted">{t('squadModal.tournamentOnlyHint')}</p>
+                <p className="squad-format-hint">{t('squadModal.tournamentOnlyHint')}</p>
               )}
             </Field>
 
@@ -147,7 +147,7 @@ export default function AddSquadModal({
                 name="description"
                 value={formData.description ?? ''}
                 onChange={handleChange}
-                className="min-h-24"
+                className="ui-textarea--tall"
                 placeholder={t('squadModal.placeholders.description')}
               />
             </Field>
@@ -157,7 +157,7 @@ export default function AddSquadModal({
                 {error}
               </Alert>
             )}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -165,7 +165,7 @@ export default function AddSquadModal({
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="flex-1"
+            width="grow"
             disabled={isSubmitting}
           >
             {t('common.actions.cancel')}
@@ -173,7 +173,7 @@ export default function AddSquadModal({
           <Button
             type="submit"
             variant="primary"
-            className="flex-1"
+            width="grow"
             disabled={isSubmitting}
           >
             {isSubmitting ? t('squadModal.creating') : t('squadModal.createAction')}

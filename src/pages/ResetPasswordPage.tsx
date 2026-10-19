@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Input, LoadingSpinner } from '../components/ui';
+import { Alert, Button, Field, Input, Panel, Stack } from '../components/ui';
 import { authService } from '../services/authService';
 
 export default function ResetPasswordPage() {
@@ -68,29 +68,27 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-subtle flex justify-center px-4 py-12">
-      <div className="auth-form layout-stack layout-stack--lg">
-        <div>
-          <h2 className="text-center text-3xl font-bold text-content-strong">
+    <main className="auth-shell">
+      <Panel className="auth-form">
+        <Stack gap="lg">
+        <header className="auth-header">
+          <h1 className="auth-title">
             {isResetForm ? t('resetPassword.resetTitle') : t('resetPassword.requestTitle')}
-          </h2>
-          <p className="mt-2 text-center text-sm text-content-muted">
+          </h1>
+          <p className="auth-description">
             {isResetForm
               ? t('resetPassword.resetDescription')
               : t('resetPassword.requestDescription')}
           </p>
-        </div>
+        </header>
 
         <form
-          className="mt-8 space-y-6"
           onSubmit={isResetForm ? handleResetPassword : handleRequestReset}
         >
-          <div className="rounded-md shadow-sm space-y-4">
+          <Stack gap="lg">
+          <Stack>
             {!isResetForm ? (
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  {t('auth.emailAddress')}
-                </label>
+              <Field label={t('auth.emailAddress')} htmlFor="email">
                 <Input
                   id="email"
                   name="email"
@@ -101,13 +99,10 @@ export default function ResetPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t('auth.emailAddress')}
                 />
-              </div>
+              </Field>
             ) : (
               <>
-                <div>
-                  <label htmlFor="newPassword" className="sr-only">
-                    {t('resetPassword.newPassword')}
-                  </label>
+                <Field label={t('resetPassword.newPassword')} htmlFor="newPassword">
                   <Input
                     id="newPassword"
                     name="newPassword"
@@ -118,11 +113,8 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder={t('resetPassword.newPassword')}
                   />
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="sr-only">
-                    {t('resetPassword.confirmPassword')}
-                  </label>
+                </Field>
+                <Field label={t('resetPassword.confirmPassword')} htmlFor="confirmPassword">
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -133,41 +125,36 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('resetPassword.confirmPassword')}
                   />
-                </div>
+                </Field>
               </>
             )}
-          </div>
+          </Stack>
 
           {error && <Alert>{error}</Alert>}
 
           {success && <Alert tone="success">{success}</Alert>}
 
-          <div>
             <Button
               type="submit"
-              disabled={loading}
-              className="w-full"
+              loading={loading}
+              className="auth-submit"
             >
-              {loading ? (
-                <span className="flex items-center">
-                  <LoadingSpinner size="sm" className="mr-3" />
-                  {t('common.states.processing')}
-                </span>
-              ) : isResetForm ? (
+              {loading ? t('common.states.processing') : isResetForm ? (
                 t('resetPassword.resetAction')
               ) : (
                 t('resetPassword.sendLinkAction')
               )}
             </Button>
-          </div>
 
-          <div className="text-center">
-            <Link to="/login" className="font-medium text-sm text-brand-text hover:text-brand-text">
+          <div className="auth-footer">
+            <Link to="/login" className="text-link">
               {t('resetPassword.backToSignIn')}
             </Link>
           </div>
+          </Stack>
         </form>
-      </div>
-    </div>
+        </Stack>
+      </Panel>
+    </main>
   );
 }

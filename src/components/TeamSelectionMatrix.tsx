@@ -7,7 +7,7 @@ import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import Strength from './Strength';
-import { Button, EmptyState, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Tab, TabList } from './ui';
+import { Button, Cluster, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, MetadataItem, MetadataList, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, PanelBody, Stack, StickyMatrix, Tab, TabList, VisuallyHidden } from './ui';
 
 interface TeamSelectionMatrixProps {
   players: Player[];
@@ -64,21 +64,20 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
 
   if (players.length === 0 || events.length === 0) {
     return (
-      <section className="statistics-matrix-empty">
-        <p>{t('statistics.teamSelections.noData')}</p>
-      </section>
+      <EmptyState>{t('statistics.teamSelections.noData')}</EmptyState>
     );
   }
 
   if (matrixColumns.length === 0) {
     return (
-      <Panel padding="none" className="statistics-controls">
+      <Panel>
+        <Stack>
           <LevelRangeSelector
             defaultRange={levelRange}
             onChange={setLevelRange}
           />
-          <div className="selection-matrix-grouping">
-            <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
+          <Cluster gap="sm">
+            <strong>{t('statistics.teamSelections.groupBy')}</strong>
             <TabList label={t('statistics.teamSelections.groupBy')}>
               <Tab
                 selected={groupByMode === 'strength'}
@@ -93,10 +92,11 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 {t('statistics.teamSelections.groupByTeamName')}
               </Tab>
             </TabList>
-          </div>
+          </Cluster>
           <EmptyState>
             <p>{t('statistics.teamSelections.noTeamsInPeriod')}</p>
           </EmptyState>
+        </Stack>
       </Panel>
     );
   }
@@ -104,76 +104,64 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
   return (
     <>
       <Panel padding="none">
-        <div className="statistics-controls">
-          <LevelRangeSelector
-            defaultRange={levelRange}
-            onChange={setLevelRange}
-          />
-
-          <div className="selection-matrix-grouping">
-            <span className="font-semibold">{t('statistics.teamSelections.groupBy')}</span>
-            <TabList label={t('statistics.teamSelections.groupBy')}>
-              <Tab
-                selected={groupByMode === 'strength'}
-                onClick={() => setGroupByMode('strength')}
-              >
-                {t('statistics.teamSelections.groupByStrength')}
-              </Tab>
-              <Tab
-                selected={groupByMode === 'teamName'}
-                onClick={() => setGroupByMode('teamName')}
-              >
-                {t('statistics.teamSelections.groupByTeamName')}
-              </Tab>
-            </TabList>
-          </div>
-
-          <div className="selection-matrix-meta">
-            <span>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</span>
-            <span aria-hidden="true">•</span>
-            <span>
+        <PanelBody>
+          <Stack gap="sm">
+            <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+            <Cluster gap="sm">
+              <strong>{t('statistics.teamSelections.groupBy')}</strong>
+              <TabList label={t('statistics.teamSelections.groupBy')}>
+                <Tab selected={groupByMode === 'strength'} onClick={() => setGroupByMode('strength')}>
+                  {t('statistics.teamSelections.groupByStrength')}
+                </Tab>
+                <Tab selected={groupByMode === 'teamName'} onClick={() => setGroupByMode('teamName')}>
+                  {t('statistics.teamSelections.groupByTeamName')}
+                </Tab>
+              </TabList>
+            </Cluster>
+            <MetadataList>
+              <MetadataItem>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</MetadataItem>
+              <MetadataItem>
               {groupByMode === 'strength'
                 ? t('statistics.teamSelections.strengthGroupsCount', { count: matrixColumns.length })
                 : t('statistics.teamSelections.teamsCount', { count: matrixColumns.length })}
-            </span>
-            <span aria-hidden="true">•</span>
-            <span>{t('statistics.teamSelections.clickCountHint')}</span>
-          </div>
-        </div>
+              </MetadataItem>
+              <MetadataItem>{t('statistics.teamSelections.clickCountHint')}</MetadataItem>
+            </MetadataList>
+          </Stack>
+        </PanelBody>
 
           {matrixRows.length === 0 ? (
-            <div className="statistics-empty-section">
-              <p>{t('statistics.teamSelections.noPlayersInLevelRange')}</p>
-            </div>
+            <PanelBody><EmptyState>{t('statistics.teamSelections.noPlayersInLevelRange')}</EmptyState></PanelBody>
           ) : (
-            <div className="statistics-scroll">
-              <table className="statistics-matrix-table">
-                <thead>
-                  <tr className="statistics-matrix-heading-row">
-                    <th className="statistics-matrix-player-heading">
+            <StickyMatrix>
+              <DataTable density="compact">
+                <DataTableHead>
+                  <DataTableRow>
+                    <DataTableHeaderCell sticky className="statistics-matrix-player-heading">
                       {t('domain.player')}
-                    </th>
+                    </DataTableHeaderCell>
                     {matrixColumns.map((matrixColumn) => (
-                      <th
+                      <DataTableHeaderCell
                         key={matrixColumn.key}
+                        align="center"
                         className="selection-matrix-column-heading"
                       >
                         {groupByMode === 'strength' && matrixColumn.strength !== undefined ? (
-                          <span className="inline-flex items-center justify-center" title={matrixColumn.label}>
+                          <span className="selection-matrix-strength" title={matrixColumn.label}>
                             <Strength level={matrixColumn.strength} />
-                            <span className="sr-only">{matrixColumn.label}</span>
+                            <VisuallyHidden>{matrixColumn.label}</VisuallyHidden>
                           </span>
                         ) : (
-                          <span className="block truncate" title={matrixColumn.label}>{matrixColumn.label}</span>
+                          <span className="selection-matrix-column-label" title={matrixColumn.label}>{matrixColumn.label}</span>
                         )}
-                      </th>
+                      </DataTableHeaderCell>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </DataTableRow>
+                </DataTableHead>
+                <DataTableBody>
                   {matrixRows.map(({ player, selectedCount, acceptedCount, cells }) => (
-                    <tr key={player.id} className="statistics-matrix-row">
-                      <td className="statistics-matrix-player-cell">
+                    <DataTableRow key={player.id} highlight>
+                      <DataTableCell sticky className="statistics-matrix-player-cell">
                         <button
                           type="button"
                           data-ui-control="composite"
@@ -181,14 +169,14 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                           className="selection-matrix-player-button"
                         >
                           <span>{player.firstName} {player.lastName}</span>
-                          <Level level={player.level} className="text-xs" />
+                          <Level level={player.level} className="selection-matrix-player-level" />
                           <span className="selection-matrix-player-count">
                             {selectedCount} / {acceptedCount}
                           </span>
                         </button>
-                      </td>
+                      </DataTableCell>
                       {cells.map((cell, index) => (
-                        <td key={`${cell.columnKey}-${index}`} className="selection-matrix-cell">
+                        <DataTableCell key={`${cell.columnKey}-${index}`} align="center" className="selection-matrix-cell">
                           <button
                             type="button"
                             data-ui-control="composite"
@@ -202,45 +190,46 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                           >
                             {cell.count}
                           </button>
-                        </td>
+                        </DataTableCell>
                       ))}
-                    </tr>
+                    </DataTableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </DataTableBody>
+              </DataTable>
+            </StickyMatrix>
           )}
       </Panel>
 
       <Modal isOpen={selectedCell !== null} onClose={() => setSelectedCell(null)}>
         <ModalHeader>
           <ModalTitle>
-            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} - ${selectedCell.groupLabel}` : t('statistics.teamSelections.selectionDetails')}
+            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} – ${selectedCell.groupLabel}` : t('statistics.teamSelections.selectionDetails')}
           </ModalTitle>
         </ModalHeader>
-        <ModalBody className="layout-stack">
+        <ModalBody>
+          <Stack>
           {selectedCell && selectedCell.events.length > 0 ? (
-            <div className="layout-stack layout-stack--sm">
+            <EntityList variant="separated">
               {selectedCell.events.map((selectionEvent) => (
-                <div
+                <EntityRow
                   key={`${selectionEvent.eventId}-${selectionEvent.teamId}`}
-                  className="selection-matrix-event"
                 >
-                  <div>
-                    <p className="text-sm font-semibold text-content-strong">{selectionEvent.eventName}</p>
-                    <p className="mt-0.5 text-sm text-content-subtle">{formatDate(selectionEvent.eventDate)}</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => handleOpenTeam(selectionEvent.eventId, selectionEvent.teamId)}
-                    className="whitespace-nowrap"
-                  >
-                    {t('statistics.teamSelections.openTeam')}
-                  </Button>
-                </div>
+                  <EntityContent>
+                    <EntityTitle>{selectionEvent.eventName}</EntityTitle>
+                    <EntityMeta>{formatDate(selectionEvent.eventDate)}</EntityMeta>
+                  </EntityContent>
+                  <EntityActions>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => handleOpenTeam(selectionEvent.eventId, selectionEvent.teamId)}
+                    >
+                      {t('statistics.teamSelections.openTeam')}
+                    </Button>
+                  </EntityActions>
+                </EntityRow>
               ))}
-            </div>
+            </EntityList>
           ) : (
             <p className="body-muted">
               {selectedCell?.mode === 'strength'
@@ -248,6 +237,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                 : t('statistics.teamSelections.noSelectionTeam')}
             </p>
           )}
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={() => setSelectedCell(null)}>

@@ -4,17 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useActivities } from '../store';
 import { usePlayers } from '../hooks/usePlayers';
 import type { Activity, Period, Player } from '../types';
-import { isTeamActivity } from '../store/selectors/activitySelectors';
-import { selectPlayerActivityStatistics } from '../store/selectors/statisticsSelectors';
+import { selectStatisticsViewData, type PlayerActivityStatistics } from '../store/selectors/statisticsSelectors';
 import StatisticsPeriodSelector from '../components/StatisticsPeriodSelector';
 import { useSelectedStatisticsPeriod } from '../store';
-import { filterEventsByStatisticsPeriod } from '../utils/statisticsPeriod';
-import { NavigationTab, NavigationTabs, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, SummaryCard, SummaryCardContent } from '../components/ui';
+import { ContentGrid, NavigationTab, NavigationTabs, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack, SummaryCard, SummaryCardContent } from '../components/ui';
 
 interface StatisticsOutletContext {
   filteredEvents: Activity[];
   statisticsPeriod: Period | null;
   statisticsPlayers: Player[];
+  playerStatistics: PlayerActivityStatistics[];
 }
 
 export default function StatisticsPage() {
@@ -24,19 +23,10 @@ export default function StatisticsPage() {
   
   const { activities } = useActivities();
   const { players } = usePlayers();
-  const statisticsPlayers = useMemo(
-    () => players.filter((player) => player.status !== 'trial'),
-    [players]
-  );
   const statisticsPeriod = useSelectedStatisticsPeriod();
-  const filteredEvents = useMemo(
-    () => filterEventsByStatisticsPeriod(activities.filter(isTeamActivity), statisticsPeriod),
-    [activities, statisticsPeriod]
-  );
-
-  const playerStats = useMemo(
-    () => selectPlayerActivityStatistics(filteredEvents, statisticsPlayers),
-    [filteredEvents, statisticsPlayers]
+  const { filteredEvents, statisticsPlayers, playerStatistics, summary } = useMemo(
+    () => selectStatisticsViewData(activities, players, statisticsPeriod),
+    [activities, players, statisticsPeriod],
   );
 
   // Redirect to player-statistics if on base /statistics route
@@ -45,15 +35,6 @@ export default function StatisticsPage() {
       navigate('/statistics/player-statistics', { replace: true });
     }
   }, [location.pathname, navigate]);
-
-  const totalPlayers = playerStats.length;
-  const totalEvents = filteredEvents.length;
-  const avgAcceptances = totalPlayers > 0
-    ? playerStats.reduce((sum, stat) => sum + stat.acceptedCount, 0) / totalPlayers
-    : 0;
-  const avgSelections = totalPlayers > 0
-    ? playerStats.reduce((sum, stat) => sum + stat.selectedCount, 0) / totalPlayers
-    : 0;
 
   return (
     <Page>
@@ -67,14 +48,15 @@ export default function StatisticsPage() {
         </PageActions>
       </PageHeader>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <SummaryCard><SummaryCardContent value={totalPlayers} label={t('statistics.summary.totalPlayers')} /></SummaryCard>
-        <SummaryCard tone="info"><SummaryCardContent value={totalEvents} label={t('statistics.summary.totalEvents')} /></SummaryCard>
-        <SummaryCard tone="success"><SummaryCardContent value={avgAcceptances.toFixed(1)} label={t('statistics.summary.avgAcceptancesPerPlayer')} /></SummaryCard>
-        <SummaryCard tone="accent"><SummaryCardContent value={avgSelections.toFixed(1)} label={t('statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
-      </div>
+      <Stack gap="lg">
+        <ContentGrid variant="metrics">
+          <SummaryCard><SummaryCardContent value={summary.totalPlayers} label={t('statistics.summary.totalPlayers')} /></SummaryCard>
+          <SummaryCard tone="info"><SummaryCardContent value={summary.totalEvents} label={t('statistics.summary.totalEvents')} /></SummaryCard>
+          <SummaryCard tone="success"><SummaryCardContent value={summary.averageAcceptances.toFixed(1)} label={t('statistics.summary.avgAcceptancesPerPlayer')} /></SummaryCard>
+          <SummaryCard tone="accent"><SummaryCardContent value={summary.averageSelections.toFixed(1)} label={t('statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
+        </ContentGrid>
 
-      <NavigationTabs label={t('common.tabs')} className="mb-5">
+        <NavigationTabs label={t('common.tabs')}>
           <NavigationTab to="/statistics/player-statistics">
             {t('statistics.tabs.playerStatistics')}
           </NavigationTab>
@@ -84,13 +66,15 @@ export default function StatisticsPage() {
           <NavigationTab to="/statistics/team-selections">
             {t('statistics.tabs.teamSelections')}
           </NavigationTab>
-      </NavigationTabs>
+        </NavigationTabs>
 
-      <Outlet context={{
-        filteredEvents,
-        statisticsPeriod,
-        statisticsPlayers,
-      } satisfies StatisticsOutletContext} />
+        <Outlet context={{
+          filteredEvents,
+          statisticsPeriod,
+          statisticsPlayers,
+          playerStatistics,
+        } satisfies StatisticsOutletContext} />
+      </Stack>
     </Page>
   );
 }

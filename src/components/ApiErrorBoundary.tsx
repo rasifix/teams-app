@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import i18n from '../i18n/config';
-import { Alert, Button } from './ui';
+import { Button, PageState, PageStateContent, StateActions, StateDescription, StateIcon, StateTitle } from './ui';
 
 interface Props {
   children?: ReactNode;
@@ -43,10 +43,9 @@ class ApiErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError && this.state.isApiError) {
       return (
-        <Alert tone="warning" className="flex min-h-96 items-center justify-center">
-          <div className="max-w-md w-full space-y-6">
-            <div className="text-center">
-              <div className="mx-auto h-10 w-10 text-warning">
+        <PageState>
+          <PageStateContent>
+              <StateIcon tone="warning">
                 <svg
                   fill="none"
                   stroke="currentColor"
@@ -60,25 +59,24 @@ class ApiErrorBoundary extends Component<Props, State> {
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-              </div>
-              <h3 className="mt-4 text-lg font-medium text-content-strong">
+              </StateIcon>
+              <StateTitle>
                 {i18n.t('common.states.serverDisconnected')}
-              </h3>
-              <p className="mt-2 text-sm text-content-muted">
+              </StateTitle>
+              <StateDescription>
                 {i18n.t('errorBoundary.message')}
-              </p>
-            </div>
-            <div className="flex flex-col space-y-3">
+              </StateDescription>
+            <StateActions>
               <Button
                 type="button"
                 onClick={this.handleRetry}
-                className="w-full"
+                width="full"
               >
                 {i18n.t('common.actions.retry')}
               </Button>
-            </div>
-          </div>
-        </Alert>
+            </StateActions>
+          </PageStateContent>
+        </PageState>
       );
     }
 

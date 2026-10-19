@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityAttendance, Player } from '../types';
 import { hasActivityStarted, selectAttendanceDialogRows, selectAttendanceSummary } from '../store/selectors/attendanceSelectors';
 import RecordAttendanceModal from './RecordAttendanceModal';
-import { Badge, Button, Panel, PanelActions, PanelHeader, PanelTitle } from './ui';
+import { Badge, Button, Cluster, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from './ui';
 
 interface ActivityAttendanceCardProps {
   activity: Activity;
@@ -27,17 +27,18 @@ export default function ActivityAttendanceCard({ activity, players, onSave }: Ac
     </PanelHeader>
     {!hasActivityStarted(activity) ? <p className="body-muted">{t('attendance.notStarted')}</p>
       : !summary.isRecorded ? <p className="body-muted">{t('attendance.notRecorded')}</p>
-      : <>
-        <div className="flex flex-wrap gap-2 text-sm text-content-muted">
+      : <Stack gap="sm">
+        <Cluster gap="sm">
           <Badge tone="success">{t('attendance.status.present')}: {summary.present}</Badge>
           <Badge tone="warning">{t('attendance.status.excused')}: {summary.excused}</Badge>
-        </div>
-        {summary.excusedWithReason.length > 0 && <ul className="mt-3 space-y-1 text-sm text-content">
-          {summary.excusedWithReason.map((entry) => <li key={entry.playerId}>
-            {entry.name}{entry.reason ? ` – ${t(`attendance.reasons.${entry.reason}`)}` : ''}
-          </li>)}
-        </ul>}
-      </>}
+        </Cluster>
+        {summary.excusedWithReason.length > 0 && <EntityList variant="bare">
+          {summary.excusedWithReason.map((entry) => <EntityRow key={entry.playerId} density="compact">
+            <EntityContent><EntityTitle>{entry.name}</EntityTitle></EntityContent>
+            {entry.reason && <EntityMeta><span>{t(`attendance.reasons.${entry.reason}`)}</span></EntityMeta>}
+          </EntityRow>)}
+        </EntityList>}
+      </Stack>}
     <RecordAttendanceModal
       isOpen={isOpen}
       initialRows={selectAttendanceDialogRows(activity, players)}

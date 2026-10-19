@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
 
 interface EditTeamModalProps {
   isOpen: boolean;
@@ -53,7 +53,7 @@ export default function EditTeamModal({
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
-          <div className="layout-stack">
+          <Stack>
             <Field label={t('teamModal.fields.teamName')} htmlFor="teamName">
               <Input
                 type="text"
@@ -96,7 +96,7 @@ export default function EditTeamModal({
                 placeholder={t('teamModal.placeholders.location')}
               />
             </Field>}
-          </div>
+          </Stack>
         </ModalBody>
 
         <ModalFooter>
@@ -104,14 +104,12 @@ export default function EditTeamModal({
             type="button"
             variant="secondary"
             onClick={onClose}
-            className="flex-1"
           >
             {t('common.actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="flex-1"
           >
             {t('common.actions.save')}
           </Button>

@@ -1,6 +1,6 @@
 import type { Shirt } from '../types';
 import { useTranslation } from 'react-i18next';
-import { Badge, IconButton } from './ui';
+import { Badge, Cluster, IconButton } from './ui';
 
 interface ShirtCardProps {
   shirt: Shirt;
@@ -17,25 +17,25 @@ export default function ShirtCard({
 
   return (
     <div 
-      className={`flex h-11 items-center justify-between rounded-xl border px-3 ${
+      className={`shirt-card ${
         shirt.status === 'unavailable'
-          ? 'bg-danger-subtle border-danger-border'
+          ? 'shirt-card--unavailable'
           : shirt.isGoalkeeper
-            ? 'bg-warning-subtle border-warning-border'
-            : 'border-edge bg-surface'
+            ? 'shirt-card--goalkeeper'
+            : ''
       }`}
     >
-      <div className="layout-cluster">
-        <span className="font-semibold tabular-nums text-content-strong">#{shirt.number}</span>
-        <span className="text-xs text-content-subtle">{shirt.size}</span>
+      <Cluster gap="sm">
+        <span className="shirt-card-number">#{shirt.number}</span>
+        <span className="shirt-card-size">{shirt.size}</span>
         {shirt.status === 'unavailable' && (
           <Badge tone="danger" size="sm">{t('shirts.unavailableShort')}</Badge>
         )}
         {shirt.isGoalkeeper && (
           <Badge tone="warning" size="sm">{t('shirts.goalkeeperShort')}</Badge>
         )}
-      </div>
-      <div className="flex items-center gap-1">
+      </Cluster>
+      <Cluster gap="sm" wrap={false}>
         <IconButton
           label={t('shirts.editShirt')}
           onClick={onEdit}
@@ -53,7 +53,7 @@ export default function ShirtCard({
             <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
           </svg>
         </IconButton>
-      </div>
+      </Cluster>
     </div>
   );
 }

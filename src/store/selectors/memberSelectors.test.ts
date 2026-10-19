@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Trainer } from '../../types';
-import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './memberSelectors';
+import { mergeMembersFromCollections, selectFilteredPlayers, selectPlayerBirthYears, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './memberSelectors';
 
 function player(overrides: Partial<Player>): Player {
   return {
@@ -83,5 +83,31 @@ describe('member selectors', () => {
     expect(entry.id).toBe('m-1');
     expect('level' in entry).toBe(true);
     expect(entry.roles).toEqual(expect.arrayContaining(['player', 'trainer']));
+  });
+
+  it('selects unique birth years newest first and ignores missing dates', () => {
+    const players = [
+      player({ id: 'p-1', birthDate: '2014-05-01' }),
+      player({ id: 'p-2', birthDate: '2016-02-01' }),
+      player({ id: 'p-3', birthDate: '2014-08-01' }),
+      player({ id: 'p-4', birthDate: '' }),
+    ];
+
+    expect(selectPlayerBirthYears(players)).toEqual([2016, 2014]);
+  });
+
+  it('filters players by level, year, trial, and inactive state', () => {
+    const players = [
+      player({ id: 'active', level: 3, birthDate: '2015-01-01', status: 'active' }),
+      player({ id: 'trial', level: 3, birthDate: '2015-02-01', status: 'trial' }),
+      player({ id: 'inactive', level: 4, birthDate: '2014-01-01', status: 'inactive' }),
+    ];
+
+    expect(selectFilteredPlayers(players, { levels: [3], birthYear: 2015, includeTrial: false, includeInactive: false }).map((entry) => entry.id)).toEqual(['active']);
+    expect(selectFilteredPlayers(players, { levels: [], birthYear: null, includeTrial: true, includeInactive: true })).toEqual(players);
+  });
+
+  it('returns an empty result when filters have no match', () => {
+    expect(selectFilteredPlayers([player({ level: 2 })], { levels: [5], birthYear: null, includeTrial: true, includeInactive: true })).toEqual([]);
   });
 });

@@ -104,7 +104,7 @@ export default function TeamPrintSummary({
                         <p>📍 {location}</p>
                       )}
                       {responsiblePeople.length > 0 && (
-                        <p className="team-print-responsible">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</p>
+                        <p className="team-print-responsible">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}</p>
                       )}
                     </div>
                   </div>

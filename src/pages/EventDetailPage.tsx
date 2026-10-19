@@ -5,13 +5,14 @@ import { useActivities } from '../hooks/useActivities';
 import { useAuth } from '../hooks/useAuth';
 import { useSquad, useStore, useTrainers } from '../store/useStore';
 import { canAccessRestrictedManagement } from '../utils/permissions';
-import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors } from '../store';
+import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useShirtSets } from '../store';
 import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import ConfirmDialog from '../components/ConfirmDialog';
+import TeamPrintSummary from '../components/TeamPrintSummary';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds } from '../store/selectors/activitySelectors';
@@ -30,6 +31,7 @@ export default function EventDetailPage() {
   const navigate = useNavigate();
   const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, markActivitySelectionSent, updateActivityAttendance, deleteActivity } = useActivities();
   const { players } = usePlayers();
+  const { shirtSets } = useShirtSets();
   const { user } = useAuth();
   const squad = useSquad();
   const trainers = useTrainers();
@@ -43,6 +45,7 @@ export default function EventDetailPage() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
   const [isSendingSelection, setIsSendingSelection] = useState(false);
   const { previous, next } = selectAdjacentActivities(activities, activity?.id ?? '');
   const error = !id ? t('eventDetail.errors.noEventId') : errors.activities || (hasErrors ? t('eventDetail.errors.failedToLoadData') : null);
@@ -186,6 +189,7 @@ export default function EventDetailPage() {
         <PanelHeader>
           <PanelTitle>{t('eventDetail.teamsTitle')}</PanelTitle>
           <PanelActions className="event-detail-panel-actions">
+            {activity.teams.length > 0 && <Button type="button" variant="secondary" size="sm" onClick={() => setIsPrintSummaryOpen(true)}>{t('eventDetail.printTeams')}</Button>}
             {activity.kind === 'tournament' && <Button type="button" variant="secondary" size="sm" onClick={handleAddTeam}>{t('common.actions.add')}</Button>}
             {!selectionEditState.isSent && selectionEditState.canEdit && activity.teams.length > 0 && (
               <Button type="button" size="sm" disabled={isSendingSelection} onClick={() => void handleMarkSelectionSent()}>
@@ -217,5 +221,6 @@ export default function EventDetailPage() {
     {!spondLinked && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
     <EditEventModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />
     <ConfirmDialog isOpen={isDeleteOpen} title={t('eventDetail.deleteEventTitle')} message={t('eventDetail.deleteEventMessage', { name: activity.name })} confirmText={t('common.actions.delete')} cancelText={t('common.actions.cancel')} onConfirm={handleDeleteActivity} onCancel={() => setIsDeleteOpen(false)} confirmButtonColor="red" />
+    <TeamPrintSummary event={activity} teams={activity.teams} players={players} trainers={trainers} shirtSets={shirtSets} club={squad?.club} isOpen={isPrintSummaryOpen} onClose={() => setIsPrintSummaryOpen(false)} />
   </Page>;
 }

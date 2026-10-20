@@ -1,42 +1,18 @@
-# User
+# Person and roles
 
-Users have first name and last name and can have different roles.
-Not all users must be able to login to the app (e.g. minors). A user
-has the following properties:
+A Person is a member record owned by exactly one Squad. A Person has a first
+name, last name, optional email and phone, roles, and may have an independent
+LoginAccount.
 
-* firstname
-* lastname
-* email
+Roles are:
 
-## Roles
+- **Player** — selectable participant with a birth date, level, status, and
+  optional preferred shirt number.
+- **Guardian** — responsible adult reference; Guardians do not log in or
+  respond to Invitations in this application.
+- **Trainer** — may log in, synchronize Spond data, and manage activity
+  planning.
+- **Admin** — may log in and additionally manage membership, Squad
+  configuration, and Spond linking.
 
-A user can have more than one role in a squad. For instance he can be
-the squad manager, trainer, as well as the guardian of his child.
-
-### Player
-
-A player is a member of the squad. He is actively participating in the
-matches. See [player](player.md) for details.
-
-### Guardian
-
-A guardian is for example the father or mother of a player. Guardians answer
-invitations in Spond, not in this application. A Guardian record may still be
-retained as synchronized reference data when needed for match planning, such as
-assigning a responsible adult to a Team.
-
-### Coach
-
-A coach is organizing events, inviting and selecting players.
-See [trainer](trainer.md) for details.
-
-### Assistant Coach
-
-An assistant coach cannot create events on his own, but he can view
-information about the teams he is assigned to.
-
-### Squad Manager
-
-The squad manager has permissions to manage the whole squad. He
-manages members (players, guardians, ...) of the squad, defines
-periods, shirt sets... 
+There is no Assistant Coach role. Only Admins and Trainers may have a login.

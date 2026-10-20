@@ -1,5 +1,5 @@
 {
-  "name": "teams-domain-typespec-trial",
+  "name": "teams-domain-typespec",
   "private": true,
   "type": "module",
   "scripts": {

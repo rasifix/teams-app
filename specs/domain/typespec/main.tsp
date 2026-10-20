@@ -1,7 +1,7 @@
 import "./decorators.js";
 
 /**
- * Frontend domain model (TypeSpec trial).
+ * Application domain model.
  *
  * Conventions:
  *  - A property marked `@owns` is a composition: the owner deletes its parts.
@@ -36,10 +36,15 @@ model OfficialMatchFormat {
   name: string;
 
   /** Players per team on the field, e.g. 7 for D7. */
+  @minValue(1)
   playersOnField: int32;
+  @minValue(1)
   minPlayersPerTeam: int32;
+  @minValue(1)
   maxPlayersPerTeam: int32;
+  @minValue(1)
   numberOfPeriods: int32;
+  @minValue(1)
   periodLengthMinutes: int32;
 }
 enum SquadRole { admin, trainer, guardian, player }
@@ -53,7 +58,11 @@ model Period {
 }
 
 
-/** Owns its activities: deleting a Squad deletes them. */
+/**
+ * A Squad is deactivated rather than deleted through normal domain operations.
+ * Its member records are squad-scoped; the same human in another Squad is a
+ * separate Person record.
+ */
 model Squad {
   id: string;
   name: string;
@@ -64,10 +73,16 @@ model Squad {
    * Chosen when the Squad is created. The category's official match formats
    * are then copied into `matchFormats` (each keeping a link to its origin).
    */
-  category?: SfvCategory;
+  category: SfvCategory;
 
-  /** Match-planning configuration only applies when true. */
-  matchPlanningEnabled?: boolean;
+  /** Defaults to false; formats and formations are usable only when enabled. */
+  matchPlanningEnabled: boolean;
+
+  /** Defaults to true; deactivated Squads are omitted from the API. */
+  active: boolean;
+
+  /** Fixed external Spond group link; only Admins may change it. */
+  spondId?: string;
 
   createdAt?: utcDateTime;
   updatedAt?: utcDateTime;
@@ -98,8 +113,7 @@ model Person {
 
   /**
    * `trainer` is official Squad Trainer authorization. It is distinct from a
-   * TrainingSession trainer or a Team's responsible person. A person may hold
-   * multiple roles.
+   * Team's responsible person. A person may hold multiple roles.
    */
   roles: SquadRole[];
 
@@ -116,6 +130,8 @@ model Person {
 
 model Player extends Person {
   kind: "player";
+  /** External Spond member link, when this Player is synchronized. */
+  spondId?: string;
   birthDate: plainDate;
   @minValue(1)
   @maxValue(5)
@@ -128,6 +144,9 @@ model Player extends Person {
 model Guardian extends Person {
   kind: "guardian";
 
+  /** External Spond member link, when this Guardian is synchronized. */
+  spondId?: string;
+
   /** True when only recorded as contact, without app access. */
   isDocumentedOnly?: boolean;
 }
@@ -137,57 +156,30 @@ model Guardian extends Person {
 enum InvitationResponse { open, accepted, declined }
 enum InvitationReason { sick, injured, unavailable }
 enum AttendanceStatus { present, absent, excused }
+enum ActivityStatus { active, cancelled }
 
-/** Invitation send time is out of scope. `reason` is only valid when declined. */
+/**
+ * Invitations target Players only. Spond-linked responses are read-only;
+ * decline reasons are locally editable because Spond does not provide them.
+ * `declineReason` is only valid when the response is declined.
+ */
 model Invitation {
   id: string;
-  person: Person;
+  player: Player;
   response: InvitationResponse;
   declineReason?: InvitationReason;
   respondedAt?: utcDateTime;
   respondedBy?: Person;
 }
 
-/** Recorded after the activity; never inferred from acceptance or selection. */
+/**
+ * Recorded only for an invited Player, after the activity starts. It is never
+ * inferred from acceptance or selection and is editable by Admins/Trainers.
+ */
 model Attendance {
   id: string;
-  person: Person;
+  player: Player;
   status: AttendanceStatus;
-}
-
-/**
- * Free-form helper task of one activity (e.g. "Kiosk", "Set up goals"),
- * created by a Squad Trainer. It states how many people are needed; Players
- * and Guardians sign up for it, and a trainer may also sign people up.
- * Belongs to the activity, never to a Team.
- */
-model ActivityTask {
-  id: string;
-  name: string;
-  description?: string;
-
-  @minValue(1)
-  requiredPeople: int32;
-
-  @owns signups: TaskSignup[];
-
-  /** Derived: `signups` reach `requiredPeople`. */
-  @visibility(Lifecycle.Read)
-  isFulfilled: boolean;
-}
-
-model TaskSignup {
-  id: string;
-  person: Person;
-  signedUpAt: utcDateTime;
-}
-
-/** Frontend history view. */
-model ActivityHistoryItem {
-  occurredAt: utcDateTime;
-  action: string;
-  summary: string;
-  actor: Person;
 }
 
 @discriminator("kind")
@@ -198,48 +190,16 @@ model ScheduledActivity {
   startsAt: utcDateTime;
   endsAt?: utcDateTime;
   location?: string;
+  /** External Spond event link, when this activity is synchronized. */
+  spondId?: string;
+  status: ActivityStatus;
 
-  /** Derived: the activity lies in the past. No stored status; cancellation is out of scope. */
+  /** Derived: the active activity lies in the past. Cancelled activities are never completed. */
   @visibility(Lifecycle.Read)
   isCompleted: boolean;
 
   @owns invitations: Invitation[];
   @owns attendance: Attendance[];
-  @owns tasks: ActivityTask[];
-  @owns history: ActivityHistoryItem[];
-}
-
-model SocialEvent extends ScheduledActivity {
-  kind: "social";
-}
-
-model TrainingSession extends ScheduledActivity {
-  kind: "training";
-
-  /** Not necessarily Squad Trainers; not an ActivityTask. */
-  @minItems(1)
-  trainers: Person[];
-
-  @owns subgroups: TrainingGroup[];
-}
-
-// ---------- Training groupings ----------
-
-/**
- * Planned from accepted invitations. Ad-hoc regrouping during the session is
- * not retained; only general attendance is recorded afterwards.
- */
-model TrainingUnit {
-  id: string;
-  name: string;
-  plannedPlayers: Player[];
-}
-
-model TrainingGroup {
-  id: string;
-  name: string;
-  levelOrPurpose?: string;
-  @owns units: TrainingUnit[];
 }
 
 // ---------- Match / Tournament ----------
@@ -249,8 +209,12 @@ model TrainingGroup {
  * accepted and may be in at most one Team of the same activity.
  */
 model CompetitiveActivity extends ScheduledActivity {
+  @minValue(1)
   minPlayersPerTeam: int32;
+  @minValue(1)
   maxPlayersPerTeam: int32;
+
+  /** `minPlayersPerTeam` must not exceed `maxPlayersPerTeam`. */
 
   /** Pre-fills the player limits; they remain overridable per activity. */
   matchFormat?: MatchFormat;
@@ -263,7 +227,7 @@ model CompetitiveActivity extends ScheduledActivity {
 model Match extends CompetitiveActivity {
   kind: "match";
   opponentName?: string;
-  @owns team: Team;
+  @owns team: MatchTeam;
 }
 
 /** Has one or more Teams; no fixtures or lineups are modeled. */
@@ -280,9 +244,8 @@ model Team {
   name: string;
   selectedPlayers: Player[];
 
-  /** Not necessarily Squad Trainers. */
-  @minItems(1)
-  responsiblePersons: Person[];
+  /** Exactly one responsible adult with the trainer or guardian role. */
+  responsiblePerson: Person;
 
   /** Default 2. Balances Tournament teams. */
   @minValue(1)
@@ -297,8 +260,10 @@ model Team {
 
   shirtSet?: ShirtSet;
   @owns shirtAssignments: ShirtAssignment[];
+}
 
-  /** Match only. */
+/** A Match Team may additionally carry the per-period Match Plan. */
+model MatchTeam extends Team {
   @owns matchPlan?: MatchPlan;
 }
 
@@ -309,7 +274,8 @@ enum PositionCode { GK, LB, CB, RB, LWB, RWB, CDM, CM, CAM, LM, RM, LW, RW, CF, 
 /**
  * A Squad's format. Copied from an OfficialMatchFormat on Squad creation
  * (`origin` set) or user-defined (`origin` unset). At most one default per
- * Squad. Selecting a format pre-fills the activity's player limits.
+ * Squad. Selecting a format pre-fills the activity's player limits. Official
+ * copies are immutable and cannot be deleted.
  */
 model MatchFormat {
   id: string;
@@ -317,10 +283,15 @@ model MatchFormat {
   origin?: OfficialMatchFormat;
 
   /** Players per team on the field, e.g. 7 for D7. */
+  @minValue(1)
   playersOnField: int32;
+  @minValue(1)
   minPlayersPerTeam: int32;
+  @minValue(1)
   maxPlayersPerTeam: int32;
+  @minValue(1)
   numberOfPeriods: int32;
+  @minValue(1)
   periodLengthMinutes: int32;
   minimumPeriodsPerPlayer?: int32;
   isDefault?: boolean;

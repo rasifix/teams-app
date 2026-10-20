@@ -251,7 +251,7 @@
 .event-card:hover { border-color: var(--color-brand-border); box-shadow: var(--shadow-raised); }
 .shirt-set-header { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); }
 .shirt-set-toggle { display: flex; min-width: 0; flex: 1; align-items: center; gap: var(--space-3); border-radius: var(--radius-md); text-align: left; }
-.shirt-set-icon { border-color: var(--color-border-strong); color: var(--color-on-action); }
+.shirt-set-icon { border-color: color-mix(in srgb, var(--color-on-action) 50%, transparent); color: var(--color-on-action); }
 .shirt-set-icon .icon-sm { opacity: 0.5; }
 .shirt-set-chevron--expanded { transform: rotate(90deg); }
 .shirt-set-actions { border-left: 1px solid var(--color-border); padding-left: var(--space-2); }

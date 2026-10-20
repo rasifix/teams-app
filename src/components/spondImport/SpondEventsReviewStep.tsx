@@ -6,7 +6,7 @@ import {
   type SpondEventFilter,
   type SpondEventRow,
 } from '../../store/selectors/spondSyncSelectors';
-import { formatWallClockDateTime } from '../../utils/dateFormatter';
+import { formatInstantDateTime } from '../../utils/dateFormatter';
 import { Button, Checkbox, Cluster, ContentGrid, EmptyState, EntityContent, EntityMeta, EntityTitle, Field, Input, Panel, Select, Split, Stack } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
@@ -90,7 +90,7 @@ export default function SpondEventsReviewStep({
                   <EntityContent>
                     <EntityTitle>{row.source.name}</EntityTitle>
                     <EntityMeta><span>
-                      {formatWallClockDateTime(row.source.startsAt, i18n.language)}
+                      {formatInstantDateTime(row.source.startsAt, i18n.language)}
                     </span></EntityMeta>
                   </EntityContent>
                 </label>

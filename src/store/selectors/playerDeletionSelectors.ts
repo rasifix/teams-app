@@ -1,5 +1,4 @@
 import type { Activity } from '../../types';
-import { getActivityDate } from './activitySelectors';
 
 export interface PlayerDeletionImpact {
   hasPastTeamAssignment: boolean;
@@ -7,7 +6,7 @@ export interface PlayerDeletionImpact {
 }
 
 function isPastActivity(startsAt: string, now: Date): boolean {
-  const timestamp = new Date(getActivityDate({ startsAt })).getTime();
+  const timestamp = Date.parse(startsAt);
   if (Number.isNaN(timestamp)) {
     return false;
   }

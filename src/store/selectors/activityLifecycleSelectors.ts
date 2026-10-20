@@ -8,12 +8,8 @@ export interface ActivityPhaseSections {
   attendance: boolean;
 }
 
-// `startsAt` carries the local wall-clock time in its UTC components.
 function getStartTimestamp(activity: Pick<Activity, 'startsAt'>): number {
-  const start = new Date(activity.startsAt);
-  return new Date(
-    start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), start.getUTCHours(), start.getUTCMinutes()
-  ).getTime();
+  return Date.parse(activity.startsAt);
 }
 
 /** Lifecycle: planning (invite) -> selection sent -> started -> attendance recorded. */

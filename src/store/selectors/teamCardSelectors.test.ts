@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Player, ShirtSet, Team, Trainer } from '../../types';
+import { getActivityTime } from './activitySelectors';
 import { selectTeamCardView } from './teamCardSelectors';
 
 const player = (id: string, firstName: string, lastName: string, level: number): Player => ({
@@ -36,7 +37,7 @@ describe('selectTeamCardView', () => {
     expect(result.hasCapacity).toBe(true);
     expect(result.averageLevel).toBe(3);
     expect(result.displayLocation).toBe('Main field');
-    expect(result.displayTime).toBe('10:30');
+    expect(result.displayTime).toBe(getActivityTime(event));
     expect(result.responsiblePeople[0]).toMatchObject({ id: trainer.id });
     expect(result.shirtSet).toBe(shirtSet);
     expect(result.playerRows.map((row) => row.playerId)).toEqual([ben.id, ada.id]);

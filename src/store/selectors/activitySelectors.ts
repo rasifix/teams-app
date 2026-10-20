@@ -8,20 +8,29 @@ import type {
   Player,
 } from '../../types';
 
-/*
- * Activity start times follow the "wall clock" convention of the API: `startsAt` is an
- * ISO date-time whose UTC components are the local date and time shown to the user.
- */
+/* Activity timestamps are real instants; display helpers resolve them in browser-local time. */
 
 export const sortActivities = (activities: Activity[]): Activity[] =>
   [...activities].sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
 
-export const getActivityDate = (activity: Pick<Activity, 'startsAt'>): string => activity.startsAt.slice(0, 10);
+const localDateTimeParts = (value: string): { date: string; time: string } | null => {
+  const instant = new Date(value);
+  if (Number.isNaN(instant.getTime())) return null;
+  const date = `${instant.getFullYear()}-${String(instant.getMonth() + 1).padStart(2, '0')}-${String(instant.getDate()).padStart(2, '0')}`;
+  const time = `${String(instant.getHours()).padStart(2, '0')}:${String(instant.getMinutes()).padStart(2, '0')}`;
+  return { date, time };
+};
 
-export const getActivityTime = (activity: Pick<Activity, 'startsAt'>): string => activity.startsAt.slice(11, 16);
+export const getActivityDate = (activity: Pick<Activity, 'startsAt'>): string =>
+  localDateTimeParts(activity.startsAt)?.date ?? activity.startsAt.slice(0, 10);
 
-export const toStartsAt = (date: string, time: string): string =>
-  new Date(`${date}T${/^\d{2}:\d{2}$/.test(time) ? time : '00:00'}:00.000Z`).toISOString();
+export const getActivityTime = (activity: Pick<Activity, 'startsAt'>): string =>
+  localDateTimeParts(activity.startsAt)?.time ?? activity.startsAt.slice(11, 16);
+
+export const toStartsAt = (date: string, time: string): string => {
+  const safeTime = /^\d{2}:\d{2}$/.test(time) ? time : '00:00';
+  return new Date(`${date}T${safeTime}:00.000`).toISOString();
+};
 
 export const isTeamActivity = (activity: Pick<Activity, 'kind'>): boolean =>
   activity.kind === 'match' || activity.kind === 'tournament';

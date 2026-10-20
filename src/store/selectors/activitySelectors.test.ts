@@ -44,10 +44,11 @@ const player = (overrides: Partial<Player> = {}): Player => ({
 });
 
 describe('activity time helpers', () => {
-  it('reads date and time from the wall-clock ISO string', () => {
+  it('reads date and time in the browser timezone', () => {
     const a = activity({ startsAt: '2026-05-02T09:45:00.000Z' });
-    expect(getActivityDate(a)).toBe('2026-05-02');
-    expect(getActivityTime(a)).toBe('09:45');
+    const local = new Date(a.startsAt);
+    expect(getActivityDate(a)).toBe(local.toLocaleDateString('en-CA'));
+    expect(getActivityTime(a)).toBe(local.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }));
   });
 
   describe('selectInvitationsByResponse', () => {
@@ -76,8 +77,8 @@ describe('activity time helpers', () => {
   });
 
   it('builds startsAt from date and time with a midnight fallback', () => {
-    expect(toStartsAt('2026-05-02', '09:45')).toBe('2026-05-02T09:45:00.000Z');
-    expect(toStartsAt('2026-05-02', '')).toBe('2026-05-02T00:00:00.000Z');
+    expect(toStartsAt('2026-05-02', '09:45')).toBe(new Date(2026, 4, 2, 9, 45).toISOString());
+    expect(toStartsAt('2026-05-02', '')).toBe(new Date(2026, 4, 2).toISOString());
   });
 
   it('uses activity time for matches and team overrides for other activity kinds', () => {
@@ -88,8 +89,10 @@ describe('activity time helpers', () => {
       ],
     });
     expect(getActivityStartTime(a)).toBe('09:30');
-    expect(getActivityStartTime(activity({ teams: [{ id: 't', name: 'T', strength: 2, startTime: '09:00', selectedPlayers: [] }] }))).toBe('10:00');
-    expect(getActivityStartTime(activity({ kind: 'tournament', teams: [] }))).toBe('10:00');
+    expect(getActivityStartTime(activity({ teams: [{ id: 't', name: 'T', strength: 2, startTime: '09:00', selectedPlayers: [] }] }))).toBe(
+      getActivityTime(activity()),
+    );
+    expect(getActivityStartTime(activity({ kind: 'tournament', teams: [] }))).toBe(getActivityTime(activity()));
   });
 });
 
@@ -106,7 +109,7 @@ describe('sorting and splitting', () => {
 
   it('treats an activity on the current day as upcoming', () => {
     expect(isActivityCompleted(activity({ startsAt: '2026-06-15T08:00:00.000Z' }), now)).toBe(false);
-    expect(isActivityCompleted(activity({ startsAt: '2026-06-14T23:00:00.000Z' }), now)).toBe(true);
+    expect(isActivityCompleted(activity({ startsAt: '2026-06-14T21:00:00.000Z' }), now)).toBe(true);
   });
 
   it('does not mark invalid dates as completed', () => {

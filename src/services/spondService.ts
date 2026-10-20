@@ -5,7 +5,6 @@ import type {
   SpondImportResult,
   SpondSnapshot,
 } from '../types/spond';
-import { instantToWallClockISOString } from '../utils/dateFormatter';
 
 export interface SpondReadClient {
   login(email: string, password: string): Promise<void>;
@@ -44,14 +43,7 @@ class ProxySpondReadClient implements SpondReadClient {
         to,
       }),
     });
-    return {
-      ...snapshot,
-      events: snapshot.events.map((event) => ({
-        ...event,
-        startsAt: instantToWallClockISOString(event.startsAt),
-        endsAt: event.endsAt ? instantToWallClockISOString(event.endsAt) : undefined,
-      })),
-    };
+    return snapshot;
   }
 
   dispose(): void {

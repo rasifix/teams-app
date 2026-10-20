@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { Activity, Team, Trainer } from '../types';
 import { useStore } from './useStore';
 import { mergeMembersFromCollections } from './selectors/memberSelectors';
+import { getActivityTime } from './selectors/activitySelectors';
 
 const baseState = useStore.getState();
 
@@ -143,7 +144,7 @@ describe('useStore selectors', () => {
       })],
     });
     const [entry] = useStore.getState().getTrainerEventHistory('tr-1');
-    expect(entry.startTime).toBe('10:00');
+    expect(entry.startTime).toBe(getActivityTime({ startsAt: '2026-04-01T10:00:00.000Z' }));
     expect(entry.location).toBe('Match Stadium');
   });
 

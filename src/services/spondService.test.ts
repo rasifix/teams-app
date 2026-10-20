@@ -75,7 +75,7 @@ describe('Spond proxy client', () => {
     });
   });
 
-  it('normalizes Spond UTC instants to the activity wall-clock convention', async () => {
+  it('preserves timezone-aware Spond timestamps for the import API', async () => {
     vi.spyOn(apiClient, 'request')
       .mockResolvedValueOnce([{ id: 'group-1', name: 'U12' }])
       .mockResolvedValueOnce({
@@ -92,8 +92,8 @@ describe('Spond proxy client', () => {
     const snapshot = await client.getSnapshot('group-1', 'from', 'to');
 
     expect(snapshot.events[0]).toMatchObject({
-      startsAt: '2026-07-10T18:30:00.000Z',
-      endsAt: '2026-07-10T20:00:00.000Z',
+      startsAt: '2026-07-10T16:30:00.000Z',
+      endsAt: '2026-07-10T18:00:00.000Z',
     });
   });
 });

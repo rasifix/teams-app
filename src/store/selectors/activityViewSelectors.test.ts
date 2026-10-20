@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity } from '../../types';
+import { getActivityTime } from './activitySelectors';
 import { selectActivityCardSummary, selectAdjacentActivities, selectInvitationViewRows, selectMinimumActivityMaxPlayers } from './activityViewSelectors';
 
 const baseActivity: Activity = {
@@ -15,8 +16,8 @@ const baseActivity: Activity = {
 describe('activity view selectors', () => {
   it('summarizes dates, readiness, invitation responses, and decline reasons', () => {
     expect(selectActivityCardSummary(baseActivity)).toMatchObject({
-      date: '2026-05-01', startTime: '18:30', teamCount: 1, selectedPlayerCount: 1,
-      teams: [{ id: 'team-1', name: 'Team 1', startTime: '18:30', strength: 2, selectedPlayerCount: 1, responsiblePeople: [] }],
+      date: '2026-05-01', startTime: getActivityTime(baseActivity), teamCount: 1, selectedPlayerCount: 1,
+      teams: [{ id: 'team-1', name: 'Team 1', startTime: getActivityTime(baseActivity), strength: 2, selectedPlayerCount: 1, responsiblePeople: [] }],
       allTeamsMeetMinimum: false, invitationStatusCounts: { accepted: 1, open: 1, sick: 1 },
       invitationCounts: { total: 3, accepted: 1, open: 1, declined: 1, declineReasons: { sick: 1 } },
     });
@@ -47,7 +48,7 @@ describe('activity view selectors', () => {
         {
           id: 'team-2',
           name: 'Team 2',
-          startTime: '18:30',
+          startTime: getActivityTime(baseActivity),
           location: 'Main field',
           strength: 2,
           selectedPlayerCount: 0,

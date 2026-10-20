@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { selectActivityPhase, selectActivityPhaseSections } from './activityLifecycleSelectors';
 
 const startsAt = '2026-10-10T14:00:00.000Z';
-const before = new Date(2026, 9, 10, 13, 59);
-const atStart = new Date(2026, 9, 10, 14, 0);
+const start = new Date(startsAt);
+const before = new Date(start.getTime() - 60_000);
+const atStart = start;
 
 describe('activity lifecycle selectors', () => {
   it('is planning before the selection is sent', () => {

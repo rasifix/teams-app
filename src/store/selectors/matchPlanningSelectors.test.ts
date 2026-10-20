@@ -3,6 +3,7 @@ import type { Formation, FormationSlot, Player, MatchFormat, Team } from '../../
 import {
   hasLineupRosterMismatch,
   selectAssignmentsForPeriod,
+  applyLineupPlayerDrop,
   selectAssignablePlayersForSlot,
   selectBenchedPlayerIds,
   selectBenchedPlayers,
@@ -105,6 +106,37 @@ describe('selectLineupRouteTab', () => {
 
   it('falls back safely while the playing mode is unavailable', () => {
     expect(selectLineupRouteTab('2', undefined)).toBe(1);
+  });
+});
+
+describe('applyLineupPlayerDrop', () => {
+  const assignments = [
+    { slotId: 'gk', playerId: 'p1' },
+    { slotId: 'cb', playerId: 'p2' },
+  ];
+
+  it('moves a benched player onto an empty slot', () => {
+    expect(applyLineupPlayerDrop(assignments, 'p3', 'st')).toEqual([
+      ...assignments,
+      { slotId: 'st', playerId: 'p3' },
+    ]);
+  });
+
+  it('switches players when dropping onto an occupied slot', () => {
+    expect(applyLineupPlayerDrop(assignments, 'p1', 'cb')).toEqual([
+      { slotId: 'gk', playerId: 'p2' },
+      { slotId: 'cb', playerId: 'p1' },
+    ]);
+  });
+
+  it('moves a field player to the bench', () => {
+    expect(applyLineupPlayerDrop(assignments, 'p2', null)).toEqual([
+      { slotId: 'gk', playerId: 'p1' },
+    ]);
+  });
+
+  it('leaves unknown players unchanged when dropped on the bench', () => {
+    expect(applyLineupPlayerDrop(assignments, 'missing', null)).toBe(assignments);
   });
 });
 

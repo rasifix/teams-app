@@ -157,6 +157,39 @@ export function selectAssignmentsForPeriod(team: Team, periodNumber: number): Li
   return team.lineup?.find((period) => period.periodNumber === periodNumber)?.assignments ?? [];
 }
 
+export function applyLineupPlayerDrop(
+  assignments: LineupPositionAssignment[],
+  playerId: string,
+  targetSlotId: string | null
+): LineupPositionAssignment[] {
+  const sourceAssignment = assignments.find((assignment) => assignment.playerId === playerId);
+  if (!sourceAssignment && targetSlotId === null) return assignments;
+
+  if (targetSlotId === null) {
+    return assignments.filter((assignment) => assignment.playerId !== playerId);
+  }
+
+  if (sourceAssignment?.slotId === targetSlotId) return assignments;
+
+  const targetAssignment = assignments.find((assignment) => assignment.slotId === targetSlotId);
+  if (!sourceAssignment) {
+    return [
+      ...assignments.filter((assignment) => assignment.slotId !== targetSlotId),
+      { slotId: targetSlotId, playerId },
+    ];
+  }
+
+  return assignments.map((assignment) => {
+    if (assignment.slotId === sourceAssignment.slotId) {
+      return { ...assignment, playerId: targetAssignment?.playerId ?? playerId };
+    }
+    if (assignment.slotId === targetSlotId) {
+      return { ...assignment, playerId };
+    }
+    return assignment;
+  });
+}
+
 export function selectLineupWithCopiedPeriod(
   lineup: TeamLineupPeriod[],
   sourcePeriodNumber: number,

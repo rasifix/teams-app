@@ -14,6 +14,7 @@ import {
   selectLineupSummary,
   selectLineupShirtNumberRows,
   selectLineupWithCopiedPeriod,
+  applyLineupPlayerDrop,
   selectLineupRouteTab,
   selectHasLineupChanges,
   hasLineupRosterMismatch,
@@ -46,6 +47,7 @@ export default function TeamLineupPage() {
   const [hoveredSummaryPlayerId, setHoveredSummaryPlayerId] = useState<string | null>(null);
   const [selectingSlotId, setSelectingSlotId] = useState<string | null>(null);
   const [dragOverSlotId, setDragOverSlotId] = useState<string | null>(null);
+  const [isDragOverBench, setIsDragOverBench] = useState(false);
 
   // Only reinitialize the draft when switching teams, not on every store refresh, to avoid clobbering in-progress edits.
   useEffect(() => {
@@ -136,6 +138,30 @@ export default function TeamLineupPage() {
       );
     });
     setSelectingSlotId(null);
+  };
+
+  const handleDropOnSlot = (slotId: string, playerId: string) => {
+    setDraftLineup((current) => {
+      const otherPeriods = current.filter((p) => p.periodNumber !== activePeriod);
+      const period = current.find((p) => p.periodNumber === activePeriod);
+      const assignments = applyLineupPlayerDrop(period?.assignments ?? [], playerId, slotId);
+
+      return [...otherPeriods, { periodNumber: activePeriod, assignments }].sort(
+        (a, b) => a.periodNumber - b.periodNumber
+      );
+    });
+  };
+
+  const handleDropOnBench = (playerId: string) => {
+    setDraftLineup((current) => {
+      const otherPeriods = current.filter((p) => p.periodNumber !== activePeriod);
+      const period = current.find((p) => p.periodNumber === activePeriod);
+      const assignments = applyLineupPlayerDrop(period?.assignments ?? [], playerId, null);
+
+      return [...otherPeriods, { periodNumber: activePeriod, assignments }].sort(
+        (a, b) => a.periodNumber - b.periodNumber
+      );
+    });
   };
 
   const handleCopyPreviousPeriod = () => {
@@ -339,6 +365,16 @@ export default function TeamLineupPage() {
                   type="button"
                   data-ui-control="composite"
                   key={assignment.slotId}
+                  draggable={Boolean(assignment.playerId)}
+                  onDragStart={(event) => {
+                    if (!assignment.playerId) return;
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('lineupPlayerId', assignment.playerId);
+                  }}
+                  onDragEnd={() => {
+                    setDragOverSlotId(null);
+                    setIsDragOverBench(false);
+                  }}
                   onClick={() => setSelectingSlotId(assignment.slotId)}
                   onDragOver={(event) => {
                     event.preventDefault();
@@ -351,7 +387,7 @@ export default function TeamLineupPage() {
                   onDrop={(event) => {
                     event.preventDefault();
                     const playerId = event.dataTransfer.getData('lineupPlayerId');
-                    if (playerId) handleAssignSlot(assignment.slotId, playerId);
+                    if (playerId) handleDropOnSlot(assignment.slotId, playerId);
                     setDragOverSlotId(null);
                   }}
                   className={`lineup-slot lineup-slot--editor ${
@@ -414,11 +450,28 @@ export default function TeamLineupPage() {
       <Card className="lineup-editor-card">
         <CardBody className="lineup-editor-body">
           <CardTitle className="lineup-editor-title">{t('teamLineup.benchTitle', { count: benchedPlayers.length })}</CardTitle>
-          {benchedPlayers.length === 0 ? (
-            <EmptyState>{t('teamLineup.noBenchedPlayers')}</EmptyState>
-          ) : (
-            <div className="lineup-bench-list" role="list">
-              {benchedPlayers.map((player) => (
+          <div
+            className={`lineup-bench-drop${isDragOverBench ? ' lineup-bench-drop--drag-over' : ''}`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = 'move';
+              setIsDragOverBench(true);
+            }}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragOverBench(false);
+            }}
+            onDrop={(event) => {
+              event.preventDefault();
+              const playerId = event.dataTransfer.getData('lineupPlayerId');
+              if (playerId) handleDropOnBench(playerId);
+              setIsDragOverBench(false);
+            }}
+          >
+            {benchedPlayers.length === 0 ? (
+              <EmptyState>{t('teamLineup.noBenchedPlayers')}</EmptyState>
+            ) : (
+              <div className="lineup-bench-list" role="list">
+                {benchedPlayers.map((player) => (
                   <div
                     key={player.id}
                     role="listitem"
@@ -446,9 +499,10 @@ export default function TeamLineupPage() {
                       {plannedPeriodCounts.get(player.id) ?? 0}/{matchFormat.numberOfPeriods}
                     </span>
                   </div>
-                ))}
-            </div>
-          )}
+                  ))}
+              </div>
+            )}
+          </div>
         </CardBody>
       </Card>
       </ContentGrid>

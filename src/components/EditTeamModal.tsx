@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, RequiredFieldsNote, Select, Stack } from './ui';
 
 interface EditTeamModalProps {
   isOpen: boolean;
@@ -54,7 +54,8 @@ export default function EditTeamModal({
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
-            <Field label={t('teamModal.fields.teamName')} htmlFor="teamName">
+            <RequiredFieldsNote />
+            <Field label={t('teamModal.fields.teamName')} htmlFor="teamName" required>
               <Input
                 type="text"
                 id="teamName"

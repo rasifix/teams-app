@@ -2,7 +2,7 @@ import type { ShirtSet, Shirt } from '../types';
 import { useTranslation } from 'react-i18next';
 import ShirtCard from './ShirtCard';
 import { selectSortedShirts } from '../store/selectors/shirtSetSelectors';
-import { Button, ChevronRightIcon, Cluster, EntityContent, EntityMeta, EntityTitle, IconButton } from './ui';
+import { AddCardButton, ChevronRightIcon, Cluster, EntityContent, EntityMeta, EntityTitle, IconButton, IconTile, ShirtIcon } from './ui';
 
 interface ShirtSetCardProps {
   shirtSet: ShirtSet;
@@ -32,7 +32,9 @@ export default function ShirtSetCard({
     <article className="shirt-set-card">
       <div className="shirt-set-header">
         <button type="button" data-ui-control="composite" onClick={onToggleExpanded} className="shirt-set-toggle" aria-expanded={isExpanded}>
-          <span className="shirt-set-color" style={{ backgroundColor: shirtSet.color }} />
+          <IconTile size="sm" className="shirt-set-icon" style={{ backgroundColor: shirtSet.color }}>
+            <ShirtIcon className="icon-sm" />
+          </IconTile>
           <EntityContent>
             <EntityTitle>{shirtSet.sponsor}</EntityTitle>
             <EntityMeta><span>{t('shirts.shirtCount', { count: shirtSet.shirts.length })}</span></EntityMeta>
@@ -59,11 +61,7 @@ export default function ShirtSetCard({
             {sortedShirts.map((shirt) => (
               <ShirtCard key={shirt.number} shirt={shirt} onEdit={() => onEditShirt(shirt)} onRemove={() => onRemoveShirt(shirtSet.id, shirt.number)} />
             ))}
-            <Button type="button" variant="secondary" onClick={onAddShirt} className="shirt-add-button" title={t('shirtModal.addTitle')} aria-label={t('shirtModal.addTitle')}>
-              <svg className="icon-sm" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
-              </svg>
-            </Button>
+            <AddCardButton onClick={onAddShirt} label={t('shirtModal.addTitle')} />
           </div>
         </div>
       )}

@@ -5,6 +5,8 @@
   },
   "common": {
     "language": "Language",
+    "required": "Required",
+    "requiredFieldsNote": "* Required",
     "tabs": "Tabs",
     "openMainMenu": "Open main menu",
     "actions": {
@@ -171,14 +173,14 @@
   },
   "teamModal": {
     "editTitle": "Edit Team",
-    "noTrainerAssigned": "No responsible persons assigned",
+    "noTrainerAssigned": "No responsible person assigned",
     "fields": {
       "teamName": "Team Name",
       "strength": "Strength",
       "startTime": "Start Time",
       "trainerAssignee": "Trainer / Guardian",
-      "locationOptional": "Team Location (optional)",
-      "responsiblePeople": "Responsible persons"
+      "locationOptional": "Team Location",
+      "responsiblePeople": "Responsible person"
     },
     "placeholders": {
       "teamName": "Enter team name",
@@ -189,14 +191,12 @@
       "medium": "2 - Medium 🔥🔥",
       "lowest": "3 - Lowest 🔥"
     },
-    "responsiblePeopleHint": "The first selected person is the lead.",
     "filterPlaceholder": "Filter by name",
     "noPersonsFound": "No matching persons",
     "assigneeSource": {
       "trainer": "Trainer",
       "guardian": "Guardian"
-    },
-    "leadPerson": "Lead"
+    }
   },
   "assignShirts": {
     "title": "Assign Shirts to Team",
@@ -233,10 +233,10 @@
     "creating": "Creating...",
     "fields": {
       "squadName": "Squad Name",
-      "clubOptional": "Club (optional)",
-      "categoryOptional": "SFV category (optional)",
+      "clubOptional": "Club",
+      "categoryOptional": "SFV category",
       "noCategory": "No category",
-      "descriptionOptional": "Description (optional)"
+      "descriptionOptional": "Description"
     },
     "categoryHint": "For D7 through A, the official match format is created and set as default automatically.",
     "officialFormatHint": "Official format: {{format}}, {{min}}–{{max}} players per team.",
@@ -258,7 +258,7 @@
     "fields": {
       "birthDate": "Birth Date",
       "level": "Level (1-5)",
-      "preferredShirtNumberOptional": "Preferred Shirt Number (optional)"
+      "preferredShirtNumberOptional": "Preferred Shirt Number"
     },
     "placeholders": {
       "firstName": "Enter first name",
@@ -277,7 +277,7 @@
     "addAction": "Add Trainer",
     "updateAction": "Update Trainer",
     "fields": {
-      "emailOptional": "Email (optional)"
+      "emailOptional": "Email"
     },
     "placeholders": {
       "firstName": "Enter first name",
@@ -654,7 +654,7 @@
     "selectionLocked": "User selection is locked while editing. Update name/email fields directly.",
     "placeholderFirstName": "Enter first name",
     "placeholderLastName": "Enter last name",
-    "emailOptional": "Email (optional)",
+    "emailOptional": "Email",
     "placeholderEmail": "guardian@example.com",
     "documentedHint": "New guardians are created as squad members and can be linked to multiple children.",
     "assignAction": "Assign",
@@ -748,6 +748,7 @@
   "teamDetail": {
     "teamNotFound": "Team not found",
     "switchTeam": "Switch team",
+    "assignToMe": "Assign to me",
     "trainerLabel": "Trainer",
     "assignTrainerTitle": "Assign trainer",
     "shirtSetLabel": "Shirt Set",
@@ -853,7 +854,7 @@
       "numberOfPeriods": "Number of Periods",
       "periodLengthMinutes": "Period Length (minutes)",
       "minimumPeriodsPerPlayer": "Minimum periods per player",
-      "playersOnField": "Players on field (optional)",
+      "playersOnField": "Players on field",
       "minPlayersPerTeam": "Min. players per team",
       "maxPlayersPerTeam": "Max. players per team"
     },
@@ -975,7 +976,7 @@
     "editAction": "Edit attendance",
     "recordTitle": "Record attendance",
     "noSelectedPlayers": "No players selected for this event.",
-    "reasonPlaceholder": "Reason (optional)",
+    "reasonPlaceholder": "Reason",
     "notRecorded": "Attendance has not been recorded yet.",
     "title": "Attendance",
     "notStarted": "Attendance can be recorded once the activity has started.",

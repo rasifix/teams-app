@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../hooks/useAuth';
 import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
 import { Alert, Button, Cluster, ContentGrid, EmptyState, Field, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, PropertyAction, PropertyActions, PropertyLabel, PropertyList, PropertyRow, PropertyValue, Select } from '../components/ui';
 import Level from '../components/Level';
@@ -11,7 +12,7 @@ import AssignShirtsModal from '../components/AssignShirtsModal';
 import AssignResponsiblePeopleModal from '../components/AssignResponsiblePeopleModal';
 import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
-import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
+import { selectTeamResponsiblePeople, selectTrainerForUser } from '../store/selectors/teamTrainerSelectors';
 import { getActivityTime } from '../store/selectors/activitySelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
@@ -22,6 +23,7 @@ export default function TeamDetailPage() {
   const { t } = useTranslation();
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const { getActivityById, updateActivityTeams, updateActivitySelection } = useActivities();
   const { players } = usePlayers();
@@ -43,6 +45,7 @@ export default function TeamDetailPage() {
   const responsiblePeople = team
     ? selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players)
     : [];
+  const currentTrainer = selectTrainerForUser(user, trainers);
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
   const selectedPlayers = team ? selectTeamPlayersByName(team, players) : [];
   const selectionEditState = event ? selectSelectionEditState(event) : null;
@@ -136,7 +139,7 @@ export default function TeamDetailPage() {
     if (!event || !eventId || !team) return;
 
     const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, responsiblePersonIds } : t
+      t.id === teamId ? { ...t, responsiblePersonIds: responsiblePersonIds.slice(0, 1) } : t
     );
 
     await updateActivityTeams(eventId, updatedTeams);
@@ -243,8 +246,8 @@ export default function TeamDetailPage() {
                 <span>👤</span>
                 <span>{t('teamModal.fields.responsiblePeople')}</span>
               </PropertyLabel>
-              {responsiblePeople.length > 0 ? (
-                <PropertyValue>{responsiblePeople.map((person) => person.firstName + ' ' + person.lastName + (person.isLead ? ' (' + t('teamModal.leadPerson') + ')' : '')).join(', ')}</PropertyValue>
+              {responsiblePeople[0] ? (
+                <PropertyValue>{responsiblePeople[0].firstName} {responsiblePeople[0].lastName}</PropertyValue>
               ) : (
                 <PropertyValue muted>{t('teamModal.noTrainerAssigned')}</PropertyValue>
               )}
@@ -403,6 +406,7 @@ export default function TeamDetailPage() {
             trainers={trainers}
             players={players}
             currentResponsiblePersonIds={team.responsiblePersonIds}
+            currentTrainerId={currentTrainer?.id}
           />
 
           <AssignShirtsModal

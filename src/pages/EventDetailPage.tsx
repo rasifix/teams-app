@@ -186,9 +186,9 @@ export default function EventDetailPage() {
 
     <ContentGrid variant="equal" className="event-detail-content-grid">
       <Panel>
-        <PanelHeader className="event-detail-panel-header">
+        <PanelHeader className="ui-responsive-action-row">
           <PanelTitle>{t('eventDetail.teamsTitle')}</PanelTitle>
-          <PanelActions className="event-detail-panel-actions">
+          <PanelActions>
             {activity.teams.length > 0 && <Button type="button" variant="secondary" size="sm" onClick={() => setIsPrintSummaryOpen(true)}>{t('eventDetail.printTeams')}</Button>}
             {activity.kind === 'tournament' && <Button type="button" variant="secondary" size="sm" onClick={handleAddTeam}>{t('common.actions.add')}</Button>}
             {!selectionEditState.isSent && selectionEditState.canEdit && activity.teams.length > 0 && (

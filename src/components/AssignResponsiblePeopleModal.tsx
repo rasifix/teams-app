@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Checkbox, EmptyState, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Stack } from './ui';
+import { Button, Checkbox, EmptyState, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Stack } from './ui';
 import type { Player, Trainer } from '../types';
-import { filterTeamAssignees, selectTeamAssigneeOptions } from '../store/selectors/teamTrainerSelectors';
+import { filterTeamAssignees, selectTeamAssigneeOptions, selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 
 interface AssignResponsiblePeopleModalProps {
   isOpen: boolean;
   trainers: Trainer[];
   players: Player[];
   currentResponsiblePersonIds?: string[];
+  currentTrainerId?: string;
   onClose: () => void;
   onSave: (responsiblePersonIds: string[]) => Promise<void>;
 }
@@ -18,11 +19,16 @@ export default function AssignResponsiblePeopleModal({
   trainers,
   players,
   currentResponsiblePersonIds,
+  currentTrainerId,
   onClose,
   onSave,
 }: AssignResponsiblePeopleModalProps) {
   const { t } = useTranslation();
-  const [selectedIds, setSelectedIds] = useState<string[]>(currentResponsiblePersonIds ?? []);
+  const currentResponsiblePersonId = useMemo(
+    () => selectTeamResponsiblePeople(currentResponsiblePersonIds, trainers, players)[0]?.id,
+    [currentResponsiblePersonIds, trainers, players],
+  );
+  const [selectedId, setSelectedId] = useState<string | undefined>(currentResponsiblePersonId);
   const [filter, setFilter] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -31,20 +37,29 @@ export default function AssignResponsiblePeopleModal({
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedIds(currentResponsiblePersonIds ?? []);
+      setSelectedId(currentResponsiblePersonId);
       setFilter('');
     }
-  }, [currentResponsiblePersonIds, isOpen]);
+  }, [currentResponsiblePersonId, isOpen]);
 
-  const toggle = (id: string) => setSelectedIds((current) => (
-    current.includes(id) ? current.filter((value) => value !== id) : [...current, id]
-  ));
+  const toggle = (id: string) => setSelectedId((current) => current === id ? undefined : id);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
     try {
-      await onSave(selectedIds);
+      await onSave(selectedId ? [selectedId] : []);
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAssignToMe = async () => {
+    if (!currentTrainerId) return;
+    setIsSaving(true);
+    try {
+      await onSave([currentTrainerId]);
       onClose();
     } finally {
       setIsSaving(false);
@@ -75,7 +90,7 @@ export default function AssignResponsiblePeopleModal({
               {visibleOptions.map((option) => (
                   <label key={option.id} className="responsible-person-option">
                     <Checkbox
-                      checked={selectedIds.includes(option.id)}
+                      checked={selectedId === option.id}
                       onChange={() => toggle(option.id)}
                     />
                     <EntityRow>
@@ -83,18 +98,17 @@ export default function AssignResponsiblePeopleModal({
                       <EntityTitle>{option.firstName} {option.lastName}</EntityTitle>
                       <EntityMeta><span>{t(`teamModal.assigneeSource.${option.source}`)}</span></EntityMeta>
                     </EntityContent>
-                    {selectedIds[0] === option.id && (
-                      <Badge tone="info" size="sm">{t('teamModal.leadPerson')}</Badge>
-                    )}
                     </EntityRow>
                   </label>
               ))}
             </EntityList>
           )}
-          <p className="field-help">{t('teamModal.responsiblePeopleHint')}</p>
           </Stack>
         </ModalBody>
         <ModalFooter>
+          {currentTrainerId && <Button type="button" variant="secondary" disabled={isSaving} onClick={() => void handleAssignToMe()}>
+            {t('teamDetail.assignToMe')}
+          </Button>}
           <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}
           </Button>

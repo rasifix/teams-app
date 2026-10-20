@@ -1,4 +1,5 @@
 import { forwardRef, type HTMLAttributes, type InputHTMLAttributes, type LabelHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { useTranslation } from 'react-i18next';
 import { classNames } from './classNames';
 
 export interface FieldProps extends HTMLAttributes<HTMLDivElement> {
@@ -6,6 +7,7 @@ export interface FieldProps extends HTMLAttributes<HTMLDivElement> {
   htmlFor: string;
   hint?: ReactNode;
   error?: ReactNode;
+  required?: boolean;
 }
 
 export function FieldLabel({ className = '', ...props }: LabelHTMLAttributes<HTMLLabelElement>) {
@@ -16,10 +18,27 @@ export function FieldLegend({ className = '', ...props }: HTMLAttributes<HTMLSpa
   return <span className={`ui-field__label ${className}`.trim()} {...props} />;
 }
 
-export function Field({ label, htmlFor, hint, error, children, className = '', ...props }: FieldProps) {
+export function RequiredMark() {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <span data-required-mark aria-hidden="true">*</span>
+      <span data-visually-hidden> {t('common.required')}</span>
+    </>
+  );
+}
+
+export function RequiredFieldsNote() {
+  const { t } = useTranslation();
+
+  return <p className="ui-field__hint">{t('common.requiredFieldsNote')}</p>;
+}
+
+export function Field({ label, htmlFor, hint, error, required = false, children, className = '', ...props }: FieldProps) {
   return (
     <div className={`ui-field ${className}`.trim()} {...props}>
-      <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>
+      <FieldLabel htmlFor={htmlFor}>{label}{required && <RequiredMark />}</FieldLabel>
       {children}
       {error ? <p className="ui-field__error">{error}</p> : hint ? <p className="ui-field__hint">{hint}</p> : null}
     </div>

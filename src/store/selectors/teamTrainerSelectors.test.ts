@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Trainer } from '../../types';
-import { filterTeamAssignees, selectTeamAssigneeById, selectTeamAssigneeMap, selectTeamAssigneeOptions, selectTeamResponsiblePeople } from './teamTrainerSelectors';
+import { filterTeamAssignees, selectTeamAssigneeById, selectTeamAssigneeMap, selectTeamAssigneeOptions, selectTeamResponsiblePeople, selectTrainerForUser } from './teamTrainerSelectors';
 
 const trainer = (overrides: Partial<Trainer>): Trainer => ({ id: 't-default', firstName: 'Alex', lastName: 'Coach', ...overrides });
 
@@ -33,11 +33,10 @@ describe('team responsible person selectors', () => {
     expect(selectTeamAssigneeById(undefined, trainers)).toBeNull();
   });
 
-  it('preserves order, drops non-trainer ids (e.g. players) and marks the first valid entry as lead', () => {
+  it('returns only the first valid responsible person and drops player or unknown ids', () => {
     const trainers = [trainer({ id: 't-1' }), trainer({ id: 't-2', firstName: 'Bea' })];
     expect(selectTeamResponsiblePeople(['p-1', 't-2', 'unknown', 't-1'], trainers)).toEqual([
-      { id: 't-2', firstName: 'Bea', lastName: 'Coach', source: 'trainer', isLead: true },
-      { id: 't-1', firstName: 'Alex', lastName: 'Coach', source: 'trainer', isLead: false },
+      { id: 't-2', firstName: 'Bea', lastName: 'Coach', source: 'trainer' },
     ]);
     expect(selectTeamResponsiblePeople(undefined, [])).toEqual([]);
   });
@@ -59,8 +58,24 @@ describe('team responsible person selectors', () => {
   it('resolves guardians as responsible people and ignores player ids', () => {
     const players = [player({ id: 'p-1', guardians: [{ id: 'g-1', firstName: 'Greta', lastName: 'Parent' }] })];
     expect(selectTeamResponsiblePeople(['p-1', 'g-1'], [], players)).toEqual([
-      { id: 'g-1', firstName: 'Greta', lastName: 'Parent', source: 'guardian', isLead: true },
+      { id: 'g-1', firstName: 'Greta', lastName: 'Parent', source: 'guardian' },
     ]);
+  });
+
+  it('resolves the authenticated trainer by id, then by normalized email', () => {
+    const trainers = [
+      trainer({ id: 't-1', email: 'alex@example.com' }),
+      trainer({ id: 't-2', firstName: 'Bea', email: 'bea@example.com' }),
+    ];
+    expect(selectTrainerForUser({ id: 't-2', email: 'other@example.com' }, trainers)?.id).toBe('t-2');
+    expect(selectTrainerForUser({ id: 'user-1', email: ' BEA@example.com ' }, trainers)?.id).toBe('t-2');
+  });
+
+  it('does not resolve assign-to-me for missing users or non-trainers', () => {
+    const trainers = [trainer({ id: 't-1', email: 'alex@example.com' })];
+    expect(selectTrainerForUser(null, trainers)).toBeNull();
+    expect(selectTrainerForUser({ id: 'user-1', email: '' }, trainers)).toBeNull();
+    expect(selectTrainerForUser({ id: 'user-1', email: 'missing@example.com' }, trainers)).toBeNull();
   });
 
   it('filters by case-insensitive name terms in any order', () => {

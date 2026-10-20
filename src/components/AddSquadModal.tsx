@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateSquadRequest } from '../types';
-import { Alert, Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack, Textarea } from './ui';
+import { Alert, Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, RequiredFieldsNote, Select, Stack, Textarea } from './ui';
 import { useSfvCatalog } from '../store';
 import { selectSfvCategoryOptions } from '../store/selectors/sfvCatalogSelectors';
 
@@ -88,7 +88,8 @@ export default function AddSquadModal({
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
-            <Field label={t('squadModal.fields.squadName')} htmlFor="name" error={nameError}>
+            <RequiredFieldsNote />
+            <Field label={t('squadModal.fields.squadName')} htmlFor="name" error={nameError} required>
               <Input
                 type="text"
                 id="name"

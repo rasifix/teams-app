@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Guardian } from '../types';
 import type { ExistingGuardianUserOption } from '../store/selectors/guardianAssignmentSelectors';
 import { hasDuplicateGuardian } from '../utils/guardians';
-import { Alert, Button, ChoiceGroup, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, Select, Stack } from './ui';
+import { Alert, Button, ChoiceGroup, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, RequiredFieldsNote, RequiredMark, Select, Stack } from './ui';
 
 interface ManageGuardiansModalProps {
   isOpen: boolean;
@@ -188,6 +188,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
+            <RequiredFieldsNote />
             <ChoiceGroup>
               <label className="checkbox-label">
                 <Radio
@@ -217,7 +218,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
             {mode === 'existing' ? (
               <div>
-                <FieldLabel htmlFor="guardian-existing">{t('guardians.existingUser')}</FieldLabel>
+                <FieldLabel htmlFor="guardian-existing">{t('guardians.existingUser')}{!isEditMode && <RequiredMark />}</FieldLabel>
                 <Select
                   id="guardian-existing"
                   value={selectedMemberId}
@@ -240,7 +241,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                 {isEditMode && (
                 <Stack gap="sm" className="guardian-edit-fields">
                   <div>
-                    <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}</FieldLabel>
+                    <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}<RequiredMark /></FieldLabel>
                     <Input
                       id="guardian-existing-first-name"
                       type="text"
@@ -251,7 +252,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     />
                   </div>
                   <div>
-                    <FieldLabel htmlFor="guardian-existing-last-name">{t('auth.lastName')}</FieldLabel>
+                    <FieldLabel htmlFor="guardian-existing-last-name">{t('auth.lastName')}<RequiredMark /></FieldLabel>
                     <Input
                       id="guardian-existing-last-name"
                       type="text"
@@ -262,7 +263,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     />
                   </div>
                   <div>
-                    <FieldLabel htmlFor="guardian-existing-email">{t('auth.emailAddress')}</FieldLabel>
+                    <FieldLabel htmlFor="guardian-existing-email">{t('auth.emailAddress')}<RequiredMark /></FieldLabel>
                     <Input
                       id="guardian-existing-email"
                       type="email"
@@ -278,7 +279,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
             ) : (
               <>
                 <div>
-                  <FieldLabel htmlFor="guardian-first-name">{t('auth.firstName')}</FieldLabel>
+                  <FieldLabel htmlFor="guardian-first-name">{t('auth.firstName')}<RequiredMark /></FieldLabel>
                   <Input
                     id="guardian-first-name"
                     type="text"
@@ -289,7 +290,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                   />
                 </div>
                 <div>
-                  <FieldLabel htmlFor="guardian-last-name">{t('auth.lastName')}</FieldLabel>
+                  <FieldLabel htmlFor="guardian-last-name">{t('auth.lastName')}<RequiredMark /></FieldLabel>
                   <Input
                     id="guardian-last-name"
                     type="text"

@@ -17,7 +17,7 @@ export interface TeamCardView {
   averageLevel: number;
   displayLocation: string | undefined;
   displayTime: string;
-  responsiblePeople: Array<TeamAssignee & { isLead: boolean }>;
+  responsiblePeople: TeamAssignee[];
   shirtSet: ShirtSet | null;
   playerRows: TeamCardPlayerRow[];
 }

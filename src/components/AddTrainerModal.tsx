@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Trainer } from '../types';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Stack } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, RequiredFieldsNote, Stack } from './ui';
 
 interface AddTrainerModalProps {
   isOpen: boolean;
@@ -83,7 +83,8 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
-            <Field label={t('auth.firstName')} htmlFor="firstName">
+            <RequiredFieldsNote />
+            <Field label={t('auth.firstName')} htmlFor="firstName" required>
               <Input
                 type="text"
                 id="firstName"
@@ -95,7 +96,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
               />
             </Field>
 
-            <Field label={t('auth.lastName')} htmlFor="lastName">
+            <Field label={t('auth.lastName')} htmlFor="lastName" required>
               <Input
                 type="text"
                 id="lastName"

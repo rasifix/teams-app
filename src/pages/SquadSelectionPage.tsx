@@ -6,10 +6,10 @@ import AddSquadModal from '../components/AddSquadModal';
 import type { CreateSquadRequest } from '../types';
 import {
   Alert,
+  AddCardButton,
   ActionCard,
   ActionCardTitle,
   Button,
-  EmptyState,
   EntityMeta,
   LoadingState,
   PageStateContent,
@@ -94,13 +94,6 @@ export default function SquadSelectionPage() {
           <PanelDescription>{t('squads.selectDescription')}</PanelDescription>
         </PanelHeader>
 
-        <Button
-          onClick={() => setIsAddModalOpen(true)}
-          className="squad-selection-create"
-        >
-          {t('squads.createNew')}
-        </Button>
-
         <Stack gap="sm">
           {squads?.map((squad) => (
             <ActionCard
@@ -116,13 +109,8 @@ export default function SquadSelectionPage() {
                   </EntityMeta>
             </ActionCard>
           ))}
+          <AddCardButton cardSize="lg" onClick={() => setIsAddModalOpen(true)} label={t('squads.createNew')} />
         </Stack>
-
-        {(!squads || squads.length === 0) && (
-          <EmptyState className="squad-selection-empty">
-            <p>{t('squads.noneAvailable')}</p>
-          </EmptyState>
-        )}
       </Panel>
 
       <AddSquadModal

@@ -5,6 +5,8 @@
   },
   "common": {
     "language": "Sprache",
+    "required": "Erforderlich",
+    "requiredFieldsNote": "* Erforderlich",
     "tabs": "Tabs",
     "openMainMenu": "Hauptmenu öffnen",
     "actions": {
@@ -177,8 +179,8 @@
       "strength": "Stärke",
       "startTime": "Startzeit",
       "trainerAssignee": "Trainer / Erziehungsberechtigte",
-      "locationOptional": "Team-Standort (optional)",
-      "responsiblePeople": "Verantwortliche Personen"
+      "locationOptional": "Team-Standort",
+      "responsiblePeople": "Verantwortliche Person"
     },
     "placeholders": {
       "teamName": "Teamname eingeben",
@@ -189,14 +191,12 @@
       "medium": "2 - Mittel 🔥🔥",
       "lowest": "3 - Niedrigste 🔥"
     },
-    "responsiblePeopleHint": "Die zuerst ausgewählte Person ist die Leitung.",
     "filterPlaceholder": "Nach Name filtern",
     "noPersonsFound": "Keine passenden Personen",
     "assigneeSource": {
       "trainer": "Trainer",
       "guardian": "Erziehungsberechtigte"
-    },
-    "leadPerson": "Leitung"
+    }
   },
   "assignShirts": {
     "title": "Trikots dem Team zuweisen",
@@ -233,10 +233,10 @@
     "creating": "Wird erstellt...",
     "fields": {
       "squadName": "Mannschaftsname",
-      "clubOptional": "Verein (optional)",
-      "categoryOptional": "SFV-Kategorie (optional)",
+      "clubOptional": "Verein",
+      "categoryOptional": "SFV-Kategorie",
       "noCategory": "Keine Kategorie",
-      "descriptionOptional": "Beschreibung (optional)"
+      "descriptionOptional": "Beschreibung"
     },
     "categoryHint": "Für D7 bis A wird das offizielle Spielformat automatisch erstellt und als Standard festgelegt.",
     "officialFormatHint": "Offizielles Format: {{format}}, {{min}}–{{max}} Spieler pro Team.",
@@ -258,7 +258,7 @@
     "fields": {
       "birthDate": "Geburtsdatum",
       "level": "Level (1-5)",
-      "preferredShirtNumberOptional": "Bevorzugte Trikotnummer (optional)"
+      "preferredShirtNumberOptional": "Bevorzugte Trikotnummer"
     },
     "placeholders": {
       "firstName": "Vorname eingeben",
@@ -277,7 +277,7 @@
     "addAction": "Trainer hinzufügen",
     "updateAction": "Trainer aktualisieren",
     "fields": {
-      "emailOptional": "E-Mail (optional)"
+      "emailOptional": "E-Mail"
     },
     "placeholders": {
       "firstName": "Vorname eingeben",
@@ -654,7 +654,7 @@
     "selectionLocked": "Die Benutzerauswahl ist während der Bearbeitung gesperrt. Aktualisiere Name- und E-Mail-Felder direkt.",
     "placeholderFirstName": "Vorname eingeben",
     "placeholderLastName": "Nachname eingeben",
-    "emailOptional": "E-Mail (optional)",
+    "emailOptional": "E-Mail",
     "placeholderEmail": "guardian@example.com",
     "documentedHint": "Neue erziehungsberechtigte Personen werden als Mannschaftsmitglieder angelegt und konnen mehreren Kindern zugeordnet werden.",
     "assignAction": "Zuweisen",
@@ -748,6 +748,7 @@
   "teamDetail": {
     "teamNotFound": "Team nicht gefunden",
     "switchTeam": "Team wechseln",
+    "assignToMe": "Mir zuweisen",
     "trainerLabel": "Trainer",
     "assignTrainerTitle": "Trainer zuweisen",
     "shirtSetLabel": "Trikotsatz",
@@ -853,7 +854,7 @@
       "numberOfPeriods": "Anzahl Abschnitte",
       "periodLengthMinutes": "Abschnittslänge (Minuten)",
       "minimumPeriodsPerPlayer": "Mindestanzahl Abschnitte pro Spieler",
-      "playersOnField": "Spieler auf dem Feld (optional)",
+      "playersOnField": "Spieler auf dem Feld",
       "minPlayersPerTeam": "Min. Spieler pro Team",
       "maxPlayersPerTeam": "Max. Spieler pro Team"
     },
@@ -975,7 +976,7 @@
     "editAction": "Anwesenheit bearbeiten",
     "recordTitle": "Anwesenheit erfassen",
     "noSelectedPlayers": "Für dieses Event sind keine Spieler ausgewählt.",
-    "reasonPlaceholder": "Grund (optional)",
+    "reasonPlaceholder": "Grund",
     "notRecorded": "Die Anwesenheit wurde noch nicht erfasst.",
     "title": "Anwesenheit",
     "notStarted": "Die Anwesenheit kann erfasst werden, sobald die Aktivität begonnen hat.",

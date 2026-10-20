@@ -8,7 +8,7 @@ import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from 
 import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEvents } from '../store/selectors/homeSelectors';
 import type { CreateSquadRequest } from '../types';
-import { ActionCard, ActionCardTitle, Alert, Button, ButtonLink, ChevronRightIcon, ContentGrid, EmptyState, EntityMeta, IconTile, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, SectionActions, SectionEyebrow, SectionHeader, SectionHeaderContent, SectionTitle, Stack, StatusMarker } from '../components/ui';
+import { AddCardButton, ActionCard, ActionCardTitle, Alert, ButtonLink, ChevronRightIcon, ContentGrid, EmptyState, EntityMeta, IconTile, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, SectionActions, SectionEyebrow, SectionHeader, SectionHeaderContent, SectionTitle, Stack, StatusMarker } from '../components/ui';
 
 const featureIcons = [
   <svg key="members" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -22,6 +22,10 @@ const featureIcons = [
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 20V10m6 10V4m6 16v-7m4 7H2" />
   </svg>,
 ];
+
+function GroupIcon() {
+  return <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 19a5 5 0 0 1 10 0M13 19a4 4 0 0 1 8 0" /></svg>;
+}
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -141,11 +145,6 @@ export default function HomePage() {
                 <SectionEyebrow>{t('home.manageLabel')}</SectionEyebrow>
                 <SectionTitle>{t('squads.title')}</SectionTitle>
               </SectionHeaderContent>
-              <SectionActions>
-              <Button type="button" variant="secondary" onClick={() => setIsAddModalOpen(true)}>
-                <span aria-hidden="true">+</span> {t('squads.createNew')}
-              </Button>
-              </SectionActions>
             </SectionHeader>
 
             {squadsLoading && <div className="home-loading-card">{t('squads.loading')}</div>}
@@ -162,7 +161,7 @@ export default function HomePage() {
                       key={squadItem.id}
                       selected={isCurrentSquad}
                       showChevron={false}
-                      leading={<IconTile tone="brand" size="sm"><svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM16.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM2.5 19a5 5 0 0 1 10 0M13 19a4 4 0 0 1 8 0" /></svg></IconTile>}
+                      leading={<IconTile tone="brand" size="sm"><GroupIcon /></IconTile>}
                       trailing={isCurrentSquad ? <StatusMarker tone="brand" aria-hidden="true">✓</StatusMarker> : undefined}
                     >
                         <ActionCardTitle>{squadItem.name}</ActionCardTitle>
@@ -174,6 +173,7 @@ export default function HomePage() {
                     </ActionCard>
                   );
                 })}
+                <AddCardButton cardSize="lg" leading={<GroupIcon />} onClick={() => setIsAddModalOpen(true)} label={t('squads.createNew')} />
               </Stack>
             )}
           </section>

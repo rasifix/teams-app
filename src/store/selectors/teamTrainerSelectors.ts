@@ -9,6 +9,11 @@ export interface TeamAssignee {
   source: TeamAssigneeSource;
 }
 
+interface AuthenticatedTrainerIdentity {
+  id: string;
+  email?: string;
+}
+
 function toComparableName(value: string | undefined): string {
   return (value || '').trim().toLowerCase();
 }
@@ -66,12 +71,27 @@ export function selectTeamResponsiblePeople(
   responsiblePersonIds: string[] | undefined,
   trainers: Trainer[],
   players: Player[] = []
-): Array<TeamAssignee & { isLead: boolean }> {
+): TeamAssignee[] {
   const members = selectTeamAssigneeMap(trainers, players);
   return (responsiblePersonIds ?? []).flatMap((id) => {
     const member = members.get(id);
     return member ? [member] : [];
-  }).map((member, index) => ({ ...member, isLead: index === 0 }));
+  }).slice(0, 1);
+}
+
+export function selectTrainerForUser(
+  user: AuthenticatedTrainerIdentity | null | undefined,
+  trainers: Trainer[],
+): Trainer | null {
+  if (!user) return null;
+
+  const idMatch = trainers.find((trainer) => trainer.id === user.id);
+  if (idMatch) return idMatch;
+
+  const email = toComparableName(user.email);
+  return email
+    ? trainers.find((trainer) => toComparableName(trainer.email) === email) ?? null
+    : null;
 }
 
 // Compatibility names used while older call sites are migrated.

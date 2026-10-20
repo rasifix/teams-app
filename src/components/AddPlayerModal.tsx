@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player, PlayerStatus } from '../types';
-import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
+import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, RequiredFieldsNote, Select, Stack } from './ui';
 
 interface AddPlayerModalProps {
   isOpen: boolean;
@@ -101,7 +101,8 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
-            <Field label={t('auth.firstName')} htmlFor="firstName">
+            <RequiredFieldsNote />
+            <Field label={t('auth.firstName')} htmlFor="firstName" required>
               <Input
                 type="text"
                 id="firstName"
@@ -114,7 +115,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
               />
             </Field>
 
-            <Field label={t('auth.lastName')} htmlFor="lastName">
+            <Field label={t('auth.lastName')} htmlFor="lastName" required>
               <Input
                 type="text"
                 id="lastName"
@@ -127,7 +128,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
               />
             </Field>
 
-            <Field label={t('playerModal.fields.birthDate')} htmlFor="birthDate">
+            <Field label={t('playerModal.fields.birthDate')} htmlFor="birthDate" required>
               <Input
                 type="date"
                 id="birthDate"

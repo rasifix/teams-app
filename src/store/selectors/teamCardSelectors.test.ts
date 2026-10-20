@@ -37,7 +37,7 @@ describe('selectTeamCardView', () => {
     expect(result.averageLevel).toBe(3);
     expect(result.displayLocation).toBe('Main field');
     expect(result.displayTime).toBe('10:30');
-    expect(result.responsiblePeople[0]).toMatchObject({ id: trainer.id, isLead: true });
+    expect(result.responsiblePeople[0]).toMatchObject({ id: trainer.id });
     expect(result.shirtSet).toBe(shirtSet);
     expect(result.playerRows.map((row) => row.playerId)).toEqual([ben.id, ada.id]);
     expect(result.playerRows[0].hasInactiveFutureEvent).toBe(true);

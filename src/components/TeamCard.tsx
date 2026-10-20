@@ -121,7 +121,7 @@ export default function TeamCard({
               {view.displayLocation && <MetadataItem>📍 {view.displayLocation}</MetadataItem>}
               {view.responsiblePeople.length > 0 && (
                 <MetadataItem className="team-card-responsible">
-                  👤 {view.responsiblePeople.map((person) => `${person.firstName} ${person.lastName}${person.isLead ? ` (${t('teamModal.leadPerson')})` : ''}`).join(', ')}
+                  👤 {view.responsiblePeople.map((person) => `${person.firstName} ${person.lastName}`).join(', ')}
                 </MetadataItem>
               )}
               {view.shirtSet && (

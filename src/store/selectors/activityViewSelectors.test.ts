@@ -42,7 +42,7 @@ describe('activity view selectors', () => {
           location: 'Field 2',
           strength: 1,
           selectedPlayerCount: 1,
-          responsiblePeople: [{ id: 'trainer-1', firstName: 'Sam', lastName: 'Coach', isLead: true }],
+          responsiblePeople: [{ id: 'trainer-1', firstName: 'Sam', lastName: 'Coach' }],
         },
         {
           id: 'team-2',

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useShirtSets } from "../hooks/useShirtSets";
-import { Alert, Button, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from "../components/ui";
+import { AddCardButton, Alert, EmptyState, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, ShirtIcon, Stack } from "../components/ui";
 import AddShirtSetModal from "../components/AddShirtSetModal";
 import EditShirtSetModal from "../components/EditShirtSetModal";
 import AddShirtModal from "../components/AddShirtModal";
@@ -106,11 +106,6 @@ export default function ShirtSetsPage() {
           <PageTitle>{t('shirts.titleWithCount', { count: shirtSets.length })}</PageTitle>
           <PageDescription>{t('shirts.subtitle')}</PageDescription>
         </PageHeaderContent>
-        <PageActions>
-        <Button variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
-          {t('common.actions.add')}
-        </Button>
-        </PageActions>
       </PageHeader>
 
       {error && (
@@ -119,27 +114,22 @@ export default function ShirtSetsPage() {
         </Alert>
       )}
 
-      {shirtSets.length === 0 ? (
-        <EmptyState>
-          <p>{t('shirts.emptyState')}</p>
-        </EmptyState>
-      ) : (
-        <Stack gap="sm">
-          {shirtSets.map((shirtSet) => (
-            <ShirtSetCard
-              key={shirtSet.id}
-              shirtSet={shirtSet}
-              isExpanded={expandedSets.has(shirtSet.id)}
-              onToggleExpanded={() => toggleExpanded(shirtSet.id)}
-              onEdit={() => setEditingShirtSet(shirtSet)}
-              onDelete={() => setDeletingShirtSet(shirtSet)}
-              onAddShirt={() => setAddingShirtToSet(shirtSet.id)}
-              onEditShirt={(shirt) => setEditingShirt({ shirtSetId: shirtSet.id, shirt })}
-              onRemoveShirt={(shirtId, shirtNumber) => handleRemoveShirt(shirtSet.id, shirtId, shirtNumber)}
-            />
-          ))}
-        </Stack>
-      )}
+      <Stack gap="sm">
+        {shirtSets.map((shirtSet) => (
+          <ShirtSetCard
+            key={shirtSet.id}
+            shirtSet={shirtSet}
+            isExpanded={expandedSets.has(shirtSet.id)}
+            onToggleExpanded={() => toggleExpanded(shirtSet.id)}
+            onEdit={() => setEditingShirtSet(shirtSet)}
+            onDelete={() => setDeletingShirtSet(shirtSet)}
+            onAddShirt={() => setAddingShirtToSet(shirtSet.id)}
+            onEditShirt={(shirt) => setEditingShirt({ shirtSetId: shirtSet.id, shirt })}
+            onRemoveShirt={(shirtId, shirtNumber) => handleRemoveShirt(shirtSet.id, shirtId, shirtNumber)}
+          />
+        ))}
+        <AddCardButton cardSize="md" leading={<ShirtIcon className="icon-sm" />} onClick={() => setIsAddModalOpen(true)} label={t('shirtSetModal.addTitle')} />
+      </Stack>
 
       {/* Add Shirt Set Modal */}
       {isAddModalOpen && (

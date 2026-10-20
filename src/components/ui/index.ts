@@ -1,11 +1,13 @@
 // Central export for all UI components
 export { default as Button } from './Button';
 export type { ButtonProps } from './Button';
+export { default as AddCardButton } from './AddCardButton';
 export { getButtonClassName } from './buttonStyles';
 export type { ButtonSize, ButtonVariant } from './buttonStyles';
 export { default as IconButton } from './IconButton';
 export { default as Switch } from './Switch';
 export { default as ChevronRightIcon } from './icons/ChevronRightIcon';
+export { default as ShirtIcon } from './icons/ShirtIcon';
 export { ButtonAnchor, ButtonLink } from './ButtonLink';
 export type { ButtonAnchorProps, ButtonLinkProps } from './ButtonLink';
 export { Badge } from './Badge';
@@ -13,7 +15,7 @@ export type { BadgeProps, BadgeTone } from './Badge';
 export { Alert, EmptyState, FloatingStatus, PageState, PageStateContent, StateActions, StateDescription, StateDetails, StateDetailsContent, StateDetailsSummary, StateIcon, StateTitle } from './Feedback';
 export type { StateIconProps } from './Feedback';
 export type { AlertProps, AlertTone } from './Feedback';
-export { Checkbox, ColorInput, Field, FieldLabel, FieldLegend, Input, Radio, Select, Textarea } from './Field';
+export { Checkbox, ColorInput, Field, FieldLabel, FieldLegend, Input, Radio, RequiredFieldsNote, RequiredMark, Select, Textarea } from './Field';
 export { Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from './Page';
 export { Panel, PanelActions, PanelBody, PanelDescription, PanelHeader, PanelTitle } from './Panel';
 export type { PanelBodyProps } from './Panel';

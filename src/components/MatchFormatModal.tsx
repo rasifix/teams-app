@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MatchFormat } from '../types';
-import { Alert, Button, ContentGrid, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Stack } from './ui';
+import { Alert, Button, ContentGrid, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, RequiredFieldsNote, Stack } from './ui';
 
 export interface MatchFormatFormData {
   name: string;
@@ -119,6 +119,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
         </ModalHeader>
         <ModalBody>
           <Stack>
+            <RequiredFieldsNote />
             {error && <Alert>{error}</Alert>}
 
             {isOfficial && (
@@ -127,7 +128,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               </Alert>
             )}
 
-            <Field label={t('matchFormatModal.fields.name')} htmlFor="playing-mode-name">
+            <Field label={t('matchFormatModal.fields.name')} htmlFor="playing-mode-name" required>
               <Input
                 id="playing-mode-name"
                 type="text"
@@ -138,7 +139,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.numberOfPeriods')} htmlFor="playing-mode-periods">
+            <Field label={t('matchFormatModal.fields.numberOfPeriods')} htmlFor="playing-mode-periods" required>
               <Input
                 id="playing-mode-periods"
                 type="number"
@@ -148,7 +149,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.periodLengthMinutes')} htmlFor="playing-mode-length">
+            <Field label={t('matchFormatModal.fields.periodLengthMinutes')} htmlFor="playing-mode-length" required>
               <Input
                 id="playing-mode-length"
                 type="number"
@@ -158,7 +159,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.minimumPeriodsPerPlayer')} htmlFor="playing-mode-minimum-periods" hint={t('matchFormatModal.hints.minimumPeriodsPerPlayer')}>
+            <Field label={t('matchFormatModal.fields.minimumPeriodsPerPlayer')} htmlFor="playing-mode-minimum-periods" hint={t('matchFormatModal.hints.minimumPeriodsPerPlayer')} required>
               <Input
                 id="playing-mode-minimum-periods"
                 type="number"

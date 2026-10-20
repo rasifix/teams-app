@@ -144,7 +144,7 @@ export interface Team {
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
   selectionRemovals?: SelectionRemoval[]; // Audit trail for players removed after the selection was sent
-  responsiblePersonIds?: string[]; // Members responsible for the team (trainers or guardians, one or more; players are never responsible)
+  responsiblePersonIds?: string[]; // At most one trainer or guardian responsible for the team; players are never responsible
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
   formationId?: string | null; // only settable while the Event has a matchFormatId; fixed for the whole match

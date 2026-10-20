@@ -357,7 +357,9 @@
 .event-detail-empty-roster { padding-block: var(--space-2); color: var(--color-text-subtle); font-size: var(--font-size-sm); }
 .event-detail-navigation-button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .event-detail-opponent { margin-top: var(--space-2); color: var(--color-text); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
-.event-detail-panel-actions { flex-wrap: wrap; justify-content: flex-end; }
+.event-detail-content-grid > * { min-width: 0; }
+.event-detail-panel-header { flex-direction: column; align-items: flex-start; }
+.event-detail-panel-actions { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
 .event-detail-selection-alert { margin-bottom: var(--space-4); }
 
 /* Team print summary */
@@ -394,6 +396,8 @@
   .app-brand-tagline { display: block; }
   .event-detail-team-header { padding: var(--space-5); }
   .event-detail-roster { padding-inline: var(--space-5); }
+  .event-detail-panel-header { flex-direction: row; align-items: center; }
+  .event-detail-panel-actions { width: auto; justify-content: flex-end; }
   .event-card-main { padding: var(--space-4); }
   .event-card-pending { display: inline; }
   .shirt-set-header,

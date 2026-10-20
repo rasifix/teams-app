@@ -184,9 +184,9 @@ export default function EventDetailPage() {
         </PageActions>
     </PageHeader>
 
-    <ContentGrid variant="equal">
+    <ContentGrid variant="equal" className="event-detail-content-grid">
       <Panel>
-        <PanelHeader>
+        <PanelHeader className="event-detail-panel-header">
           <PanelTitle>{t('eventDetail.teamsTitle')}</PanelTitle>
           <PanelActions className="event-detail-panel-actions">
             {activity.teams.length > 0 && <Button type="button" variant="secondary" size="sm" onClick={() => setIsPrintSummaryOpen(true)}>{t('eventDetail.printTeams')}</Button>}

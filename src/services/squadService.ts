@@ -85,6 +85,15 @@ export async function unlinkSquadFromSpond(squadId: string, name: string): Promi
   return normalizeSquad(squad);
 }
 
+export async function linkSquadToSpond(squadId: string, name: string, spondId: string): Promise<Squad> {
+  const squad = await apiClient.request<Squad>(apiClient.getSquadEndpoint(squadId), {
+    method: 'PUT',
+    body: JSON.stringify({ name, spondId }),
+  });
+
+  return normalizeSquad(squad);
+}
+
 export async function setMatchPlanningEnabled(squadId: string, matchPlanningEnabled: boolean): Promise<Squad> {
   const squad = await apiClient.request<Squad>(apiClient.getSquadEndpoint(squadId), {
     method: 'PUT',

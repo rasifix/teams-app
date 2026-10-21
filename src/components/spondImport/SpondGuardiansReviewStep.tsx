@@ -7,12 +7,14 @@ interface SpondGuardiansReviewStepProps {
   rows: SpondGuardianRow[];
   onBack: () => void;
   onNext: () => void;
+  showActions?: boolean;
 }
 
 export default function SpondGuardiansReviewStep({
   rows,
   onBack,
   onNext,
+  showActions = true,
 }: SpondGuardiansReviewStepProps) {
   const { t } = useTranslation();
 
@@ -45,7 +47,7 @@ export default function SpondGuardiansReviewStep({
           </EntityRow>
         ))}
       </EntityList>
-      <SpondWizardActions back={onBack} next={onNext} />
+      {showActions && <SpondWizardActions back={onBack} next={onNext} />}
     </>
   );
 }

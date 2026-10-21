@@ -22,6 +22,7 @@ interface SpondEventsReviewStepProps {
   onDraftChange: (id: string, update: Partial<SpondActivityDraft>) => void;
   onBack: () => void;
   onNext: () => void;
+  showActions?: boolean;
 }
 
 export default function SpondEventsReviewStep({
@@ -36,6 +37,7 @@ export default function SpondEventsReviewStep({
   onDraftChange,
   onBack,
   onNext,
+  showActions = true,
 }: SpondEventsReviewStepProps) {
   const { t, i18n } = useTranslation();
 
@@ -63,7 +65,7 @@ export default function SpondEventsReviewStep({
       </Split>
       {rows.length === 0 ? (
         <EmptyState>
-          {t('spondSync.wizard.noEventsToSync')}
+          {t('spondSync.wizard.noChanges')}
         </EmptyState>
       ) : (
         <Stack gap="sm">
@@ -150,11 +152,11 @@ export default function SpondEventsReviewStep({
           })}
         </Stack>
       )}
-      <SpondWizardActions
-        back={onBack}
-        next={onNext}
-        nextDisabled={Object.keys(issues).length > 0}
-      />
+      {showActions && <SpondWizardActions
+          back={onBack}
+          next={onNext}
+          nextDisabled={Object.keys(issues).length > 0}
+        />}
     </>
   );
 }

@@ -21,7 +21,8 @@
       "selectNone": "Select none",
       "deselectAll": "Deselect all",
       "clear": "Clear",
-      "save": "Save"
+      "save": "Save",
+      "done": "Done"
     },
     "errors": {
       "errorWithMessage": "Error: {{message}}",
@@ -1089,6 +1090,10 @@
       "steps": {
         "credentials": "Enter credentials",
         "group": "Select group",
+        "diff": "Review changes",
+        "results": "Synchronization complete",
+        "linked": "Group linked",
+        "noChanges": "Nothing to import",
         "types": "Choose import types",
         "period": "Choose sync period",
         "playerImport": "Load Spond players",
@@ -1097,6 +1102,14 @@
         "events": "Review activities",
         "summary": "Review import",
         "done": "Import complete"
+      },
+      "linkedHelp": "The Spond group is linked. Member and activity synchronization is a separate action from the Members and Activities pages.",
+      "resultsHelp": "The synchronization finished successfully.",
+      "nothingToImport": "There is nothing new or changed to import.",
+      "results": {
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "linked": "Linked: {{count}}"
       },
       "importTypes": {
         "players": "Players",

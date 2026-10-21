@@ -30,6 +30,7 @@ export { Cluster, ContentGrid, Split, Stack } from './Layout';
 export type { ContentGridProps } from './Layout';
 export { SectionActions, SectionDescription, SectionEyebrow, SectionHeader, SectionHeaderContent, SectionTitle } from './Section';
 export { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, DataTableSortButton, EntityActions, EntityContent, EntityLeading, EntityList, EntityMeta, EntityRow, EntityTitle, MetadataItem, MetadataList, PropertyAction, PropertyActions, PropertyLabel, PropertyList, PropertyRow, PropertyValue, ResponsiveView, StickyMatrix } from './DataDisplay';
+export { default as SwipeableEntityRow } from './SwipeableEntityRow';
 export type { DataTableCellProps, DataTableHeaderCellProps, DataTableProps, DataTableRowProps, DataTableSortButtonProps, EntityListProps, EntityRowProps, PropertyValueProps, ResponsiveViewProps } from './DataDisplay';
 export { ActionDock, ActionDockContent, AdjacentNavigation, AdjacentNavigationLabel, ChoiceCard, ChoiceGroup, IconTile, Legend, LegendItem, StatusMarker } from './Decorators';
 export type { ChoiceCardProps } from './Decorators';

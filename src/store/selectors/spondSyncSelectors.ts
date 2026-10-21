@@ -22,7 +22,7 @@ const isPlayerMember = (member: SpondMemberSnapshot): boolean => {
 };
 
 export type SpondReviewStep = 'players' | 'guardians' | 'events';
-export type SpondWizardStep = 'credentials' | 'group' | 'types' | SpondReviewStep | 'summary';
+export type SpondWizardStep = 'credentials' | 'group' | 'diff' | 'results' | 'linked';
 
 export function selectSpondLinkedGroup(
   groups: SpondGroupSnapshot[],
@@ -37,10 +37,9 @@ export function selectSpondLinkedGroup(
 }
 
 export function selectSpondWizardProgressSteps(
-  reviewSteps: SpondReviewStep[],
-  includeGroupSelection: boolean,
+  mode: 'link' | 'players' | 'events',
 ): SpondWizardStep[] {
-  return ['credentials', ...(includeGroupSelection ? ['group'] as const : []), 'types', ...reviewSteps, 'summary'];
+  return mode === 'link' ? ['credentials', 'group', 'linked'] : ['credentials', 'diff', 'results'];
 }
 
 export function selectSpondReviewSteps(types: SpondReviewStep[]): SpondReviewStep[] {

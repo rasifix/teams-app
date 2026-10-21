@@ -1,27 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, Card, CardBody, CardTitle, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
+import { Alert, Button, Card, CardBody, CardTitle, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
 import {
   SpondCredentialsStep,
   SpondGroupStep,
-  SpondImportTypesStep,
 } from '../components/spondImport/SpondConnectionSteps';
 import SpondEventsReviewStep from '../components/spondImport/SpondEventsReviewStep';
 import SpondGuardiansReviewStep from '../components/spondImport/SpondGuardiansReviewStep';
-import SpondImportSummaryStep from '../components/spondImport/SpondImportSummaryStep';
 import SpondPlayersReviewStep from '../components/spondImport/SpondPlayersReviewStep';
-import type { SpondImportType } from '../components/spondImport/types';
 import type { SpondSyncResult } from '../components/SpondSyncResultBanner';
 import { useAuth } from '../hooks/useAuth';
 import { createSpondReadClient, importSpondSnapshot } from '../services/spondService';
-import { useActivities, usePlayers, useSfvCatalog, useSquad, useSquadPeriods, useStore, useTrainers } from '../store';
+import { linkSquadToSpond } from '../services/squadService';
+import { useActivities, usePlayers, useSfvCatalog, useSquad, useStore, useTrainers } from '../store';
 import {
   selectInitialSpondActivityDrafts,
   selectInitialSpondGuardianSelection,
   selectInitialSpondMemberDrafts,
   selectFilteredSpondEventRows,
-  selectNextSpondReviewStep,
   selectSpondActionableEventRows,
   selectSpondActionableGuardianRows,
   selectSpondActionableMemberRows,
@@ -32,12 +29,9 @@ import {
   selectSpondDecisionSummary,
   selectSpondEventRows,
   selectSpondGuardianRows,
-  selectSpondImportPreview,
   selectSpondMemberRows,
   selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
-  selectSpondReviewSteps,
-  selectSpondSyncRange,
   selectSpondWizardProgressSteps,
   type SpondActivityDraft,
   type SpondEventFilter,
@@ -48,9 +42,7 @@ import type { SpondGroupSnapshot, SpondSnapshot } from '../types/spond';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { localDateStartToUtcISOString } from '../utils/dateFormatter';
 
-type ImportType = SpondImportType;
-type BaseStep = 'credentials' | 'group' | 'types' | 'summary';
-type Step = BaseStep | ImportType;
+type Step = 'credentials' | 'group' | 'diff' | 'results' | 'linked';
 
 const isoDate = (date: Date): string => date.toISOString().slice(0, 10);
 const shiftedDate = (days: number): string => {
@@ -70,7 +62,6 @@ export default function SpondImportPage() {
   const { user } = useAuth();
   const squad = useSquad();
   const sfvCatalog = useSfvCatalog();
-  const periods = useSquadPeriods();
   const { players, addGuardianToPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const { activities, updateActivity: updateActivityRecord } = useActivities();
@@ -82,11 +73,9 @@ export default function SpondImportPage() {
   const [groups, setGroups] = useState<SpondGroupSnapshot[]>([]);
   const [groupId, setGroupId] = useState(squad?.spondId ?? '');
   const [selectedSubGroupId, setSelectedSubGroupId] = useState('');
-  const [subGroupSelectionLocked, setSubGroupSelectionLocked] = useState(false);
-  const [types, setTypes] = useState<ImportType[]>(isEventOnly ? ['events'] : isPlayerOnly ? ['players', 'guardians'] : ['players', 'guardians', 'events']);
-  const [periodId, setPeriodId] = useState('');
-  const [from, setFrom] = useState(shiftedDate(-30));
-  const [to, setTo] = useState(shiftedDate(180));
+  const types = isEventOnly ? ['events'] : ['players', 'guardians'];
+  const from = shiftedDate(-30);
+  const to = shiftedDate(180);
   const [snapshot, setSnapshot] = useState<SpondSnapshot | null>(null);
   const [memberDrafts, setMemberDrafts] = useState<Record<string, SpondMemberDraft>>({});
   const [activityDrafts, setActivityDrafts] = useState<Record<string, SpondActivityDraft>>({});
@@ -94,6 +83,8 @@ export default function SpondImportPage() {
   const [guardianSelection, setGuardianSelection] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncResult, setSyncResult] = useState<SpondSyncResult | null>(null);
+  const [noChanges, setNoChanges] = useState(false);
 
   useEffect(() => () => {
     clientRef.current?.dispose();
@@ -119,8 +110,9 @@ export default function SpondImportPage() {
   );
   const dateRangeError = selectSpondDateRangeError(from, to);
   const canImport = Boolean(squad && canAccessRestrictedManagement(user, { squad, trainers }));
-  const reviewSteps = selectSpondReviewSteps(types);
-  const progressSteps = selectSpondWizardProgressSteps(reviewSteps, !isScopedSync) as Step[];
+  const progressSteps = selectSpondWizardProgressSteps(
+    !isScopedSync ? 'link' : isPlayerOnly ? 'players' : 'events',
+  ) as Step[];
   const defaultActivityLimits = selectDefaultActivityLimitsForCategory(sfvCatalog, squad?.category);
 
   if (!squad) return <Navigate to="/squads" replace />;
@@ -136,8 +128,7 @@ export default function SpondImportPage() {
 
   const selectGroup = (nextGroupId: string) => {
     setGroupId(nextGroupId);
-    setSelectedSubGroupId(groups.find((group) => group.id === nextGroupId)?.subGroups?.[0]?.id ?? '');
-    setSubGroupSelectionLocked(false);
+    setSelectedSubGroupId('');
   };
 
   const loadSnapshot = async (groupIdOverride?: string, selectedSubGroupIdOverride?: string) => {
@@ -161,12 +152,17 @@ export default function SpondImportPage() {
       setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
       setGuardianSelection(selectInitialSpondGuardianSelection(nextGuardianRows));
       setPassword('');
-      const firstReviewStep = reviewSteps.find((reviewStep) => (
-        reviewStep === 'players' ? nextMemberRows.length > 0
-          : reviewStep === 'guardians' ? nextGuardianRows.length > 0
-            : nextEventRows.length > 0
-      ));
-      setStep(firstReviewStep ?? 'summary');
+      const hasChanges = isPlayerOnly
+        ? nextMemberRows.length > 0 || nextGuardianRows.length > 0
+        : nextEventRows.length > 0;
+      if (!hasChanges) {
+        setSyncResult(null);
+        setNoChanges(true);
+        setStep('results');
+      } else {
+        setNoChanges(false);
+        setStep('diff');
+      }
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
@@ -192,12 +188,7 @@ export default function SpondImportPage() {
         }
         setGroupId(linkedGroup.groupId);
         setSelectedSubGroupId(linkedGroup.subGroupId ?? '');
-        setSubGroupSelectionLocked(Boolean(linkedGroup.subGroupId));
-        if (isPlayerOnly) {
-          await loadSnapshot(linkedGroup.groupId, linkedGroup.subGroupId ?? '');
-        } else {
-          setStep('types');
-        }
+        await loadSnapshot(linkedGroup.groupId, linkedGroup.subGroupId ?? '');
         return;
       }
       const preferred = selectSpondLinkedGroup(available, squad.spondId)?.groupId
@@ -206,14 +197,12 @@ export default function SpondImportPage() {
         setGroupId(preferred);
         const linkedGroup = selectSpondLinkedGroup(available, squad.spondId);
         setSelectedSubGroupId(linkedGroup?.subGroupId ?? '');
-        setSubGroupSelectionLocked(Boolean(linkedGroup?.subGroupId));
       }
       else {
         setGroupId('');
         setSelectedSubGroupId('');
-        setSubGroupSelectionLocked(false);
       }
-      setStep(available.length === 1 ? 'types' : 'group');
+      setStep('group');
     } catch (caught) {
       client.dispose();
       clientRef.current = null;
@@ -230,13 +219,6 @@ export default function SpondImportPage() {
     setActivityDrafts((current) => ({ ...current, [id]: { ...current[id], ...update } }));
   };
 
-  const selectPeriod = (nextPeriodId: string) => {
-    setPeriodId(nextPeriodId);
-    const range = selectSpondSyncRange(periods, nextPeriodId, { from, to });
-    setFrom(range.from);
-    setTo(range.to);
-  };
-
   const setVisibleEventSelection = (selected: boolean) => {
     setActivityDrafts((current) => selectSpondActivityDraftsWithSelection(current, visibleEventRows, selected));
   };
@@ -245,28 +227,9 @@ export default function SpondImportPage() {
     setMemberDrafts((current) => selectSpondMemberDraftsWithSelection(current, memberRows, selected));
   };
 
-  const toggleImportType = (type: Exclude<ImportType, 'guardians'>) => {
-    setTypes((current) => {
-      if (type === 'players') {
-        return current.includes('players')
-          ? current.filter((item) => item !== 'players' && item !== 'guardians')
-          : [...current, 'players', 'guardians'];
-      }
-      return current.includes(type) ? current.filter((item) => item !== type) : [...current, type];
-    });
-  };
-
-  const nextReviewStep = () => {
-    setStep(selectNextSpondReviewStep(reviewSteps, step as ImportType));
-  };
   const previousStep = () => {
     if (step === 'group') setStep('credentials');
-    else if (step === 'types') setStep(isScopedSync || groups.length === 1 ? 'credentials' : 'group');
-    else if (step === 'summary') setStep(reviewSteps.at(-1) ?? 'types');
-    else {
-      const index = reviewSteps.indexOf(step as ImportType);
-      setStep(index > 0 ? reviewSteps[index - 1] : 'types');
-    }
+    else if (step === 'diff') setStep('credentials');
   };
 
   const memberDecisions = selectSpondMemberDecisions(
@@ -282,8 +245,6 @@ export default function SpondImportPage() {
     types.includes('events'),
   );
   const decisionSummary = selectSpondDecisionSummary(memberRows, eventRows, memberDecisions, activityDecisions);
-  const importPreview = selectSpondImportPreview(memberRows, guardianRows, eventRows, memberDecisions, activityDecisions);
-
   const apply = async () => {
     if (!snapshot || !decisionSummary.isReady) return;
     setBusy(true);
@@ -339,7 +300,8 @@ export default function SpondImportPage() {
         updated: imported.updated,
         linked: imported.linked,
       };
-      navigate(closePath, { replace: true, state: { spondSyncResult: syncResult } });
+      setSyncResult(syncResult);
+      setStep('results');
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
@@ -347,8 +309,25 @@ export default function SpondImportPage() {
     }
   };
 
-  const stepTitle = step === "types"
-    ? t(isEventOnly ? "spondSync.wizard.steps.period" : isPlayerOnly ? "spondSync.wizard.steps.playerImport" : "spondSync.wizard.steps.types")
+  const linkGroup = async () => {
+    if (!groupId || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await linkSquadToSpond(squad.id, squad.name, selectedSubGroupId || groupId);
+      await initializeApp();
+      clientRef.current?.dispose();
+      clientRef.current = null;
+      setStep('linked');
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const stepTitle = noChanges && step === 'results'
+    ? t('spondSync.wizard.steps.noChanges')
     : t(`spondSync.wizard.steps.${step}`);
 
   return (
@@ -393,46 +372,36 @@ export default function SpondImportPage() {
               groupId={groupId}
               onGroupChange={selectGroup}
               onBack={previousStep}
-              onNext={() => setStep("types")}
+              onNext={() => void linkGroup()}
             />
           )}
-          {step === "types" && (
-            <SpondImportTypesStep
-              scope={isEventOnly ? "events" : isPlayerOnly ? "players" : "all"}
-              groups={groups}
-              groupId={groupId}
-              selectedSubGroupId={selectedSubGroupId}
-              subGroupSelectionLocked={subGroupSelectionLocked}
-              onSubGroupSelectionChange={setSelectedSubGroupId}
-              types={types}
-              periods={periods}
-              periodId={periodId}
-              from={from}
-              to={to}
-              dateRangeError={dateRangeError}
-              busy={busy}
-              onToggleType={toggleImportType}
-              onPeriodChange={selectPeriod}
-              onFromChange={(date) => { setPeriodId(""); setFrom(date); }}
-              onToChange={(date) => { setPeriodId(""); setTo(date); }}
-              onBack={previousStep}
-              onNext={() => void loadSnapshot()}
-            />
+          {step === "diff" && isPlayerOnly && (
+            <Stack gap="lg">
+              {memberRows.length === 0 && guardianRows.length === 0 ? (
+                <EmptyState>{t('spondSync.wizard.noChanges')}</EmptyState>
+              ) : (
+                <>
+                  <SpondPlayersReviewStep
+                    rows={memberRows}
+                    drafts={memberDrafts}
+                    players={players}
+                    issues={decisionSummary.memberIssues}
+                    onSelectAll={() => setPlayerSelection(true)}
+                    onSelectNone={() => setPlayerSelection(false)}
+                    onDraftChange={updateMember}
+                    onBack={previousStep}
+                    onNext={() => void apply()}
+                    showActions={false}
+                  />
+                  <SpondGuardiansReviewStep rows={guardianRows} onBack={() => undefined} onNext={() => undefined} showActions={false} />
+                </>
+              )}
+              <Button disabled={busy || !decisionSummary.isReady} onClick={() => void apply()}>
+                {busy ? t('common.states.processing') : t('spondSync.apply')}
+              </Button>
+            </Stack>
           )}
-          {step === "players" && (
-            <SpondPlayersReviewStep
-              rows={memberRows}
-              drafts={memberDrafts}
-              players={players}
-              issues={decisionSummary.memberIssues}
-              onSelectAll={() => setPlayerSelection(true)}
-              onSelectNone={() => setPlayerSelection(false)}
-              onDraftChange={updateMember}
-              onBack={previousStep}
-              onNext={nextReviewStep}
-            />
-          )}
-          {step === "events" && (
+          {step === "diff" && isEventOnly && (
             <SpondEventsReviewStep
               rows={visibleEventRows}
               drafts={activityDrafts}
@@ -444,24 +413,28 @@ export default function SpondImportPage() {
               onSelectNone={() => setVisibleEventSelection(false)}
               onDraftChange={updateActivity}
               onBack={previousStep}
-              onNext={nextReviewStep}
+              onNext={() => void apply()}
             />
           )}
-          {step === "guardians" && (
-            <SpondGuardiansReviewStep
-              rows={guardianRows}
-              onBack={previousStep}
-              onNext={nextReviewStep}
-            />
+          {step === "linked" && (
+            <>
+              <p className="body-muted">{t('spondSync.wizard.linkedHelp')}</p>
+              <Button onClick={() => navigate(closePath, { replace: true })}>{t('common.actions.done')}</Button>
+            </>
           )}
-          {step === "summary" && (
-            <SpondImportSummaryStep
-              items={importPreview}
-              decisionSummary={decisionSummary}
-              busy={busy}
-              onBack={previousStep}
-              onApply={() => void apply()}
-            />
+          {step === "results" && noChanges && (
+            <EmptyState>{t('spondSync.wizard.nothingToImport')}</EmptyState>
+          )}
+          {step === "results" && !noChanges && syncResult && (
+            <>
+              <p className="body-muted">{t('spondSync.wizard.resultsHelp')}</p>
+              <Stack gap="sm">
+                <p>{t('spondSync.wizard.results.created', { count: syncResult.created })}</p>
+                <p>{t('spondSync.wizard.results.updated', { count: syncResult.updated })}</p>
+                <p>{t('spondSync.wizard.results.linked', { count: syncResult.linked })}</p>
+              </Stack>
+              <Button onClick={() => navigate(closePath, { replace: true, state: { spondSyncResult: syncResult } })}>{t('common.actions.done')}</Button>
+            </>
           )}
           </Stack>
         </CardBody>

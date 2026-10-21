@@ -21,7 +21,8 @@
       "selectNone": "Keine auswählen",
       "deselectAll": "Auswahl aufheben",
       "clear": "Zurücksetzen",
-      "save": "Speichern"
+      "save": "Speichern",
+      "done": "Fertig"
     },
     "errors": {
       "errorWithMessage": "Fehler: {{message}}",
@@ -1089,6 +1090,10 @@
       "steps": {
         "credentials": "Zugangsdaten eingeben",
         "group": "Gruppe auswählen",
+        "diff": "Änderungen prüfen",
+        "results": "Synchronisierung abgeschlossen",
+        "linked": "Gruppe verknüpft",
+        "noChanges": "Nichts zu importieren",
         "types": "Importarten auswählen",
         "period": "Synchronisierungszeitraum wählen",
         "playerImport": "Spond-Spieler laden",
@@ -1097,6 +1102,14 @@
         "events": "Aktivitäten prüfen",
         "summary": "Import prüfen",
         "done": "Import abgeschlossen"
+      },
+      "linkedHelp": "Die Spond-Gruppe ist verknüpft. Die Synchronisierung von Mitgliedern und Aktivitäten erfolgt separat auf den Seiten Mitglieder und Aktivitäten.",
+      "resultsHelp": "Die Synchronisierung wurde erfolgreich abgeschlossen.",
+      "nothingToImport": "Es gibt nichts Neues oder Geändertes zu importieren.",
+      "results": {
+        "created": "Erstellt: {{count}}",
+        "updated": "Aktualisiert: {{count}}",
+        "linked": "Verknüpft: {{count}}"
       },
       "importTypes": {
         "players": "Spieler",

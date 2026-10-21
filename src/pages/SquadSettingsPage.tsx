@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
-import { Alert, Badge, Button, ButtonAnchor, ButtonLink, Cluster, ContentGrid, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Field, IconButton, IconTile, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Split, Stack, Switch } from '../components/ui';
+import { AddCardButton, Alert, Badge, Button, ButtonAnchor, ButtonLink, Cluster, ContentGrid, EntityActions, EntityContent, EntityList, EntityMeta, EntityTitle, Field, IconButton, IconTile, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Split, Stack, SwipeableEntityRow, Switch } from '../components/ui';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
@@ -28,6 +28,7 @@ export default function SquadSettingsPage() {
   const spondGroupUrl = selectSpondGroupUrl(squad);
   const initializeApp = useStore((state) => state.initializeApp);
   const deactivateSquad = useStore((state) => state.deactivateSquad);
+  const deleteSquadPeriod = useStore((state) => state.deleteSquadPeriod);
   const selectedOfficialFormat = (category: SquadCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
   const {
     matchPlanningEnabled,
@@ -56,6 +57,7 @@ export default function SquadSettingsPage() {
   const [deletingFormation, setDeletingFormation] = useState<Formation | null>(null);
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
   const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
+  const [deletingPeriod, setDeletingPeriod] = useState<Period | null>(null);
   const [isUnlinkSpondDialogOpen, setIsUnlinkSpondDialogOpen] = useState(false);
   const [isUnlinkingSpond, setIsUnlinkingSpond] = useState(false);
   const [unlinkSpondError, setUnlinkSpondError] = useState<string | null>(null);
@@ -133,6 +135,12 @@ export default function SquadSettingsPage() {
     return created !== null;
   };
 
+  const handleDeletePeriod = async () => {
+    if (!deletingPeriod) return;
+    const wasDeleted = await deleteSquadPeriod(deletingPeriod.id);
+    if (wasDeleted) setDeletingPeriod(null);
+  };
+
   return (
     <Page>
       <SpondSyncResultBanner className="settings-banner" />
@@ -194,42 +202,34 @@ export default function SquadSettingsPage() {
                   <p className="field-help">{t('page.squadSettings.periods.description')}</p>
                 </EntityContent>
               </Cluster>
-              <Button
-                size="sm"
+            </PanelHeader>
+            <EntityList>
+              {periods.map((period) => (
+                <SwipeableEntityRow
+                  key={period.id}
+                  onEdit={() => {
+                    setPeriodToEdit(period);
+                    setIsPeriodModalOpen(true);
+                  }}
+                  onDelete={() => setDeletingPeriod(period)}
+                >
+                  <EntityContent>
+                    <EntityTitle>{period.name}</EntityTitle>
+                    <EntityMeta>
+                      {t('page.squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
+                    </EntityMeta>
+                  </EntityContent>
+                </SwipeableEntityRow>
+              ))}
+              <AddCardButton
+                cardSize="sm"
+                label={t('page.squadSettings.periods.add')}
                 onClick={() => {
                   setPeriodToEdit(null);
                   setIsPeriodModalOpen(true);
                 }}
-              >
-                {t('page.squadSettings.periods.add')}
-              </Button>
-            </PanelHeader>
-            {periods.length === 0 ? (
-              <EmptyState>{t('page.squadSettings.periods.empty')}</EmptyState>
-            ) : (
-              <EntityList>
-                {periods.map((period) => (
-                  <EntityRow key={period.id}>
-                    <EntityContent>
-                      <EntityTitle>{period.name}</EntityTitle>
-                      <EntityMeta>
-                        {t('page.squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
-                      </EntityMeta>
-                    </EntityContent>
-                    <EntityActions><Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setPeriodToEdit(period);
-                        setIsPeriodModalOpen(true);
-                      }}
-                    >
-                      {t('common.actions.edit')}
-                    </Button></EntityActions>
-                  </EntityRow>
-                ))}
-              </EntityList>
-            )}
+              />
+            </EntityList>
           </Panel>
         </Stack>
 
@@ -250,6 +250,8 @@ export default function SquadSettingsPage() {
               <Field className="settings-category-field" label={t('page.matchPlanning.category.label')} htmlFor="squad-category">
                 <Select
                   id="squad-category"
+                  controlSize="sm"
+                  className={'settings-category-select'}
                   value={selectedCategory}
                   onChange={(event) => {
                     setSelectedCategory(event.target.value as SquadCategory | '');
@@ -319,26 +321,15 @@ export default function SquadSettingsPage() {
           <Panel>
               <PanelHeader>
                 <PanelTitle>{t('page.matchPlanning.matchFormats.title')}</PanelTitle>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    setEditingMatchFormat(null);
-                    setIsMatchFormatModalOpen(true);
-                  }}
-                >
-                  {t('common.actions.add')}
-                </Button>
               </PanelHeader>
 
-              {matchFormats.length === 0 ? (
-                <EmptyState>{t('page.matchPlanning.matchFormats.emptyState')}</EmptyState>
-              ) : (
-                <EntityList>
-                  {matchFormats.map((matchFormat) => (
-                    <EntityRow
+              <EntityList>
+                {matchFormats.map((matchFormat) => (
+                    <SwipeableEntityRow
                       key={matchFormat.id}
                       align="start"
+                      onDelete={() => setDeletingMatchFormat(matchFormat)}
+                      showDesktopDelete={false}
                     >
                       <EntityContent>
                         <Cluster gap="sm">
@@ -375,7 +366,7 @@ export default function SquadSettingsPage() {
                           })}
                         </EntityMeta>
                       </EntityContent>
-                      <EntityActions>
+                      <EntityActions className={'ui-entity-actions--separated'}>
                         {!matchFormat.isDefault && (
                           <Button
                             variant="ghost"
@@ -385,7 +376,7 @@ export default function SquadSettingsPage() {
                             {t('page.matchPlanning.matchFormats.setDefault')}
                           </Button>
                         )}
-                        <IconButton
+                        {!selectIsOfficialMatchFormat(matchFormat) && <IconButton
                           label={t('common.actions.edit')}
                           onClick={() => {
                             setEditingMatchFormat(matchFormat);
@@ -395,7 +386,7 @@ export default function SquadSettingsPage() {
                           <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                           </svg>
-                        </IconButton>
+                        </IconButton>}
                         <IconButton
                           label={t('common.actions.delete')}
                           variant="danger"
@@ -406,39 +397,44 @@ export default function SquadSettingsPage() {
                           </svg>
                         </IconButton>
                       </EntityActions>
-                    </EntityRow>
-                  ))}
-                </EntityList>
-              )}
+                    </SwipeableEntityRow>
+                ))}
+                <AddCardButton
+                  cardSize="sm"
+                  label={t('common.actions.add')}
+                  onClick={() => {
+                    setEditingMatchFormat(null);
+                    setIsMatchFormatModalOpen(true);
+                  }}
+                />
+              </EntityList>
           </Panel>
 
           <Panel>
               <PanelHeader>
                 <PanelTitle>{t('page.matchPlanning.formations.title')}</PanelTitle>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    setEditingFormation(null);
-                    setIsFormationModalOpen(true);
-                  }}
-                >
-                  {t('common.actions.add')}
-                </Button>
               </PanelHeader>
 
-              {formations.length === 0 ? (
-                <EmptyState>{t('page.matchPlanning.formations.emptyState')}</EmptyState>
-              ) : (
-                <EntityList>
-                  {formations.map((formation) => {
+              <EntityList>
+                {formations.map((formation) => {
                     const displayIndexes = selectSlotDisplayIndexes(formation.slots);
                     return (
-                      <EntityRow key={formation.id} align="start">
+                      <SwipeableEntityRow key={formation.id} align="start" onDelete={() => setDeletingFormation(formation)} showDesktopDelete={false}>
                         <EntityContent>
-                        <Split>
                           <EntityTitle>{formation.name}</EntityTitle>
-                          <EntityActions>
+                          <div className="settings-formation-slots">
+                            {formation.slots.map((slot) => {
+                              const displayIndex = displayIndexes.get(slot.id);
+                              return (
+                                <Badge key={slot.id} tone="neutral" size="sm">
+                                  {t(getPositionLabelKey(slot.positionCode))}
+                                  {displayIndex !== null && displayIndex !== undefined ? ` ${displayIndex}` : ''}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        </EntityContent>
+                        <EntityActions className={'ui-entity-actions--separated'}>
                             <IconButton
                               label={t('common.actions.edit')}
                               onClick={() => {
@@ -459,25 +455,19 @@ export default function SquadSettingsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                               </svg>
                             </IconButton>
-                          </EntityActions>
-                        </Split>
-                        <div className="settings-formation-slots">
-                          {formation.slots.map((slot) => {
-                            const displayIndex = displayIndexes.get(slot.id);
-                            return (
-                              <Badge key={slot.id} tone="neutral" size="sm">
-                                {t(getPositionLabelKey(slot.positionCode))}
-                                {displayIndex !== null && displayIndex !== undefined ? ` ${displayIndex}` : ''}
-                              </Badge>
-                            );
-                          })}
-                        </div>
-                        </EntityContent>
-                      </EntityRow>
+                        </EntityActions>
+                      </SwipeableEntityRow>
                     );
-                  })}
-                </EntityList>
-              )}
+                })}
+                <AddCardButton
+                  cardSize="sm"
+                  label={t('common.actions.add')}
+                  onClick={() => {
+                    setEditingFormation(null);
+                    setIsFormationModalOpen(true);
+                  }}
+                />
+              </EntityList>
           </Panel>
         </ContentGrid>
       )}
@@ -506,6 +496,18 @@ export default function SquadSettingsPage() {
           onClose={() => setIsFormationModalOpen(false)}
           formationToEdit={editingFormation}
           onSave={handleSaveFormation}
+        />
+      )}
+
+      {deletingPeriod && (
+        <ConfirmDialog
+          isOpen={true}
+          title={t('page.statistics.period.deleteTitle')}
+          message={t('page.statistics.period.deleteMessage', { period: deletingPeriod.name })}
+          confirmText={t('common.actions.delete')}
+          onConfirm={() => void handleDeletePeriod()}
+          onCancel={() => setDeletingPeriod(null)}
+          confirmButtonColor="red"
         />
       )}
 

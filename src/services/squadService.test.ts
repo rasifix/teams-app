@@ -5,6 +5,7 @@ import {
   createBirthdayCalendarSubscription,
   deactivateSquad,
   getBirthdayCalendarSubscription,
+  linkSquadToSpond,
   revokeBirthdayCalendarSubscription,
   unlinkSquadFromSpond,
   updateSquadCategory,
@@ -74,6 +75,22 @@ describe('squadService', () => {
     expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1', {
       method: 'PUT',
       body: JSON.stringify({ name: 'Juniors', spondId: null }),
+    });
+  });
+
+  it('links Spond without importing any records', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1',
+      name: 'Juniors',
+      spondId: 'group-1',
+      periods: [],
+    });
+
+    await linkSquadToSpond('squad-1', 'Juniors', 'group-1');
+
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1', {
+      method: 'PUT',
+      body: JSON.stringify({ name: 'Juniors', spondId: 'group-1' }),
     });
   });
 

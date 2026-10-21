@@ -33,7 +33,7 @@ export default function EventsPage() {
 
   return (
     <Page>
-      <PageHeader>
+      <PageHeader align="start">
         <PageHeaderContent>
           <PageTitle>{t('page.events.title')}</PageTitle>
           <PageDescription>{t('page.events.subtitle')}</PageDescription>

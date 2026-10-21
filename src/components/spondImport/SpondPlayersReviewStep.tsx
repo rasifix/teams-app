@@ -14,6 +14,7 @@ interface SpondPlayersReviewStepProps {
   onDraftChange: (id: string, update: Partial<SpondMemberDraft>) => void;
   onBack: () => void;
   onNext: () => void;
+  showActions?: boolean;
 }
 
 export default function SpondPlayersReviewStep({
@@ -26,6 +27,7 @@ export default function SpondPlayersReviewStep({
   onDraftChange,
   onBack,
   onNext,
+  showActions = true,
 }: SpondPlayersReviewStepProps) {
   const { t } = useTranslation();
 
@@ -118,11 +120,11 @@ export default function SpondPlayersReviewStep({
           );
         })}
       </Stack>
-      <SpondWizardActions
-        back={onBack}
-        next={onNext}
-        nextDisabled={Object.keys(issues).length > 0}
-      />
+      {showActions && <SpondWizardActions
+          back={onBack}
+          next={onNext}
+          nextDisabled={Object.keys(issues).length > 0}
+        />}
     </>
   );
 }

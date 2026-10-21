@@ -112,17 +112,10 @@ describe('Spond wizard progress', () => {
     expect(selectSpondReviewSteps([])).toEqual([]);
   });
 
-  it('includes group selection for linking but omits it for scoped synchronization', () => {
-    expect(selectSpondWizardProgressSteps(['players', 'guardians'], true)).toEqual([
-      'credentials', 'group', 'types', 'players', 'guardians', 'summary',
-    ]);
-    expect(selectSpondWizardProgressSteps(['events'], false)).toEqual([
-      'credentials', 'types', 'events', 'summary',
-    ]);
-  });
-
-  it('supports a flow without review steps', () => {
-    expect(selectSpondWizardProgressSteps([], false)).toEqual(['credentials', 'types', 'summary']);
+  it('uses a separate link flow and a three-step scoped sync flow', () => {
+    expect(selectSpondWizardProgressSteps('link')).toEqual(['credentials', 'group', 'linked']);
+    expect(selectSpondWizardProgressSteps('players')).toEqual(['credentials', 'diff', 'results']);
+    expect(selectSpondWizardProgressSteps('events')).toEqual(['credentials', 'diff', 'results']);
   });
 });
 

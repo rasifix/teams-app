@@ -54,9 +54,9 @@ export default function PlayerDetailPage() {
   
   // Determine loading and error states
   const loading = isLoading;
-  const error = !id ? t('playerDetail.errors.noPlayerId') : 
-               (!player && !loading) ? t('playerDetail.errors.notFound') :
-               errors.players || (hasErrors ? t('playerDetail.errors.failedToLoadData') : null);
+  const error = !id ? t('page.playerDetail.errors.noPlayerId') : 
+               (!player && !loading) ? t('page.playerDetail.errors.notFound') :
+               errors.players || (hasErrors ? t('common.errors.failedToLoadData') : null);
 
   useEffect(() => {
     if (isInitialized && !loading && id && !player) {
@@ -70,7 +70,7 @@ export default function PlayerDetailPage() {
   const underageForGuardianAssignment = player ? isPlayerUnderage(player) : false;
   const playerStatus = player?.status || 'active';
   const playerStatusTone = playerStatus === 'active' ? 'success' : playerStatus === 'trial' ? 'warning' : 'neutral';
-  const playerStatusLabel = t(`playerModal.status.${playerStatus}`);
+  const playerStatusLabel = t(`domain.player.status.${playerStatus}`);
 
   const playerEventHistory = useMemo(
     () => (player ? selectPlayerEventHistory(events, player.id) : []),
@@ -78,7 +78,7 @@ export default function PlayerDetailPage() {
   );
 
   const groupedPlayerEventHistory = useMemo(
-    () => selectGroupedPlayerEventHistory(squadPeriods, playerEventHistory, t('statistics.period.outsidePeriods')),
+    () => selectGroupedPlayerEventHistory(squadPeriods, playerEventHistory, t('page.statistics.period.outsidePeriods')),
     [squadPeriods, playerEventHistory, t]
   );
 
@@ -96,7 +96,7 @@ export default function PlayerDetailPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('playerDetail.loading')}</p>
+          <p>{t('page.playerDetail.loading')}</p>
         </EmptyState>
       </Page>
     );
@@ -120,7 +120,7 @@ export default function PlayerDetailPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('playerDetail.notFound')}</p>
+          <p>{t('page.playerDetail.notFound')}</p>
         </EmptyState>
       </Page>
     );
@@ -153,14 +153,14 @@ export default function PlayerDetailPage() {
           return;
         }
 
-        setDeleteActionError(t('playerDetail.errors.deleteFailed'));
+        setDeleteActionError(t('page.playerDetail.errors.deleteFailed'));
       } catch (error) {
         if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
-          setDeleteActionError(t('playerDetail.errors.deleteUnexpectedRoles'));
+          setDeleteActionError(t('page.playerDetail.errors.deleteUnexpectedRoles'));
         } else if (error instanceof Error && error.message === PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE) {
-          setDeleteActionError(t('playerDetail.errors.deleteBlockedPastTeamAssignments'));
+          setDeleteActionError(t('page.playerDetail.errors.deleteBlockedPastTeamAssignments'));
         } else {
-          setDeleteActionError(t('playerDetail.errors.deleteFailed'));
+          setDeleteActionError(t('page.playerDetail.errors.deleteFailed'));
         }
       }
     }
@@ -184,7 +184,7 @@ export default function PlayerDetailPage() {
 
     const success = await addGuardianToPlayer(player.id, guardianPayload);
     if (!success) {
-      setGuardianActionError(t('playerDetail.guardians.assignFailed'));
+      setGuardianActionError(t('page.playerDetail.guardians.assignFailed'));
       return false;
     }
     return true;
@@ -211,7 +211,7 @@ export default function PlayerDetailPage() {
     );
 
     if (!success) {
-      setGuardianActionError(t('playerDetail.guardians.editFailed'));
+      setGuardianActionError(t('page.playerDetail.guardians.editFailed'));
       return false;
     }
 
@@ -227,7 +227,7 @@ export default function PlayerDetailPage() {
     setGuardianActionError(null);
     const success = await deleteGuardianFromPlayer(player.id, guardianToRemove.id);
     if (!success) {
-      setGuardianActionError(t('playerDetail.guardians.removeFailed'));
+      setGuardianActionError(t('page.playerDetail.guardians.removeFailed'));
       return;
     }
 
@@ -265,7 +265,7 @@ export default function PlayerDetailPage() {
       </PageToolbar>
       <PageHeader>
           <PageHeaderContent>
-            <p className="eyebrow">{t('domain.player')}</p>
+            <p className="eyebrow">{t('domain.player.label')}</p>
             <PageTitle>{player.firstName} {player.lastName}</PageTitle>
           </PageHeaderContent>
           <PageActions>
@@ -279,7 +279,7 @@ export default function PlayerDetailPage() {
             )}
             {player.preferredShirtNumber && (
               <Badge tone="info">
-                {t('playerDetail.preferredShirtNumber', { number: player.preferredShirtNumber })}
+                {t('page.playerDetail.preferredShirtNumber', { number: player.preferredShirtNumber })}
               </Badge>
             )}
             <Level level={player.level} />
@@ -300,7 +300,7 @@ export default function PlayerDetailPage() {
 
         <Panel>
             <PanelHeader>
-              <PanelTitle>{t('playerDetail.guardians.title', { count: guardians.length })}</PanelTitle>
+              <PanelTitle>{t('page.playerDetail.guardians.title', { count: guardians.length })}</PanelTitle>
               <PanelActions>
               {!spondLinked && <Button
                 size="sm"
@@ -310,10 +310,10 @@ export default function PlayerDetailPage() {
                 }}
                 disabled={!canManagePlayerGuardians || !underageForGuardianAssignment}
                 title={!canManagePlayerGuardians
-                  ? t('playerDetail.guardians.onlyManagers')
-                  : (!underageForGuardianAssignment ? t('playerDetail.guardians.onlyUnderage') : t('playerDetail.guardians.assignAction'))}
+                  ? t('page.playerDetail.guardians.onlyManagers')
+                  : (!underageForGuardianAssignment ? t('page.playerDetail.guardians.onlyUnderage') : t('page.playerDetail.guardians.assignAction'))}
               >
-                {t('playerDetail.guardians.addAction')}
+                {t('page.playerDetail.guardians.addAction')}
               </Button>}
               </PanelActions>
             </PanelHeader>
@@ -321,13 +321,13 @@ export default function PlayerDetailPage() {
             <Stack gap="sm">
             {!spondLinked && !canManagePlayerGuardians && (
               <Alert tone="warning">
-                {t('playerDetail.guardians.onlyManagersManage')}
+                {t('page.playerDetail.guardians.onlyManagersManage')}
               </Alert>
             )}
 
             {!spondLinked && !underageForGuardianAssignment && (
               <Alert tone="info">
-                {t('playerDetail.guardians.onlyUnderage')}
+                {t('page.playerDetail.guardians.onlyUnderage')}
               </Alert>
             )}
 
@@ -338,7 +338,7 @@ export default function PlayerDetailPage() {
             )}
 
             {guardians.length === 0 ? (
-              <EmptyState>{t('playerDetail.guardians.empty')}</EmptyState>
+              <EmptyState>{t('page.playerDetail.guardians.empty')}</EmptyState>
             ) : (
               <EntityList variant="separated">
                 {guardians.map((guardian) => (
@@ -369,7 +369,7 @@ export default function PlayerDetailPage() {
                           size="sm"
                           onClick={() => setGuardianToRemove(guardian)}
                         >
-                          {t('playerDetail.guardians.removeAction')}
+                          {t('page.playerDetail.guardians.removeAction')}
                         </Button>
                       </EntityActions>
                     )}
@@ -384,18 +384,18 @@ export default function PlayerDetailPage() {
       {/* Available Future Events Section */}
       {futureEventsWithoutInvitation.length > 0 && (
         <Panel className="member-detail-section">
-              <PanelHeader><PanelTitle>{t('playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
+              <PanelHeader><PanelTitle>{t('page.playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
               <Stack gap="sm" className="member-event-list">
                 {futureEventsWithoutInvitation.map((event) => (
                   <ActionCard
                     key={event.id}
                     leading={<DateColumn date={getActivityDate(event)} />}
-                    onClick={() => navigate(`/events/${event.id}`)}
+                    onClick={() => navigate(`/activities/${event.id}`)}
                   >
                           <ActionCardTitle title={event.name}>{event.name}</ActionCardTitle>
                           <div className="member-event-status">
                             <Badge>
-                              {t('invitationStatus.notInvited')}
+                              {t('domain.invitation.status.notInvited')}
                             </Badge>
                           </div>
                   </ActionCard>
@@ -428,20 +428,20 @@ export default function PlayerDetailPage() {
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title={t('members.deletePlayerTitle')}
-        message={t('members.deletePlayerMessage', { firstName: player.firstName, lastName: player.lastName })}
+        title={t('page.members.deletePlayerTitle')}
+        message={t('page.members.deletePlayerMessage', { firstName: player.firstName, lastName: player.lastName })}
         onConfirm={confirmDeletePlayer}
         onCancel={cancelDeletePlayer}
       />
 
       <ConfirmDialog
         isOpen={Boolean(guardianToRemove)}
-        title={t('playerDetail.guardians.removeTitle')}
-        message={t('playerDetail.guardians.removeMessage', {
+        title={t('page.playerDetail.guardians.removeTitle')}
+        message={t('page.playerDetail.guardians.removeMessage', {
           firstName: guardianToRemove?.firstName,
           lastName: guardianToRemove?.lastName,
         })}
-        confirmText={t('playerDetail.guardians.removeAction')}
+        confirmText={t('page.playerDetail.guardians.removeAction')}
         cancelText={t('common.actions.cancel')}
         onConfirm={confirmRemoveGuardian}
         onCancel={() => setGuardianToRemove(null)}

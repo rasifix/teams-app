@@ -40,8 +40,8 @@ export default function StatisticsPage() {
     <Page>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>{t('statistics.title')}</PageTitle>
-          <PageDescription>{t('statistics.description')}</PageDescription>
+          <PageTitle>{t('page.statistics.title')}</PageTitle>
+          <PageDescription>{t('page.statistics.description')}</PageDescription>
         </PageHeaderContent>
         <PageActions>
           <StatisticsPeriodSelector />
@@ -50,21 +50,21 @@ export default function StatisticsPage() {
 
       <Stack gap="lg">
         <ContentGrid variant="metrics">
-          <SummaryCard><SummaryCardContent value={summary.totalPlayers} label={t('statistics.summary.totalPlayers')} /></SummaryCard>
-          <SummaryCard tone="info"><SummaryCardContent value={summary.totalEvents} label={t('statistics.summary.totalEvents')} /></SummaryCard>
-          <SummaryCard tone="success"><SummaryCardContent value={summary.averageAcceptances.toFixed(1)} label={t('statistics.summary.avgAcceptancesPerPlayer')} /></SummaryCard>
-          <SummaryCard tone="accent"><SummaryCardContent value={summary.averageSelections.toFixed(1)} label={t('statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
+          <SummaryCard><SummaryCardContent value={summary.totalPlayers} label={t('page.statistics.summary.totalPlayers')} /></SummaryCard>
+          <SummaryCard tone="info"><SummaryCardContent value={summary.totalEvents} label={t('page.statistics.summary.totalEvents')} /></SummaryCard>
+          <SummaryCard tone="success"><SummaryCardContent value={summary.averageAcceptances.toFixed(1)} label={t('page.statistics.summary.avgAcceptancesPerPlayer')} /></SummaryCard>
+          <SummaryCard tone="accent"><SummaryCardContent value={summary.averageSelections.toFixed(1)} label={t('page.statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
         </ContentGrid>
 
         <NavigationTabs label={t('common.tabs')}>
           <NavigationTab to="/statistics/player-statistics">
-            {t('statistics.tabs.playerStatistics')}
+            {t('page.statistics.tabs.playerStatistics')}
           </NavigationTab>
           <NavigationTab to="/statistics/event-participation">
-            {t('statistics.tabs.eventParticipation')}
+            {t('page.statistics.tabs.eventParticipation')}
           </NavigationTab>
           <NavigationTab to="/statistics/team-selections">
-            {t('statistics.tabs.teamSelections')}
+            {t('page.statistics.tabs.teamSelections')}
           </NavigationTab>
         </NavigationTabs>
 

@@ -67,7 +67,7 @@ export function selectTeamCardView(
       : 0,
     displayLocation: activity.kind === 'match' ? activity.location : team.location || activity.location,
     displayTime: activity.kind === 'match' ? getActivityTime(activity) : team.startTime || getActivityTime(activity),
-    responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players),
+    responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonId, trainers, players),
     shirtSet: team.shirtSetId ? shirtSets.find((shirtSet) => shirtSet.id === team.shirtSetId) ?? null : null,
     playerRows,
   };

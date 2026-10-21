@@ -72,13 +72,13 @@ describe('team selection view selectors', () => {
 
 describe('selectTeamPrintSummaries', () => {
   const activity: Activity = {
-    id: 'a1', squadId: 's1', kind: 'tournament', name: 'Cup', startsAt: '2026-01-01T10:00:00Z',
+    id: 'a1', squadId: 's1', kind: 'tournament', status: 'active', name: 'Cup', startsAt: '2026-01-01T10:00:00Z',
     location: ' Main field ', teams: [], invitations: [],
   };
 
   it('resolves sorted players, shirts, responsible people, and team location overrides', () => {
     const printableTeam = {
-      ...team(['p1', 'p2']), location: ' Field 2 ', responsiblePersonIds: ['trainer-1'],
+      ...team(['p1', 'p2']), location: ' Field 2 ', responsiblePersonId: 'trainer-1',
       shirtAssignments: [{ playerId: 'p1', shirtNumber: 7 }],
     };
     const summaries = selectTeamPrintSummaries(activity, [printableTeam], [
@@ -109,7 +109,7 @@ describe('selectAvailablePlayersForTeamSelection', () => {
     id, firstName, lastName: 'Player', birthDate: '2015-01-01', level, status: 'active',
   });
   const activity: Activity = {
-    id: 'a1', squadId: 's1', kind: 'match', name: 'Match', startsAt: '2026-06-01T10:00:00.000Z',
+    id: 'a1', squadId: 's1', kind: 'match', status: 'active', name: 'Match', startsAt: '2026-06-01T10:00:00.000Z',
     invitations: [{ id: 'i1', playerId: 'p1', response: 'accepted' }, { id: 'i2', playerId: 'p2', response: 'open' }, { id: 'i3', playerId: 'p3', response: 'accepted' }],
     teams: [{ id: 't1', name: 'A', strength: 2, selectedPlayers: ['p3'] }, { id: 't2', name: 'B', strength: 2, selectedPlayers: ['p4'] }],
   };

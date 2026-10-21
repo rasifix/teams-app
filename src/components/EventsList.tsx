@@ -12,7 +12,7 @@ export default function EventsList({ activities, onActivityClick }: EventsListPr
   const { t } = useTranslation();
 
   if (activities.length === 0) {
-    return <EmptyState><p>{t('events.list.emptyState')}</p></EmptyState>;
+    return <EmptyState><p>{t('page.events.list.emptyState')}</p></EmptyState>;
   }
 
   return <ContentGrid variant="equal">

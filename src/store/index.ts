@@ -63,6 +63,8 @@ export const useActivities = () => {
   const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
   const updateActivityAttendance = useStore((state) => state.updateActivityAttendance);
   const deleteActivity = useStore((state) => state.deleteActivity);
+  const cancelActivity = useStore((state) => state.cancelActivity);
+  const restoreActivity = useStore((state) => state.restoreActivity);
 
   return {
     activities,
@@ -75,6 +77,8 @@ export const useActivities = () => {
     markActivitySelectionSent,
     updateActivityAttendance,
     deleteActivity,
+    cancelActivity,
+    restoreActivity,
   };
 };
 

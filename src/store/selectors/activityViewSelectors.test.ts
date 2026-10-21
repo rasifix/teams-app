@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity } from '../../types';
 import { getActivityTime } from './activitySelectors';
-import { selectActivityCardSummary, selectAdjacentActivities, selectInvitationViewRows, selectMinimumActivityMaxPlayers } from './activityViewSelectors';
+import { selectActivityCardSummary, selectAdjacentActivities, selectCanAddActivityTeam, selectInvitationViewRows, selectMinimumActivityMaxPlayers } from './activityViewSelectors';
 
 const baseActivity: Activity = {
-  id: 'activity-1', squadId: 'squad-1', kind: 'match', name: 'Match', startsAt: '2026-05-01T18:30:00.000Z',
+  id: 'activity-1', squadId: 'squad-1', kind: 'match', status: 'active', name: 'Match', startsAt: '2026-05-01T18:30:00.000Z',
   minPlayersPerTeam: 2, teams: [{ id: 'team-1', name: 'Team 1', strength: 2, startTime: '18:30', selectedPlayers: ['p-1'] }],
   invitations: [
     { id: 'i-1', playerId: 'p-1', response: 'accepted' },
@@ -26,10 +26,10 @@ describe('activity view selectors', () => {
   it('summarizes team schedule, location fallbacks, strength, and responsible people', () => {
     const activity = {
       ...baseActivity,
-      kind: 'training' as const,
+      kind: 'tournament' as const,
       location: 'Main field',
       teams: [
-        { ...baseActivity.teams[0], startTime: '17:30', location: 'Field 2', strength: 1, responsiblePersonIds: ['trainer-1'] },
+        { ...baseActivity.teams[0], startTime: '17:30', location: 'Field 2', strength: 1, responsiblePersonId: 'trainer-1' },
         { ...baseActivity.teams[0], id: 'team-2', name: 'Team 2', startTime: undefined, location: undefined, selectedPlayers: [] },
       ],
     };
@@ -61,6 +61,18 @@ describe('activity view selectors', () => {
   it('reports at least one required player even when teams are empty', () => {
     expect(selectMinimumActivityMaxPlayers({ ...baseActivity, teams: [] })).toBe(1);
     expect(selectMinimumActivityMaxPlayers({ ...baseActivity, teams: [{ ...baseActivity.teams[0], selectedPlayers: ['a', 'b'] }] })).toBe(2);
+  });
+
+  it('allows adding teams to tournaments and only the missing team to matches', () => {
+    expect(selectCanAddActivityTeam({ ...baseActivity, teams: [] })).toBe(true);
+    expect(selectCanAddActivityTeam(baseActivity)).toBe(false);
+    expect(selectCanAddActivityTeam({ ...baseActivity, kind: 'tournament', teams: [] })).toBe(true);
+    expect(selectCanAddActivityTeam({ ...baseActivity, kind: 'tournament', teams: [baseActivity.teams[0]] })).toBe(true);
+  });
+
+  it('does not allow adding teams to cancelled activities', () => {
+    expect(selectCanAddActivityTeam({ ...baseActivity, status: 'cancelled', teams: [] })).toBe(false);
+    expect(selectCanAddActivityTeam({ ...baseActivity, kind: 'tournament', status: 'cancelled' })).toBe(false);
   });
 
   it('selects adjacent activities in chronological order with boundary fallbacks', () => {

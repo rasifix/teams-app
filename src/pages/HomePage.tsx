@@ -54,7 +54,7 @@ export default function HomePage() {
     try {
       const newSquad = await addSquad(squadData);
       if (!newSquad) {
-        setCreateError(useStore.getState().errors.squads || t('squads.errors.createFailed'));
+        setCreateError(useStore.getState().errors.squads || t('page.squads.errors.createFailed'));
         return;
       }
       await selectSquad(newSquad.id);
@@ -78,9 +78,9 @@ export default function HomePage() {
   };
 
   const features = [
-    { title: t('home.cards.membersTitle'), description: t('home.cards.membersDescription') },
-    { title: t('home.cards.eventsTitle'), description: t('home.cards.eventsDescription') },
-    { title: t('home.cards.statisticsTitle'), description: t('home.cards.statisticsDescription') },
+    { title: t('page.home.cards.membersTitle'), description: t('page.home.cards.membersDescription') },
+    { title: t('page.home.cards.eventsTitle'), description: t('page.home.cards.eventsDescription') },
+    { title: t('page.home.cards.statisticsTitle'), description: t('page.home.cards.statisticsDescription') },
   ];
 
   return (
@@ -88,10 +88,10 @@ export default function HomePage() {
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>
-            {t(isAuthenticated ? 'home.overviewTitle' : 'home.publicTitle')}
+            {t(isAuthenticated ? 'page.home.overviewTitle' : 'page.home.publicTitle')}
           </PageTitle>
           <PageDescription>
-            {t(isAuthenticated ? 'home.overviewSubtitle' : 'home.publicSubtitle')}
+            {t(isAuthenticated ? 'page.home.overviewSubtitle' : 'page.home.publicSubtitle')}
           </PageDescription>
         </PageHeaderContent>
         {!isAuthenticated && (
@@ -107,7 +107,7 @@ export default function HomePage() {
       </PageHeader>
 
       {!isAuthenticated ? (
-        <ContentGrid variant="threeColumn" className="home-feature-grid" aria-label={t('home.featuresLabel')}>
+        <ContentGrid variant="threeColumn" className="home-feature-grid" aria-label={t('page.home.featuresLabel')}>
           {features.map((feature, index) => (
             <Panel key={feature.title}>
               <Stack>
@@ -122,18 +122,18 @@ export default function HomePage() {
           <section>
             <SectionHeader>
               <SectionHeaderContent>
-                <SectionEyebrow>{t('home.scheduleLabel')}</SectionEyebrow>
-                <SectionTitle>{t('home.upcomingEvents.title')}</SectionTitle>
+                <SectionEyebrow>{t('page.home.scheduleLabel')}</SectionEyebrow>
+                <SectionTitle>{t('page.home.upcomingEvents.title')}</SectionTitle>
               </SectionHeaderContent>
               <SectionActions>
-              <Link to="/events" className="text-link">
-                {t('home.upcomingEvents.viewAll')}
+              <Link to="/activities" className="text-link">
+                {t('page.home.upcomingEvents.viewAll')}
                 <ChevronRightIcon className="icon-xs" />
               </Link>
               </SectionActions>
             </SectionHeader>
             {upcomingEvents.length === 0 ? (
-              <EmptyState>{t('home.upcomingEvents.empty')}</EmptyState>
+              <EmptyState>{t('page.home.upcomingEvents.empty')}</EmptyState>
             ) : (
               <Stack gap="sm">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</Stack>
             )}
@@ -142,13 +142,13 @@ export default function HomePage() {
           <section>
             <SectionHeader>
               <SectionHeaderContent>
-                <SectionEyebrow>{t('home.manageLabel')}</SectionEyebrow>
-                <SectionTitle>{t('squads.title')}</SectionTitle>
+                <SectionEyebrow>{t('page.home.manageLabel')}</SectionEyebrow>
+                <SectionTitle>{t('page.squads.title')}</SectionTitle>
               </SectionHeaderContent>
             </SectionHeader>
 
-            {squadsLoading && <div className="home-loading-card">{t('squads.loading')}</div>}
-            {!squadsLoading && squadsError && <Alert>{t('squads.errors.loadFailedWithReason', { error: squadsError })}</Alert>}
+            {squadsLoading && <div className="home-loading-card">{t('page.squads.loading')}</div>}
+            {!squadsLoading && squadsError && <Alert>{t('page.squads.errors.loadFailedWithReason', { error: squadsError })}</Alert>}
             {!squadsLoading && !squadsError && (
               <Stack gap="sm">
                 {squads.map((squadItem) => {
@@ -166,14 +166,14 @@ export default function HomePage() {
                     >
                         <ActionCardTitle>{squadItem.name}</ActionCardTitle>
                         <EntityMeta>
-                          {squadItem.club && <span>{t('squads.clubLabel', { club: squadItem.club })}</span>}
-                          {squadItem.category && <span>{t('squads.categoryLabel', { category: squadItem.category })}</span>}
-                          {isSwitching && <span>{t('squads.switching')}</span>}
+                          {squadItem.club && <span>{t('page.squads.clubLabel', { club: squadItem.club })}</span>}
+                          {squadItem.category && <span>{t('page.squads.categoryLabel', { category: squadItem.category })}</span>}
+                          {isSwitching && <span>{t('page.squads.switching')}</span>}
                         </EntityMeta>
                     </ActionCard>
                   );
                 })}
-                <AddCardButton cardSize="lg" leading={<GroupIcon />} onClick={() => setIsAddModalOpen(true)} label={t('squads.createNew')} />
+                <AddCardButton cardSize="lg" leading={<GroupIcon />} onClick={() => setIsAddModalOpen(true)} label={t('page.squads.createNew')} />
               </Stack>
             )}
           </section>

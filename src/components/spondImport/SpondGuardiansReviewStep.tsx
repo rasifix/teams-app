@@ -31,7 +31,7 @@ export default function SpondGuardiansReviewStep({
                 })}
               </span><span>
                 {t('spondSync.wizard.guardianEmail', {
-                  email: row.source.email ?? t('members.noEmail'),
+                  email: row.source.email ?? t('page.members.noEmail'),
                 })}
               </span></EntityMeta>
               {row.linkedGuardian && (

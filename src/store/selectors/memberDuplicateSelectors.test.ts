@@ -29,7 +29,7 @@ function event(overrides: Partial<Activity>): Activity {
   return {
     id: 'e-default',
     squadId: 'squad-1',
-    kind: 'match',
+    kind: 'match', status: 'active',
     name: 'Activity',
     startsAt: '2026-01-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
@@ -83,8 +83,8 @@ describe('member duplicate selectors', () => {
       event({
         id: 'e-1',
         teams: [
-          { id: 'team-1', name: 'A', strength: 2, startTime: '10:00', selectedPlayers: [], responsiblePersonIds: ['t-2'] },
-          { id: 'team-2', name: 'B', strength: 2, startTime: '11:00', selectedPlayers: [], responsiblePersonIds: ['t-2'] },
+          { id: 'team-1', name: 'A', strength: 2, startTime: '10:00', selectedPlayers: [], responsiblePersonId: 't-2' },
+          { id: 'team-2', name: 'B', strength: 2, startTime: '11:00', selectedPlayers: [], responsiblePersonId: 't-2' },
         ],
       }),
     ];

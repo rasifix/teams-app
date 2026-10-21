@@ -36,7 +36,7 @@ export default function StatisticsPeriodSelector() {
         aria-haspopup="menu"
         aria-expanded={isOpen}
       >
-        <span>{t('statistics.period.selectorLabel', { period: getStatisticsPeriodLabel(selectedPeriod) })}</span>
+        <span>{t('page.statistics.period.selectorLabel', { period: getStatisticsPeriodLabel(selectedPeriod) })}</span>
         <svg className={`statistics-period-chevron${isOpen ? ' statistics-period-chevron--open' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
@@ -44,7 +44,7 @@ export default function StatisticsPeriodSelector() {
 
       {isOpen && (
         <MenuSurface className="statistics-period-menu">
-            <MenuLabel>{t('statistics.period.selectPeriod')}</MenuLabel>
+            <MenuLabel>{t('page.statistics.period.selectPeriod')}</MenuLabel>
 
             <MenuItem
               selected={selectedPeriod === null}
@@ -53,8 +53,8 @@ export default function StatisticsPeriodSelector() {
                 setIsOpen(false);
               }}
             >
-              <MenuItemTitle>{t('statistics.period.allEvents')}</MenuItemTitle>
-              <MenuItemDescription>{t('statistics.period.allEventsDescription')}</MenuItemDescription>
+              <MenuItemTitle>{t('page.statistics.period.allEvents')}</MenuItemTitle>
+              <MenuItemDescription>{t('page.statistics.period.allEventsDescription')}</MenuItemDescription>
             </MenuItem>
 
             <MenuDivider />
@@ -70,12 +70,12 @@ export default function StatisticsPeriodSelector() {
                   }}
                 >
                   <MenuItemTitle>{period.name}</MenuItemTitle>
-                  <MenuItemDescription>{t('statistics.period.rangeLabel', { startDate: period.startDate, endDate: period.endDate })}</MenuItemDescription>
+                  <MenuItemDescription>{t('page.statistics.period.rangeLabel', { startDate: period.startDate, endDate: period.endDate })}</MenuItemDescription>
                 </MenuItem>
               ))}
 
               {periods.length === 0 && (
-                <p className="statistics-period-empty">{t('statistics.period.noSquadPeriods')}</p>
+                <p className="statistics-period-empty">{t('page.statistics.period.noSquadPeriods')}</p>
               )}
             </div>
         </MenuSurface>

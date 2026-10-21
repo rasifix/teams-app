@@ -73,10 +73,10 @@ export default function SquadSettingsPage() {
     try {
       const success = await configureSquadCategory(selectedCategory || null);
       if (!success) {
-        setCategorySaveError(t('matchPlanning.category.saveFailed'));
+        setCategorySaveError(t('page.matchPlanning.category.saveFailed'));
       }
     } catch {
-      setCategorySaveError(t('matchPlanning.category.saveFailed'));
+      setCategorySaveError(t('page.matchPlanning.category.saveFailed'));
     } finally {
       setIsSavingCategory(false);
     }
@@ -97,7 +97,7 @@ export default function SquadSettingsPage() {
       await initializeApp();
       setIsUnlinkSpondDialogOpen(false);
     } catch {
-      setUnlinkSpondError(t('squadSettings.spond.unlinkFailed'));
+      setUnlinkSpondError(t('page.squadSettings.spond.unlinkFailed'));
     } finally {
       setIsUnlinkingSpond(false);
     }
@@ -110,7 +110,7 @@ export default function SquadSettingsPage() {
     const success = await deactivateSquad();
     setIsDeactivating(false);
     if (!success) {
-      setDeactivateError(t('squadSettings.deactivate.failed'));
+      setDeactivateError(t('page.squadSettings.deactivate.failed'));
       return;
     }
     setIsDeactivateDialogOpen(false);
@@ -138,8 +138,8 @@ export default function SquadSettingsPage() {
       <SpondSyncResultBanner className="settings-banner" />
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>{t('squadSettings.title')}</PageTitle>
-          <PageDescription>{t('squadSettings.description')}</PageDescription>
+          <PageTitle>{t('page.squadSettings.title')}</PageTitle>
+          <PageDescription>{t('page.squadSettings.description')}</PageDescription>
         </PageHeaderContent>
       </PageHeader>
 
@@ -153,8 +153,8 @@ export default function SquadSettingsPage() {
                 </svg>
               </IconTile>
               <EntityContent>
-                <PanelTitle>{t('squadSettings.spond.title')}</PanelTitle>
-                <p className="field-help">{t('squadSettings.spond.description')}</p>
+                <PanelTitle>{t('page.squadSettings.spond.title')}</PanelTitle>
+                <p className="field-help">{t('page.squadSettings.spond.description')}</p>
               </EntityContent>
             </Cluster>
             {unlinkSpondError && <Alert className="settings-panel-alert">{unlinkSpondError}</Alert>}
@@ -167,15 +167,15 @@ export default function SquadSettingsPage() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {t('squadSettings.spond.openGroup')}
+                  {t('page.squadSettings.spond.openGroup')}
                 </ButtonAnchor>
                 <Button variant="danger" size="sm" onClick={() => setIsUnlinkSpondDialogOpen(true)}>
-                  {t('squadSettings.spond.unlinkGroup')}
+                  {t('page.squadSettings.spond.unlinkGroup')}
                 </Button>
               </>
             ) : (
               <ButtonLink size="sm" to="/spond-import">
-                {t('squadSettings.spond.linkGroup')}
+                {t('page.squadSettings.spond.linkGroup')}
               </ButtonLink>
             )}
             </Cluster>
@@ -190,8 +190,8 @@ export default function SquadSettingsPage() {
                   </svg>
                 </IconTile>
                 <EntityContent>
-                  <PanelTitle>{t('squadSettings.periods.title')}</PanelTitle>
-                  <p className="field-help">{t('squadSettings.periods.description')}</p>
+                  <PanelTitle>{t('page.squadSettings.periods.title')}</PanelTitle>
+                  <p className="field-help">{t('page.squadSettings.periods.description')}</p>
                 </EntityContent>
               </Cluster>
               <Button
@@ -201,11 +201,11 @@ export default function SquadSettingsPage() {
                   setIsPeriodModalOpen(true);
                 }}
               >
-                {t('squadSettings.periods.add')}
+                {t('page.squadSettings.periods.add')}
               </Button>
             </PanelHeader>
             {periods.length === 0 ? (
-              <EmptyState>{t('squadSettings.periods.empty')}</EmptyState>
+              <EmptyState>{t('page.squadSettings.periods.empty')}</EmptyState>
             ) : (
               <EntityList>
                 {periods.map((period) => (
@@ -213,7 +213,7 @@ export default function SquadSettingsPage() {
                     <EntityContent>
                       <EntityTitle>{period.name}</EntityTitle>
                       <EntityMeta>
-                        {t('squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
+                        {t('page.squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
                       </EntityMeta>
                     </EntityContent>
                     <EntityActions><Button
@@ -242,12 +242,12 @@ export default function SquadSettingsPage() {
                 </svg>
               </IconTile>
               <EntityContent>
-                <PanelTitle>{t('matchPlanning.category.title')}</PanelTitle>
-                <p className="field-help">{t('matchPlanning.category.description')}</p>
+                <PanelTitle>{t('page.matchPlanning.category.title')}</PanelTitle>
+                <p className="field-help">{t('page.matchPlanning.category.description')}</p>
               </EntityContent>
             </Cluster>
             <div className="settings-category-form">
-              <Field className="settings-category-field" label={t('matchPlanning.category.label')} htmlFor="squad-category">
+              <Field className="settings-category-field" label={t('page.matchPlanning.category.label')} htmlFor="squad-category">
                 <Select
                   id="squad-category"
                   value={selectedCategory}
@@ -256,7 +256,7 @@ export default function SquadSettingsPage() {
                     setCategorySaveError(null);
                   }}
                 >
-                  <option value="">{t('matchPlanning.category.none')}</option>
+                  <option value="">{t('page.matchPlanning.category.none')}</option>
                   {GROUP_CATEGORIES.map((category) => (
                     <option key={category} value={category}>{category}</option>
                   ))}
@@ -268,20 +268,20 @@ export default function SquadSettingsPage() {
                 onClick={handleSaveCategory}
                 disabled={isSavingCategory || selectedCategory === (squad?.category ?? '')}
               >
-                {isSavingCategory ? t('matchPlanning.category.saving') : t('common.actions.save')}
+                {isSavingCategory ? t('page.matchPlanning.category.saving') : t('common.actions.save')}
               </Button>
             </div>
             {categorySaveError && <Alert className="settings-category-alert">{categorySaveError}</Alert>}
             {selectedCategory && selectedOfficialFormat(selectedCategory) && (
               <Alert tone="warning" className="settings-category-alert">
-                {t('matchPlanning.category.officialModeHint', { mode: selectedOfficialFormat(selectedCategory)?.name })}
+                {t('page.matchPlanning.category.officialModeHint', { mode: selectedOfficialFormat(selectedCategory)?.name })}
               </Alert>
             )}
             {selectedCategory && selectIsTournamentOnlyCategory(sfvCatalog, selectedCategory) && (
-              <Alert tone="info" className="settings-category-alert">{t('matchPlanning.category.tournamentOnlyHint')}</Alert>
+              <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.tournamentOnlyHint')}</Alert>
             )}
             {selectedCategory === 'FF14' && (
-              <Alert tone="info" className="settings-category-alert">{t('matchPlanning.category.ff14Hint')}</Alert>
+              <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.ff14Hint')}</Alert>
             )}
           </Panel>
 
@@ -294,20 +294,20 @@ export default function SquadSettingsPage() {
                   </svg>
                 </IconTile>
                 <EntityContent>
-                  <PanelTitle>{t('matchPlanning.title')}</PanelTitle>
-                  <p className="field-help">{t('matchPlanning.description')}</p>
+                  <PanelTitle>{t('page.matchPlanning.title')}</PanelTitle>
+                  <p className="field-help">{t('page.matchPlanning.description')}</p>
                 </EntityContent>
               </Cluster>
             <Switch
               checked={matchPlanningEnabled}
-              label={t('matchPlanning.title')}
+              label={t('page.matchPlanning.title')}
               disabled={isTogglingEnabled}
               onClick={handleToggleEnabled}
             />
             </Split>
             {!matchPlanningEnabled && (
               <Alert tone="info" className="settings-disabled-alert">
-                {t('matchPlanning.disabledState')}
+                {t('page.matchPlanning.disabledState')}
               </Alert>
             )}
           </Panel>
@@ -318,7 +318,7 @@ export default function SquadSettingsPage() {
         <ContentGrid variant="equal" className="settings-grid--secondary">
           <Panel>
               <PanelHeader>
-                <PanelTitle>{t('matchPlanning.matchFormats.title')}</PanelTitle>
+                <PanelTitle>{t('page.matchPlanning.matchFormats.title')}</PanelTitle>
                 <Button
                   variant="primary"
                   size="sm"
@@ -332,7 +332,7 @@ export default function SquadSettingsPage() {
               </PanelHeader>
 
               {matchFormats.length === 0 ? (
-                <EmptyState>{t('matchPlanning.matchFormats.emptyState')}</EmptyState>
+                <EmptyState>{t('page.matchPlanning.matchFormats.emptyState')}</EmptyState>
               ) : (
                 <EntityList>
                   {matchFormats.map((matchFormat) => (
@@ -345,18 +345,18 @@ export default function SquadSettingsPage() {
                           <EntityTitle>{matchFormat.name}</EntityTitle>
                           {matchFormat.isDefault && (
                             <Badge tone="brand" size="sm">
-                              {t('matchPlanning.matchFormats.defaultBadge')}
+                              {t('page.matchPlanning.matchFormats.defaultBadge')}
                             </Badge>
                           )}
                           {selectIsOfficialMatchFormat(matchFormat) && (
                             <Badge tone="info" size="sm">
-                              {t('matchPlanning.matchFormats.officialBadge')}
+                              {t('page.matchPlanning.matchFormats.officialBadge')}
                             </Badge>
                           )}
                         </Cluster>
                         {matchFormat.playersOnField !== undefined && (
                           <EntityMeta>
-                            {t('matchPlanning.matchFormats.players', {
+                            {t('page.matchPlanning.matchFormats.players', {
                               onField: matchFormat.playersOnField,
                               min: matchFormat.minPlayersPerTeam ?? '-',
                               max: matchFormat.maxPlayersPerTeam ?? '-',
@@ -364,13 +364,13 @@ export default function SquadSettingsPage() {
                           </EntityMeta>
                         )}
                         <EntityMeta>
-                          {t('matchPlanning.matchFormats.summary', {
+                          {t('page.matchPlanning.matchFormats.summary', {
                             periods: matchFormat.numberOfPeriods,
                             minutes: matchFormat.periodLengthMinutes,
                           })}
                         </EntityMeta>
                         <EntityMeta>
-                          {t('matchPlanning.matchFormats.minimumPeriods', {
+                          {t('page.matchPlanning.matchFormats.minimumPeriods', {
                             count: matchFormat.minimumPeriodsPerPlayer ?? 0,
                           })}
                         </EntityMeta>
@@ -382,7 +382,7 @@ export default function SquadSettingsPage() {
                             size="sm"
                             onClick={() => setDefaultMatchFormat(matchFormat.id)}
                           >
-                            {t('matchPlanning.matchFormats.setDefault')}
+                            {t('page.matchPlanning.matchFormats.setDefault')}
                           </Button>
                         )}
                         <IconButton
@@ -414,7 +414,7 @@ export default function SquadSettingsPage() {
 
           <Panel>
               <PanelHeader>
-                <PanelTitle>{t('matchPlanning.formations.title')}</PanelTitle>
+                <PanelTitle>{t('page.matchPlanning.formations.title')}</PanelTitle>
                 <Button
                   variant="primary"
                   size="sm"
@@ -428,7 +428,7 @@ export default function SquadSettingsPage() {
               </PanelHeader>
 
               {formations.length === 0 ? (
-                <EmptyState>{t('matchPlanning.formations.emptyState')}</EmptyState>
+                <EmptyState>{t('page.matchPlanning.formations.emptyState')}</EmptyState>
               ) : (
                 <EntityList>
                   {formations.map((formation) => {
@@ -483,11 +483,11 @@ export default function SquadSettingsPage() {
       )}
 
       <Panel tone="danger" className="settings-danger-panel">
-        <PanelTitle>{t('squadSettings.deactivate.title')}</PanelTitle>
-        <PanelDescription>{t('squadSettings.deactivate.description')}</PanelDescription>
+        <PanelTitle>{t('page.squadSettings.deactivate.title')}</PanelTitle>
+        <PanelDescription>{t('page.squadSettings.deactivate.description')}</PanelDescription>
         {deactivateError && <Alert className="settings-danger-alert">{deactivateError}</Alert>}
         <Button className="settings-danger-action" variant="danger" size="sm" onClick={() => setIsDeactivateDialogOpen(true)}>
-          {t('squadSettings.deactivate.action')}
+          {t('page.squadSettings.deactivate.action')}
         </Button>
       </Panel>
 
@@ -512,8 +512,8 @@ export default function SquadSettingsPage() {
       {deletingMatchFormat && (
         <ConfirmDialog
           isOpen={true}
-          title={t('matchPlanning.matchFormats.deleteTitle')}
-          message={t('matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
+          title={t('page.matchPlanning.matchFormats.deleteTitle')}
+          message={t('page.matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
           confirmText={t('common.actions.delete')}
           onConfirm={async () => {
             await deleteMatchFormat(deletingMatchFormat.id);
@@ -526,8 +526,8 @@ export default function SquadSettingsPage() {
       {deletingFormation && (
         <ConfirmDialog
           isOpen={true}
-          title={t('matchPlanning.formations.deleteTitle')}
-          message={t('matchPlanning.formations.deleteMessage', { name: deletingFormation.name })}
+          title={t('page.matchPlanning.formations.deleteTitle')}
+          message={t('page.matchPlanning.formations.deleteMessage', { name: deletingFormation.name })}
           confirmText={t('common.actions.delete')}
           onConfirm={async () => {
             await deleteFormation(deletingFormation.id);
@@ -539,18 +539,18 @@ export default function SquadSettingsPage() {
 
       <ConfirmDialog
         isOpen={isUnlinkSpondDialogOpen}
-        title={t('squadSettings.spond.unlinkTitle')}
-        message={t('squadSettings.spond.unlinkMessage')}
-        confirmText={isUnlinkingSpond ? t('common.states.processing') : t('squadSettings.spond.unlinkGroup')}
+        title={t('page.squadSettings.spond.unlinkTitle')}
+        message={t('page.squadSettings.spond.unlinkMessage')}
+        confirmText={isUnlinkingSpond ? t('common.states.processing') : t('page.squadSettings.spond.unlinkGroup')}
         onConfirm={() => void handleUnlinkSpond()}
         onCancel={() => setIsUnlinkSpondDialogOpen(false)}
       />
 
       <ConfirmDialog
         isOpen={isDeactivateDialogOpen}
-        title={t('squadSettings.deactivate.confirmTitle')}
-        message={t('squadSettings.deactivate.confirmMessage')}
-        confirmText={isDeactivating ? t('common.states.processing') : t('squadSettings.deactivate.action')}
+        title={t('page.squadSettings.deactivate.confirmTitle')}
+        message={t('page.squadSettings.deactivate.confirmMessage')}
+        confirmText={isDeactivating ? t('common.states.processing') : t('page.squadSettings.deactivate.action')}
         onConfirm={() => void handleDeactivateSquad()}
         onCancel={() => !isDeactivating && setIsDeactivateDialogOpen(false)}
       />

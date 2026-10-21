@@ -25,23 +25,22 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
         <EntityContent>
           <Cluster gap="sm">
             <EntityTitle>{activity.name}</EntityTitle>
-            <Badge tone="brand" size="sm">{t(`activity.kinds.${activity.kind}`)}</Badge>
+            <Badge tone="brand" size="sm">{t(`domain.activity.kinds.${activity.kind}`)}</Badge>
           </Cluster>
           <EntityMeta>
-            <span>{summary.startTime}</span>
             {activity.location && <span>{activity.location}</span>}
-            {activity.kind === 'match' && activity.opponentName && <span>{t('activity.fields.opponent')}: {activity.opponentName}</span>}
+            {activity.kind === 'match' && activity.opponentName && <span>{t('domain.activity.fields.opponent')}: {activity.opponentName}</span>}
           </EntityMeta>
-          <Cluster gap="sm" className="event-card-counts" aria-label={t('events.invitationCounts')}>
-            <Badge tone="success" size="sm" title={t('invitationStatus.accepted')}>✓ {summary.invitationCounts.accepted}</Badge>
-            <Badge tone="warning" size="sm" title={t('invitationStatus.open')}>? {summary.invitationCounts.open}</Badge>
-            <Badge tone="danger" size="sm" title={t('invitationStatus.declined')}>× {summary.invitationCounts.declined}</Badge>
-            <Badge size="sm" title={t('events.playersAssignedToTeams')}>● {summary.selectedPlayerCount}</Badge>
+          <Cluster gap="sm" className="event-card-counts" aria-label={t('page.events.invitationCounts')}>
+            <Badge tone="success" size="sm" title={t('domain.invitation.status.accepted')}>✓ {summary.invitationCounts.accepted}</Badge>
+            <Badge tone="warning" size="sm" title={t('domain.invitation.status.open')}>? {summary.invitationCounts.open}</Badge>
+            <Badge tone="danger" size="sm" title={t('domain.invitation.status.declined')}>× {summary.invitationCounts.declined}</Badge>
+            <Badge size="sm" title={t('page.events.playersAssignedToTeams')}>● {summary.selectedPlayerCount}</Badge>
           </Cluster>
         </EntityContent>
         <div className="event-card-status">
           {summary.allTeamsMeetMinimum
-            ? <span className="event-card-ready" title={t('events.teamsReady')}>✓</span>
+            ? <span className="event-card-ready" title={t('page.events.teamsReady')}>✓</span>
             : <span className="event-card-pending"><Badge tone="warning" size="sm">{t('common.states.pending')}</Badge></span>}
           <ChevronRightIcon className="event-card-chevron" />
         </div>
@@ -50,7 +49,7 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
     {summary.teams.map((team) => {
       const hasDifferentLocation = team.location && team.location !== activity.location;
 
-      return <section key={team.id} aria-label={t('events.teamCardLabel', { team: team.name })} className="event-card-team">
+      return <section key={team.id} aria-label={t('page.events.teamCardLabel', { team: team.name })} className="event-card-team">
         <EntityMeta className="event-card-team-meta">
           <span className="event-card-team-time">{team.startTime || summary.startTime}</span>
           <Strength level={team.strength} className="event-card-team-strength" />
@@ -59,12 +58,12 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
             variant="ghost"
             size="sm"
             data-team-field="name"
-            onClick={() => navigate(`/events/${activity.id}/teams/${team.id}`)}
-            aria-label={t('events.openTeamDetails', { team: team.name })}
+            onClick={() => navigate(`/activities/${activity.id}/teams/${team.id}`)}
+            aria-label={t('page.events.openTeamDetails', { team: team.name })}
           >
             {team.name}
           </Button>
-          <span data-team-field="count" title={t('events.playersAssignedToTeams')}>{team.selectedPlayerCount} <span aria-hidden="true">●</span></span>
+          <span data-team-field="count" title={t('page.events.playersAssignedToTeams')}>{team.selectedPlayerCount} <span aria-hidden="true">●</span></span>
           {hasDifferentLocation && <span data-team-field="location" title={team.location}>{team.location}</span>}
           {team.responsiblePeople.length > 0 && <span data-team-field="people" title={team.responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}>
             {team.responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}

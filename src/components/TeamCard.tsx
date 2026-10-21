@@ -31,7 +31,7 @@ interface TeamCardProps {
   isDragOver: boolean;
   dragOverPlayerId: string | null;
   onOpenTeam: (teamId: string) => void;
-  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string | undefined, currentResponsiblePersonIds: string[], currentLocation?: string) => void;
+  onEditTeam: (teamId: string, currentName: string, currentStrength: number, currentStartTime: string | undefined, currentResponsiblePersonId: string | undefined, currentLocation?: string) => void;
   onDeleteTeam: (teamId: string) => void;
   onAssignShirts: (team: Team) => void;
   onRemovePlayer: (teamId: string, playerId: string) => void;
@@ -127,7 +127,7 @@ export default function TeamCard({
               {view.shirtSet && (
                 <MetadataItem>
                   👕 {view.shirtSet.sponsor}
-                  {(team.shirtAssignments?.length ?? 0) > 0 && ` (${t('teamCard.assignedShirtsCount', { count: team.shirtAssignments?.length ?? 0 })})`}
+                  {(team.shirtAssignments?.length ?? 0) > 0 && ` (${t('page.teamCard.assignedShirtsCount', { count: team.shirtAssignments?.length ?? 0 })})`}
                 </MetadataItem>
               )}
             </MetadataList>
@@ -139,7 +139,7 @@ export default function TeamCard({
               team.name,
               team.strength || 2,
               activity.kind === 'match' ? undefined : team.startTime,
-              team.responsiblePersonIds || [],
+              team.responsiblePersonId,
               activity.kind === 'match' ? undefined : team.location,
             )}>
               {t('common.actions.edit')}
@@ -150,7 +150,7 @@ export default function TeamCard({
             <Button variant="ghost" size="sm" onClick={() => onAssignShirts(team)}>
               👕 {t('nav.shirts')}
             </Button>
-            <IconButton label={t('events.openTeamDetails', { team: team.name })} onClick={() => onOpenTeam(team.id)}>
+            <IconButton label={t('page.events.openTeamDetails', { team: team.name })} onClick={() => onOpenTeam(team.id)}>
               <ChevronRightIcon className="icon-sm" />
             </IconButton>
           </Cluster>
@@ -206,12 +206,12 @@ export default function TeamCard({
                       {row.shirtNumber && row.shirtNumber > 0 && <strong className="team-card-shirt-number">{row.shirtNumber}</strong>}
                       <span>{row.player.firstName} {row.player.lastName}</span>
                       {row.hasInactiveFutureEvent && (
-                        <Badge tone="danger" size="sm" title={t('teamCard.inactiveIndicatorTooltip')}>
-                          {t('teamCard.inactiveIndicator')}
+                        <Badge tone="danger" size="sm" title={t('page.teamCard.inactiveIndicatorTooltip')}>
+                          {t('page.teamCard.inactiveIndicator')}
                         </Badge>
                       )}
                       <Level level={row.player.level} />
-                      <span className="team-card-player-statistics" title={t('teamCard.statsTooltip', {
+                      <span className="team-card-player-statistics" title={t('page.teamCard.statsTooltip', {
                         accepted: row.statistics.acceptedCount,
                         selected: row.statistics.selectedCount,
                       })}>
@@ -219,12 +219,12 @@ export default function TeamCard({
                       </span>
                     </Cluster>
                   ) : (
-                    <span>{t('teamCard.unknownPlayer')}</span>
+                    <span>{t('page.teamCard.unknownPlayer')}</span>
                   )}
                 </EntityContent>
                 <EntityActions>
-                  {!row.player && <span className="team-card-player-statistics" title={t('teamCard.statsTooltip', { accepted: 0, selected: 0 })}>0/0</span>}
-                  <IconButton variant="danger" label={t('teamCard.removePlayer')} onClick={() => onRemovePlayer(team.id, row.playerId)}>
+                  {!row.player && <span className="team-card-player-statistics" title={t('page.teamCard.statsTooltip', { accepted: 0, selected: 0 })}>0/0</span>}
+                  <IconButton variant="danger" label={t('page.teamCard.removePlayer')} onClick={() => onRemovePlayer(team.id, row.playerId)}>
                     <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>

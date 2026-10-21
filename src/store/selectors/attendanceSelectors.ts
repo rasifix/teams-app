@@ -19,14 +19,10 @@ export const hasActivityStarted = (activity: Pick<Activity, 'startsAt'>, now: Da
   return !Number.isNaN(startsAt) && startsAt < now.getTime();
 };
 
-/** Rows are everyone who accepted or was selected, plus anyone with a recorded status, sorted by name. */
+/** Rows are selected Players only, plus recorded selected Players, sorted by name. */
 export function selectActivityAttendance(activity: Activity, players: Player[], now: Date = new Date()): ActivityAttendanceView {
   const statusByPlayer = new Map((activity.attendance ?? []).map((record) => [record.personId, record.status]));
-  const expectedIds = new Set<string>([
-    ...(activity.invitations ?? []).filter((invitation) => invitation.response === 'accepted').map((invitation) => invitation.playerId),
-    ...(activity.teams ?? []).flatMap((team) => team.selectedPlayers ?? []),
-    ...statusByPlayer.keys(),
-  ]);
+  const expectedIds = selectSelectedPlayerIds(activity);
   const rows = players
     .filter((player) => expectedIds.has(player.id))
     .map((player) => ({ playerId: player.id, name: `${player.firstName} ${player.lastName}`, status: statusByPlayer.get(player.id) }))
@@ -38,7 +34,7 @@ export function selectActivityAttendance(activity: Activity, players: Player[], 
 
 export const ATTENDANCE_REASONS: AttendanceReason[] = ['sick', 'injured', 'noShow', 'other'];
 
-export type RecordableAttendanceStatus = Extract<AttendanceStatus, 'present' | 'excused'>;
+export type RecordableAttendanceStatus = AttendanceStatus;
 
 export interface AttendanceDialogRow {
   playerId: string;
@@ -47,7 +43,7 @@ export interface AttendanceDialogRow {
   reason: AttendanceReason | '';
 }
 
-/** Only selected players are listed; they default to present unless excused was recorded. */
+/** Only selected players are listed; they default to present unless another status was recorded. */
 export function selectAttendanceDialogRows(activity: Activity, players: Player[]): AttendanceDialogRow[] {
   const selectedIds = selectSelectedPlayerIds(activity);
   const recorded = new Map((activity.attendance ?? []).map((record) => [record.personId, record]));
@@ -55,12 +51,12 @@ export function selectAttendanceDialogRows(activity: Activity, players: Player[]
     .filter((player) => selectedIds.has(player.id))
     .map((player) => {
       const record = recorded.get(player.id);
-      const isExcused = record?.status === 'excused';
+      const status = record?.status ?? 'present';
       return {
         playerId: player.id,
         name: `${player.firstName} ${player.lastName}`,
-        status: isExcused ? 'excused' as const : 'present' as const,
-        reason: (isExcused ? record?.reason ?? '' : '') as AttendanceDialogRow['reason'],
+        status,
+        reason: (status === 'excused' ? record?.reason ?? '' : '') as AttendanceDialogRow['reason'],
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -77,6 +73,7 @@ export function toAttendanceRecords(rows: AttendanceDialogRow[]): ActivityAttend
 export interface AttendanceSummary {
   isRecorded: boolean;
   present: number;
+  absent: number;
   excused: number;
   excusedWithReason: Array<{ playerId: string; name: string; reason?: AttendanceReason }>;
 }
@@ -90,6 +87,7 @@ export function selectAttendanceSummary(activity: Activity, players: Player[]): 
   return {
     isRecorded: records.length > 0,
     present: records.filter((record) => record.status === 'present').length,
+    absent: records.filter((record) => record.status === 'absent').length,
     excused: excused.length,
     excusedWithReason: excused
       .map((record) => ({ playerId: record.personId, name: namesById.get(record.personId) ?? record.personId, reason: record.reason }))

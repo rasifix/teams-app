@@ -27,7 +27,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   const handleEventClick = (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/events/${eventId}`);
+    navigate(`/activities/${eventId}`);
   };
 
   const sortedData = useMemo(
@@ -91,7 +91,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
 
   if (events.length === 0 || players.length === 0) {
     return (
-      <EmptyState>{t('statistics.eventParticipation.emptyState')}</EmptyState>
+      <EmptyState>{t('page.statistics.eventParticipation.emptyState')}</EmptyState>
     );
   }
 
@@ -103,17 +103,17 @@ export default function EventParticipationMatrix({ players, events }: EventParti
           <Legend>
             <LegendItem>
               <StatusMarker tone="success">✓</StatusMarker>
-              <span>{t('statistics.playerTable.selected')}</span>
+              <span>{t('page.statistics.playerTable.selected')}</span>
             </LegendItem>
             {invitationStatusOrder.map((status) => (
               <LegendItem key={status}>
                 <StatusMarker tone={getStatusIcon(status).tone}>{invitationStatusMeta[status].icon}</StatusMarker>
-                <span>{t(`invitationStatus.${status}`)}</span>
+                <span>{t(`domain.invitation.status.${status}`)}</span>
               </LegendItem>
             ))}
             <LegendItem>
               <StatusMarker>-</StatusMarker>
-              <span>{t('invitationStatus.notInvited')}</span>
+              <span>{t('domain.invitation.status.notInvited')}</span>
             </LegendItem>
           </Legend>
         </Stack>
@@ -123,7 +123,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
             <DataTableHead>
               <DataTableRow>
                 <DataTableHeaderCell sticky className="statistics-matrix-player-heading">
-                  {t('domain.player')}
+                  {t('domain.player.label')}
                 </DataTableHeaderCell>
                 {events.map(event => (
                   <DataTableHeaderCell
@@ -162,7 +162,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
                       <DataTableCell
                         key={event.id}
                         align="center"
-                        title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('invitationStatus.notInvited') : t(`invitationStatus.${status}`)}`}
+                        title={`${event.name} - ${formatDate(getActivityDate(event))}\n${t('common.labels.status')}: ${status === 'not-invited' ? t('domain.invitation.status.notInvited') : t(`domain.invitation.status.${status}`)}`}
                       >
                         <StatusMarker tone={statusInfo.tone}>{statusInfo.icon}</StatusMarker>
                       </DataTableCell>

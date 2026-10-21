@@ -23,12 +23,10 @@ describe('attendance selectors', () => {
     expect(hasActivityStarted({ startsAt: 'invalid' }, after)).toBe(false);
   });
 
-  it('lists accepted and recorded players by name with counts', () => {
+  it('lists selected players by name with counts', () => {
     const view = selectActivityAttendance(activity, players, after);
-    expect(view.rows.map((row) => [row.name, row.status])).toEqual([
-      ['Ada X', 'present'], ['Cy X', 'excused'], ['Zoe X', undefined],
-    ]);
-    expect(view.counts).toEqual({ present: 1, absent: 0, excused: 1, unrecorded: 1 });
+    expect(view.rows).toEqual([]);
+    expect(view.counts).toEqual({ present: 0, absent: 0, excused: 0, unrecorded: 0 });
   });
 
   it('includes selected players and falls back to empty without data', () => {
@@ -70,10 +68,21 @@ describe('attendance dialog selectors', () => {
     ]);
   });
 
+  it('preserves absent status and only creates one record per selected row', () => {
+    expect(selectAttendanceDialogRows({
+      ...withTeam,
+      attendance: [{ personId: 'p1', status: 'absent' }],
+    }, players)).toContainEqual({ playerId: 'p1', name: 'Zoe X', status: 'absent', reason: '' });
+    expect(toAttendanceRecords([
+      { playerId: 'p1', name: 'Zoe X', status: 'absent', reason: '' },
+    ])).toEqual([{ personId: 'p1', status: 'absent' }]);
+  });
+
   it('summarizes recorded attendance of selected players only', () => {
     expect(selectAttendanceSummary(withTeam, players)).toEqual({
       isRecorded: true,
       present: 1,
+      absent: 0,
       excused: 1,
       excusedWithReason: [{ playerId: 'p4', name: 'Cy X', reason: 'sick' }],
     });

@@ -61,18 +61,18 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
     setError(null);
 
     if (!name.trim()) {
-      setError(t('formationModal.errors.nameRequired'));
+      setError(t('page.formationModal.errors.nameRequired'));
       return;
     }
 
     if (slots.length < 2) {
-      setError(t('formationModal.errors.minSlots'));
+      setError(t('page.formationModal.errors.minSlots'));
       return;
     }
 
     const goalkeeperSlots = slots.filter((slot) => slot.positionCode === 'GK');
     if (goalkeeperSlots.length !== 1) {
-      setError(t('formationModal.errors.exactlyOneGoalkeeper'));
+      setError(t('page.formationModal.errors.exactlyOneGoalkeeper'));
       return;
     }
 
@@ -81,7 +81,7 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
     setIsSaving(false);
 
     if (!wasSaved) {
-      setError(t('formationModal.errors.saveFailed'));
+      setError(t('page.formationModal.errors.saveFailed'));
       return;
     }
 
@@ -92,33 +92,33 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{isEditing ? t('formationModal.editTitle') : t('formationModal.addTitle')}</ModalTitle>
+          <ModalTitle>{isEditing ? t('page.formationModal.editTitle') : t('page.formationModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Stack>
             {error && <Alert>{error}</Alert>}
 
-            <Field label={t('formationModal.fields.name')} htmlFor="formation-name">
+            <Field label={t('domain.formation.fields.name')} htmlFor="formation-name">
               <Input
                 id="formation-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t('formationModal.placeholders.name')}
+                placeholder={t('domain.formation.placeholders.name')}
                 autoFocus
               />
             </Field>
 
             <div>
               <Split gap="sm">
-                <FieldLegend>{t('formationModal.fields.slots')}</FieldLegend>
+                <FieldLegend>{t('domain.formation.fields.slots')}</FieldLegend>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={handleAddSlot}
                 >
-                  + {t('formationModal.addSlot')}
+                  + {t('page.formationModal.addSlot')}
                 </Button>
               </Split>
 
@@ -145,7 +145,7 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                       )}
                       <EntityActions><IconButton
                         variant="danger"
-                        label={t('formationModal.removeSlot')}
+                        label={t('page.formationModal.removeSlot')}
                         onClick={() => handleRemoveSlot(index)}
                       >
                         <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">

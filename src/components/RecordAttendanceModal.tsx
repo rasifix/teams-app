@@ -41,11 +41,11 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('attendance.recordTitle')}</ModalTitle>
+          <ModalTitle>{t('page.attendance.recordTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           {rows.length === 0 ? (
-            <p className="body-muted">{t('attendance.noSelectedPlayers')}</p>
+            <p className="body-muted">{t('page.attendance.noSelectedPlayers')}</p>
           ) : (
             <EntityList variant="separated">
               {rows.map((row) => {
@@ -56,27 +56,28 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
                     <Stack gap="sm">
                     <Split gap="sm">
                       <EntityTitle>{row.name}</EntityTitle>
-                      <Button
-                        type="button"
-                        variant={isExcused ? 'secondary' : 'success'}
-                        size="sm"
-                        role="switch"
-                        aria-checked={isExcused}
-                        aria-label={`${row.name}: ${t('attendance.status.excused')}`}
-                        onClick={() => update(row.playerId, { status: isExcused ? 'present' : 'excused', reason: '' })}
+                      <Select
+                        value={row.status}
+                        onChange={(event) => update(row.playerId, {
+                          status: event.target.value as AttendanceDialogRow['status'],
+                          reason: '',
+                        })}
+                        aria-label={`${row.name}: ${t('page.attendance.statusLabel')}`}
                       >
-                        {t(`attendance.status.${row.status}`)}
-                      </Button>
+                        <option value="present">{t('domain.attendance.status.present')}</option>
+                        <option value="absent">{t('domain.attendance.status.absent')}</option>
+                        <option value="excused">{t('domain.attendance.status.excused')}</option>
+                      </Select>
                     </Split>
                     {isExcused && (
                       <Select
                         value={row.reason}
                         onChange={(event) => update(row.playerId, { reason: event.target.value as AttendanceDialogRow['reason'] })}
-                        aria-label={t('attendance.reasonPlaceholder')}
+                        aria-label={t('page.attendance.reasonPlaceholder')}
                       >
-                        <option value="">{t('attendance.reasonPlaceholder')}</option>
+                        <option value="">{t('page.attendance.reasonPlaceholder')}</option>
                         {ATTENDANCE_REASONS.map((reason) => (
-                          <option key={reason} value={reason}>{t(`attendance.reasons.${reason}`)}</option>
+                          <option key={reason} value={reason}>{t(`domain.attendance.reasons.${reason}`)}</option>
                         ))}
                       </Select>
                     )}

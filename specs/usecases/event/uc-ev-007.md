@@ -1,9 +1,9 @@
-# UC-EV-007 - Select Team Formation
+# UC-EV-007 - Select Match Team Formation
 
 ## Goal
 
-Allow an authenticated user to select a Formation for a Team once its Event
-has a Match Format assigned, fixing the Formation for the whole match.
+Allow an authenticated user to select a Formation for a Match Team once its
+Match Activity has a Match Format assigned, fixing the Formation for the match.
 
 ## Scope
 
@@ -14,7 +14,7 @@ This use case covers:
 
 This use case does not cover:
 - creating or editing Formations (UC-GR-010),
-- assigning an Event's Match Format (UC-EV-006, a precondition here),
+- assigning an Activity's Match Format (UC-EV-006, a precondition here),
 - assigning players to slots per period (UC-EV-008).
 
 ## Primary Actor
@@ -25,13 +25,13 @@ Authenticated User with Role admin or trainer
 
 - Team detail UI (Formation picker)
 - Zustand store team update action
-- Events API endpoint used for team update
+- Activities API endpoint used for Team update
 
 ## Preconditions
 
 - User is authenticated and has admin or trainer role in the active squad.
 - Active squad has `matchPlanningEnabled: true`.
-- Target Team's Event has a non-null `matchFormatId`.
+- Target Team belongs to a Match Activity with a non-null `matchFormatId`.
 
 ## Trigger
 
@@ -45,7 +45,7 @@ Optional:
 
 ## Main Success Scenario
 
-1. User opens Team Detail for a Team whose Event has a Match Format.
+1. User opens Team Detail for a Match Team whose Activity has a Match Format.
 2. User selects the Formation row.
 3. System opens an assignment modal showing the squad's Formations plus a
    "None" option, with the current selection preselected.
@@ -56,9 +56,9 @@ Optional:
 
 ## Alternative Flows
 
-### A1 - No Match Format On Event
+### A1 - No Match Format On Activity
 
-1. Event has no `matchFormatId` set.
+1. Match Activity has no `matchFormatId` set.
 2. System hides the Formation picker and lineup editor for the Team.
 
 ### A2 - Change Formation After Lineup Exists
@@ -94,9 +94,11 @@ Failure:
 
 ## Business Rules
 
+- Changes are rejected while the Activity is cancelled.
+
 - A Formation is fixed for the whole match once selected; only the
   per-period player-to-slot assignments vary.
-- `formationId` can only be set while the Team's Event has a Match Format.
+- `formationId` can only be set while the Team's Activity has a Match Format.
 - Only squad admin or trainer roles may change a Team's `formationId`.
 - Formation is assigned through the clickable Team Detail row and a focused
   modal; it is not edited through an inline select control.
@@ -104,7 +106,8 @@ Failure:
 ## Validation Rules
 
 - `formationId`, if provided, must reference a Formation belonging to the
-  same squad as the Team's Event.
+  same Squad as the Team's Activity.
 - `formationId` may be explicitly `null` to represent "no Formation".
-- Setting a `formationId` is rejected if the Team's Event has no
+- Setting a `formationId` is rejected if the Team's Activity has no
   `matchFormatId`.
+- Formation selection is rejected for Tournament Teams.

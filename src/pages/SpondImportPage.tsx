@@ -66,12 +66,12 @@ export default function SpondImportPage() {
   const isEventOnly = searchParams.get('scope') === 'events';
   const isPlayerOnly = searchParams.get('scope') === 'players';
   const isScopedSync = isEventOnly || isPlayerOnly;
-  const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/events' : '/squad-settings';
+  const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/activities' : '/squad-settings';
   const { user } = useAuth();
   const squad = useSquad();
   const sfvCatalog = useSfvCatalog();
   const periods = useSquadPeriods();
-  const { players } = usePlayers();
+  const { players, addGuardianToPlayer } = usePlayers();
   const { trainers } = useTrainers();
   const { activities, updateActivity: updateActivityRecord } = useActivities();
   const initializeApp = useStore((state) => state.initializeApp);
@@ -109,7 +109,7 @@ export default function SpondImportPage() {
     [snapshot, players],
   );
   const allEventRows = useMemo(
-    () => selectSpondEventRows(snapshot?.events ?? [], activities, players),
+    () => selectSpondEventRows(snapshot?.activities ?? [], activities, players),
     [snapshot, activities, players],
   );
   const eventRows = useMemo(() => selectSpondActionableEventRows(allEventRows), [allEventRows]);
@@ -140,6 +140,40 @@ export default function SpondImportPage() {
     setSubGroupSelectionLocked(false);
   };
 
+  const loadSnapshot = async (groupIdOverride?: string, selectedSubGroupIdOverride?: string) => {
+    const selectedGroupId = groupIdOverride ?? groupId;
+    const selectedSubGroup = selectedSubGroupIdOverride ?? selectedSubGroupId;
+    if (!clientRef.current || !selectedGroupId || types.length === 0 || (types.includes('events') && dateRangeError)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const nextSnapshot = await clientRef.current.getSnapshot(
+        selectedGroupId,
+        localDateStartToUtcISOString(from),
+        localDateStartToUtcISOString(to),
+        selectedSubGroup || undefined,
+      );
+      const nextMemberRows = selectSpondActionableMemberRows(selectSpondMemberRows(nextSnapshot.group.members, players));
+      const nextGuardianRows = selectSpondActionableGuardianRows(selectSpondGuardianRows(nextSnapshot.group.members, players));
+      const nextEventRows = selectSpondActionableEventRows(selectSpondEventRows(nextSnapshot.activities, activities, players));
+      setSnapshot(nextSnapshot);
+      setMemberDrafts(selectInitialSpondMemberDrafts(nextMemberRows));
+      setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
+      setGuardianSelection(selectInitialSpondGuardianSelection(nextGuardianRows));
+      setPassword('');
+      const firstReviewStep = reviewSteps.find((reviewStep) => (
+        reviewStep === 'players' ? nextMemberRows.length > 0
+          : reviewStep === 'guardians' ? nextGuardianRows.length > 0
+            : nextEventRows.length > 0
+      ));
+      setStep(firstReviewStep ?? 'summary');
+    } catch (caught) {
+      setError(errorMessage(caught));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const connect = async () => {
     setBusy(true);
     setError(null);
@@ -159,7 +193,11 @@ export default function SpondImportPage() {
         setGroupId(linkedGroup.groupId);
         setSelectedSubGroupId(linkedGroup.subGroupId ?? '');
         setSubGroupSelectionLocked(Boolean(linkedGroup.subGroupId));
-        setStep('types');
+        if (isPlayerOnly) {
+          await loadSnapshot(linkedGroup.groupId, linkedGroup.subGroupId ?? '');
+        } else {
+          setStep('types');
+        }
         return;
       }
       const preferred = selectSpondLinkedGroup(available, squad.spondId)?.groupId
@@ -179,38 +217,6 @@ export default function SpondImportPage() {
     } catch (caught) {
       client.dispose();
       clientRef.current = null;
-      setError(errorMessage(caught));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const loadSnapshot = async () => {
-    if (!clientRef.current || !groupId || types.length === 0 || (types.includes('events') && dateRangeError)) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const nextSnapshot = await clientRef.current.getSnapshot(
-        groupId,
-        localDateStartToUtcISOString(from),
-        localDateStartToUtcISOString(to),
-        selectedSubGroupId || undefined,
-      );
-      const nextMemberRows = selectSpondActionableMemberRows(selectSpondMemberRows(nextSnapshot.group.members, players));
-      const nextGuardianRows = selectSpondActionableGuardianRows(selectSpondGuardianRows(nextSnapshot.group.members, players));
-      const nextEventRows = selectSpondActionableEventRows(selectSpondEventRows(nextSnapshot.events, activities, players));
-      setSnapshot(nextSnapshot);
-      setMemberDrafts(selectInitialSpondMemberDrafts(nextMemberRows));
-      setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
-      setGuardianSelection(selectInitialSpondGuardianSelection(nextGuardianRows));
-      setPassword('');
-      const firstReviewStep = reviewSteps.find((reviewStep) => (
-        reviewStep === 'players' ? nextMemberRows.length > 0
-          : reviewStep === 'guardians' ? nextGuardianRows.length > 0
-            : nextEventRows.length > 0
-      ));
-      setStep(firstReviewStep ?? 'summary');
-    } catch (caught) {
       setError(errorMessage(caught));
     } finally {
       setBusy(false);
@@ -290,6 +296,32 @@ export default function SpondImportPage() {
         members: memberDecisions, activities: activityDecisions,
       });
       await initializeApp();
+      const refreshedPlayers = useStore.getState();
+      const sourceGuardians = new Map(
+        snapshot.group.members.flatMap((member) => member.guardians).map((guardian) => [guardian.id, guardian]),
+      );
+      const existingGuardians = players
+        .flatMap((player) => player.guardians ?? [])
+        .filter((guardian, index, all) => all.findIndex((candidate) => candidate.id === guardian.id) === index);
+
+      for (const decision of memberDecisions) {
+        if (decision.action !== 'link' || decision.guardianIds.length === 0) continue;
+        const player = refreshedPlayers.getPlayerById(decision.memberId);
+        if (!player) continue;
+
+        for (const guardianId of decision.guardianIds) {
+          const sourceGuardian = sourceGuardians.get(guardianId);
+          if (!sourceGuardian || player.guardians?.some((guardian) => guardian.spondId === guardianId)) continue;
+          const existingGuardian = existingGuardians.find((guardian) => guardian.spondId === guardianId);
+          await addGuardianToPlayer(player.id, existingGuardian
+            ? { guardianId: existingGuardian.id }
+            : {
+                firstName: sourceGuardian.firstName,
+                lastName: sourceGuardian.lastName,
+                email: sourceGuardian.email,
+              });
+        }
+      }
       if (defaultActivityLimits) {
         const newlyCreatedActivities = useStore.getState().activities.filter((activity) => (
           activity.spondId
@@ -405,7 +437,6 @@ export default function SpondImportPage() {
               rows={visibleEventRows}
               drafts={activityDrafts}
               activities={activities}
-              trainers={trainers}
               eventFilter={eventFilter}
               issues={decisionSummary.activityIssues}
               onFilterChange={setEventFilter}

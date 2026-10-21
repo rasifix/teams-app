@@ -9,12 +9,12 @@ shirt.
 ## Scope
 
 This use case covers:
-- opening shirt assignment from Event Detail,
+- opening shirt assignment from Activity Detail,
 - assigning one shirt set to one team,
 - assigning shirt numbers from that set to players in the team,
-- persisting shirt set and shirt assignments to the event,
-- validating that one shirt is not assigned to multiple players in the same
-  event.
+- persisting shirt set and shirt assignments to the Activity,
+- validating that one shirt is not assigned to multiple Players in the same
+  Activity.
 
 This use case does not cover:
 - creating or editing shirt sets and shirt inventory (UC-GR-006),
@@ -28,23 +28,23 @@ Authenticated User with Role trainer
 
 ## Supporting Actors
 
-- Event detail UI
+- Activity detail UI
 - Assign shirts modal
 - Zustand store event update action
-- Events API endpoint used for event update
+- Activities API endpoint used for Activity update
 
 ## Preconditions
 
 - User is authenticated.
 - A squad is selected in app state.
-- Target event exists and is open in Event Detail view.
+- Target Activity exists and is open in Activity Detail view.
 - At least one team exists in the event.
 - At least one shirt set exists in the squad if shirt assignment should be
   possible.
 
 ## Trigger
 
-The user chooses Assign Shirts for a team on the Event Detail page.
+The user chooses Assign Shirts for a Team on the Activity Detail page.
 
 ## Input Data
 
@@ -60,19 +60,20 @@ Optional:
 
 ## Main Success Scenario
 
-1. User opens Event Detail and chooses Assign Shirts on Team A.
+1. User opens Activity Detail and chooses Assign Shirts on Team A.
 2. System opens Assign Shirts modal for Team A.
 3. User selects a shirt set.
 4. System loads team players and available shirt numbers for that set.
 5. User assigns shirt numbers to one or more players.
 6. System validates that each assigned shirt number is unique within Team A.
 7. System validates that each assigned shirt (shirtSetId + shirtNumber) is not
-   already assigned to a different player in any other team of the same event.
+   already assigned to a different Player in any other Team of the same
+   Activity.
 8. If validation passes, system updates Team A with:
    - shirtSetId,
    - shirtAssignments.
 9. System persists updated event teams.
-10. Modal closes and Event Detail reflects saved assignments.
+10. Modal closes and Activity Detail reflects saved assignments.
 
 ## Alternative Flows
 
@@ -88,7 +89,7 @@ Optional:
 2. System blocks submit and indicates duplicate shirt usage.
 3. No event update is sent.
 
-### A3 - Duplicate Shirt Across Teams In Same Event
+### A3 - Duplicate Shirt Across Teams In Same Activity
 
 1. Shirt set X is used by multiple teams in the same event.
 2. User assigns shirt number N from shirt set X to a player in Team A.
@@ -98,14 +99,14 @@ Optional:
 
 ### A4 - Persistence Failure
 
-1. Event update request fails.
+1. Activity update request fails.
 2. System keeps previous persisted team shirt assignments.
 3. Modal stays open or closes based on UI decision, but conflict-free state is
    not persisted.
 
 ### A5 - Authentication Expired
 
-1. Events API responds 401 during update.
+1. Activities API responds 401 during update.
 2. API client clears token and redirects to login.
 3. Shirt assignment changes are not persisted.
 
@@ -113,45 +114,47 @@ Optional:
 
 Success:
 - Team has assigned shirtSetId and shirtAssignments.
-- Event-wide uniqueness holds for all assigned shirts:
+- Activity-wide uniqueness holds for all assigned shirts:
   - one (shirtSetId, shirtNumber) pair belongs to at most one player in the
     event.
 - The same shirt set may be assigned to multiple teams.
 
 Failure:
-- Event data remains unchanged.
+- Activity data remains unchanged.
 - Existing valid shirt assignments remain intact.
 
 ## Business Rules
 
 - A team can have at most one assigned shirt set.
-- A shirt set can be assigned to multiple teams in the same event.
-- Shirt assignment uniqueness is enforced at event scope.
+- A shirt set can be assigned to multiple Teams in the same Activity.
+- Shirt assignment uniqueness is enforced at Activity scope.
 - Uniqueness key is the tuple (shirtSetId, shirtNumber).
 - The same shirt cannot be worn by two different players in one event,
   regardless of team.
 - Unassigned players are allowed (no shirt selected).
+- Shirt changes are rejected while the Activity is cancelled.
 
 ## Validation Rules
 
 - `shirtSetId` is required to save shirt assignments.
 - `shirtNumber` must exist in the selected shirt set.
 - Within the edited team, no two players may share the same shirt number.
-- Across all teams in the same event, no two players may share the same
+- Across all Teams in the same Activity, no two Players may share the same
   (shirtSetId, shirtNumber).
 
 ## Data Persistence Expectations
 
-- Shirt assignments are persisted as part of event team updates.
+- Shirt assignments are persisted as part of Activity Team updates.
 - For each team assignment:
   - team.shirtSetId identifies the referenced shirt set,
   - team.shirtAssignments stores playerId and shirtNumber mappings.
-- Event update must be rejected if it would violate event-wide shirt uniqueness.
+- Activity update must be rejected if it would violate Activity-wide shirt
+  uniqueness.
 
 ## API Contract Used By Current Frontend
 
 Current frontend persistence path:
-- `PUT /api/squads/{squadId}/events/{id}`
+- `PUT /api/squads/{squadId}/activities/{id}`
 - Request includes updated `teams` array with `shirtSetId` and
   `shirtAssignments` on affected team.
 

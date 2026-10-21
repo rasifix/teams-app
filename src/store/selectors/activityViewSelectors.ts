@@ -52,7 +52,7 @@ export function selectActivityCardSummary(
         location: activity.kind === 'match' ? activity.location : team.location || activity.location,
         strength: team.strength || 2,
         selectedPlayerCount: team.selectedPlayers?.length ?? 0,
-        responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players),
+        responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonId, trainers, players),
       };
     }),
     selectedPlayerCount: (activity.teams ?? []).reduce((sum, team) => sum + (team.selectedPlayers?.length ?? 0), 0),
@@ -66,6 +66,12 @@ export function selectActivityCardSummary(
 
 export function selectMinimumActivityMaxPlayers(activity: Activity): number {
   return Math.max(1, ...(activity.teams ?? []).map((team) => team.selectedPlayers?.length ?? 0));
+}
+
+export function selectCanAddActivityTeam(activity: Activity): boolean {
+  if (activity.status !== 'active') return false;
+  if (activity.kind === 'match') return activity.teams.length === 0;
+  return activity.kind === 'tournament';
 }
 
 export function selectAdjacentActivities(activities: Activity[], activityId: string): {

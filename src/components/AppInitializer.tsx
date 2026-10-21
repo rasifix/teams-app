@@ -98,7 +98,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
   if (!squad && !hasResolvedInitialSquad) {
     return (
       <div className="auth-shell">
-        <LoadingState message={t('squads.loading')} size="lg" />
+        <LoadingState message={t('page.squads.loading')} size="lg" />
       </div>
     );
   }

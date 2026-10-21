@@ -33,7 +33,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
         if (!cancelled) setSubscriptionUrl(result.subscriptionUrl);
       })
       .catch(() => {
-        if (!cancelled) setError(t('members.birthdayCalendar.errors.loadFailed'));
+        if (!cancelled) setError(t('page.members.birthdayCalendar.errors.loadFailed'));
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -51,7 +51,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
       const result = await createBirthdayCalendarSubscription(squadId);
       setSubscriptionUrl(result.subscriptionUrl);
     } catch {
-      setError(t('members.birthdayCalendar.errors.createFailed'));
+      setError(t('page.members.birthdayCalendar.errors.createFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -63,12 +63,12 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
       await navigator.clipboard.writeText(subscriptionUrl);
       setCopied(true);
     } catch {
-      setError(t('members.birthdayCalendar.errors.copyFailed'));
+      setError(t('page.members.birthdayCalendar.errors.copyFailed'));
     }
   };
 
   const handleRevoke = async () => {
-    if (!window.confirm(t('members.birthdayCalendar.revokeConfirm'))) return;
+    if (!window.confirm(t('page.members.birthdayCalendar.revokeConfirm'))) return;
 
     setIsSaving(true);
     setError(null);
@@ -77,7 +77,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
       setSubscriptionUrl(null);
       setCopied(false);
     } catch {
-      setError(t('members.birthdayCalendar.errors.revokeFailed'));
+      setError(t('page.members.birthdayCalendar.errors.revokeFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -89,38 +89,38 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>{t('members.birthdayCalendar.title')}</ModalTitle>
-        <ModalSubtitle>{t('members.birthdayCalendar.description')}</ModalSubtitle>
+        <ModalTitle>{t('page.members.birthdayCalendar.title')}</ModalTitle>
+        <ModalSubtitle>{t('page.members.birthdayCalendar.description')}</ModalSubtitle>
       </ModalHeader>
       <ModalBody>
         {error && <Alert className="birthday-calendar-error">{error}</Alert>}
 
         {isLoading ? (
-          <p className="body-muted">{t('members.birthdayCalendar.loading')}</p>
+          <p className="body-muted">{t('page.members.birthdayCalendar.loading')}</p>
         ) : subscriptionUrl ? (
           <Stack>
-            <p>{t('members.birthdayCalendar.subscriptionHelp')}</p>
+            <p>{t('page.members.birthdayCalendar.subscriptionHelp')}</p>
             <div className="birthday-subscription-actions">
               <Input
                 className="birthday-subscription-input"
-                aria-label={t('members.birthdayCalendar.subscriptionUrl')}
+                aria-label={t('page.members.birthdayCalendar.subscriptionUrl')}
                 readOnly
                 value={subscriptionUrl}
                 onFocus={(event) => event.currentTarget.select()}
               />
               <Button type="button" variant="secondary" onClick={handleCopy}>
-                {copied ? t('members.birthdayCalendar.copied') : t('members.birthdayCalendar.copy')}
+                {copied ? t('page.members.birthdayCalendar.copied') : t('page.members.birthdayCalendar.copy')}
               </Button>
             </div>
-            <p className="field-help">{t('members.birthdayCalendar.privacyNote')}</p>
+            <p className="field-help">{t('page.members.birthdayCalendar.privacyNote')}</p>
             {!canSubscribeDirectly && (
               <Alert tone="warning">
-                {t('members.birthdayCalendar.secureUrlRequired')}
+                {t('page.members.birthdayCalendar.secureUrlRequired')}
               </Alert>
             )}
           </Stack>
         ) : (
-          <p>{t('members.birthdayCalendar.notCreated')}</p>
+          <p>{t('page.members.birthdayCalendar.notCreated')}</p>
         )}
       </ModalBody>
       <ModalFooter>
@@ -130,17 +130,17 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
         {subscriptionUrl ? (
           <>
             <Button type="button" variant="danger" disabled={isSaving} onClick={handleRevoke}>
-              {isSaving ? t('members.birthdayCalendar.revoking') : t('members.birthdayCalendar.revoke')}
+              {isSaving ? t('page.members.birthdayCalendar.revoking') : t('page.members.birthdayCalendar.revoke')}
             </Button>
             {canSubscribeDirectly && (
               <ButtonAnchor href={webcalUrl}>
-                {t('members.birthdayCalendar.subscribe')}
+                {t('page.members.birthdayCalendar.subscribe')}
               </ButtonAnchor>
             )}
           </>
         ) : (
           <Button type="button" disabled={isLoading || isSaving} onClick={handleCreate}>
-            {isSaving ? t('members.birthdayCalendar.creating') : t('members.birthdayCalendar.create')}
+            {isSaving ? t('page.members.birthdayCalendar.creating') : t('page.members.birthdayCalendar.create')}
           </Button>
         )}
       </ModalFooter>

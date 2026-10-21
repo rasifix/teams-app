@@ -85,7 +85,7 @@ export function selectTeamPrintSummaries(
       location: activity.kind === 'match'
         ? activity.location?.trim() || undefined
         : team.location?.trim() || activity.location?.trim() || undefined,
-      responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players),
+      responsiblePeople: selectTeamResponsiblePeople(team.responsiblePersonId, trainers, players),
       players: selectedPlayers,
     };
   });

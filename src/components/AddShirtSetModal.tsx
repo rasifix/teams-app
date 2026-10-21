@@ -58,12 +58,12 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
     <Modal isOpen={true} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('shirtSetModal.addTitle')}</ModalTitle>
+          <ModalTitle>{t('page.shirtSetModal.addTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <Stack gap="sm">
-            <Field label={t('shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
+            <Field label={t('page.shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
               <Input
                 id="sponsor"
                 name="sponsor"
@@ -71,11 +71,11 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                 required
                 value={formData.sponsor}
                 onChange={handleInputChange}
-                placeholder={t('shirtSetModal.placeholders.sponsor')}
+                placeholder={t('domain.shirtSet.placeholders.sponsor')}
               />
             </Field>
 
-            <Field label={t('shirtSetModal.fields.colorRequired')} htmlFor="color">
+            <Field label={t('page.shirtSetModal.fields.colorRequired')} htmlFor="color">
               <Cluster gap="sm" wrap={false}>
                 <ColorInput
                   id="color"
@@ -89,7 +89,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   value={formData.color}
                   onChange={handleInputChange}
                   name="color"
-                  placeholder={t('shirtSetModal.placeholders.color')}
+                  placeholder={t('domain.shirtSet.placeholders.color')}
                 />
               </Cluster>
             </Field>
@@ -104,14 +104,14 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   onChange={handleShirtOptionChange}
                 />
                 <label htmlFor="createShirts" className="checkbox-label">
-                  {t('shirtSetModal.fields.createAutomatically')}
+                  {t('domain.shirtSet.fields.createAutomatically')}
                 </label>
               </ChoiceGroup>
 
               {shirtOptions.createShirts && (
                 <Stack className="shirt-generation-fields">
                   <ContentGrid variant="threeColumn">
-                    <Field label={t('shirtSetModal.fields.startNumber')} htmlFor="startNumber">
+                    <Field label={t('domain.shirtSet.fields.startNumber')} htmlFor="startNumber">
                       <Input
                         id="startNumber"
                         name="startNumber"
@@ -122,7 +122,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         onChange={handleShirtOptionChange}
                       />
                     </Field>
-                    <Field label={t('shirtSetModal.fields.endNumber')} htmlFor="endNumber">
+                    <Field label={t('domain.shirtSet.fields.endNumber')} htmlFor="endNumber">
                       <Input
                         id="endNumber"
                         name="endNumber"
@@ -133,7 +133,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         onChange={handleShirtOptionChange}
                       />
                     </Field>
-                    <Field label={t('shirtSetModal.fields.size')} htmlFor="size">
+                    <Field label={t('domain.shirtSet.fields.size')} htmlFor="size">
                       <Select
                         id="size"
                         name="size"
@@ -162,14 +162,14 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                         onChange={handleShirtOptionChange}
                       />
                       <label htmlFor="includeGoalkeeper" className="checkbox-label">
-                        {t('shirtSetModal.fields.includeGoalkeeper')}
+                        {t('domain.shirtSet.fields.includeGoalkeeper')}
                       </label>
                     </ChoiceGroup>
                     
                     {shirtOptions.includeGoalkeeper && (
                       <Cluster gap="sm" wrap={false}>
                         <label htmlFor="goalkeeperNumber" className="shirt-goalkeeper-label">
-                          {t('shirtSetModal.fields.goalkeeperNumber')}
+                          {t('domain.shirtSet.fields.goalkeeperNumber')}
                         </label>
                         <Input
                           id="goalkeeperNumber"
@@ -186,7 +186,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                   </Split>
 
                   <div className="shirt-generation-preview">
-                    {t('shirtSetModal.preview.prefix')} {regularShirtCount} {t('shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('shirtSetModal.preview.size', { size: shirtOptions.size })})
+                    {t('page.shirtSetModal.preview.prefix')} {regularShirtCount} {t('page.shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('page.shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('page.shirtSetModal.preview.size', { size: shirtOptions.size })})
                   </div>
                 </Stack>
               )}
@@ -199,7 +199,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
               {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
-              {t('shirtSetModal.createAction')}
+              {t('page.shirtSetModal.createAction')}
             </Button>
         </ModalFooter>
       </form>

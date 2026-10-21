@@ -26,22 +26,25 @@ be described in files grouped in subfolders per category.
 * UC-GR-014 - manage squad periods
 * UC-GR-015 - deactivate a squad
 
-## Event
+## Activity
 
-* UC-EV-001 - create event
+* UC-EV-001 - create activity
 * UC-EV-002 - manually add player RSVP data
 * UC-EV-003 - select players for teams
-* UC-EV-004 - manually change player RSVP status
+* UC-EV-004 - manually change player invitation response
 * UC-EV-005 - assign shirt set
-* UC-EV-006 - assign match format to event
+* UC-EV-006 - assign match format to activity
 * UC-EV-007 - select team formation
 * UC-EV-008 - plan per-period lineup
-* UC-EV-009 - assign team trainer
-* UC-EV-010 - record attendance after an activity
-* UC-EV-012 - synchronize events from Spond
+* UC-EV-009 - assign team responsible person
+* UC-EV-010 - record activity attendance
+* UC-EV-012 - synchronize activities from Spond
+* UC-EV-013 - edit activity
+* UC-EV-014 - cancel or restore activity
+* UC-EV-015 - delete activity
 
 ## Statistics
 
 * UC-ST-001 - Player Statistics
-* UC-ST-002 - Event Participation Overview
+* UC-ST-002 - Activity Participation Overview
 * UC-ST-003 - Team Selections

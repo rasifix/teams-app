@@ -35,7 +35,7 @@ describe('team responsible person selectors', () => {
 
   it('returns only the first valid responsible person and drops player or unknown ids', () => {
     const trainers = [trainer({ id: 't-1' }), trainer({ id: 't-2', firstName: 'Bea' })];
-    expect(selectTeamResponsiblePeople(['p-1', 't-2', 'unknown', 't-1'], trainers)).toEqual([
+    expect(selectTeamResponsiblePeople('t-2', trainers)).toEqual([
       { id: 't-2', firstName: 'Bea', lastName: 'Coach', source: 'trainer' },
     ]);
     expect(selectTeamResponsiblePeople(undefined, [])).toEqual([]);
@@ -57,7 +57,7 @@ describe('team responsible person selectors', () => {
 
   it('resolves guardians as responsible people and ignores player ids', () => {
     const players = [player({ id: 'p-1', guardians: [{ id: 'g-1', firstName: 'Greta', lastName: 'Parent' }] })];
-    expect(selectTeamResponsiblePeople(['p-1', 'g-1'], [], players)).toEqual([
+    expect(selectTeamResponsiblePeople('g-1', [], players)).toEqual([
       { id: 'g-1', firstName: 'Greta', lastName: 'Parent', source: 'guardian' },
     ]);
   });

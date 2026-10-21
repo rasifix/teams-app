@@ -48,15 +48,15 @@ export default function TrainerDetailPage() {
   );
 
   const groupedTrainerEventHistory = useMemo(
-    () => trainer ? selectGroupedDatedHistory(squadPeriods, trainerEventHistory, t('statistics.period.outsidePeriods')) : null,
+    () => trainer ? selectGroupedDatedHistory(squadPeriods, trainerEventHistory, t('page.statistics.period.outsidePeriods')) : null,
     [squadPeriods, t, trainer, trainerEventHistory],
   );
 
   // Determine loading and error states
   const loading = isLoading;
-  const error = !id ? t('trainerDetail.errors.noTrainerId') :
-    (!trainer && !loading) ? t('trainerDetail.errors.notFound') :
-      errors.trainers || (hasErrors ? t('trainerDetail.errors.failedToLoadData') : null);
+  const error = !id ? t('page.trainerDetail.errors.noTrainerId') :
+    (!trainer && !loading) ? t('page.trainerDetail.errors.notFound') :
+      errors.trainers || (hasErrors ? t('common.errors.failedToLoadData') : null);
 
   useEffect(() => {
     if (isInitialized && !loading && id && !trainer) {
@@ -68,7 +68,7 @@ export default function TrainerDetailPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('trainerDetail.loading')}</p>
+          <p>{t('page.trainerDetail.loading')}</p>
         </EmptyState>
       </Page>
     );
@@ -92,7 +92,7 @@ export default function TrainerDetailPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('trainerDetail.notFound')}</p>
+          <p>{t('page.trainerDetail.notFound')}</p>
         </EmptyState>
       </Page>
     );
@@ -123,12 +123,12 @@ export default function TrainerDetailPage() {
         if (success) {
           navigate('/members/trainers', { replace: true });
         } else {
-          setDeleteActionError(t('trainerDetail.errors.deleteFailed'));
+          setDeleteActionError(t('page.trainerDetail.errors.deleteFailed'));
         }
       } catch (error) {
         setIsDeleteConfirmOpen(false); // Close dialog even on error
         console.error('Error deleting trainer:', error);
-        setDeleteActionError(t('trainerDetail.errors.deleteFailed'));
+        setDeleteActionError(t('page.trainerDetail.errors.deleteFailed'));
       }
     } else {
       setIsDeleteConfirmOpen(false); // Close dialog if no ID
@@ -170,7 +170,7 @@ export default function TrainerDetailPage() {
       </PageToolbar>
       <PageHeader>
         <PageHeaderContent>
-          <p className="eyebrow">{t('domain.trainers')}</p>
+          <p className="eyebrow">{t('domain.trainer.label')}</p>
           <PageTitle>{trainer.firstName} {trainer.lastName}</PageTitle>
           {trainer.email && <PageDescription>{trainer.email}</PageDescription>}
         </PageHeaderContent>
@@ -185,12 +185,12 @@ export default function TrainerDetailPage() {
       {trainerEventHistory.length > 0 && (
         <Panel>
               <PanelHeader><div>
-              <PanelTitle>{t('domain.events')}</PanelTitle>
+              <PanelTitle>{t('domain.activity.plural')}</PanelTitle>
               <PanelDescription>
-                {t('trainerDetail.eventsAssignedDescription', { firstName: trainer.firstName })}
+                {t('page.trainerDetail.eventsAssignedDescription', { firstName: trainer.firstName })}
               </PanelDescription>
               </div></PanelHeader>
-              {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
+              {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('page.statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
                 <section key={group.id} className="member-event-group">
                   {groupedTrainerEventHistory && (
                     <SectionEyebrow className="member-event-group-title">{group.title}</SectionEyebrow>
@@ -200,7 +200,7 @@ export default function TrainerDetailPage() {
                       <ActionCard
                         key={item.eventId}
                         leading={<DateColumn date={item.eventDate} />}
-                        onClick={() => navigate(`/events/${item.eventId}`)}
+                        onClick={() => navigate(`/activities/${item.eventId}`)}
                       >
                               <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
                               <MetadataList className="member-event-meta-list">
@@ -213,7 +213,7 @@ export default function TrainerDetailPage() {
                               </MetadataList>
                               <MetadataList className="member-event-meta-list">
                                 <MetadataItem>
-                                  👥 {item.teamName || t('team.unknownTeam')}
+                                  👥 {item.teamName || t('domain.team.unknownLabel')}
                                 </MetadataItem>
                                 <Strength level={item.teamStrength} />
                               </MetadataList>
@@ -227,9 +227,9 @@ export default function TrainerDetailPage() {
 
       {trainerEventHistory.length === 0 && (
         <Panel>
-              <PanelHeader><PanelTitle>{t('trainerDetail.trainingHistory')}</PanelTitle></PanelHeader>
+              <PanelHeader><PanelTitle>{t('page.trainerDetail.trainingHistory')}</PanelTitle></PanelHeader>
               <EmptyState>
-                {t('trainerDetail.noAssignmentsYet', { firstName: trainer.firstName })}
+                {t('page.trainerDetail.noAssignmentsYet', { firstName: trainer.firstName })}
               </EmptyState>
         </Panel>
       )}
@@ -244,9 +244,9 @@ export default function TrainerDetailPage() {
 
       <ConfirmDialog
         isOpen={isDeleteConfirmOpen}
-        title={t('members.deleteTrainerTitle')}
-        message={t('members.deleteTrainerMessage', { firstName: trainer.firstName, lastName: trainer.lastName })}
-        confirmText={t('members.deleteTrainerConfirm')}
+        title={t('page.members.deleteTrainerTitle')}
+        message={t('page.members.deleteTrainerMessage', { firstName: trainer.firstName, lastName: trainer.lastName })}
+        confirmText={t('page.members.deleteTrainerConfirm')}
         cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}

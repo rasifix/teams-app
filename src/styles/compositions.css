@@ -235,7 +235,7 @@
 .lineup-save-status { color: var(--color-text-subtle); font-size: var(--font-size-sm); }
 
 /* Team detail */
-.team-detail-switcher { width: 100%; }
+.team-detail-switcher { width: 100%; justify-content: flex-end; }
 .team-detail-player-alert { margin-bottom: var(--space-4); }
 .shirt-assignment-list { max-height: 16rem; overflow-y: auto; }
 .shirt-assignment-control { width: 8rem; flex: none; }

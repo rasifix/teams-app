@@ -37,13 +37,13 @@ export default function SpondImportSummaryStep({
         <EntityList>
           {items.map((item) => (
             <EntityRow key={item.id} align="start">
-              <Badge tone={item.action === 'create' ? 'success' : 'info'} size="sm">
+              <Badge tone={item.action === 'create' ? 'success' : item.action === 'delete' ? 'danger' : 'info'} size="sm">
                 {t(`spondSync.wizard.actions.${item.action}`)}
               </Badge>
               <EntityContent>
                 <EntityTitle>{item.sourceName}</EntityTitle>
                 <EntityMeta><span>
-                  {t(`spondSync.wizard.preview.${item.kind}.${item.action}`, {
+                  {t(`spondSync.wizard.preview.${item.kind}.${item.action}${item.changes?.length ? 'WithChanges' : ''}`, {
                     target: item.targetName,
                     changes: item.changes
                       ?.map((change) => t(`spondSync.wizard.changedFields.${change}`))

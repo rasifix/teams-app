@@ -30,9 +30,9 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
     const numberValue = parseInt(formData.number);
     
     if (!formData.number || isNaN(numberValue) || numberValue < 1 || numberValue > 99) {
-      newErrors.number = t('shirtModal.errors.invalidNumber');
+      newErrors.number = t('page.shirtModal.errors.invalidNumber');
     } else if (numberValue !== shirt.number && existingNumbers.includes(numberValue)) {
-      newErrors.number = t('shirtModal.errors.numberExists', { number: numberValue });
+      newErrors.number = t('page.shirtModal.errors.numberExists', { number: numberValue });
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -80,12 +80,12 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('shirtModal.editTitle')}</ModalTitle>
+          <ModalTitle>{t('page.shirtModal.editTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <Stack>
-            <Field label={t('shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
+            <Field label={t('page.shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
               <Input
                 id="number"
                 name="number"
@@ -95,12 +95,12 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 required
                 value={formData.number}
                 onChange={handleInputChange}
-                placeholder={t('shirtModal.placeholders.number')}
+                placeholder={t('domain.shirt.placeholders.number')}
                 aria-invalid={Boolean(errors.number)}
               />
             </Field>
 
-            <Field label={t('shirtModal.fields.sizeRequired')} htmlFor="size">
+            <Field label={t('page.shirtModal.fields.sizeRequired')} htmlFor="size">
               <Select
                 id="size"
                 name="size"
@@ -108,15 +108,15 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 value={formData.size}
                 onChange={handleInputChange}
               >
-                <option value="128">128 - {t('shirtModal.size.kids')}</option>
-                <option value="140">140 - {t('shirtModal.size.kids')}</option>
-                <option value="152">152 - {t('shirtModal.size.kids')}</option>
-                <option value="164">164 - {t('shirtModal.size.kids')}</option>
-                <option value="XS">XS - {t('shirtModal.size.extraSmall')}</option>
-                <option value="S">S - {t('shirtModal.size.small')}</option>
-                <option value="M">M - {t('shirtModal.size.medium')}</option>
-                <option value="L">L - {t('shirtModal.size.large')}</option>
-                <option value="XL">XL - {t('shirtModal.size.extraLarge')}</option>
+                <option value="128">128 - {t('domain.shirt.sizes.kids')}</option>
+                <option value="140">140 - {t('domain.shirt.sizes.kids')}</option>
+                <option value="152">152 - {t('domain.shirt.sizes.kids')}</option>
+                <option value="164">164 - {t('domain.shirt.sizes.kids')}</option>
+                <option value="XS">XS - {t('domain.shirt.sizes.extraSmall')}</option>
+                <option value="S">S - {t('domain.shirt.sizes.small')}</option>
+                <option value="M">M - {t('domain.shirt.sizes.medium')}</option>
+                <option value="L">L - {t('domain.shirt.sizes.large')}</option>
+                <option value="XL">XL - {t('domain.shirt.sizes.extraLarge')}</option>
               </Select>
             </Field>
 
@@ -128,7 +128,7 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 onChange={handleInputChange}
               />
               <label htmlFor="isGoalkeeper" className="checkbox-label">
-                {t('shirtModal.fields.isGoalkeeper')}
+                {t('domain.shirt.fields.isGoalkeeper')}
               </label>
             </ChoiceGroup>
 
@@ -145,14 +145,14 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
                 }}
               />
               <label htmlFor="isUnavailable" className="checkbox-label">
-                {t('shirtModal.fields.isUnavailable')}
+                {t('domain.shirt.fields.isUnavailable')}
               </label>
             </ChoiceGroup>
 
             {existingNumbers.length > 0 && (
               <Alert tone="info">
                 <p>
-                  <strong>{t('shirtModal.otherNumbers')}</strong> {existingNumbers.join(', ')}
+                  <strong>{t('page.shirtModal.otherNumbers')}</strong> {existingNumbers.join(', ')}
                 </p>
               </Alert>
             )}
@@ -168,7 +168,7 @@ export default function EditShirtModal({ isOpen, shirt, onClose, onSave, existin
               variant="primary"
               disabled={!isFormValid()}
             >
-              {t('shirtModal.saveChanges')}
+              {t('page.shirtModal.saveChanges')}
             </Button>
         </ModalFooter>
       </form>

@@ -37,11 +37,11 @@ export default function LevelRangeSelector({
 
   const getLevelLabel = (level: number) => {
     switch (level) {
-      case 1: return t('levels.1');
-      case 2: return t('levels.2');
-      case 3: return t('levels.3');
-      case 4: return t('levels.4');
-      case 5: return t('levels.5');
+      case 1: return t('domain.player.levels.1');
+      case 2: return t('domain.player.levels.2');
+      case 3: return t('domain.player.levels.3');
+      case 4: return t('domain.player.levels.4');
+      case 5: return t('domain.player.levels.5');
       default: return `${level}`;
     }
   };

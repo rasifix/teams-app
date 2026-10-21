@@ -17,7 +17,7 @@ This use case covers:
 - exposing periods to Statistics and the Spond event range selector.
 
 This use case does not cover selecting a period in Statistics, synchronizing
-Spond Events (UC-EV-012), or Match Format playing periods.
+Spond Activities (UC-EV-012), or Match Format playing periods.
 
 ## Primary Actor
 

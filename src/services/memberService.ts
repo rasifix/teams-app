@@ -11,9 +11,6 @@ export interface MembersResponse {
   trainers: Trainer[];
 }
 
-type Member = Player | Trainer;
-type MembersApiResponse = MembersResponse | Member[];
-
 const normalizePlayer = (player: Player): Player => ({
   ...player,
   status: player.status || 'active',
@@ -24,47 +21,6 @@ const normalizeTrainer = (trainer: Trainer): Trainer => ({
   ...trainer,
   roles: trainer.roles || [],
 });
-
-const isMembersResponse = (response: MembersApiResponse): response is MembersResponse => !Array.isArray(response);
-
-const isPlayerMember = (member: Member): member is Player => {
-  if (member.roles?.includes('player')) {
-    return true;
-  }
-
-  return 'birthDate' in member || 'level' in member || 'status' in member;
-};
-
-const isTrainerMember = (member: Member): member is Trainer => {
-  if (member.roles?.includes('trainer')) {
-    return true;
-  }
-
-  return !isPlayerMember(member) && (!member.roles || member.roles.length === 0);
-};
-
-const normalizeMembersResponse = (response: MembersApiResponse): MembersResponse => {
-  if (isMembersResponse(response)) {
-    return {
-      ...response,
-      players: response.players.map(normalizePlayer),
-      trainers: response.trainers.map(normalizeTrainer),
-    };
-  }
-
-  return response.reduce<MembersResponse>(
-    (members, member) => {
-      if (isPlayerMember(member)) {
-        members.players.push(normalizePlayer(member));
-      } else if (isTrainerMember(member)) {
-        members.trainers.push(normalizeTrainer(member));
-      }
-
-      return members;
-    },
-    { players: [], trainers: [] },
-  );
-};
 
 export interface MemberUpsertPayload {
   spondId?: string | null;
@@ -157,11 +113,15 @@ export async function revokeMemberRole(
 
 // Get all members (players and trainers) in one call
 export async function getAllMembers(squadId: string): Promise<MembersResponse> {
-  const response = await apiClient.request<MembersApiResponse>(
+  const response = await apiClient.request<MembersResponse>(
     apiClient.getSquadEndpoint(squadId, '/members')
   );
 
-  return normalizeMembersResponse(response);
+  return {
+    ...response,
+    players: response.players.map(normalizePlayer),
+    trainers: response.trainers.map(normalizeTrainer),
+  };
 }
 
 export async function addPlayer(squadId: string, playerData: Omit<Player, 'id'>): Promise<Player> {

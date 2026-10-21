@@ -93,7 +93,7 @@ export default function ShirtSetsPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('shirts.loading')}</p>
+          <p>{t('page.shirts.loading')}</p>
         </EmptyState>
       </Page>
     );
@@ -103,8 +103,8 @@ export default function ShirtSetsPage() {
     <Page>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>{t('shirts.titleWithCount', { count: shirtSets.length })}</PageTitle>
-          <PageDescription>{t('shirts.subtitle')}</PageDescription>
+          <PageTitle>{t('page.shirts.titleWithCount', { count: shirtSets.length })}</PageTitle>
+          <PageDescription>{t('page.shirts.subtitle')}</PageDescription>
         </PageHeaderContent>
       </PageHeader>
 
@@ -128,7 +128,7 @@ export default function ShirtSetsPage() {
             onRemoveShirt={(shirtId, shirtNumber) => handleRemoveShirt(shirtSet.id, shirtId, shirtNumber)}
           />
         ))}
-        <AddCardButton cardSize="md" leading={<ShirtIcon className="icon-sm" />} onClick={() => setIsAddModalOpen(true)} label={t('shirtSetModal.addTitle')} />
+        <AddCardButton cardSize="md" leading={<ShirtIcon className="icon-sm" />} onClick={() => setIsAddModalOpen(true)} label={t('page.shirtSetModal.addTitle')} />
       </Stack>
 
       {/* Add Shirt Set Modal */}
@@ -161,8 +161,8 @@ export default function ShirtSetsPage() {
       {deletingShirtSet && (
         <ConfirmDialog
           isOpen={true}
-          title={t('shirts.deleteSetTitle')}
-          message={t('shirts.deleteSetMessage', { sponsor: deletingShirtSet.sponsor, color: deletingShirtSet.color })}
+          title={t('page.shirts.deleteSetTitle')}
+          message={t('page.shirts.deleteSetMessage', { sponsor: deletingShirtSet.sponsor, color: deletingShirtSet.color })}
           confirmText={t('common.actions.delete')}
           onConfirm={handleDeleteShirtSet}
           onCancel={() => setDeletingShirtSet(null)}
@@ -173,9 +173,9 @@ export default function ShirtSetsPage() {
       {deletingShirt && (
         <ConfirmDialog
           isOpen={true}
-          title={t('shirts.removeShirtTitle')}
-          message={t('shirts.removeShirtMessage', { number: deletingShirt.shirtNumber })}
-          confirmText={t('shirts.removeShirtAction')}
+          title={t('page.shirts.removeShirtTitle')}
+          message={t('page.shirts.removeShirtMessage', { number: deletingShirt.shirtNumber })}
+          confirmText={t('page.shirts.removeShirtAction')}
           onConfirm={confirmRemoveShirt}
           onCancel={() => setDeletingShirt(null)}
         />

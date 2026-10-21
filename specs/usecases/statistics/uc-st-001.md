@@ -10,7 +10,7 @@ outcomes per player for the selected statistics period.
 This use case covers:
 - opening Player Statistics from the Statistics area,
 - applying the selected statistics period to event data,
-- calculating per-player metrics for invited, accepted, and selected events,
+- calculating per-player metrics for invited, accepted, and selected Activities,
 - calculating acceptance and selection rates,
 - filtering players by level range,
 - sorting rows by supported metrics,
@@ -21,7 +21,7 @@ This use case does not cover:
 - changing invitation status,
 - selecting players into teams,
 - editing player master data,
-- editing events or teams.
+- editing Activities or Teams.
 
 ## Primary Actor
 
@@ -30,14 +30,14 @@ Authenticated User
 ## Supporting Actors
 
 - Frontend UI (Statistics page, Player Statistics tab, Player Statistics table)
-- Zustand store selectors (players, events, selected statistics period)
+- Zustand store selectors (Players, Activities, selected statistics period)
 - Router navigation (player detail route)
 
 ## Preconditions
 
 - User is authenticated.
 - A squad is selected and squad data is loaded.
-- Players and events are available in application state (may be empty).
+- Players and Activities are available in application state (may be empty).
 - User can access the Statistics page.
 
 ## Trigger
@@ -47,13 +47,13 @@ The user opens Statistics and selects the Player Statistics tab.
 ## Input Data
 
 User-controlled inputs:
-- selected statistics period (All events or one squad period),
+- selected statistics period (All Activities or one Squad period),
 - level range filter (`minLevel`, `maxLevel`) using the level-range selector,
 - sort action on one of the table headers,
 - player row click for navigation.
 
 Derived data used by the screen:
-- `filteredEvents` from selected statistics period,
+- `filteredActivities` from selected statistics period,
 - `statisticsPlayers` (players excluding trial status) from statistics context,
 - computed per-player metrics:
   - `invitedCount`,
@@ -68,10 +68,10 @@ Derived data used by the screen:
 2. System receives `filteredEvents` and `statisticsPlayers` from Statistics
    context.
 3. System computes player statistics for each statistics player:
-   - `invitedCount`: number of filtered events with an invitation for player,
-   - `acceptedCount`: number of filtered events with invitation status
+- `invitedCount`: number of filtered Activities with an Invitation for the Player,
+- `acceptedCount`: number of filtered Activities with Invitation response
      `accepted`,
-   - `selectedCount`: number of filtered events where player is in any team
+- `selectedCount`: number of filtered Activities where the Player is in any Team
      `selectedPlayers`,
    - `acceptanceRate`: `acceptedCount / invitedCount * 100`, or `0` when
      `invitedCount = 0`,
@@ -107,7 +107,7 @@ Derived data used by the screen:
 1. User opens Player Statistics with no players, or no rows remain after level
    range filtering.
 2. System shows empty state message:
-   `No player data available yet. Add players and events to see statistics.`
+   `No Player data available yet. Add Players and Activities to see statistics.`
 3. Table rows are not rendered.
 
 ### A2 - Authentication Or Route Protection Denies Access
@@ -133,6 +133,7 @@ Failure or empty-data outcomes:
 
 - Player Statistics operates only on events visible in selected statistics
   period.
+- Cancelled Activities are excluded from statistics.
 - Only non-trial players are included via Statistics context.
 - Counts are event-based (at most one count increment per player/event for each
   metric).
@@ -146,11 +147,12 @@ Failure or empty-data outcomes:
 
 ## Validation Rules Reflected In Current Implementation
 
-- Statistics period filter includes events with date in inclusive range
-  (`startDate <= eventDate <= endDate`).
+- Statistics period filter includes Activities whose `startsAt` calendar date is
+  in the inclusive range (`startDate <= activityDate <= endDate`).
 - If period dates are invalid/unparseable, event filtering falls back to all
-  events.
-- Events with unparseable dates are excluded from period-filtered results.
+  Activities.
+- Activities with unparseable `startsAt` values are excluded from
+  period-filtered results.
 - Player level filter includes only players where
   `minLevel <= player.level <= maxLevel`.
 
@@ -160,7 +162,7 @@ Failure or empty-data outcomes:
 - Data is sourced from already-loaded Zustand store state and Statistics route
   context:
   - players from `usePlayers` filtered by non-trial status,
-  - period-filtered events from `useEvents` and statistics period utilities.
+  - period-filtered Activities from Activity state and statistics period utilities.
 - Navigation integration:
   - player row click: `/players/{playerId}`.
 
@@ -170,10 +172,10 @@ Failure or empty-data outcomes:
    opened, then one row per eligible player is shown with invited, accepted,
    selected counts and both rates.
 2. Given a selected statistics period, when event dates are inside inclusive
-   bounds, then those events are included in metric calculations.
-3. Given no invitations for a player in filtered events, when rates are shown,
+   bounds, then those Activities are included in metric calculations.
+3. Given no Invitations for a Player in filtered Activities, when rates are shown,
    then acceptance rate is `0%`.
-4. Given no accepted invitations for a player in filtered events, when rates are
+4. Given no accepted Invitations for a Player in filtered Activities, when rates are
    shown, then selection rate is `0%`.
 5. Given a level range update, when players are outside range, then those
    players are excluded from visible rows.
@@ -189,4 +191,4 @@ Failure or empty-data outcomes:
 - This specification documents the current behavior in the implemented React
   frontend.
 - Player Statistics is an analytical view and does not modify invitations,
-  selections, players, or events.
+  selections, Players, or Activities.

@@ -48,7 +48,7 @@ export default function SquadSelectionPage() {
     try {
       const newSquad = await addSquad(squadData);
       if (!newSquad) {
-        setCreateError(useStore.getState().errors.squads || t('squads.errors.createFailed'));
+        setCreateError(useStore.getState().errors.squads || t('page.squads.errors.createFailed'));
         return;
       }
 
@@ -65,7 +65,7 @@ export default function SquadSelectionPage() {
   if (loading) {
     return (
       <div className="auth-shell">
-        <LoadingState message={t('squads.loading')} size="lg" />
+        <LoadingState message={t('page.squads.loading')} size="lg" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function SquadSelectionPage() {
       <div className="auth-shell">
         <PageStateContent className="squad-selection-error">
           <Alert>
-            <strong>{t('squads.errors.failedToLoadTitle')}</strong>
+            <strong>{t('page.squads.errors.failedToLoadTitle')}</strong>
             <p>{error}</p>
           </Alert>
           <Button onClick={() => window.location.reload()}>
@@ -90,8 +90,8 @@ export default function SquadSelectionPage() {
     <div className="auth-shell">
       <Panel className="squad-selection-panel">
         <PanelHeader className="squad-selection-header">
-          <PanelTitle>{t('squads.selectTitle')}</PanelTitle>
-          <PanelDescription>{t('squads.selectDescription')}</PanelDescription>
+          <PanelTitle>{t('page.squads.selectTitle')}</PanelTitle>
+          <PanelDescription>{t('page.squads.selectDescription')}</PanelDescription>
         </PanelHeader>
 
         <Stack gap="sm">
@@ -103,13 +103,13 @@ export default function SquadSelectionPage() {
                   <ActionCardTitle>{squad.name}</ActionCardTitle>
                   <EntityMeta>
                   {squad.category && (
-                    <span>{t('squads.categoryLabel', { category: squad.category })}</span>
+                    <span>{t('page.squads.categoryLabel', { category: squad.category })}</span>
                   )}
-                  <span>{t('squads.idLabel', { id: squad.id })}</span>
+                  <span>{t('page.squads.idLabel', { id: squad.id })}</span>
                   </EntityMeta>
             </ActionCard>
           ))}
-          <AddCardButton cardSize="lg" onClick={() => setIsAddModalOpen(true)} label={t('squads.createNew')} />
+          <AddCardButton cardSize="lg" onClick={() => setIsAddModalOpen(true)} label={t('page.squads.createNew')} />
         </Stack>
       </Panel>
 

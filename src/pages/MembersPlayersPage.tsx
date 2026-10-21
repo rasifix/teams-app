@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import MembersList from "../components/MembersList";
 import { Button, ChoiceGroup, Cluster, FilterBar, FilterGroup, FilterLabel, Panel, SectionActions, SectionHeader, SectionHeaderContent, SectionTitle, Switch } from "../components/ui";
-import SpondBadge from "../components/SpondBadge";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
 import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
@@ -12,8 +11,7 @@ import { selectFilteredPlayers, selectPlayerBirthYears } from '../store/selector
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { players, openAddPlayerModal, canImportFromSpond, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const { players, openAddPlayerModal, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
   const squad = useSquad();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
@@ -38,21 +36,16 @@ export default function MembersPlayersPage() {
         <SectionHeader>
           <SectionHeaderContent><SectionTitle>
             {selectedLevels.length > 0 || selectedYear !== null || !showTrialPlayers
-              ? t("members.allPlayersFilteredTitle", {
+              ? t("page.members.allPlayersFilteredTitle", {
                   filteredCount: filteredPlayers.length,
                   totalCount: players.length,
                 })
-              : t("members.allPlayersTitle", { count: filteredPlayers.length })}
+              : t("page.members.allPlayersTitle", { count: filteredPlayers.length })}
           </SectionTitle></SectionHeaderContent>
           <SectionActions><Cluster gap="sm">
             {canManageBirthdayCalendar && squad && (
               <Button variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
-                {t('members.birthdayCalendar.openAction')}
-              </Button>
-            )}
-            {canImportFromSpond && (
-              <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
-                <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
+                {t('page.members.birthdayCalendar.openAction')}
               </Button>
             )}
             {!spondLinked && (
@@ -65,7 +58,7 @@ export default function MembersPlayersPage() {
 
         <FilterBar>
           <FilterGroup>
-            <FilterLabel>{t("members.levelFilter")}</FilterLabel>
+            <FilterLabel>{t("page.members.levelFilter")}</FilterLabel>
             <ChoiceGroup>
               {[1, 2, 3, 4, 5].map((level) => (
                 <Button
@@ -94,7 +87,7 @@ export default function MembersPlayersPage() {
 
           {availableYears.length > 0 && (
             <FilterGroup>
-              <FilterLabel>{t("members.yearFilter")}</FilterLabel>
+              <FilterLabel>{t("page.members.yearFilter")}</FilterLabel>
               <ChoiceGroup>
                 {availableYears.map((year) => (
                   <Button
@@ -118,19 +111,19 @@ export default function MembersPlayersPage() {
           )}
 
           <FilterGroup>
-            <FilterLabel>{t("members.trialFilter")}</FilterLabel>
+            <FilterLabel>{t("page.members.trialFilter")}</FilterLabel>
             <Switch
               checked={showTrialPlayers}
-              label={showTrialPlayers ? t("members.hideTrialPlayers") : t("members.showTrialPlayers")}
+              label={showTrialPlayers ? t("page.members.hideTrialPlayers") : t("page.members.showTrialPlayers")}
               onClick={() => setShowTrialPlayers((prev) => !prev)}
             />
           </FilterGroup>
 
           <FilterGroup>
-            <FilterLabel>{t("members.inactiveFilter")}</FilterLabel>
+            <FilterLabel>{t("page.members.inactiveFilter")}</FilterLabel>
             <Switch
               checked={showInactivePlayers}
-              label={showInactivePlayers ? t("members.hideInactivePlayers") : t("members.showInactivePlayers")}
+              label={showInactivePlayers ? t("page.members.hideInactivePlayers") : t("page.members.showInactivePlayers")}
               onClick={() => setShowInactivePlayers((prev) => !prev)}
             />
           </FilterGroup>

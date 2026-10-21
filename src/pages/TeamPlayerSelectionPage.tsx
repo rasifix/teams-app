@@ -72,14 +72,14 @@ export default function TeamPlayerSelectionPage() {
     );
 
     if (await updateActivitySelection(eventId, updatedTeams)) {
-      navigate(`/events/${eventId}/teams/${teamId}`);
+      navigate(`/activities/${eventId}/teams/${teamId}`);
     }
   };
   
   if (!event || !team) {
     return (
       <Page width="medium">
-        <EmptyState>{t('teamPlayerSelection.teamNotFound')}</EmptyState>
+        <EmptyState>{t('page.teamPlayerSelection.teamNotFound')}</EmptyState>
       </Page>
     );
   }
@@ -93,10 +93,10 @@ export default function TeamPlayerSelectionPage() {
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
-            <PageTitle>{t('teamPlayerSelection.addPlayersToTeam', { team: team.name })}</PageTitle>
+            <PageTitle>{t('page.teamPlayerSelection.addPlayersToTeam', { team: team.name })}</PageTitle>
           </PageHeaderContent>
           <PageActions><p className="team-selection-context">
-          {t('teamPlayerSelection.slotsSummary', {
+          {t('page.teamPlayerSelection.slotsSummary', {
             current: currentPlayerCount,
             max: maxPlayersPerTeam,
             remaining: remainingSlots,
@@ -107,13 +107,13 @@ export default function TeamPlayerSelectionPage() {
       <Stack>
       {!editState?.canEdit && (
         <Alert>
-          {t('teamPlayerSelection.eventPassedWarning')}
+          {t('page.teamPlayerSelection.eventPassedWarning')}
         </Alert>
       )}
 
       {editState?.isSent && editState.canEdit && (
         <Alert tone="warning">
-          {t('teamPlayerSelection.sentWarning', {
+          {t('page.teamPlayerSelection.sentWarning', {
             dateTime: event.selectionSentAt ? formatInstantDateTime(event.selectionSentAt, i18n.language) : '',
           })}
         </Alert>
@@ -128,7 +128,7 @@ export default function TeamPlayerSelectionPage() {
 
       {currentPlayers.length > 0 && (
         <Panel>
-          <PanelHeader><PanelTitle>{t('teamPlayerSelection.currentPlayers')}</PanelTitle></PanelHeader>
+          <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.currentPlayers')}</PanelTitle></PanelHeader>
           <EntityList variant="bare">
             {currentPlayers.map((player) => {
               const isRemoved = removedPlayerIds.includes(player.id);
@@ -145,7 +145,7 @@ export default function TeamPlayerSelectionPage() {
                       ? current.filter((id) => id !== player.id)
                       : [...current, player.id])}
                   >
-                    {isRemoved ? t('teamPlayerSelection.undoRemove') : t('teamPlayerSelection.removePlayer')}
+                    {isRemoved ? t('page.teamPlayerSelection.undoRemove') : t('page.teamPlayerSelection.removePlayer')}
                   </Button>
                   {isRemoved && editState?.requiresRemovalReason && (
                     <Select
@@ -155,12 +155,12 @@ export default function TeamPlayerSelectionPage() {
                         ...current,
                         [player.id]: changeEvent.target.value as SelectionRemovalReason | '',
                       }))}
-                      aria-label={t('teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
+                      aria-label={t('page.teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
                       required
                     >
-                      <option value="">{t('teamPlayerSelection.selectRemovalReason')}</option>
+                      <option value="">{t('page.teamPlayerSelection.selectRemovalReason')}</option>
                       {(['sick', 'injured', 'noShow', 'other'] as SelectionRemovalReason[]).map((reason) => (
-                        <option key={reason} value={reason}>{t(`attendance.reasons.${reason}`)}</option>
+                        <option key={reason} value={reason}>{t(`domain.attendance.reasons.${reason}`)}</option>
                       ))}
                     </Select>
                   )}
@@ -196,7 +196,7 @@ export default function TeamPlayerSelectionPage() {
           </Button>
           </Cluster>
           <Badge>
-            {t('teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
+            {t('page.teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
           </Badge>
         </Split>
       )}
@@ -204,7 +204,7 @@ export default function TeamPlayerSelectionPage() {
       {/* Available Players List */}
       {availablePlayers.length === 0 ? (
         <Panel><EmptyState>
-            {t('teamPlayerSelection.noPlayersInRange')}
+            {t('page.teamPlayerSelection.noPlayersInRange')}
         </EmptyState></Panel>
       ) : (
         <EntityList variant="separated">
@@ -237,10 +237,10 @@ export default function TeamPlayerSelectionPage() {
       <ActionDock>
         <ActionDockContent width="medium">
           <div className="team-selection-dock-summary">
-            {t('teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
+            {t('page.teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
             {!canAddMore && selectedPlayerIds.length > 0 && (
               <div className="team-selection-dock-error">
-                {t('teamPlayerSelection.tooManySelected', { max: remainingSlots })}
+                {t('page.teamPlayerSelection.tooManySelected', { max: remainingSlots })}
               </div>
             )}
           </div>
@@ -248,7 +248,7 @@ export default function TeamPlayerSelectionPage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
+              onClick={() => navigate(`/activities/${eventId}/teams/${teamId}`)}
             >
               {t('common.actions.cancel')}
             </Button>
@@ -257,8 +257,8 @@ export default function TeamPlayerSelectionPage() {
               disabled={!editState?.canEdit || (selectedPlayerIds.length === 0 && removedPlayerIds.length === 0) || !canAddMore || hasMissingRemovalReasons}
             >
               {selectedPlayerIds.length > 0
-                ? t('teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })
-                : t('teamPlayerSelection.saveChanges')}
+                ? t('page.teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })
+                : t('page.teamPlayerSelection.saveChanges')}
             </Button>
           </Cluster>
         </ActionDockContent>

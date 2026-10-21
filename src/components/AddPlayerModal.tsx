@@ -94,7 +94,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
         <ModalTitle>
-          {isEditMode ? t('playerModal.editTitle') : t('playerModal.addTitle')}
+          {isEditMode ? t('page.playerModal.editTitle') : t('page.playerModal.addTitle')}
         </ModalTitle>
       </ModalHeader>
 
@@ -111,7 +111,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 onChange={handleChange}
                 required
                 disabled={syncedFieldsReadOnly}
-                placeholder={t('playerModal.placeholders.firstName')}
+                placeholder={t('domain.member.placeholders.firstName')}
               />
             </Field>
 
@@ -124,11 +124,11 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 onChange={handleChange}
                 required
                 disabled={syncedFieldsReadOnly}
-                placeholder={t('playerModal.placeholders.lastName')}
+                placeholder={t('domain.member.placeholders.lastName')}
               />
             </Field>
 
-            <Field label={t('playerModal.fields.birthDate')} htmlFor="birthDate" required>
+            <Field label={t('domain.player.fields.birthDate')} htmlFor="birthDate" required>
               <Input
                 type="date"
                 id="birthDate"
@@ -140,18 +140,18 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
               />
             </Field>
 
-            <Field label={t('playerModal.fields.level')} htmlFor="level">
+            <Field label={t('domain.player.fields.level')} htmlFor="level">
               <Select
                 id="level"
                 name="level"
                 value={formData.level}
                 onChange={handleChange}
               >
-                <option value={1}>{t('levels.1')}</option>
-                <option value={2}>{t('levels.2')}</option>
-                <option value={3}>{t('levels.3')}</option>
-                <option value={4}>{t('levels.4')}</option>
-                <option value={5}>{t('levels.5')}</option>
+                <option value={1}>{t('domain.player.levels.1')}</option>
+                <option value={2}>{t('domain.player.levels.2')}</option>
+                <option value={3}>{t('domain.player.levels.3')}</option>
+                <option value={4}>{t('domain.player.levels.4')}</option>
+                <option value={5}>{t('domain.player.levels.5')}</option>
               </Select>
             </Field>
 
@@ -162,13 +162,13 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 value={formData.status}
                 onChange={handleChange}
               >
-                <option value="active">{t('playerModal.status.active')}</option>
-                <option value="trial">{t('playerModal.status.trial')}</option>
-                <option value="inactive">{t('playerModal.status.inactive')}</option>
+                <option value="active">{t('domain.player.status.active')}</option>
+                <option value="trial">{t('domain.player.status.trial')}</option>
+                <option value="inactive">{t('domain.player.status.inactive')}</option>
               </Select>
             </Field>
 
-            <Field label={t('playerModal.fields.preferredShirtNumberOptional')} htmlFor="preferredShirtNumber">
+            <Field label={t('domain.player.fields.preferredShirtNumber')} htmlFor="preferredShirtNumber">
               <Input
                 type="number"
                 id="preferredShirtNumber"
@@ -176,7 +176,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
                 value={formData.preferredShirtNumber}
                 onChange={handleChange}
                 min={1}
-                placeholder={t('playerModal.placeholders.preferredShirtNumber')}
+                placeholder={t('domain.player.placeholders.preferredShirtNumber')}
               />
             </Field>
           </Stack>
@@ -194,7 +194,7 @@ export default function AddPlayerModal({ isOpen, onClose, onSave, onUpdate, edit
             type="submit"
             variant="primary"
           >
-            {isEditMode ? t('playerModal.updateAction') : t('playerModal.addAction')}
+            {isEditMode ? t('page.playerModal.updateAction') : t('page.playerModal.addAction')}
           </Button>
         </ModalFooter>
       </form>

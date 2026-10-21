@@ -37,9 +37,9 @@ export const POSITION_CODES: PositionCode[] = [
   'LW', 'RW', 'CF', 'ST',
 ];
 
-// Translated via i18n key `positions.${code}`; the code itself is language-neutral.
+// Translated via i18n key `domain.formation.positions.${code}`; the code itself is language-neutral.
 export function getPositionLabelKey(code: PositionCode): string {
-  return `positions.${code}`;
+  return `domain.formation.positions.${code}`;
 }
 
 export function selectDefaultMatchFormat(matchFormats: MatchFormat[]): MatchFormat | null {

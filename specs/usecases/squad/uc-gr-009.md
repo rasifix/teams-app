@@ -19,7 +19,7 @@ This use case covers:
 This use case does not cover:
 - enabling match planning for the squad (UC-GR-008; a precondition here),
 - managing Formations (UC-GR-010),
-- assigning a Match Format to a specific Event (UC-EV-006).
+- assigning a Match Format to a specific Match Activity (UC-EV-006).
 
 ## Primary Actor
 
@@ -72,7 +72,7 @@ Required for create/update:
 4. For Set as default: system marks this Match Format default and unmarks any
    previous default, atomically.
 5. For Delete: system opens a confirmation dialog; on confirm, system removes
-   the Match Format, unless it is currently referenced by an Event in the
+   the Match Format, unless it is currently referenced by a Match Activity in the
    squad, in which case deletion is blocked.
 
 ## Alternative Flows
@@ -84,9 +84,10 @@ Required for create/update:
 2. System blocks submission with validation feedback.
 3. No API request is sent.
 
-### A2 - Delete Blocked By Dependent Events
+### A2 - Delete Blocked By Dependent Activities
 
-1. User attempts to delete a Match Format referenced by at least one Event's
+1. User attempts to delete a Match Format referenced by at least one Match
+   Activity's
    `matchFormatId` in the squad.
 2. System rejects the delete request (409 Conflict) and shows an explanatory
    message.
@@ -122,4 +123,5 @@ Failure:
 - `periodLengthMinutes`: required, integer, minimum 1.
 - `minimumPeriodsPerPlayer`: required, integer, minimum 0, and must not exceed
   `numberOfPeriods`.
-- Delete is rejected while any Event in the squad references the Match Format.
+- Delete is rejected while any Match Activity in the Squad references the Match
+  Format.

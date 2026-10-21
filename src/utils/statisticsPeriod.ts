@@ -41,9 +41,9 @@ export function filterEventsByStatisticsPeriod(activities: Activity[], period: S
 }
 
 export function getStatisticsPeriodLabel(period: StatisticsPeriod | null): string {
-  if (!period) return i18n.t('statistics.period.allEvents');
+  if (!period) return i18n.t('page.statistics.period.allEvents');
   if (period.name) return period.name;
-  return i18n.t('statistics.period.rangeLabel', {
+  return i18n.t('page.statistics.period.rangeLabel', {
     startDate: period.startDate,
     endDate: period.endDate,
   });

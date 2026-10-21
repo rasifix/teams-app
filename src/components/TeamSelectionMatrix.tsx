@@ -34,8 +34,8 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       events,
       levelRange,
       groupByMode,
-      (strength) => t('statistics.teamSelections.strengthLabel', { level: strength }),
-      t('domain.team')
+      (strength) => t('page.statistics.teamSelections.strengthLabel', { level: strength }),
+      t('domain.team.label')
     ),
     [events, groupByMode, levelRange, players, t]
   );
@@ -58,13 +58,13 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
   };
 
   const handleOpenTeam = (eventId: string, teamId: string) => {
-    navigate(`/events/${eventId}/teams/${teamId}`);
+    navigate(`/activities/${eventId}/teams/${teamId}`);
     setSelectedCell(null);
   };
 
   if (players.length === 0 || events.length === 0) {
     return (
-      <EmptyState>{t('statistics.teamSelections.noData')}</EmptyState>
+      <EmptyState>{t('page.statistics.teamSelections.noData')}</EmptyState>
     );
   }
 
@@ -77,24 +77,24 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
             onChange={setLevelRange}
           />
           <Cluster gap="sm">
-            <strong>{t('statistics.teamSelections.groupBy')}</strong>
-            <TabList label={t('statistics.teamSelections.groupBy')}>
+            <strong>{t('page.statistics.teamSelections.groupBy')}</strong>
+            <TabList label={t('page.statistics.teamSelections.groupBy')}>
               <Tab
                 selected={groupByMode === 'strength'}
                 onClick={() => setGroupByMode('strength')}
               >
-                {t('statistics.teamSelections.groupByStrength')}
+                {t('page.statistics.teamSelections.groupByStrength')}
               </Tab>
               <Tab
                 selected={groupByMode === 'teamName'}
                 onClick={() => setGroupByMode('teamName')}
               >
-                {t('statistics.teamSelections.groupByTeamName')}
+                {t('page.statistics.teamSelections.groupByTeamName')}
               </Tab>
             </TabList>
           </Cluster>
           <EmptyState>
-            <p>{t('statistics.teamSelections.noTeamsInPeriod')}</p>
+            <p>{t('page.statistics.teamSelections.noTeamsInPeriod')}</p>
           </EmptyState>
         </Stack>
       </Panel>
@@ -108,37 +108,37 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           <Stack gap="sm">
             <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
             <Cluster gap="sm">
-              <strong>{t('statistics.teamSelections.groupBy')}</strong>
-              <TabList label={t('statistics.teamSelections.groupBy')}>
+              <strong>{t('page.statistics.teamSelections.groupBy')}</strong>
+              <TabList label={t('page.statistics.teamSelections.groupBy')}>
                 <Tab selected={groupByMode === 'strength'} onClick={() => setGroupByMode('strength')}>
-                  {t('statistics.teamSelections.groupByStrength')}
+                  {t('page.statistics.teamSelections.groupByStrength')}
                 </Tab>
                 <Tab selected={groupByMode === 'teamName'} onClick={() => setGroupByMode('teamName')}>
-                  {t('statistics.teamSelections.groupByTeamName')}
+                  {t('page.statistics.teamSelections.groupByTeamName')}
                 </Tab>
               </TabList>
             </Cluster>
             <MetadataList>
-              <MetadataItem>{t('statistics.teamSelections.playersCount', { count: matrixRows.length })}</MetadataItem>
+              <MetadataItem>{t('page.statistics.teamSelections.playersCount', { count: matrixRows.length })}</MetadataItem>
               <MetadataItem>
               {groupByMode === 'strength'
-                ? t('statistics.teamSelections.strengthGroupsCount', { count: matrixColumns.length })
-                : t('statistics.teamSelections.teamsCount', { count: matrixColumns.length })}
+                ? t('page.statistics.teamSelections.strengthGroupsCount', { count: matrixColumns.length })
+                : t('page.statistics.teamSelections.teamsCount', { count: matrixColumns.length })}
               </MetadataItem>
-              <MetadataItem>{t('statistics.teamSelections.clickCountHint')}</MetadataItem>
+              <MetadataItem>{t('page.statistics.teamSelections.clickCountHint')}</MetadataItem>
             </MetadataList>
           </Stack>
         </PanelBody>
 
           {matrixRows.length === 0 ? (
-            <PanelBody><EmptyState>{t('statistics.teamSelections.noPlayersInLevelRange')}</EmptyState></PanelBody>
+            <PanelBody><EmptyState>{t('page.statistics.teamSelections.noPlayersInLevelRange')}</EmptyState></PanelBody>
           ) : (
             <StickyMatrix>
               <DataTable density="compact">
                 <DataTableHead>
                   <DataTableRow>
                     <DataTableHeaderCell sticky className="statistics-matrix-player-heading">
-                      {t('domain.player')}
+                      {t('domain.player.label')}
                     </DataTableHeaderCell>
                     {matrixColumns.map((matrixColumn) => (
                       <DataTableHeaderCell
@@ -182,7 +182,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                             data-ui-control="composite"
                             onClick={() => handleCellClick(player, matrixColumns[index].label, cell.events)}
                             className={`selection-matrix-cell-button${cell.count > 0 ? ' selection-matrix-cell-button--selected' : ''}`}
-                            aria-label={t('statistics.teamSelections.cellAriaLabel', {
+                            aria-label={t('page.statistics.teamSelections.cellAriaLabel', {
                               player: `${player.firstName} ${player.lastName}`,
                               group: matrixColumns[index].label,
                               count: cell.count,
@@ -203,7 +203,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       <Modal isOpen={selectedCell !== null} onClose={() => setSelectedCell(null)}>
         <ModalHeader>
           <ModalTitle>
-            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} – ${selectedCell.groupLabel}` : t('statistics.teamSelections.selectionDetails')}
+            {selectedCell ? `${selectedCell.player.firstName} ${selectedCell.player.lastName} – ${selectedCell.groupLabel}` : t('page.statistics.teamSelections.selectionDetails')}
           </ModalTitle>
         </ModalHeader>
         <ModalBody>
@@ -224,7 +224,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                       variant="secondary"
                       onClick={() => handleOpenTeam(selectionEvent.eventId, selectionEvent.teamId)}
                     >
-                      {t('statistics.teamSelections.openTeam')}
+                      {t('page.statistics.teamSelections.openTeam')}
                     </Button>
                   </EntityActions>
                 </EntityRow>
@@ -233,8 +233,8 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
           ) : (
             <p className="body-muted">
               {selectedCell?.mode === 'strength'
-                ? t('statistics.teamSelections.noSelectionStrength')
-                : t('statistics.teamSelections.noSelectionTeam')}
+                ? t('page.statistics.teamSelections.noSelectionStrength')
+                : t('page.statistics.teamSelections.noSelectionTeam')}
             </p>
           )}
           </Stack>

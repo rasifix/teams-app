@@ -42,12 +42,12 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
     <Modal isOpen={true} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('shirtSetModal.editTitle')}</ModalTitle>
+          <ModalTitle>{t('page.shirtSetModal.editTitle')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <Stack>
-            <Field label={t('shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
+            <Field label={t('page.shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
               <Input
                 id="sponsor"
                 name="sponsor"
@@ -55,11 +55,11 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                 required
                 value={formData.sponsor}
                 onChange={handleInputChange}
-                placeholder={t('shirtSetModal.placeholders.sponsor')}
+                placeholder={t('domain.shirtSet.placeholders.sponsor')}
               />
             </Field>
 
-            <Field label={t('shirtSetModal.fields.colorRequired')} htmlFor="color" hint={t('shirtSetModal.colorHint')}>
+            <Field label={t('page.shirtSetModal.fields.colorRequired')} htmlFor="color" hint={t('page.shirtSetModal.colorHint')}>
               <Cluster gap="sm" wrap={false}>
                 <ColorInput
                   id="color"
@@ -73,7 +73,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
                   value={formData.color}
                   onChange={handleInputChange}
                   name="color"
-                  placeholder={t('shirtSetModal.placeholders.color')}
+                  placeholder={t('domain.shirtSet.placeholders.color')}
                 />
               </Cluster>
             </Field>
@@ -85,7 +85,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
               {t('common.actions.cancel')}
             </Button>
             <Button type="submit" variant="primary">
-              {t('shirtModal.saveChanges')}
+              {t('page.shirtModal.saveChanges')}
             </Button>
         </ModalFooter>
       </form>

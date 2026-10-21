@@ -124,7 +124,7 @@ export interface LineupPositionAssignment {
 }
 
 export interface TeamLineupPeriod {
-  periodNumber: number; // 1-based, bounded by the Event's Playing Mode numberOfPeriods
+  periodNumber: number; // 1-based, bounded by the Activity's Match Format numberOfPeriods
   assignments: LineupPositionAssignment[]; // selected players absent here are implicitly benched
 }
 
@@ -144,10 +144,10 @@ export interface Team {
   location?: string; // Optional team location
   selectedPlayers: string[]; // Player IDs assigned to this team
   selectionRemovals?: SelectionRemoval[]; // Audit trail for players removed after the selection was sent
-  responsiblePersonIds?: string[]; // At most one trainer or guardian responsible for the team; players are never responsible
+  responsiblePersonId?: string; // At most one trainer or guardian responsible for the team; players are never responsible
   shirtSetId?: string; // Shirt set ID assigned to this team
   shirtAssignments?: Array<{ playerId: string; shirtNumber: number }>; // Individual shirt assignments by number
-  formationId?: string | null; // only settable while the Event has a matchFormatId; fixed for the whole match
+  formationId?: string | null; // only settable while the Activity has a matchFormatId; fixed for the whole match
   lineup?: TeamLineupPeriod[]; // one entry per planned period
 }
 
@@ -207,7 +207,8 @@ export interface SelectionResult {
   [playerId: string]: string; // Maps player ID to team ID
 }
 
-export type ActivityKind = 'match' | 'tournament' | 'training' | 'social';
+export type ActivityKind = 'match' | 'tournament';
+export type ActivityStatus = 'active' | 'cancelled';
 export type InvitationResponse = 'open' | 'accepted' | 'declined';
 export type InvitationDeclineReason = 'injured' | 'sick' | 'unavailable';
 
@@ -229,24 +230,13 @@ export interface ActivityAttendance {
   reason?: AttendanceReason; // optional, used for excused
 }
 
-export interface TrainingUnit {
-  id: string;
-  name?: string;
-  plannedPlayerIds: string[];
-}
-
-export interface TrainingGroup {
-  id: string;
-  name?: string;
-  units: TrainingUnit[];
-}
-
-/** Wire model of `/squads/:id/activities`; replaces `Event` once the migration is complete. */
+/** Wire model of `/squads/:id/activities`. */
 export interface Activity {
   id: string;
   spondId?: string | null;
   squadId: string;
   kind: ActivityKind;
+  status: ActivityStatus;
   name: string;
   startsAt: string; // ISO date-time
   endsAt?: string;
@@ -259,8 +249,6 @@ export interface Activity {
   invitations: ActivityInvitation[];
   selectionSentAt?: string;
   attendance?: ActivityAttendance[];
-  trainerIds?: string[];
-  squads?: TrainingGroup[];
 }
 
 /** Body for creating or updating an activity (server owns `id` and `squadId`). */

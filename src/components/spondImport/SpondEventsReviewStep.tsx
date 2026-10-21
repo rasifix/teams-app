@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { Activity, ActivityKind, Trainer } from '../../types';
+import type { Activity, ActivityKind } from '../../types';
 import {
   type SpondActivityDraft,
   type SpondActivityRequiredField,
@@ -14,7 +14,6 @@ interface SpondEventsReviewStepProps {
   rows: SpondEventRow[];
   drafts: Record<string, SpondActivityDraft>;
   activities: Activity[];
-  trainers: Trainer[];
   eventFilter: SpondEventFilter;
   issues: Record<string, SpondActivityRequiredField[]>;
   onFilterChange: (filter: SpondEventFilter) => void;
@@ -29,7 +28,6 @@ export default function SpondEventsReviewStep({
   rows,
   drafts,
   activities,
-  trainers,
   eventFilter,
   issues,
   onFilterChange,
@@ -52,8 +50,8 @@ export default function SpondEventsReviewStep({
             onChange={(event) => onFilterChange(event.target.value as SpondEventFilter)}
           >
             <option value="all">{t('spondSync.eventFilter.all')}</option>
-            <option value="training">{t('spondSync.eventFilter.training')}</option>
             <option value="match">{t('spondSync.eventFilter.match')}</option>
+            <option value="tournament">{t('spondSync.eventFilter.tournament')}</option>
           </Select>
         </Field>
         {rows.length > 0 && (
@@ -118,31 +116,19 @@ export default function SpondEventsReviewStep({
                       </Select>
                     ) : (
                       <>
-                        <Select
-                          value={draft.kind}
-                          onChange={(event) => onDraftChange(row.source.id, {
-                            kind: event.target.value as ActivityKind,
-                          })}
-                        >
-                          {(['match', 'tournament', 'training', 'social'] as ActivityKind[]).map((kind) => (
-                            <option key={kind} value={kind}>{t(`activity.kinds.${kind}`)}</option>
-                          ))}
-                        </Select>
-                        {draft.kind === 'training' && (
+                        <Field label={t('domain.activity.fields.kind')} htmlFor={`spond-activity-kind-${row.source.id}`}>
                           <Select
-                            value={draft.trainerIds[0] ?? ''}
+                            id={`spond-activity-kind-${row.source.id}`}
+                            value={draft.kind}
                             onChange={(event) => onDraftChange(row.source.id, {
-                              trainerIds: event.target.value ? [event.target.value] : [],
+                              kind: event.target.value as ActivityKind,
                             })}
                           >
-                            <option value="">{t('spondSync.selectTrainer')}</option>
-                            {trainers.map((trainer) => (
-                              <option key={trainer.id} value={trainer.id}>
-                                {trainer.firstName} {trainer.lastName}
-                              </option>
+                            {(['match', 'tournament'] as ActivityKind[]).map((kind) => (
+                              <option key={kind} value={kind}>{t(`domain.activity.kinds.${kind}`)}</option>
                             ))}
                           </Select>
-                        )}
+                        </Field>
                         {(['match', 'tournament'] as ActivityKind[]).includes(draft.kind) && (
                           <Input
                             value={draft.teamName}

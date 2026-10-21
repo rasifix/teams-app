@@ -42,13 +42,13 @@ export default function TeamPrintSummary({
     <Modal isOpen={isOpen} onClose={onClose} className="team-print-modal">
         <ModalHeader className="team-print-header">
           <div className="team-print-header-row">
-            <ModalTitle>{t('teamPrint.title')}</ModalTitle>
+            <ModalTitle>{t('page.teamPrint.title')}</ModalTitle>
             <Cluster gap="sm">
               <Button
                 size="sm"
                 onClick={handlePrint}
               >
-                {t('teamPrint.print')}
+                {t('page.teamPrint.print')}
               </Button>
               <Button
                 variant="secondary"
@@ -62,7 +62,7 @@ export default function TeamPrintSummary({
           
           {/* Format Toggle */}
           <div className="team-print-format">
-            <span className="team-print-format-label">{t('teamPrint.formatLabel')}</span>
+            <span className="team-print-format-label">{t('page.teamPrint.formatLabel')}</span>
             <ChoiceGroup>
               <label className="team-print-format-option">
                 <Radio
@@ -71,7 +71,7 @@ export default function TeamPrintSummary({
                   checked={format === 'selection'}
                   onChange={() => setFormat('selection')}
                 />
-                <span>{t('teamPrint.selectionFormat')}</span>
+                <span>{t('page.teamPrint.selectionFormat')}</span>
               </label>
               <label className="team-print-format-option">
                 <Radio
@@ -80,7 +80,7 @@ export default function TeamPrintSummary({
                   checked={format === 'organizer'}
                   onChange={() => setFormat('organizer')}
                 />
-                <span>{t('teamPrint.organizerFormat')}</span>
+                <span>{t('page.teamPrint.organizerFormat')}</span>
               </label>
             </ChoiceGroup>
           </div>
@@ -112,7 +112,7 @@ export default function TeamPrintSummary({
                   {/* Players List */}
                   <div>
                     {playerRows.length === 0 ? (
-                      <p className="team-print-empty">{t('teamPrint.noPlayers')}</p>
+                      <p className="team-print-empty">{t('page.teamPrint.noPlayers')}</p>
                     ) : (
                       <div className="team-print-player-list">
                         {playerRows.map(({ player, shirtNumber }) => {

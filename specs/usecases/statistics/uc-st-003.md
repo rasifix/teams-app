@@ -30,14 +30,14 @@ Authenticated User
 ## Supporting Actors
 
 - Frontend UI (Statistics page, Team Selections tab, Team Selection matrix)
-- Zustand store selectors (players, events, selected statistics period)
+- Zustand store selectors (Players, Activities, selected statistics period)
 - Router navigation (player detail and team detail routes)
 
 ## Preconditions
 
 - User is authenticated.
 - A squad is selected and squad data is loaded.
-- Players and events are available in application state (may be empty).
+- Players and Activities are available in application state (may be empty).
 - User can access the Statistics page.
 
 ## Trigger
@@ -47,15 +47,15 @@ The user opens Statistics and selects the Team Selections tab.
 ## Input Data
 
 User-controlled inputs:
-- selected statistics period (All events or one squad period),
+- selected statistics period (All Activities or one Squad period),
 - grouping mode switch (`teamName` or `teamStrength`),
 - level range filter (`minLevel`, `maxLevel`) using the level-range selector,
 - matrix-cell selection (player/team intersection),
 - action to open a specific team from the selection-details modal.
 
 Derived data used by the screen:
-- filtered events from selected statistics period,
-- squad columns derived from all teams in filtered events based on selected
+- filtered Activities from selected statistics period,
+- Squad columns derived from all Teams in filtered Activities based on selected
    grouping mode,
 - player rows derived from players filtered by level range.
 
@@ -86,11 +86,12 @@ Derived data used by the screen:
 10. System opens selection-details modal for that player/squad intersection and
    lists matching events (event name + date).
 11. User presses Open team for an event entry.
-12. System navigates to `/events/{eventId}/teams/{teamId}` and closes modal.
+12. System navigates to `/activities/{activityId}/teams/{teamId}` and closes
+    the modal.
 
 ## Alternative Flows
 
-### A1 - No Players Or No Events Available
+### A1 - No Players Or No Activities Available
 
 1. Team Selections is opened with no players or no filtered events.
 2. System shows empty state message:
@@ -111,7 +112,7 @@ Derived data used by the screen:
 2. System shows message: `No players match the selected level range.`
 3. Squad columns remain defined; matrix body is replaced by empty state.
 
-### A4 - Selected Cell Has No Matching Events
+### A4 - Selected Cell Has No Matching Activities
 
 1. User opens a cell with count `0`.
 2. Modal opens for the selected player/team.
@@ -138,7 +139,9 @@ Failure or empty-data outcomes:
 
 ## Business Rules Reflected In Current Implementation
 
-- Team Selections operates only on events visible in selected statistics period.
+- Team Selections operates only on Activities visible in the selected statistics
+  period.
+- Cancelled Activities are excluded from statistics.
 - Grouping mode controls how matrix columns are built:
    - team name mode squads by normalized team name,
    - team strength mode squads by numeric strength bucket.
@@ -155,24 +158,24 @@ Failure or empty-data outcomes:
 
 ## Validation Rules Reflected In Current Implementation
 
-- Statistics period filter includes events with date in inclusive range
-  (`startDate <= eventDate <= endDate`).
+- Statistics period filter includes Activities whose `startsAt` calendar date is
+  in the inclusive range (`startDate <= activityDate <= endDate`).
 - If period dates are invalid/unparseable, event filtering falls back to all
   events.
 - Team name normalization trims whitespace and compares case-insensitively.
 - Team strength grouping uses team strength value as column key.
-- Event entries with unparseable event dates are excluded from period-filtered
-  results.
+- Activity entries with unparseable `startsAt` values are excluded from
+  period-filtered results.
 
 ## Data And Integration Expectations
 
 - No dedicated Team Selections API call is made by this screen.
 - Data is sourced from already-loaded Zustand store state and route context:
   - players from `usePlayers`,
-  - period-filtered events from Statistics outlet context.
+  - period-filtered Activities from Statistics outlet context.
 - Navigation integrations:
   - player click: `/players/{playerId}`,
-  - open team: `/events/{eventId}/teams/{teamId}`.
+  - open team: `/activities/{activityId}/teams/{teamId}`.
 
 ## Acceptance Criteria
 

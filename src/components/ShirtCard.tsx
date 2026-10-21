@@ -29,15 +29,15 @@ export default function ShirtCard({
         <span className="shirt-card-number">#{shirt.number}</span>
         <span className="shirt-card-size">{shirt.size}</span>
         {shirt.status === 'unavailable' && (
-          <Badge tone="danger" size="sm">{t('shirts.unavailableShort')}</Badge>
+          <Badge tone="danger" size="sm">{t('domain.shirt.labels.unavailableShort')}</Badge>
         )}
         {shirt.isGoalkeeper && (
-          <Badge tone="warning" size="sm">{t('shirts.goalkeeperShort')}</Badge>
+          <Badge tone="warning" size="sm">{t('domain.shirt.labels.goalkeeperShort')}</Badge>
         )}
       </Cluster>
       <Cluster gap="sm" wrap={false}>
         <IconButton
-          label={t('shirts.editShirt')}
+          label={t('page.shirts.editShirt')}
           onClick={onEdit}
         >
           <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" aria-hidden="true">
@@ -45,7 +45,7 @@ export default function ShirtCard({
           </svg>
         </IconButton>
         <IconButton
-          label={t('shirts.removeShirt')}
+          label={t('page.shirts.removeShirt')}
           variant="danger"
           onClick={onRemove}
         >

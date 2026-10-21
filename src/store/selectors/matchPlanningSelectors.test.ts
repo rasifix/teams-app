@@ -84,8 +84,8 @@ describe('pitch summary selectors', () => {
 
 describe('getPositionLabelKey', () => {
   it('builds a namespaced i18n key from the position code', () => {
-    expect(getPositionLabelKey('LB')).toBe('positions.LB');
-    expect(getPositionLabelKey('GK')).toBe('positions.GK');
+    expect(getPositionLabelKey('LB')).toBe('domain.formation.positions.LB');
+    expect(getPositionLabelKey('GK')).toBe('domain.formation.positions.GK');
   });
 });
 

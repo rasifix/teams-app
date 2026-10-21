@@ -104,14 +104,14 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
     if (mode === 'existing') {
       if (!selectedMemberId && !isEditMode) {
-        setError(t('guardians.errors.selectExistingUser'));
+        setError(t('page.guardians.errors.selectExistingUser'));
         return;
       }
 
       const selectedUser = existingUsers.find((entry) => entry.id === selectedMemberId);
 
       if (!isEditMode && !selectedUser) {
-        setError(t('guardians.errors.selectExistingUser'));
+        setError(t('page.guardians.errors.selectExistingUser'));
         return;
       }
 
@@ -125,7 +125,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
       const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
       if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-        setError(t('guardians.errors.alreadyAssigned'));
+        setError(t('page.guardians.errors.alreadyAssigned'));
         return;
       }
 
@@ -146,7 +146,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     }
 
     if (!firstName.trim() || !lastName.trim()) {
-      setError(t('guardians.errors.documentedNameRequired'));
+      setError(t('page.guardians.errors.documentedNameRequired'));
       return;
     }
 
@@ -160,7 +160,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
 
     const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
     if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-      setError(t('guardians.errors.documentedDuplicate'));
+      setError(t('page.guardians.errors.documentedDuplicate'));
       return;
     }
 
@@ -182,7 +182,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalHeader>
-        <ModalTitle>{isEditMode ? t('guardians.editTitle') : t('guardians.assignTitle')}</ModalTitle>
+        <ModalTitle>{isEditMode ? t('page.guardians.editTitle') : t('page.guardians.assignTitle')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
@@ -200,7 +200,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     setError(null);
                   }}
                 />
-                {t('guardians.existingUser')}
+                {t('page.guardians.existingUser')}
               </label>
               <label className="checkbox-label">
                 <Radio
@@ -212,20 +212,20 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     setError(null);
                   }}
                 />
-                {t('guardians.newGuardian')}
+                {t('page.guardians.newGuardian')}
               </label>
             </ChoiceGroup>
 
             {mode === 'existing' ? (
               <div>
-                <FieldLabel htmlFor="guardian-existing">{t('guardians.existingUser')}{!isEditMode && <RequiredMark />}</FieldLabel>
+                <FieldLabel htmlFor="guardian-existing">{t('page.guardians.existingUser')}{!isEditMode && <RequiredMark />}</FieldLabel>
                 <Select
                   id="guardian-existing"
                   value={selectedMemberId}
                   onChange={(e) => handleSelectedExistingUserChange(e.target.value)}
                   disabled={isEditMode}
                 >
-                  <option value="">{t('guardians.selectUser')}</option>
+                  <option value="">{t('page.guardians.selectUser')}</option>
                   {availableExistingUsers.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.firstName} {user.lastName}
@@ -233,10 +233,10 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                   ))}
                 </Select>
                 {availableExistingUsers.length === 0 && (
-                  <p className="field-help">{t('guardians.noAvailableUsers')}</p>
+                  <p className="field-help">{t('page.guardians.noAvailableUsers')}</p>
                 )}
                 {isEditMode && (
-                  <p className="field-help">{t('guardians.selectionLocked')}</p>
+                  <p className="field-help">{t('page.guardians.selectionLocked')}</p>
                 )}
                 {isEditMode && (
                 <Stack gap="sm" className="guardian-edit-fields">
@@ -285,7 +285,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={t('guardians.placeholderFirstName')}
+                    placeholder={t('domain.member.placeholders.firstName')}
                     required
                   />
                 </div>
@@ -296,21 +296,21 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder={t('guardians.placeholderLastName')}
+                    placeholder={t('domain.member.placeholders.lastName')}
                     required
                   />
                 </div>
                 <div>
-                  <FieldLabel htmlFor="guardian-documented-email">{t('guardians.emailOptional')}</FieldLabel>
+                  <FieldLabel htmlFor="guardian-documented-email">{t('domain.member.fields.email')}</FieldLabel>
                   <Input
                     id="guardian-documented-email"
                     type="email"
                     value={documentedEmail}
                     onChange={(e) => setDocumentedEmail(e.target.value)}
-                    placeholder={t('guardians.placeholderEmail')}
+                    placeholder={t('domain.member.placeholders.email')}
                   />
                 </div>
-                <p className="field-help">{t('guardians.documentedHint')}</p>
+                <p className="field-help">{t('page.guardians.documentedHint')}</p>
               </>
             )}
 
@@ -323,7 +323,7 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
             {t('common.actions.cancel')}
           </Button>
           <Button type="submit" variant="primary" disabled={isSubmitting}>
-            {isEditMode ? t('common.actions.save') : t('guardians.assignAction')}
+            {isEditMode ? t('common.actions.save') : t('page.guardians.assignAction')}
           </Button>
         </ModalFooter>
       </form>

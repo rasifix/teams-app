@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
 import AddTrainerModal from "../components/AddTrainerModal";
@@ -14,7 +14,8 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { canManageGuardians } from "../utils/guardians";
 import type { Guardian, Player, Trainer } from "../types";
-import { Alert, EmptyState, NavigationTab, NavigationTabs, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
+import { Alert, Button, Cluster, EmptyState, NavigationTab, NavigationTabs, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
+import SpondBadge from '../components/SpondBadge';
 
 export interface MembersOutletContext {
   players: Player[];
@@ -31,6 +32,7 @@ export interface MembersOutletContext {
 
 export default function MembersPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   // Store hooks
   const { players, addPlayer: addPlayerToStore, deletePlayer } = usePlayers();
@@ -82,17 +84,17 @@ export default function MembersPage() {
         const success = await deletePlayer(deletingPlayer.id);
         setDeletingPlayer(null); // Always close dialog
         if (!success) {
-          setDeleteActionError(t('members.errors.deletePlayerFailed'));
+          setDeleteActionError(t('page.members.errors.deletePlayerFailed'));
         }
       } catch (error) {
         setDeletingPlayer(null); // Close dialog even on error
         console.error('Error deleting player:', error);
         if (error instanceof Error && error.message === PLAYER_DELETE_ROLE_CONSTRAINT_ERROR_MESSAGE) {
-          setDeleteActionError(t('members.errors.playerHasUnexpectedRoles'));
+          setDeleteActionError(t('page.members.errors.playerHasUnexpectedRoles'));
         } else if (error instanceof Error && error.message === PLAYER_DELETE_TEAM_ASSIGNMENT_CONSTRAINT_ERROR_MESSAGE) {
-          setDeleteActionError(t('members.errors.playerHasPastTeamAssignments'));
+          setDeleteActionError(t('page.members.errors.playerHasPastTeamAssignments'));
         } else {
-          setDeleteActionError(t('members.errors.deletePlayerFailed'));
+          setDeleteActionError(t('page.members.errors.deletePlayerFailed'));
         }
       }
     }
@@ -121,11 +123,11 @@ export default function MembersPage() {
         const success = await deleteTrainer(deletingTrainer.id);
         
         if (!success) {
-          setDeleteActionError(t('members.errors.deleteTrainerFailed'));
+          setDeleteActionError(t('page.members.errors.deleteTrainerFailed'));
         }
       } catch (error) {
         console.error('Error deleting trainer:', error);
-        setDeleteActionError(t('members.errors.deleteTrainerFailed'));
+        setDeleteActionError(t('page.members.errors.deleteTrainerFailed'));
       } finally {
         setDeletingTrainer(null); // Always close dialog in finally block
       }
@@ -157,7 +159,7 @@ export default function MembersPage() {
     return (
       <Page>
         <EmptyState>
-          <p>{t('members.loading')}</p>
+          <p>{t('page.members.loading')}</p>
         </EmptyState>
       </Page>
     );
@@ -165,11 +167,18 @@ export default function MembersPage() {
 
   return (
     <Page>
-      <PageHeader>
+      <PageHeader align="start">
         <PageHeaderContent>
-          <PageTitle>{t('members.title')}</PageTitle>
-          <PageDescription>{t('members.subtitle')}</PageDescription>
+          <PageTitle>{t('page.members.title')}</PageTitle>
+          <PageDescription>{t('page.members.subtitle')}</PageDescription>
         </PageHeaderContent>
+        <PageActions>
+          {isAdmin && spondLinked && (
+            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
+              <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
+            </Button>
+          )}
+        </PageActions>
       </PageHeader>
 
       {hasErrors && (errors.players || errors.trainers) && (
@@ -187,14 +196,14 @@ export default function MembersPage() {
       {/* Tab Navigation */}
       <NavigationTabs label={t('common.tabs')} className="members-tabs">
           <NavigationTab to="/members/players">
-            {t('domain.players')} ({players.length})
+            {t('domain.player.plural')} ({players.length})
           </NavigationTab>
           <NavigationTab to="/members/trainers">
-            {t('domain.trainers')} ({trainers.length})
+            {t('domain.trainer.plural')} ({trainers.length})
           </NavigationTab>
           {isAdmin && (
           <NavigationTab to="/members/guardians">
-            {t('domain.guardians')} ({guardians.length})
+            {t('domain.guardian.plural')} ({guardians.length})
           </NavigationTab>
           )}
       </NavigationTabs>
@@ -222,12 +231,12 @@ export default function MembersPage() {
       {/* Delete Player Confirmation */}
       <ConfirmDialog
         isOpen={Boolean(deletingPlayer)}
-        title={t('members.deletePlayerTitle')}
-        message={t('members.deletePlayerMessage', {
+        title={t('page.members.deletePlayerTitle')}
+        message={t('page.members.deletePlayerMessage', {
           firstName: deletingPlayer?.firstName ?? '',
           lastName: deletingPlayer?.lastName ?? '',
         })}
-        confirmText={t('members.deletePlayerConfirm')}
+        confirmText={t('page.members.deletePlayerConfirm')}
         cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeletePlayer}
         onCancel={cancelDeletePlayer}
@@ -236,12 +245,12 @@ export default function MembersPage() {
       {/* Delete Trainer Confirmation */}
       <ConfirmDialog
         isOpen={Boolean(deletingTrainer)}
-        title={t('members.deleteTrainerTitle')}
-        message={t('members.deleteTrainerMessage', {
+        title={t('page.members.deleteTrainerTitle')}
+        message={t('page.members.deleteTrainerMessage', {
           firstName: deletingTrainer?.firstName ?? '',
           lastName: deletingTrainer?.lastName ?? '',
         })}
-        confirmText={t('members.deleteTrainerConfirm')}
+        confirmText={t('page.members.deleteTrainerConfirm')}
         cancelText={t('common.actions.cancel')}
         onConfirm={confirmDeleteTrainer}
         onCancel={cancelDeleteTrainer}

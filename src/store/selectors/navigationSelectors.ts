@@ -3,13 +3,13 @@ import type { Squad, Trainer } from '../../types';
 import { canAccessRestrictedManagement } from '../../utils/permissions';
 
 export interface HeaderNavItem {
-  path: '/members' | '/events' | '/shirts' | '/statistics' | '/squad-settings';
+  path: '/members' | '/activities' | '/shirts' | '/statistics' | '/squad-settings';
   labelKey: 'nav.members' | 'nav.events' | 'nav.shirts' | 'nav.statistics' | 'nav.squadSettings';
 }
 
 const BASE_NAV_ITEMS: HeaderNavItem[] = [
   { path: '/members', labelKey: 'nav.members' },
-  { path: '/events', labelKey: 'nav.events' },
+  { path: '/activities', labelKey: 'nav.events' },
   { path: '/shirts', labelKey: 'nav.shirts' },
   { path: '/squad-settings', labelKey: 'nav.squadSettings' },
   { path: '/statistics', labelKey: 'nav.statistics' },

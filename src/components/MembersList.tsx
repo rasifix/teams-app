@@ -30,8 +30,8 @@ export default function MembersList<T extends Member>({
 
   if (members.length === 0) {
     const defaultEmptyMessage = memberType === 'players'
-      ? t('members.list.emptyPlayers')
-      : t('members.list.emptyTrainers');
+      ? t('page.members.list.emptyPlayers')
+      : t('page.members.list.emptyTrainers');
 
     return (
       <EmptyState>

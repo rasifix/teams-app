@@ -45,7 +45,8 @@ const startOfDay = (value: Date): number => {
 };
 
 /** An activity is completed once its day is over (local day comparison, like the legacy event lists). */
-export const isActivityCompleted = (activity: Pick<Activity, 'startsAt'>, now: Date = new Date()): boolean => {
+export const isActivityCompleted = (activity: Pick<Activity, 'startsAt'> & { status?: Activity['status'] }, now: Date = new Date()): boolean => {
+  if (activity.status === 'cancelled') return false;
   const [year, month, day] = getActivityDate(activity).split('-').map(Number);
   if (!year || !month || !day) return false;
   return new Date(year, month - 1, day).getTime() < startOfDay(now);
@@ -61,6 +62,11 @@ export const selectPastActivities = (activities: Activity[], now: Date = new Dat
 /** Single status combining response and decline reason, as used by the status badges. */
 export const getInvitationStatus = (invitation: ActivityInvitation): InvitationStatus =>
   invitation.response === 'declined' && invitation.declineReason ? invitation.declineReason : invitation.response;
+
+export const shouldRemovePlayerFromSelection = (
+  previousResponse: InvitationResponse,
+  nextResponse: InvitationResponse,
+): boolean => nextResponse === 'declined' && previousResponse !== 'declined';
 
 export const isSelectionSent = (activity: Pick<Activity, 'selectionSentAt'>): boolean =>
   Boolean(activity.selectionSentAt);

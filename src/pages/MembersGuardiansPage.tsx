@@ -54,7 +54,7 @@ export default function MembersGuardiansPage() {
     );
 
     if (!success) {
-      setGuardianActionError(t('playerDetail.guardians.editFailed'));
+      setGuardianActionError(t('page.playerDetail.guardians.editFailed'));
       return false;
     }
 
@@ -80,7 +80,7 @@ export default function MembersGuardiansPage() {
 
         const success = await mergeGuardianDuplicates(guardian.id, targetGuardianId);
         if (!success) {
-          setGuardianActionError(t('members.guardianDuplicates.resolveFailed'));
+          setGuardianActionError(t('page.members.guardianDuplicates.resolveFailed'));
           break;
         }
       }
@@ -92,12 +92,12 @@ export default function MembersGuardiansPage() {
   return (
     <Panel>
         <PanelHeader>
-          <PanelTitle>{t('members.allGuardiansTitle', { count: guardians.length })}</PanelTitle>
+          <PanelTitle>{t('page.members.allGuardiansTitle', { count: guardians.length })}</PanelTitle>
         </PanelHeader>
 
         {!spondLinked && duplicateGuardianGroups.length > 0 && (
           <Alert tone="warning" className="guardian-duplicates">
-            <p><strong>{t('members.guardianDuplicates.detected', { count: duplicateGuardianGroups.length })}</strong></p>
+            <p><strong>{t('page.members.guardianDuplicates.detected', { count: duplicateGuardianGroups.length })}</strong></p>
             <div className="guardian-duplicate-list">
               {duplicateGuardianGroups.map((group) => {
                 const isResolving = resolvingDuplicateKey === group.key;
@@ -108,7 +108,7 @@ export default function MembersGuardiansPage() {
                         {group.firstName} {group.lastName} ({group.email})
                       </p>
                       <p className="member-meta-text">
-                        {t('members.guardianDuplicates.groupMeta', {
+                        {t('page.members.guardianDuplicates.groupMeta', {
                           guardianCount: group.guardians.length,
                           playerCount: group.linkedPlayerCount,
                         })}
@@ -123,8 +123,8 @@ export default function MembersGuardiansPage() {
                       }}
                     >
                       {isResolving
-                        ? t('members.guardianDuplicates.resolving')
-                        : t('members.guardianDuplicates.resolveAction')}
+                        ? t('page.members.guardianDuplicates.resolving')
+                        : t('page.members.guardianDuplicates.resolveAction')}
                     </Button>
                   </div>
                 );
@@ -141,7 +141,7 @@ export default function MembersGuardiansPage() {
 
         {guardians.length === 0 ? (
           <EmptyState>
-            <p>{t('members.list.emptyGuardians')}</p>
+            <p>{t('page.members.list.emptyGuardians')}</p>
           </EmptyState>
         ) : (
           <>
@@ -154,10 +154,10 @@ export default function MembersGuardiansPage() {
                     {row.guardian.firstName} {row.guardian.lastName}
                   </EntityTitle>
                   <EntityMeta>
-                    {row.guardian.email || t('members.guardians.noEmail')}
+                    {row.guardian.email || t('page.members.guardians.noEmail')}
                   </EntityMeta>
                   <EntityMeta>
-                    <strong>{t('members.guardians.tablePlayers')}:</strong>{' '}
+                    <strong>{t('page.members.guardians.tablePlayers')}:</strong>{' '}
                     {row.playerRefs.map((playerRef, index) => (
                       <span key={playerRef.playerId}>
                         <Link
@@ -188,17 +188,17 @@ export default function MembersGuardiansPage() {
                 <DataTableHead>
                   <DataTableRow>
                     <DataTableHeaderCell scope="col">
-                      {t('members.guardians.tableGuardian')}
+                      {t('page.members.guardians.tableGuardian')}
                     </DataTableHeaderCell>
                     <DataTableHeaderCell scope="col">
-                      {t('members.guardians.tableEmail')}
+                      {t('page.members.guardians.tableEmail')}
                     </DataTableHeaderCell>
                     <DataTableHeaderCell scope="col">
-                      {t('members.guardians.tablePlayers')}
+                      {t('page.members.guardians.tablePlayers')}
                     </DataTableHeaderCell>
                     {!spondLinked && (
                       <DataTableHeaderCell scope="col">
-                        {t('members.guardians.tableActions')}
+                        {t('page.members.guardians.tableActions')}
                       </DataTableHeaderCell>
                     )}
                   </DataTableRow>
@@ -210,7 +210,7 @@ export default function MembersGuardiansPage() {
                         {row.guardian.firstName} {row.guardian.lastName}
                       </DataTableCell>
                       <DataTableCell>
-                        {row.guardian.email || t('members.guardians.noEmail')}
+                        {row.guardian.email || t('page.members.guardians.noEmail')}
                       </DataTableCell>
                       <DataTableCell>
                         <div className="guardian-player-links">

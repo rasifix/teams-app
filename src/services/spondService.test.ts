@@ -12,7 +12,7 @@ describe('Spond proxy client', () => {
       .mockResolvedValueOnce([{ id: 'group-1', name: 'U12' }])
       .mockResolvedValueOnce({
         group: { id: 'group-1', name: 'U12', members: [] },
-        events: [],
+        activities: [],
         sourceReadAt: '2026-10-10T12:00:00.000Z',
       });
     const client = createSpondReadClient();
@@ -54,7 +54,7 @@ describe('Spond proxy client', () => {
       .mockResolvedValueOnce([{ id: 'group-1', name: 'U12', subGroups: [{ id: 'sub-1', name: 'Team orange' }] }])
       .mockResolvedValueOnce({
         group: { id: 'group-1', name: 'U12', subGroups: [{ id: 'sub-1', name: 'Team orange' }], members: [] },
-        events: [],
+        activities: [],
         sourceReadAt: '2026-10-10T12:00:00.000Z',
       });
     const client = createSpondReadClient();
@@ -80,8 +80,8 @@ describe('Spond proxy client', () => {
       .mockResolvedValueOnce([{ id: 'group-1', name: 'U12' }])
       .mockResolvedValueOnce({
         group: { id: 'group-1', name: 'U12', members: [] },
-        events: [{
-          id: 'event-1', groupId: 'group-1', name: 'Training',
+        activities: [{
+          id: 'event-1', groupId: 'group-1', name: 'Training', type: 'match', status: 'active',
           startsAt: '2026-07-10T16:30:00.000Z', endsAt: '2026-07-10T18:00:00.000Z', responses: [],
         }],
         sourceReadAt: '2026-07-01T12:00:00.000Z',
@@ -91,7 +91,7 @@ describe('Spond proxy client', () => {
 
     const snapshot = await client.getSnapshot('group-1', 'from', 'to');
 
-    expect(snapshot.events[0]).toMatchObject({
+    expect(snapshot.activities[0]).toMatchObject({
       startsAt: '2026-07-10T16:30:00.000Z',
       endsAt: '2026-07-10T18:00:00.000Z',
     });

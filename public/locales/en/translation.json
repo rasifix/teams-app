@@ -4,7 +4,6 @@
     "tagline": "Team operations"
   },
   "common": {
-    "language": "Language",
     "required": "Required",
     "requiredFieldsNote": "* Required",
     "tabs": "Tabs",
@@ -25,7 +24,12 @@
       "save": "Save"
     },
     "errors": {
-      "errorWithMessage": "Error: {{message}}"
+      "errorWithMessage": "Error: {{message}}",
+      "failedToLoadData": "Failed to load data"
+    },
+    "validation": {
+      "endDateTimeTogether": "Enter both an end date and end time, or leave both empty.",
+      "endAfterStart": "End date and time must be after the start."
     },
     "states": {
       "loading": "Loading...",
@@ -62,391 +66,906 @@
     }
   },
   "domain": {
-    "player": "Player",
-    "players": "Players",
-    "guardians": "Guardians",
-    "events": "Events",
-    "trainers": "Trainers",
-    "shirtSets": "Shirt Sets",
-    "team": "Team"
+    "player": {
+      "label": "Player",
+      "plural": "Players",
+      "fields": {
+        "birthDate": "Birth Date",
+        "level": "Level (1-5)",
+        "preferredShirtNumber": "Preferred Shirt Number"
+      },
+      "placeholders": {
+        "preferredShirtNumber": "e.g. 10"
+      },
+      "status": {
+        "active": "Active",
+        "trial": "Trial",
+        "inactive": "Inactive"
+      },
+      "levels": {
+        "1": "1 - Beginner",
+        "2": "2 - Learning",
+        "3": "3 - Intermediate",
+        "4": "4 - Advanced",
+        "5": "5 - Expert",
+        "title": "Level {{level}}"
+      }
+    },
+    "guardian": {
+      "label": "Guardian",
+      "plural": "Guardians"
+    },
+    "trainer": {
+      "label": "Trainer",
+      "plural": "Trainers"
+    },
+    "shirtSet": {
+      "label": "Shirt sets",
+      "fields": {
+        "sponsor": "Sponsor name",
+        "color": "Color",
+        "createAutomatically": "Create shirts automatically",
+        "startNumber": "Start #",
+        "endNumber": "End #",
+        "size": "Size",
+        "includeGoalkeeper": "Include GK",
+        "goalkeeperNumber": "GK #:"
+      },
+      "placeholders": {
+        "sponsor": "Enter sponsor name",
+        "color": "#000000"
+      }
+    },
+    "shirt": {
+      "label": "Shirt",
+      "fields": {
+        "number": "Shirt number",
+        "size": "Size",
+        "isGoalkeeper": "This is a goalkeeper shirt",
+        "isUnavailable": "Mark shirt as unavailable"
+      },
+      "placeholders": {
+        "number": "Enter shirt number (1-99)"
+      },
+      "sizes": {
+        "kids": "Kids",
+        "extraSmall": "Extra Small",
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large",
+        "extraLarge": "Extra Large"
+      },
+      "labels": {
+        "goalkeeperShort": "GK",
+        "unavailableShort": "UNAV"
+      }
+    },
+    "squad": {
+      "label": "Squad",
+      "fields": {
+        "name": "Squad name",
+        "club": "Club",
+        "category": "SFV category",
+        "description": "Description",
+        "noCategory": "No category"
+      },
+      "placeholders": {
+        "name": "Enter squad name",
+        "club": "Enter club",
+        "description": "Add a short description"
+      }
+    },
+    "team": {
+      "label": "Team",
+      "unknownLabel": "Unknown Team",
+      "fields": {
+        "name": "Team name",
+        "strength": "Strength",
+        "startTime": "Start time",
+        "location": "Location",
+        "responsiblePeople": "Responsible person"
+      },
+      "placeholders": {
+        "name": "Enter team name",
+        "location": "e.g. Main Field A"
+      },
+      "strength": {
+        "highest": "1 - Highest 🔥🔥🔥",
+        "medium": "2 - Medium 🔥🔥",
+        "lowest": "3 - Lowest 🔥"
+      }
+    },
+    "matchFormat": {
+      "label": "Match format",
+      "fields": {
+        "name": "Name",
+        "numberOfPeriods": "Number of periods",
+        "periodLengthMinutes": "Period length (minutes)",
+        "minimumPeriodsPerPlayer": "Minimum periods per player",
+        "playersOnField": "Players on field",
+        "minPlayersPerTeam": "Min. players per team",
+        "maxPlayersPerTeam": "Max. players per team"
+      },
+      "hints": {
+        "minimumPeriodsPerPlayer": "Use 0 when no minimum should be enforced.",
+        "playerLimits": "Used as default player limits for matches with this format."
+      },
+      "placeholders": {
+        "name": "e.g. 4x20"
+      }
+    },
+    "formation": {
+      "label": "Formation",
+      "fields": {
+        "name": "Name",
+        "slots": "Slots"
+      },
+      "placeholders": {
+        "name": "e.g. 3-3"
+      },
+      "positions": {
+        "GK": "GK",
+        "LB": "LB",
+        "CB": "CB",
+        "RB": "RB",
+        "LWB": "LWB",
+        "RWB": "RWB",
+        "CDM": "CDM",
+        "CM": "CM",
+        "CAM": "CAM",
+        "LM": "LM",
+        "RM": "RM",
+        "LW": "LW",
+        "RW": "RW",
+        "CF": "CF",
+        "ST": "ST"
+      }
+    },
+    "invitation": {
+      "status": {
+        "available": "Available",
+        "accepted": "Accepted",
+        "open": "Open",
+        "declined": "Declined",
+        "injured": "Injured",
+        "sick": "Sick",
+        "unavailable": "Unavailable",
+        "selected": "Selected",
+        "notInvited": "Not Invited"
+      }
+    },
+    "attendance": {
+      "status": {
+        "present": "Present",
+        "absent": "Absent",
+        "excused": "Excused"
+      },
+      "reasons": {
+        "sick": "Sick",
+        "injured": "Injured",
+        "noShow": "No show",
+        "other": "Other"
+      }
+    },
+    "activity": {
+      "label": "Activity",
+      "plural": "Activities",
+      "kinds": {
+        "match": "Match",
+        "tournament": "Tournament",
+        "training": "Training",
+        "social": "Social activity"
+      },
+      "fields": {
+        "kind": "Activity type",
+        "name": "Activity name",
+        "date": "Date",
+        "endDate": "End date",
+        "endTime": "End time",
+        "opponent": "Opponent",
+        "matchFormat": "Match format",
+        "noMatchFormat": "No match format",
+        "startTime": "Start time",
+        "location": "Location",
+        "numberOfTeams": "Number of teams",
+        "maxPlayersPerTeam": "Max players per team",
+        "minPlayersPerTeam": "Min players per team",
+        "declineReason": "Decline reason",
+        "invitationResponse": "Invitation response"
+      },
+      "declineReasons": {
+        "injured": "Injured",
+        "sick": "Sick",
+        "unavailable": "Unavailable",
+        "unspecified": "No reason given"
+      },
+      "declinedCount": "Declined: {{count}}",
+      "noTeamsLegacy": "This activity has no teams configured."
+    },
+    "member": {
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email"
+      },
+      "placeholders": {
+        "firstName": "Enter first name",
+        "lastName": "Enter last name",
+        "email": "Enter email address"
+      }
+    }
+  },
+  "page": {
+    "events": {
+      "title": "Activities",
+      "subtitle": "Plan matches and tournaments, then manage attendance and teams.",
+      "loading": "Loading activities...",
+      "futureTitle": "Future Activities ({{count}})",
+      "pastTitle": "Past Activities ({{count}})",
+      "list": {
+        "emptyState": "No activities created yet. Click \"Create Activity\" to get started."
+      },
+      "teamCount_one": "{{count}} team",
+      "teamCount_other": "{{count}} teams",
+      "playersAssignedToTeams": "Players who have been assigned to teams",
+      "teamsReady": "All teams meet the minimum player count",
+      "invitationCounts": "Invitation counts",
+      "teamCardLabel": "{{team}} details"
+    },
+    "players": {
+      "eventHistory": {
+        "empty": "No activity invitations yet."
+      }
+    },
+    "shirts": {
+      "subtitle": "Manage shirt sets, numbers, sizes, and availability.",
+      "editShirt": "Edit shirt",
+      "removeShirt": "Remove shirt",
+      "editSet": "Edit set",
+      "deleteSet": "Delete set",
+      "shirtCount_one": "{{count}} shirt",
+      "shirtCount_other": "{{count}} shirts",
+      "loading": "Loading shirts...",
+      "titleWithCount": "Shirts ({{count}})",
+      "deleteSetTitle": "Delete Shirt Set",
+      "deleteSetMessage": "Are you sure you want to delete the shirt set \"{{sponsor}} - {{color}}\"? This action cannot be undone.",
+      "removeShirtTitle": "Remove Shirt",
+      "removeShirtMessage": "Are you sure you want to remove shirt #{{number}} from this set? This action cannot be undone.",
+      "removeShirtAction": "Remove"
+    },
+    "shirtModal": {
+      "addTitle": "Add New Shirt",
+      "editTitle": "Edit Shirt",
+      "addAction": "Add Shirt",
+      "saveChanges": "Save Changes",
+      "existingNumbers": "Existing numbers in this set:",
+      "otherNumbers": "Other numbers in this set:",
+      "fields": {
+        "numberRequired": "Shirt Number *",
+        "sizeRequired": "Size *"
+      },
+      "errors": {
+        "invalidNumber": "Please enter a valid number between 1 and 99",
+        "numberExists": "Shirt #{{number}} already exists in this set"
+      }
+    },
+    "shirtSetModal": {
+      "addTitle": "Add New Shirt Set",
+      "editTitle": "Edit Shirt Set",
+      "createAction": "Create Shirt Set",
+      "colorHint": "Choose a color or enter a hex code",
+      "fields": {
+        "sponsorRequired": "Sponsor Name *",
+        "colorRequired": "Color *"
+      },
+      "preview": {
+        "prefix": "Will create",
+        "regularShirts": "regular shirts",
+        "plusGoalkeeper": "+ 1 GK",
+        "size": "size {{size}}"
+      }
+    },
+    "teamModal": {
+      "editTitle": "Edit Team",
+      "noTrainerAssigned": "No responsible person assigned",
+      "filterPlaceholder": "Filter by name",
+      "noPersonsFound": "No matching persons"
+    },
+    "assignShirts": {
+      "title": "Assign Shirts to Team",
+      "assignAction": "Assign Shirts",
+      "selectSetPlaceholder": "Select a shirt set...",
+      "noShirt": "No shirt",
+      "usedInOtherTeamsHint": "Shirts already used in other teams for this activity are disabled.",
+      "unavailableHint": "Unavailable shirts cannot be assigned.",
+      "noPlayersInTeam": "No players assigned to this team yet.",
+      "errors": {
+        "selectSetRequired": "Please select a shirt set"
+      }
+    },
+    "squads": {
+      "title": "Squads",
+      "loading": "Loading squads...",
+      "createNew": "Create a new squad",
+      "clubLabel": "Club: {{club}}",
+      "categoryLabel": "Category: {{category}}",
+      "switching": "Switching squad...",
+      "selectTitle": "Select Your Squad",
+      "selectDescription": "Choose the squad you want to work with",
+      "idLabel": "ID: {{id}}",
+      "errors": {
+        "createFailed": "Failed to create squad. Please try again.",
+        "loadFailedWithReason": "Failed to load squads: {{error}}",
+        "failedToLoadTitle": "Failed to Load Squads"
+      }
+    },
+    "squadModal": {
+      "title": "Create New Squad",
+      "createAction": "Create Squad",
+      "creating": "Creating...",
+      "categoryHint": "For D7 through A, the official match format is created and set as default automatically.",
+      "officialFormatHint": "Official format: {{format}}, {{min}}–{{max}} players per team.",
+      "tournamentOnlyHint": "This category plays tournaments only; no official match format is created.",
+      "errors": {
+        "nameRequired": "Squad name is required."
+      }
+    },
+    "playerModal": {
+      "addTitle": "Add New Player",
+      "editTitle": "Edit Player",
+      "addAction": "Add Player",
+      "updateAction": "Update Player"
+    },
+    "trainerModal": {
+      "addTitle": "Add New Trainer",
+      "editTitle": "Edit Trainer",
+      "addAction": "Add Trainer",
+      "updateAction": "Update Trainer"
+    },
+    "eventModal": {
+      "invitePlayersAction": "Invite players",
+      "addTitle": "Create New Activity",
+      "fields": {
+        "eventNameRequired": "Activity Name *",
+        "dateRequired": "Date *",
+        "numberOfTeamsRequired": "Number of Teams *",
+        "maxPlayersPerTeamRequired": "Max Players per Team *",
+        "minPlayersPerTeamRequired": "Min Players per Team *"
+      }
+    },
+    "editEventModal": {
+      "title": "Edit Activity",
+      "errors": {
+        "minGreaterThanMax": "Min players cannot be greater than max players"
+      }
+    },
+    "home": {
+      "publicTitle": "Team management",
+      "publicSubtitle": "Squads, activities, attendance, and statistics in one place.",
+      "overviewTitle": "Overview",
+      "overviewSubtitle": "Select a squad or open an upcoming activity.",
+      "featuresLabel": "What you can do",
+      "manageLabel": "Manage",
+      "scheduleLabel": "Next up",
+      "upcomingEvents": {
+        "title": "Upcoming Activities",
+        "viewAll": "View all",
+        "empty": "No upcoming activities yet."
+      },
+      "cards": {
+        "membersTitle": "Manage Members",
+        "membersDescription": "Add players and trainers, set skill levels, and manage your roster",
+        "eventsTitle": "Create Activities",
+        "eventsDescription": "Schedule games, create teams, and manage selections",
+        "statisticsTitle": "View Statistics",
+        "statisticsDescription": "Track attendance and ensure fair player selection"
+      }
+    },
+    "members": {
+      "title": "Members",
+      "subtitle": "Manage players, trainers, and guardians.",
+      "list": {
+        "emptyPlayers": "No players added yet. Click \"Add Player\" to get started.",
+        "emptyTrainers": "No trainers added yet. Click \"Add Trainer\" to get started.",
+        "emptyGuardians": "No guardians assigned yet."
+      },
+      "loading": "Loading members...",
+      "allPlayersTitle": "All Players ({{count}})",
+      "allPlayersFilteredTitle": "All Players ({{filteredCount}} of {{totalCount}})",
+      "allTrainersTitle": "All Trainers ({{count}})",
+      "allGuardiansTitle": "All Guardians ({{count}})",
+      "levelFilter": "Level:",
+      "yearFilter": "Year:",
+      "trialFilter": "Trial:",
+      "inactiveFilter": "Inactive:",
+      "showTrialPlayers": "Show",
+      "hideTrialPlayers": "Hide",
+      "showInactivePlayers": "Show",
+      "hideInactivePlayers": "Hide",
+      "birthdayCalendar": {
+        "openAction": "Birthday calendar",
+        "title": "Birthday calendar",
+        "description": "Create a private calendar link that stays up to date in your calendar app.",
+        "loading": "Loading calendar subscription...",
+        "notCreated": "No subscription link has been created for this squad yet.",
+        "subscriptionHelp": "Subscribe directly or copy this link into Apple Calendar, Google Calendar, Outlook, or another calendar app.",
+        "subscriptionUrl": "Calendar subscription URL",
+        "privacyNote": "The private link shows active players' names and birthday month and day. Anyone with the link can view it.",
+        "secureUrlRequired": "Calendar subscriptions require a publicly reachable HTTPS address. A localhost development link cannot be subscribed in calendar apps.",
+        "create": "Create subscription link",
+        "creating": "Creating...",
+        "copy": "Copy link",
+        "copied": "Copied",
+        "subscribe": "Subscribe",
+        "revoke": "Revoke link",
+        "revoking": "Revoking...",
+        "revokeConfirm": "Revoke this link? Existing calendar subscriptions will stop updating.",
+        "errors": {
+          "loadFailed": "The birthday calendar could not be loaded.",
+          "createFailed": "The subscription link could not be created.",
+          "copyFailed": "The link could not be copied. Select and copy it manually.",
+          "revokeFailed": "The subscription link could not be revoked."
+        }
+      },
+      "guardians": {
+        "noEmail": "No email",
+        "tableGuardian": "Guardian",
+        "tableEmail": "Email",
+        "tablePlayers": "Players",
+        "tableActions": "Actions"
+      },
+      "guardianDuplicates": {
+        "detected": "Duplicate guardians detected: {{count}}",
+        "groupMeta": "{{guardianCount}} guardian entries across {{playerCount}} players",
+        "resolveAction": "Resolve duplicates",
+        "resolving": "Resolving...",
+        "resolveFailed": "Failed to resolve guardian duplicates. Please try again."
+      },
+      "duplicates": {
+        "openAction": "Resolve duplicates ({{count}})",
+        "title": "Potential Duplicate Members",
+        "description": "Temporary tool: detect same-name trainer/guardian members and merge guardians into the selected trainer account.",
+        "empty": "No trainer/guardian duplicate names found.",
+        "groupCount": "Trainers: {{trainerCount}}, Guardians: {{guardianCount}}",
+        "targetTrainerLabel": "Keep this trainer account",
+        "assignedTeams": "{{count}} teams assigned",
+        "linkedPlayers": "Linked to {{count}} players",
+        "mergeAction": "Merge guardian",
+        "errors": {
+          "noTargetTrainer": "Please select a target trainer.",
+          "mergeFailed": "Merge failed. Please try again."
+        }
+      },
+      "deletePlayerTitle": "Delete Player",
+      "deletePlayerMessage": "Delete {{firstName}} {{lastName}}? Active invitations will be removed.",
+      "deletePlayerConfirm": "Delete Player",
+      "deleteTrainerTitle": "Delete Trainer",
+      "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
+      "deleteTrainerConfirm": "Delete Trainer",
+      "errors": {
+        "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
+        "playerHasPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past activity.",
+        "deletePlayerFailed": "Failed to delete player. Please try again.",
+        "deleteTrainerFailed": "Failed to remove trainer. Please try again."
+      }
+    },
+    "playerInvitations": {
+      "invite": "Invite",
+      "remove": "Remove",
+      "empty": {
+        "noneWithStatus": "No players have {{status}} invitations."
+      }
+    },
+    "teamCard": {
+      "expand": "Expand details",
+      "collapse": "Collapse details",
+      "statsTooltip": "{{accepted}} accepted, {{selected}} selected",
+      "inactiveIndicator": "INACTIVE",
+      "inactiveIndicatorTooltip": "Inactive player is still assigned in this future activity.",
+      "removePlayer": "Remove player",
+      "unknownPlayer": "Unknown player",
+      "assignedShirtsCount": "{{count}} assigned"
+    },
+    "invitePlayers": {
+      "title": "Invite Players",
+      "subtitle": "Select players to invite to this activity",
+      "inactiveExcludedHint": "Inactive players are excluded from invitations.",
+      "noPlayers": "No players available",
+      "noPlayersDetail": "Add players in Members first.",
+      "defaultStatus": "Default status",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "selectedCount": "{{count}} selected",
+      "inviteAction": "Invite players"
+    },
+    "teamPrint": {
+      "title": "Team Summary",
+      "print": "Print",
+      "formatLabel": "Print format",
+      "selectionFormat": "Selection list",
+      "organizerFormat": "Organizer sheet",
+      "noPlayers": "No players selected"
+    },
+    "statistics": {
+      "title": "Statistics",
+      "description": "Track attendance, availability, and team selections at a glance.",
+      "summary": {
+        "totalPlayers": "Total Players",
+        "totalEvents": "Total Activities",
+        "avgAcceptancesPerPlayer": "Avg Acceptances per Player",
+        "avgSelectionsPerPlayer": "Avg Selections per Player"
+      },
+      "playerTable": {
+        "emptyState": "No player data available yet. Add players and activities to see statistics.",
+        "invited": "Invited",
+        "accepted": "Accepted",
+        "selected": "Selected",
+        "acceptanceRate": "Acceptance Rate",
+        "selectionRate": "Selection Rate"
+      },
+      "eventParticipation": {
+        "emptyState": "No data available. Add players and activities to see the attendance matrix."
+      },
+      "teamSelections": {
+        "strengthLabel": "Strength {{level}}",
+        "noData": "No data available. Add players and activities to see team selection statistics.",
+        "groupBy": "Group by",
+        "groupByStrength": "Strength",
+        "groupByTeamName": "Team name",
+        "noTeamsInPeriod": "No teams exist in the selected period.",
+        "playersCount": "{{count}} players",
+        "strengthGroupsCount": "{{count}} strength groups",
+        "teamsCount": "{{count}} teams",
+        "clickCountHint": "Click a count to see the activities",
+        "noPlayersInLevelRange": "No players match the selected level range.",
+        "cellAriaLabel": "{{player}}, {{group}}, {{count}} selections",
+        "selectionDetails": "Selection details",
+        "openTeam": "Open team",
+        "noSelectionStrength": "This player has not been selected for this strength group in the current statistics period.",
+        "noSelectionTeam": "This player has not been selected for this team in the current statistics period."
+      },
+      "period": {
+        "selectorLabel": "Period: {{period}}",
+        "selectPeriod": "Select period",
+        "allEvents": "All activities",
+        "allEventsDescription": "Use every activity in the squad.",
+        "rangeLabel": "{{startDate}} to {{endDate}}",
+        "outsidePeriods": "Outside periods",
+        "noSquadPeriods": "No periods configured. Add them in Group Settings.",
+        "addPeriod": "Add period",
+        "editPeriod": "Edit Period",
+        "updatePeriod": "Update period",
+        "thisSquad": "this squad",
+        "addDescription": "Create a new period for {{squad}}.",
+        "editDescription": "Update the selected period for {{squad}}.",
+        "deleteTitle": "Delete Period",
+        "deleteMessage": "Delete period \"{{period}}\"?",
+        "placeholders": {
+          "name": "Spring 2026"
+        },
+        "errors": {
+          "nameRequired": "Please provide a name for the period.",
+          "startEndRequired": "Please set both start and end date, or clear both.",
+          "invalidDateRange": "Start date must be before or equal to end date.",
+          "saveFailed": "Failed to save period. Please try again.",
+          "deleteFailed": "Failed to delete period. Please try again."
+        }
+      },
+      "tabs": {
+        "playerStatistics": "Player Statistics",
+        "eventParticipation": "Activity Attendance",
+        "teamSelections": "Team Selections"
+      }
+    },
+    "guardians": {
+      "assignTitle": "Assign Guardian",
+      "editTitle": "Edit Guardian",
+      "existingUser": "Existing user",
+      "newGuardian": "New guardian",
+      "selectUser": "Select user",
+      "noAvailableUsers": "No available existing users to assign.",
+      "selectionLocked": "User selection is locked while editing. Update name/email fields directly.",
+      "documentedHint": "New guardians are created as squad members and can be linked to multiple children.",
+      "assignAction": "Assign",
+      "errors": {
+        "selectExistingUser": "Please select an existing user to assign.",
+        "alreadyAssigned": "This guardian is already assigned.",
+        "documentedNameRequired": "First name and last name are required for documented guardians.",
+        "documentedDuplicate": "A documented guardian with the same name is already assigned."
+      }
+    },
+    "playerDetail": {
+      "loading": "Loading player...",
+      "notFound": "Player not found.",
+      "errors": {
+        "noPlayerId": "No player ID provided",
+        "notFound": "Player not found",
+        "deleteFailed": "Failed to delete player. Please try again.",
+        "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
+        "deleteBlockedPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past activity."
+      },
+      "preferredShirtNumber": "Preferred #{{number}}",
+      "assignedTeam": "Assigned to team {{teamName}}",
+      "eventsWithoutInvitation": "Activities without Invitation",
+      "guardians": {
+        "title": "Guardians ({{count}})",
+        "addAction": "Add Guardian",
+        "assignAction": "Assign guardian",
+        "removeAction": "Remove",
+        "removeTitle": "Remove Guardian",
+        "removeMessage": "Are you sure you want to remove {{firstName}} {{lastName}} from this player?",
+        "empty": "No guardians assigned yet.",
+        "onlyManagers": "Only squad managers can assign guardians.",
+        "onlyManagersManage": "Only squad managers can assign or remove guardians.",
+        "onlyUnderage": "Guardian assignment is available only for underage players.",
+        "assignFailed": "Failed to assign guardian. Please try again.",
+        "editFailed": "Failed to edit guardian. Please try again.",
+        "removeFailed": "Failed to remove guardian. Please try again."
+      }
+    },
+    "trainerDetail": {
+      "loading": "Loading trainer...",
+      "notFound": "Trainer not found.",
+      "trainingHistory": "Training History",
+      "eventsAssignedDescription": "Activities where {{firstName}} was assigned as a trainer",
+      "noAssignmentsYet": "{{firstName}} hasn't been assigned to any teams yet.",
+      "errors": {
+        "noTrainerId": "No trainer ID provided",
+        "notFound": "Trainer not found",
+        "deleteFailed": "Failed to remove trainer. Please try again."
+      }
+    },
+    "eventDetail": {
+      "phases": {
+        "planning": "Planning",
+        "selectionSent": "Selection sent",
+        "started": "Started",
+        "recorded": "Attendance recorded"
+      },
+      "loading": "Loading activity...",
+      "notFound": "Activity not found.",
+      "navigationLabel": "Activity navigation",
+      "teamsTitle": "Teams",
+      "addTeam": "Add team",
+      "cancelled": "Cancelled",
+      "cancelledReadOnly": "This Activity is cancelled and read-only.",
+      "cancelActivity": "Cancel Activity",
+      "cancelActivityTitle": "Cancel Activity",
+      "cancelActivityMessage": "Are you sure you want to cancel \"{{name}}\"? Its planning data will be preserved.",
+      "restoreActivity": "Restore Activity",
+      "restoreActivityTitle": "Restore Activity",
+      "restoreActivityMessage": "Restore \"{{name}}\" and make it editable again?",
+      "markSelectionSent": "Selection sent",
+      "selectionSentAt": "Selection sent on {{dateTime}}",
+      "printTeams": "Print Teams",
+      "deleteEventTitle": "Delete Activity",
+      "deleteEventMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+      "errors": {
+        "noEventId": "No activity ID provided"
+      }
+    },
+    "teamDetail": {
+      "teamNotFound": "Team not found",
+      "switchTeam": "Switch team",
+      "assignToMe": "Assign to me",
+      "shirtSetLabel": "Shirt Set",
+      "noShirtSetAssigned": "No shirt set assigned",
+      "noPlayersSelected": "No players selected yet",
+      "removeAction": "Remove",
+      "removePlayerTitle": "Remove Player",
+      "removePlayerMessage": "Are you sure you want to remove {{name}} from this team?",
+      "formationLabel": "Formation",
+      "assignFormationTitle": "Assign formation",
+      "noFormationAssigned": "No formation selected",
+      "lineupLabel": "Lineup",
+      "planLineupAction": "Plan Lineup"
+    },
+    "teamPlayerSelection": {
+      "teamNotFound": "Team not found",
+      "addPlayersToTeam": "Add Players to {{team}}",
+      "slotsSummary": "{{current}}/{{max}} slots filled • {{remaining}} remaining",
+      "selectedCount": "{{count}} selected",
+      "noPlayersInRange": "No available players in this level range",
+      "selectedPlayersSummary": "{{count}} player(s) selected",
+      "currentPlayers": "Players currently in this team",
+      "removePlayer": "Remove",
+      "undoRemove": "Undo",
+      "saveChanges": "Save changes",
+      "sentWarning": "This selection was sent on {{dateTime}}. Changes are still possible until the activity date. A reason is required when removing a player.",
+      "eventPassedWarning": "The selection can no longer be edited after the activity date.",
+      "removalReason": "Reason for removal",
+      "removalReasonFor": "Reason for removing {{name}}",
+      "selectRemovalReason": "Select a reason",
+      "tooManySelected": "Too many selected (max {{max}})",
+      "addPlayersAction_one": "Add {{count}} Player",
+      "addPlayersAction_other": "Add {{count}} Players"
+    },
+    "squadSettings": {
+      "title": "Settings",
+      "description": "Manage the settings and integrations for this squad.",
+      "spond": {
+        "title": "Spond Group",
+        "description": "Connect this squad to Spond to import members and activities.",
+        "openGroup": "Open Spond group",
+        "linkGroup": "Link Spond group",
+        "unlinkGroup": "Unlink Spond",
+        "unlinkTitle": "Unlink Spond group?",
+        "unlinkMessage": "This stops Spond synchronization for this squad. Existing imported players and activities remain unchanged.",
+        "unlinkFailed": "The Spond group could not be unlinked. Please try again."
+      },
+      "deactivate": {
+        "title": "Deactivate squad",
+        "description": "Hide this squad from the app without deleting its members, activities, or history.",
+        "action": "Deactivate squad",
+        "confirmTitle": "Deactivate this squad?",
+        "confirmMessage": "The squad will disappear from squad pickers, but all data will remain stored in the backend.",
+        "failed": "The squad could not be deactivated. Please try again."
+      },
+      "periods": {
+        "title": "Periods",
+        "description": "Define the date periods used to group and filter statistics.",
+        "add": "Add",
+        "empty": "No periods have been configured yet.",
+        "range": "{{startDate}} to {{endDate}}"
+      }
+    },
+    "matchPlanning": {
+      "title": "Match Planning",
+      "description": "Enable match formats and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
+      "disabledState": "Match planning is disabled for this squad. Turn it on to define match formats and formations.",
+      "category": {
+        "title": "SFV category",
+        "description": "Assign the official Swiss Football Association category for this squad.",
+        "label": "Category",
+        "none": "No category",
+        "saving": "Saving...",
+        "saveFailed": "Failed to save the category. Please try again.",
+        "officialModeHint": "The official {{mode}} match format will be created if needed and set as default.",
+        "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its match format must be selected manually.",
+        "tournamentOnlyHint": "This category plays tournaments only and has no official match format."
+      },
+      "matchFormats": {
+        "title": "Match Formats",
+        "emptyState": "No match formats yet. Add one to get started.",
+        "defaultBadge": "Default",
+        "officialBadge": "Official",
+        "players": "{{onField}} on field, {{min}}–{{max}} players per team",
+        "summary": "{{periods}} periods x {{minutes}} min",
+        "minimumPeriods": "Minimum per player: {{count}} periods",
+        "setDefault": "Set as default",
+        "deleteTitle": "Delete Match Format",
+        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      },
+      "formations": {
+        "title": "Formations",
+        "emptyState": "No formations yet. Add one to get started.",
+        "deleteTitle": "Delete Formation",
+        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      }
+    },
+    "matchFormatModal": {
+      "addTitle": "Add Match Format",
+      "editTitle": "Edit Match Format",
+      "officialNotice": "This is an official SFV format. Changes only apply to your squad.",
+      "errors": {
+        "nameRequired": "Name is required",
+        "numberOfPeriodsMin": "Number of periods must be at least 1",
+        "periodLengthMin": "Period length must be at least 1 minute",
+        "minimumPeriodsRange": "Minimum periods per player must be between 0 and {{total}}.",
+        "playersMin": "Player counts must be at least 1",
+        "playerLimitsRange": "Minimum players per team must not exceed the maximum.",
+        "saveFailed": "Failed to save match format. Please try again."
+      }
+    },
+    "formationModal": {
+      "addTitle": "Add Formation",
+      "editTitle": "Edit Formation",
+      "addSlot": "Add Slot",
+      "removeSlot": "Remove slot",
+      "errors": {
+        "nameRequired": "Name is required",
+        "minSlots": "At least 2 slots are required",
+        "exactlyOneGoalkeeper": "Exactly one slot must be the goalkeeper (GK)",
+        "saveFailed": "Failed to save formation. Please try again."
+      }
+    },
+    "teamLineup": {
+      "loading": "Loading lineup...",
+      "teamNotFound": "Team not found",
+      "notConfigured": "This team needs a match format and a formation before a lineup can be planned.",
+      "title": "Lineup - {{team}}",
+      "periodLabel": "Period {{number}}",
+      "copyPreviousPeriod": "Copy previous period",
+      "plannedPeriods": "{{count}}/{{total}} periods planned",
+      "plannedPlayersSummary": "{{count}} players across {{total}} periods planned",
+      "summaryTab": "Summary",
+      "summaryTitle": "Lineup summary",
+      "printSummary": "Print summary",
+      "shirtNumbersTitle": "Players and shirt numbers",
+      "noShirtNumber": "—",
+      "benchLabel": "Bench",
+      "unknownPlayer": "Unknown player",
+      "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",
+      "minimumPeriodsViolationTitle": "Minimum playing-time rule not met",
+      "minimumPeriodsViolation": "{{player}} is planned for {{count}} of at least {{minimum}} periods.",
+      "slotsTitle": "Formation ({{formation}})",
+      "emptySlot": "Empty",
+      "selectPlayerForPosition": "Select player for {{position}}",
+      "benchTitle": "Bench ({{count}})",
+      "noBenchedPlayers": "No players on the bench for this period.",
+      "saveFailed": "Failed to save the lineup. Please try again.",
+      "unsavedChangesTitle": "Unsaved lineup changes",
+      "unsavedChangesMessage": "Do you want to save your lineup changes before leaving?",
+      "discardChanges": "Discard and leave",
+      "saveAndLeave": "Save and leave"
+    },
+    "attendance": {
+      "recordAction": "Record attendance",
+      "editAction": "Edit attendance",
+      "recordTitle": "Record attendance",
+      "noSelectedPlayers": "No players selected for this activity.",
+      "reasonPlaceholder": "Reason",
+      "notRecorded": "Attendance has not been recorded yet.",
+      "title": "Attendance",
+      "statusLabel": "Attendance status",
+      "notStarted": "Attendance can be recorded once the activity has started."
+    },
+    "uiKit": {
+      "title": "UI system",
+      "description": "Reference components, states, themes, and density settings.",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "density": "Density",
+      "defaultDensity": "Default",
+      "compactDensity": "Compact",
+      "actions": "Actions",
+      "actionsDescription": "Shared action hierarchy and interaction states.",
+      "primary": "Primary",
+      "secondary": "Secondary",
+      "ghost": "Ghost",
+      "danger": "Danger",
+      "disabled": "Disabled",
+      "loading": "Loading",
+      "openDialog": "Open dialog",
+      "forms": "Forms",
+      "name": "Name",
+      "fieldHint": "Supporting field guidance appears here.",
+      "sampleName": "Alex Example",
+      "role": "Role",
+      "notes": "Notes",
+      "sampleNote": "Available for the next match.",
+      "notifications": "Enable notifications",
+      "feedback": "Feedback and status",
+      "successMessage": "The changes were saved.",
+      "warningMessage": "Some information still needs attention.",
+      "errorMessage": "The changes could not be saved.",
+      "brand": "Brand",
+      "ready": "Ready",
+      "pending": "Pending",
+      "failed": "Failed",
+      "entities": "Entity list",
+      "sampleMeta": "Player · Level 3",
+      "selectedEntity": "Selected member",
+      "selectedMeta": "Current selection",
+      "properties": "Properties and metadata",
+      "location": "Location",
+      "sampleLocation": "Main pitch",
+      "responsible": "Responsible person",
+      "unassigned": "Not assigned",
+      "sampleDate": "18 October 2026",
+      "sampleTime": "14:30",
+      "table": "Data table",
+      "status": "Status",
+      "empty": "No entries are available.",
+      "dialogTitle": "Example dialog",
+      "dialogBody": "Dialogs use the same hierarchy, spacing, and actions throughout the application."
+    }
   },
   "filters": {
     "playerLevel": "Filter by Player Level:",
     "from": "From:",
     "to": "To:"
-  },
-  "events": {
-    "title": "Events",
-    "subtitle": "Plan matches and tournaments, then manage attendance and teams.",
-    "loading": "Loading events...",
-    "futureTitle": "Future Events ({{count}})",
-    "pastTitle": "Past Events ({{count}})",
-    "list": {
-      "emptyState": "No events created yet. Click \"Create Event\" to get started."
-    },
-    "teamCount_one": "{{count}} team",
-    "teamCount_other": "{{count}} teams",
-    "playersMarkedAs": "Players marked as {{status}}",
-    "playersAssignedToTeams": "Players who have been assigned to teams",
-    "teamsReady": "All teams meet the minimum player count",
-    "invitationCounts": "Invitation counts",
-    "teamCardLabel": "{{team}} details"
-  },
-  "players": {
-    "eventHistory": {
-      "empty": "No event invitations yet."
-    }
-  },
-  "shirts": {
-    "subtitle": "Manage shirt sets, numbers, sizes, and availability.",
-    "goalkeeperShort": "GK",
-    "unavailableShort": "UNAV",
-    "editShirt": "Edit shirt",
-    "removeShirt": "Remove shirt",
-    "editSet": "Edit set",
-    "deleteSet": "Delete set",
-    "shirtCount_one": "{{count}} shirt",
-    "shirtCount_other": "{{count}} shirts",
-    "loading": "Loading shirts...",
-    "titleWithCount": "Shirts ({{count}})",
-    "emptyState": "No shirts yet. Create your first shirt set to get started!",
-    "deleteSetTitle": "Delete Shirt Set",
-    "deleteSetMessage": "Are you sure you want to delete the shirt set \"{{sponsor}} - {{color}}\"? This action cannot be undone.",
-    "removeShirtTitle": "Remove Shirt",
-    "removeShirtMessage": "Are you sure you want to remove shirt #{{number}} from this set? This action cannot be undone.",
-    "removeShirtAction": "Remove"
-  },
-  "shirtModal": {
-    "addTitle": "Add New Shirt",
-    "editTitle": "Edit Shirt",
-    "addAction": "Add Shirt",
-    "saveChanges": "Save Changes",
-    "existingNumbers": "Existing numbers in this set:",
-    "otherNumbers": "Other numbers in this set:",
-    "fields": {
-      "numberRequired": "Shirt Number *",
-      "sizeRequired": "Size *",
-      "isGoalkeeper": "This is a goalkeeper shirt",
-      "isUnavailable": "Mark shirt as unavailable"
-    },
-    "placeholders": {
-      "number": "Enter shirt number (1-99)"
-    },
-    "size": {
-      "kids": "Kids",
-      "extraSmall": "Extra Small",
-      "small": "Small",
-      "medium": "Medium",
-      "large": "Large",
-      "extraLarge": "Extra Large"
-    },
-    "errors": {
-      "invalidNumber": "Please enter a valid number between 1 and 99",
-      "numberExists": "Shirt #{{number}} already exists in this set"
-    }
-  },
-  "shirtSetModal": {
-    "addTitle": "Add New Shirt Set",
-    "editTitle": "Edit Shirt Set",
-    "createAction": "Create Shirt Set",
-    "colorHint": "Choose a color or enter a hex code",
-    "fields": {
-      "sponsorRequired": "Sponsor Name *",
-      "colorRequired": "Color *",
-      "createAutomatically": "Create shirts automatically",
-      "startNumber": "Start #",
-      "endNumber": "End #",
-      "size": "Size",
-      "includeGoalkeeper": "Include GK",
-      "goalkeeperNumber": "GK #:"
-    },
-    "placeholders": {
-      "sponsor": "Enter sponsor name",
-      "color": "#000000"
-    },
-    "preview": {
-      "prefix": "Will create",
-      "regularShirts": "regular shirts",
-      "plusGoalkeeper": "+ 1 GK",
-      "size": "size {{size}}"
-    }
-  },
-  "teamModal": {
-    "editTitle": "Edit Team",
-    "noTrainerAssigned": "No responsible person assigned",
-    "fields": {
-      "teamName": "Team Name",
-      "strength": "Strength",
-      "startTime": "Start Time",
-      "trainerAssignee": "Trainer / Guardian",
-      "locationOptional": "Team Location",
-      "responsiblePeople": "Responsible person"
-    },
-    "placeholders": {
-      "teamName": "Enter team name",
-      "location": "e.g. Main Field A"
-    },
-    "strength": {
-      "highest": "1 - Highest 🔥🔥🔥",
-      "medium": "2 - Medium 🔥🔥",
-      "lowest": "3 - Lowest 🔥"
-    },
-    "filterPlaceholder": "Filter by name",
-    "noPersonsFound": "No matching persons",
-    "assigneeSource": {
-      "trainer": "Trainer",
-      "guardian": "Guardian"
-    }
-  },
-  "assignShirts": {
-    "title": "Assign Shirts to Team",
-    "assignAction": "Assign Shirts",
-    "selectSetPlaceholder": "Select a shirt set...",
-    "noShirt": "No shirt",
-    "usedInOtherTeamsHint": "Shirts already used in other teams for this event are disabled.",
-    "unavailableHint": "Unavailable shirts cannot be assigned.",
-    "noPlayersInTeam": "No players assigned to this team yet.",
-    "errors": {
-      "selectSetRequired": "Please select a shirt set"
-    }
-  },
-  "squads": {
-    "title": "Squads",
-    "loading": "Loading squads...",
-    "createNew": "Create a new squad",
-    "clubLabel": "Club: {{club}}",
-    "categoryLabel": "Category: {{category}}",
-    "switching": "Switching squad...",
-    "selectTitle": "Select Your Squad",
-    "selectDescription": "Choose the squad you want to work with",
-    "idLabel": "ID: {{id}}",
-    "noneAvailable": "No squads available",
-    "errors": {
-      "createFailed": "Failed to create squad. Please try again.",
-      "loadFailedWithReason": "Failed to load squads: {{error}}",
-      "failedToLoadTitle": "Failed to Load Squads"
-    }
-  },
-  "squadModal": {
-    "title": "Create New Squad",
-    "createAction": "Create Squad",
-    "creating": "Creating...",
-    "fields": {
-      "squadName": "Squad Name",
-      "clubOptional": "Club",
-      "categoryOptional": "SFV category",
-      "noCategory": "No category",
-      "descriptionOptional": "Description"
-    },
-    "categoryHint": "For D7 through A, the official match format is created and set as default automatically.",
-    "officialFormatHint": "Official format: {{format}}, {{min}}–{{max}} players per team.",
-    "tournamentOnlyHint": "This category plays tournaments only; no official match format is created.",
-    "placeholders": {
-      "squadName": "Enter squad name",
-      "club": "Enter club",
-      "description": "Add a short description"
-    },
-    "errors": {
-      "nameRequired": "Squad name is required."
-    }
-  },
-  "playerModal": {
-    "addTitle": "Add New Player",
-    "editTitle": "Edit Player",
-    "addAction": "Add Player",
-    "updateAction": "Update Player",
-    "fields": {
-      "birthDate": "Birth Date",
-      "level": "Level (1-5)",
-      "preferredShirtNumberOptional": "Preferred Shirt Number"
-    },
-    "placeholders": {
-      "firstName": "Enter first name",
-      "lastName": "Enter last name",
-      "preferredShirtNumber": "e.g. 10"
-    },
-    "status": {
-      "active": "Active",
-      "trial": "Trial",
-      "inactive": "Inactive"
-    }
-  },
-  "trainerModal": {
-    "addTitle": "Add New Trainer",
-    "editTitle": "Edit Trainer",
-    "addAction": "Add Trainer",
-    "updateAction": "Update Trainer",
-    "fields": {
-      "emailOptional": "Email"
-    },
-    "placeholders": {
-      "firstName": "Enter first name",
-      "lastName": "Enter last name",
-      "email": "Enter email address"
-    }
-  },
-  "eventModal": {
-    "invitePlayersAction": "Invite players",
-    "addTitle": "Create New Event",
-    "createAction": "Create Event",
-    "fields": {
-      "eventName": "Event Name",
-      "eventNameRequired": "Event Name *",
-      "date": "Date",
-      "dateRequired": "Date *",
-      "startTimeRequired": "Start Time *",
-      "location": "Location",
-      "numberOfTeamsRequired": "Number of Teams *",
-      "maxPlayersPerTeam": "Max Players per Team",
-      "maxPlayersPerTeamRequired": "Max Players per Team *",
-      "minPlayersPerTeam": "Min Players per Team",
-      "minPlayersPerTeamRequired": "Min Players per Team *",
-      "matchFormat": "Match Format",
-      "noMatchFormat": "No match format"
-    },
-    "placeholders": {
-      "eventName": "e.g., Saturday Morning Game",
-      "eventNameSimple": "Enter event name",
-      "location": "e.g., Main Field, Sportplatz Seebach"
-    }
-  },
-  "editEventModal": {
-    "title": "Edit Event",
-    "minHint": "Minimum: {{minMaxPlayers}} (current largest team size)",
-    "errors": {
-      "eventNameRequired": "Event name is required",
-      "dateRequired": "Date is required",
-      "maxPlayersTooLow": "Max players cannot be less than {{minMaxPlayers}} (current largest team size)",
-      "maxPlayersMinOne": "Max players must be at least 1",
-      "minPlayersMinOne": "Min players must be at least 1",
-      "minGreaterThanMax": "Min players cannot be greater than max players"
-    }
-  },
-  "home": {
-    "title": "Welcome to My Teams",
-    "publicTitle": "Team management",
-    "publicSubtitle": "Squads, events, attendance, and statistics in one place.",
-    "overviewTitle": "Overview",
-    "overviewSubtitle": "Select a squad or open an upcoming event.",
-    "featuresLabel": "What you can do",
-    "manageLabel": "Manage",
-    "scheduleLabel": "Next up",
-    "upcomingEvents": {
-      "title": "Upcoming Events",
-      "viewAll": "View all",
-      "empty": "No upcoming events yet.",
-      "eventMeta": "{{date}} • {{teamCount}} teams"
-    },
-    "cards": {
-      "membersTitle": "Manage Members",
-      "membersDescription": "Add players and trainers, set skill levels, and manage your roster",
-      "eventsTitle": "Create Events",
-      "eventsDescription": "Schedule games, create teams, and manage selections",
-      "statisticsTitle": "View Statistics",
-      "statisticsDescription": "Track attendance and ensure fair player selection"
-    }
-  },
-  "members": {
-    "title": "Members",
-    "subtitle": "Manage players, trainers, and guardians.",
-    "list": {
-      "emptyPlayers": "No players added yet. Click \"Add Player\" to get started.",
-      "emptyTrainers": "No trainers added yet. Click \"Add Trainer\" to get started.",
-      "emptyGuardians": "No guardians assigned yet."
-    },
-    "loading": "Loading members...",
-    "allPlayersTitle": "All Players ({{count}})",
-    "allPlayersFilteredTitle": "All Players ({{filteredCount}} of {{totalCount}})",
-    "allTrainersTitle": "All Trainers ({{count}})",
-    "allGuardiansTitle": "All Guardians ({{count}})",
-    "levelFilter": "Level:",
-    "yearFilter": "Year:",
-    "trialFilter": "Trial:",
-    "inactiveFilter": "Inactive:",
-    "showTrialPlayers": "Show",
-    "hideTrialPlayers": "Hide",
-    "showInactivePlayers": "Show",
-    "hideInactivePlayers": "Hide",
-    "birthdayCalendar": {
-      "openAction": "Birthday calendar",
-      "title": "Birthday calendar",
-      "description": "Create a private calendar link that stays up to date in your calendar app.",
-      "loading": "Loading calendar subscription...",
-      "notCreated": "No subscription link has been created for this squad yet.",
-      "subscriptionHelp": "Subscribe directly or copy this link into Apple Calendar, Google Calendar, Outlook, or another calendar app.",
-      "subscriptionUrl": "Calendar subscription URL",
-      "privacyNote": "The private link shows active players' names and birthday month and day. Anyone with the link can view it.",
-      "secureUrlRequired": "Calendar subscriptions require a publicly reachable HTTPS address. A localhost development link cannot be subscribed in calendar apps.",
-      "create": "Create subscription link",
-      "creating": "Creating...",
-      "copy": "Copy link",
-      "copied": "Copied",
-      "subscribe": "Subscribe",
-      "revoke": "Revoke link",
-      "revoking": "Revoking...",
-      "revokeConfirm": "Revoke this link? Existing calendar subscriptions will stop updating.",
-      "errors": {
-        "loadFailed": "The birthday calendar could not be loaded.",
-        "createFailed": "The subscription link could not be created.",
-        "copyFailed": "The link could not be copied. Select and copy it manually.",
-        "revokeFailed": "The subscription link could not be revoked."
-      }
-    },
-    "guardians": {
-      "playerPrefix": "Player:",
-      "noEmail": "No email",
-      "tableGuardian": "Guardian",
-      "tableEmail": "Email",
-      "tablePlayers": "Players",
-      "tableActions": "Actions",
-      "openPlayerAction": "Open player",
-      "assignTrainerRole": "Make trainer",
-      "assigningTrainerRole": "Assigning...",
-      "alreadyTrainerRole": "Trainer",
-      "assignTrainerRoleFailed": "Failed to assign trainer role. Please try again."
-    },
-    "guardianDuplicates": {
-      "detected": "Duplicate guardians detected: {{count}}",
-      "groupMeta": "{{guardianCount}} guardian entries across {{playerCount}} players",
-      "resolveAction": "Resolve duplicates",
-      "resolving": "Resolving...",
-      "resolveFailed": "Failed to resolve guardian duplicates. Please try again."
-    },
-    "duplicates": {
-      "openAction": "Resolve duplicates ({{count}})",
-      "title": "Potential Duplicate Members",
-      "description": "Temporary tool: detect same-name trainer/guardian members and merge guardians into the selected trainer account.",
-      "empty": "No trainer/guardian duplicate names found.",
-      "groupCount": "Trainers: {{trainerCount}}, Guardians: {{guardianCount}}",
-      "targetTrainerLabel": "Keep this trainer account",
-      "assignedTeams": "{{count}} teams assigned",
-      "linkedPlayers": "Linked to {{count}} players",
-      "mergeAction": "Merge guardian",
-      "errors": {
-        "noTargetTrainer": "Please select a target trainer.",
-        "mergeFailed": "Merge failed. Please try again."
-      }
-    },
-    "deletePlayerTitle": "Delete Player",
-    "deletePlayerMessage": "Delete {{firstName}} {{lastName}}? Active invitations will be removed.",
-    "deletePlayerConfirm": "Delete Player",
-    "deleteTrainerTitle": "Delete Trainer",
-    "deleteTrainerMessage": "Are you sure you want to delete {{firstName}} {{lastName}}? This action cannot be undone.",
-    "deleteTrainerConfirm": "Delete Trainer",
-    "errors": {
-      "playerHasUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
-      "playerHasPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past event.",
-      "deletePlayerFailed": "Failed to delete player. Please try again.",
-      "deleteTrainerFailed": "Failed to remove trainer. Please try again."
-    }
-  },
-  "levels": {
-    "1": "1 - Beginner",
-    "2": "2 - Learning",
-    "3": "3 - Intermediate",
-    "4": "4 - Advanced",
-    "5": "5 - Expert",
-    "title": "Level {{level}}"
   },
   "auth": {
     "login": "Login",
@@ -487,7 +1006,7 @@
   },
   "appInitializer": {
     "loadingApplication": "Loading Application",
-    "fetchingData": "Fetching players, events, trainers, and equipment...",
+    "fetchingData": "Fetching players, activities, trainers, and equipment...",
     "failedToLoadApplication": "Failed to Load Application"
   },
   "errorBoundary": {
@@ -496,497 +1015,12 @@
     "showDetails": "Show error details",
     "reloadPage": "Reload Page"
   },
-  "invitationStatus": {
-    "available": "Available",
-    "accepted": "Accepted",
-    "open": "Open",
-    "declined": "Declined",
-    "injured": "Injured",
-    "sick": "Sick",
-    "unavailable": "Unavailable",
-    "selected": "Selected",
-    "notInvited": "Not Invited"
-  },
-  "playerInvitations": {
-    "invite": "Invite",
-    "remove": "Remove",
-    "removeInvitation": "Remove invitation",
-    "cannotRemoveAssigned": "Cannot remove invitation for assigned players",
-    "inactiveIndicator": "INACTIVE",
-    "inactiveIndicatorTooltip": "Inactive player is still invited or assigned in this future event.",
-    "playerIdFallback": "Player ID: {{id}}",
-    "tabs": {
-      "assigned": "Assigned",
-      "unavailable": "Unavailable"
-    },
-    "empty": {
-      "noneSent": "No invitations sent yet.",
-      "noneWithStatus": "No players have {{status}} invitations.",
-      "beenAssigned": "been assigned",
-      "beenMarkedUnavailable": "been marked unavailable",
-      "noAvailableAccepted": "No accepted players in the selected level range.",
-      "noAssignedToTeams": "No players are assigned to teams yet.",
-      "noPlayersInCategory": "No players in this category.",
-      "status": {
-        "accepted": "accepted",
-        "open": "open"
-      },
-      "noneSynced": "No RSVPs synchronized from Spond yet."
-    }
-  },
-  "teamCard": {
-    "expand": "Expand details",
-    "collapse": "Collapse details",
-    "statsTooltip": "{{accepted}} accepted, {{selected}} selected",
-    "inactiveIndicator": "INACTIVE",
-    "inactiveIndicatorTooltip": "Inactive player is still assigned in this future event.",
-    "removePlayer": "Remove player",
-    "unknownPlayer": "Unknown player",
-    "assignedShirtsCount": "{{count}} assigned"
-  },
-  "invitePlayers": {
-    "title": "Invite Players",
-    "subtitle": "Select players to invite to this event",
-    "inactiveExcludedHint": "Inactive players are excluded from invitations.",
-    "noPlayers": "No players available",
-    "noPlayersDetail": "Add players in Members first.",
-    "defaultStatus": "Default status",
-    "selectAll": "Select all",
-    "deselectAll": "Deselect all",
-    "selectedCount": "{{count}} selected",
-    "inviteAction": "Invite players"
-  },
-  "teamPrint": {
-    "title": "Team Summary",
-    "print": "Print",
-    "formatLabel": "Print format",
-    "selectionFormat": "Selection list",
-    "organizerFormat": "Organizer sheet",
-    "noPlayers": "No players selected"
-  },
   "nav": {
     "members": "Members",
-    "events": "Events",
+    "events": "Activities",
     "shirts": "Shirts",
     "squadSettings": "Settings",
     "statistics": "Statistics"
-  },
-  "statistics": {
-    "title": "Statistics",
-    "description": "Track attendance, availability, and team selections at a glance.",
-    "summary": {
-      "totalPlayers": "Total Players",
-      "totalEvents": "Total Events",
-      "avgAcceptancesPerPlayer": "Avg Acceptances per Player",
-      "avgSelectionsPerPlayer": "Avg Selections per Player"
-    },
-    "playerTable": {
-      "emptyState": "No player data available yet. Add players and events to see statistics.",
-      "invited": "Invited",
-      "accepted": "Accepted",
-      "selected": "Selected",
-      "acceptanceRate": "Acceptance Rate",
-      "selectionRate": "Selection Rate"
-    },
-    "eventParticipation": {
-      "emptyState": "No data available. Add players and events to see the attendance matrix."
-    },
-    "teamSelections": {
-      "strengthLabel": "Strength {{level}}",
-      "noData": "No data available. Add players and events to see team selection statistics.",
-      "groupBy": "Group by",
-      "groupByStrength": "Strength",
-      "groupByTeamName": "Team name",
-      "noTeamsInPeriod": "No teams exist in the selected period.",
-      "playersCount": "{{count}} players",
-      "strengthGroupsCount": "{{count}} strength groups",
-      "teamsCount": "{{count}} teams",
-      "clickCountHint": "Click a count to see the events",
-      "noPlayersInLevelRange": "No players match the selected level range.",
-      "cellAriaLabel": "{{player}}, {{group}}, {{count}} selections",
-      "selectionDetails": "Selection details",
-      "openTeam": "Open team",
-      "noSelectionStrength": "This player has not been selected for this strength group in the current statistics period.",
-      "noSelectionTeam": "This player has not been selected for this team in the current statistics period."
-    },
-    "period": {
-      "selectorLabel": "Period: {{period}}",
-      "selectPeriod": "Select period",
-      "allEvents": "All events",
-      "allEventsDescription": "Use every event in the squad.",
-      "rangeLabel": "{{startDate}} to {{endDate}}",
-      "outsidePeriods": "Outside periods",
-      "noSquadPeriods": "No periods configured. Add them in Group Settings.",
-      "addNewPeriod": "Add new period",
-      "addPeriod": "Add period",
-      "editPeriod": "Edit Period",
-      "updatePeriod": "Update period",
-      "thisSquad": "this squad",
-      "addDescription": "Create a new period for {{squad}}.",
-      "editDescription": "Update the selected period for {{squad}}.",
-      "deleteTitle": "Delete Period",
-      "deleteMessage": "Delete period \"{{period}}\"?",
-      "placeholders": {
-        "name": "Spring 2026"
-      },
-      "errors": {
-        "nameRequired": "Please provide a name for the period.",
-        "startEndRequired": "Please set both start and end date, or clear both.",
-        "invalidDateRange": "Start date must be before or equal to end date.",
-        "saveFailed": "Failed to save period. Please try again.",
-        "deleteFailed": "Failed to delete period. Please try again."
-      }
-    },
-    "tabs": {
-      "playerStatistics": "Player Statistics",
-      "eventParticipation": "Event Attendance",
-      "teamSelections": "Team Selections"
-    }
-  },
-  "guardians": {
-    "assignTitle": "Assign Guardian",
-    "editTitle": "Edit Guardian",
-    "existingUser": "Existing user",
-    "newGuardian": "New guardian",
-    "documentedOnly": "Documented only",
-    "selectUser": "Select user",
-    "noAvailableUsers": "No available existing users to assign.",
-    "selectionLocked": "User selection is locked while editing. Update name/email fields directly.",
-    "placeholderFirstName": "Enter first name",
-    "placeholderLastName": "Enter last name",
-    "emailOptional": "Email",
-    "placeholderEmail": "guardian@example.com",
-    "documentedHint": "New guardians are created as squad members and can be linked to multiple children.",
-    "assignAction": "Assign",
-    "errors": {
-      "selectExistingUser": "Please select an existing user to assign.",
-      "existingNameRequired": "First name and last name are required for existing-user guardian assignment.",
-      "existingEmailRequired": "Email is required for existing-user guardian assignment.",
-      "alreadyAssigned": "This guardian is already assigned.",
-      "documentedNameRequired": "First name and last name are required for documented guardians.",
-      "documentedDuplicate": "A documented guardian with the same name is already assigned."
-    }
-  },
-  "playerDetail": {
-    "loading": "Loading player...",
-    "notFound": "Player not found.",
-    "errors": {
-      "noPlayerId": "No player ID provided",
-      "notFound": "Player not found",
-      "failedToLoadData": "Failed to load data",
-      "deleteFailed": "Failed to delete player. Please try again.",
-      "deleteUnexpectedRoles": "This player has unexpected additional roles and cannot be deleted.",
-      "deleteBlockedPastTeamAssignments": "This player cannot be deleted because they were assigned to a team in a past event."
-    },
-    "preferredShirtNumber": "Preferred #{{number}}",
-    "assignedTeam": "Assigned to team {{teamName}}",
-    "eventsWithoutInvitation": "Events without Invitation",
-    "guardians": {
-      "title": "Guardians ({{count}})",
-      "addAction": "Add Guardian",
-      "assignAction": "Assign guardian",
-      "removeAction": "Remove",
-      "removeTitle": "Remove Guardian",
-      "removeMessage": "Are you sure you want to remove {{firstName}} {{lastName}} from this player?",
-      "empty": "No guardians assigned yet.",
-      "onlyManagers": "Only squad managers can assign guardians.",
-      "onlyManagersManage": "Only squad managers can assign or remove guardians.",
-      "onlyUnderage": "Guardian assignment is available only for underage players.",
-      "assignFailed": "Failed to assign guardian. Please try again.",
-      "editFailed": "Failed to edit guardian. Please try again.",
-      "removeFailed": "Failed to remove guardian. Please try again."
-    }
-  },
-  "trainerDetail": {
-    "loading": "Loading trainer...",
-    "notFound": "Trainer not found.",
-    "trainingHistory": "Training History",
-    "eventsAssignedDescription": "Events where {{firstName}} was assigned as a trainer",
-    "noAssignmentsYet": "{{firstName}} hasn't been assigned to any teams yet.",
-    "errors": {
-      "noTrainerId": "No trainer ID provided",
-      "notFound": "Trainer not found",
-      "failedToLoadData": "Failed to load data",
-      "deleteFailed": "Failed to remove trainer. Please try again."
-    }
-  },
-  "team": {
-    "unknownTeam": "Unknown Team"
-  },
-  "eventDetail": {
-    "phases": {
-      "planning": "Planning",
-      "selectionSent": "Selection sent",
-      "started": "Started",
-      "recorded": "Attendance recorded"
-    },
-    "loading": "Loading event...",
-    "notFound": "Event not found.",
-    "previousShort": "Prev",
-    "nextShort": "Next",
-    "navigationLabel": "Event navigation",
-    "noPreviousEvent": "No previous event",
-    "noNextEvent": "No next event",
-    "teamsTitle": "Teams",
-    "markSelectionSent": "Selection sent",
-    "selectionSentAt": "Selection sent on {{dateTime}}",
-    "printTeams": "Print Teams",
-    "noTeamsConfigured": "No teams configured yet.",
-    "deleteEventTitle": "Delete Event",
-    "deleteEventMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-    "deleteTeamTitle": "Delete Team",
-    "deleteTeamMessage": "Are you sure you want to delete \"{{teamName}}\"? Assigned players will be removed from the team and set back to accepted.",
-    "thisTeam": "this team",
-    "errors": {
-      "noEventId": "No event ID provided",
-      "notFound": "Event not found",
-      "failedToLoadData": "Failed to load data",
-      "shirtNumberUniquePerTeam": "Each shirt number can only be assigned once per team.",
-      "shirtNumberUsedInOtherTeam": "Shirt #{{number}} is already assigned in another team for this event."
-    }
-  },
-  "teamDetail": {
-    "teamNotFound": "Team not found",
-    "switchTeam": "Switch team",
-    "assignToMe": "Assign to me",
-    "trainerLabel": "Trainer",
-    "assignTrainerTitle": "Assign trainer",
-    "shirtSetLabel": "Shirt Set",
-    "noShirtSetAssigned": "No shirt set assigned",
-    "noPlayersSelected": "No players selected yet",
-    "removeAction": "Remove",
-    "removePlayerTitle": "Remove Player",
-    "removePlayerMessage": "Are you sure you want to remove {{name}} from this team?",
-    "formationLabel": "Formation",
-    "assignFormationTitle": "Assign formation",
-    "noFormationAssigned": "No formation selected",
-    "lineupLabel": "Lineup",
-    "planLineupAction": "Plan Lineup"
-  },
-  "teamPlayerSelection": {
-    "teamNotFound": "Team not found",
-    "addPlayersToTeam": "Add Players to {{team}}",
-    "slotsSummary": "{{current}}/{{max}} slots filled • {{remaining}} remaining",
-    "selectedCount": "{{count}} selected",
-    "noPlayersInRange": "No available players in this level range",
-    "selectedPlayersSummary": "{{count}} player(s) selected",
-    "currentPlayers": "Players currently in this team",
-    "removePlayer": "Remove",
-    "undoRemove": "Undo",
-    "saveChanges": "Save changes",
-    "sentWarning": "This selection was sent on {{dateTime}}. Changes are still possible until the event date. A reason is required when removing a player.",
-    "eventPassedWarning": "The selection can no longer be edited after the event date.",
-    "removalReason": "Reason for removal",
-    "removalReasonFor": "Reason for removing {{name}}",
-    "selectRemovalReason": "Select a reason",
-    "tooManySelected": "Too many selected (max {{max}})",
-    "addPlayersAction_one": "Add {{count}} Player",
-    "addPlayersAction_other": "Add {{count}} Players"
-  },
-  "squadSettings": {
-    "title": "Settings",
-    "description": "Manage the settings and integrations for this squad.",
-    "spond": {
-      "title": "Spond Group",
-      "description": "Connect this squad to Spond to import members and events.",
-      "openGroup": "Open Spond group",
-      "linkGroup": "Link Spond group",
-      "unlinkGroup": "Unlink Spond",
-      "unlinkTitle": "Unlink Spond group?",
-      "unlinkMessage": "This stops Spond synchronization for this squad. Existing imported players and events remain unchanged.",
-      "unlinkFailed": "The Spond group could not be unlinked. Please try again."
-    },
-    "deactivate": {
-      "title": "Deactivate squad",
-      "description": "Hide this squad from the app without deleting its members, events, or history.",
-      "action": "Deactivate squad",
-      "confirmTitle": "Deactivate this squad?",
-      "confirmMessage": "The squad will disappear from squad pickers, but all data will remain stored in the backend.",
-      "failed": "The squad could not be deactivated. Please try again."
-    },
-    "periods": {
-      "title": "Periods",
-      "description": "Define the date periods used to group and filter statistics.",
-      "add": "Add",
-      "empty": "No periods have been configured yet.",
-      "range": "{{startDate}} to {{endDate}}"
-    }
-  },
-  "matchPlanning": {
-    "title": "Match Planning",
-    "description": "Enable match formats and formations to plan match lineups per period. Typically relevant for older youth categories (D, C, B, A).",
-    "disabledState": "Match planning is disabled for this squad. Turn it on to define match formats and formations.",
-    "category": {
-      "title": "SFV category",
-      "description": "Assign the official Swiss Football Association category for this squad.",
-      "label": "Category",
-      "none": "No category",
-      "saving": "Saving...",
-      "saveFailed": "Failed to save the category. Please try again.",
-      "officialModeHint": "The official {{mode}} match format will be created if needed and set as default.",
-      "ff14Hint": "SFV defines FF14 for both 7v7 and 9v9, so its match format must be selected manually.",
-      "tournamentOnlyHint": "This category plays tournaments only and has no official match format."
-    },
-    "matchFormats": {
-      "title": "Match Formats",
-      "emptyState": "No match formats yet. Add one to get started.",
-      "defaultBadge": "Default",
-      "officialBadge": "Official",
-      "players": "{{onField}} on field, {{min}}–{{max}} players per team",
-      "summary": "{{periods}} periods x {{minutes}} min",
-      "minimumPeriods": "Minimum per player: {{count}} periods",
-      "setDefault": "Set as default",
-      "deleteTitle": "Delete Match Format",
-      "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
-    },
-    "formations": {
-      "title": "Formations",
-      "emptyState": "No formations yet. Add one to get started.",
-      "deleteTitle": "Delete Formation",
-      "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
-    }
-  },
-  "matchFormatModal": {
-    "addTitle": "Add Match Format",
-    "editTitle": "Edit Match Format",
-    "fields": {
-      "name": "Name",
-      "numberOfPeriods": "Number of Periods",
-      "periodLengthMinutes": "Period Length (minutes)",
-      "minimumPeriodsPerPlayer": "Minimum periods per player",
-      "playersOnField": "Players on field",
-      "minPlayersPerTeam": "Min. players per team",
-      "maxPlayersPerTeam": "Max. players per team"
-    },
-    "officialNotice": "This is an official SFV format. Changes only apply to your squad.",
-    "hints": {
-      "minimumPeriodsPerPlayer": "Use 0 when no minimum should be enforced.",
-      "playerLimits": "Used as default player limits for matches with this format."
-    },
-    "placeholders": {
-      "name": "e.g. 4x20"
-    },
-    "errors": {
-      "nameRequired": "Name is required",
-      "numberOfPeriodsMin": "Number of periods must be at least 1",
-      "periodLengthMin": "Period length must be at least 1 minute",
-      "minimumPeriodsRange": "Minimum periods per player must be between 0 and {{total}}.",
-      "playersMin": "Player counts must be at least 1",
-      "playerLimitsRange": "Minimum players per team must not exceed the maximum.",
-      "saveFailed": "Failed to save match format. Please try again."
-    }
-  },
-  "formationModal": {
-    "addTitle": "Add Formation",
-    "editTitle": "Edit Formation",
-    "addSlot": "Add Slot",
-    "removeSlot": "Remove slot",
-    "fields": {
-      "name": "Name",
-      "slots": "Slots"
-    },
-    "placeholders": {
-      "name": "e.g. 3-3"
-    },
-    "errors": {
-      "nameRequired": "Name is required",
-      "minSlots": "At least 2 slots are required",
-      "exactlyOneGoalkeeper": "Exactly one slot must be the goalkeeper (GK)",
-      "saveFailed": "Failed to save formation. Please try again."
-    }
-  },
-  "positions": {
-    "GK": "GK",
-    "LB": "LB",
-    "CB": "CB",
-    "RB": "RB",
-    "LWB": "LWB",
-    "RWB": "RWB",
-    "CDM": "CDM",
-    "CM": "CM",
-    "CAM": "CAM",
-    "LM": "LM",
-    "RM": "RM",
-    "LW": "LW",
-    "RW": "RW",
-    "CF": "CF",
-    "ST": "ST"
-  },
-  "teamLineup": {
-    "loading": "Loading lineup...",
-    "teamNotFound": "Team not found",
-    "notConfigured": "This team needs a match format and a formation before a lineup can be planned.",
-    "title": "Lineup - {{team}}",
-    "periodLabel": "Period {{number}}",
-    "copyPreviousPeriod": "Copy previous period",
-    "plannedPeriods": "{{count}}/{{total}} periods planned",
-    "plannedPlayersSummary": "{{count}} players across {{total}} periods planned",
-    "summaryTab": "Summary",
-    "summaryTitle": "Lineup summary",
-    "printSummary": "Print summary",
-    "shirtNumbersTitle": "Players and shirt numbers",
-    "noShirtNumber": "—",
-    "benchLabel": "Bench",
-    "unknownPlayer": "Unknown player",
-    "rosterMismatchWarning": "Some assigned players are no longer on this team's roster. Review the lineup before saving.",
-    "minimumPeriodsViolationTitle": "Minimum playing-time rule not met",
-    "minimumPeriodsViolation": "{{player}} is planned for {{count}} of at least {{minimum}} periods.",
-    "slotsTitle": "Formation ({{formation}})",
-    "emptySlot": "Empty",
-    "selectPlayerForPosition": "Select player for {{position}}",
-    "benchTitle": "Bench ({{count}})",
-    "noBenchedPlayers": "No players on the bench for this period.",
-    "saveFailed": "Failed to save the lineup. Please try again.",
-    "unsavedChangesTitle": "Unsaved lineup changes",
-    "unsavedChangesMessage": "Do you want to save your lineup changes before leaving?",
-    "discardChanges": "Discard and leave",
-    "saveAndLeave": "Save and leave"
-  },
-  "activity": {
-    "kinds": {
-      "match": "Match",
-      "tournament": "Tournament",
-      "training": "Training",
-      "social": "Social event"
-    },
-    "fields": {
-      "kind": "Activity type",
-      "opponent": "Opponent",
-      "matchFormat": "Match format",
-      "startTime": "Start time",
-      "declineReason": "Decline reason"
-    },
-    "declineReasons": {
-      "injured": "Injured",
-      "sick": "Sick",
-      "unavailable": "Unavailable",
-      "unspecified": "No reason given"
-    },
-    "declinedCount": "Declined: {{count}}",
-    "noTeamsLegacy": "This activity has no teams configured."
-  },
-  "attendance": {
-    "reasons": {
-      "sick": "Sick",
-      "injured": "Injured",
-      "noShow": "No show",
-      "other": "Other"
-    },
-    "recordAction": "Record attendance",
-    "editAction": "Edit attendance",
-    "recordTitle": "Record attendance",
-    "noSelectedPlayers": "No players selected for this event.",
-    "reasonPlaceholder": "Reason",
-    "notRecorded": "Attendance has not been recorded yet.",
-    "title": "Attendance",
-    "notStarted": "Attendance can be recorded once the activity has started.",
-    "empty": "No players to record attendance for.",
-    "unrecorded": "Not recorded",
-    "status": {
-      "present": "Present",
-      "absent": "Absent",
-      "excused": "Excused"
-    }
   },
   "spondSync": {
     "badge": "Spond",
@@ -994,7 +1028,7 @@
     "playersAction": "Import from Spond",
     "syncAction": "Sync",
     "title": "Synchronize with Spond",
-    "eventsTitle": "Synchronize events with Spond",
+    "eventsTitle": "Synchronize activities with Spond",
     "playersTitle": "Import players from Spond",
     "description": "Sign in to Spond to load a temporary preview. Your credentials and access token are not saved.",
     "wizard": {
@@ -1005,25 +1039,31 @@
         "help": "Select the subgroups to include in this synchronization."
       },
       "typesHelp": "Choose the data you want to review and import.",
-      "periodHelp": "Choose a configured period or enter the date range for the events to synchronize.",
+      "periodHelp": "Choose a configured period or enter the date range for the activities to synchronize.",
       "playerImportHelp": "Load the Spond group members to review which players should be linked or created.",
       "playersHelp": "Name matches are linked automatically. Missing players are selected for import by default.",
       "guardiansHelp": "Name matches are recognized automatically. Missing guardians are selected by default and attached to newly imported players.",
       "guardianChildren_one": "Child: {{names}}",
       "guardianChildren_other": "Children: {{names}}",
       "guardianEmail": "Email: {{email}}",
-      "eventsHelp": "Existing activities on the same day are selected automatically. Missing events are selected for import.",
-      "noEventsToSync": "No events matching this filter need to be synchronized.",
+      "eventsHelp": "Existing activities on the same day are selected automatically. Missing activities are selected for import.",
+      "noEventsToSync": "No activities matching this filter need to be synchronized.",
       "summaryHelp": "Review every change that will be made before starting the import.",
       "noChanges": "There are no changes to sync.",
       "actions": {
         "create": "Create",
         "link": "Link",
-        "update": "Update"
+        "update": "Update",
+        "delete": "Delete"
       },
       "changedFields": {
         "name": "name",
-        "birthDate": "birth date"
+        "birthDate": "birth date",
+        "startsAt": "start time",
+        "endsAt": "end time",
+        "location": "location",
+        "status": "status",
+        "responses": "RSVPs"
       },
       "preview": {
         "player": {
@@ -1037,7 +1077,10 @@
         },
         "event": {
           "create": "Create a new activity",
-          "link": "Link with existing activity {{target}}"
+          "link": "Link with existing activity {{target}}",
+          "linkWithChanges": "Link with existing activity {{target}} and update: {{changes}}",
+          "update": "Update {{target}} from Spond: {{changes}}",
+          "delete": "Delete activity"
         }
       },
       "guardiansNeedPlayers": "Guardians are imported with their players. Select players to import guardians.",
@@ -1051,14 +1094,14 @@
         "playerImport": "Load Spond players",
         "players": "Review players",
         "guardians": "Review guardians",
-        "events": "Review events",
+        "events": "Review activities",
         "summary": "Review import",
         "done": "Import complete"
       },
       "importTypes": {
         "players": "Players",
         "guardians": "Guardians",
-        "events": "Events"
+        "events": "Activities"
       }
     },
     "email": "Spond email",
@@ -1078,10 +1121,10 @@
       "summary": "Complete all required fields before importing."
     },
     "eventFilter": {
-      "label": "Event filter",
-      "all": "All events",
-      "training": "Training sessions",
-      "match": "Matches"
+      "label": "Activity filter",
+      "all": "All activities",
+      "match": "Matches",
+      "tournament": "Tournaments"
     },
     "selectGroup": "Select a group",
     "loadPreview": "Load preview",
@@ -1108,6 +1151,8 @@
     },
     "summary": "Players: {{createdMembers}} new, {{linkedMembers}} linked. Activities: {{createdActivities}} new, {{linkedActivities}} linked.",
     "apply": "Apply import",
+    "managedFields": "Name, date, time, and location are managed by Spond.",
+    "managedResponse": "This response is managed by Spond.",
     "result": "Spond import completed: {{created}} created, {{updated}} updated, {{linked}} linked.",
     "errors": {
       "SPOND_AUTH_FAILED": "The Spond credentials were rejected.",
@@ -1115,65 +1160,14 @@
       "SPOND_RATE_LIMITED": "Spond is temporarily limiting requests. Please try again later.",
       "SPOND_GROUP_NOT_FOUND": "The selected Spond group is no longer available.",
       "SPOND_LINKED_GROUP_NOT_FOUND": "The Spond account cannot access the group linked to this squad.",
-      "SPOND_GROUP_MISMATCH": "Spond returned an event from a different group.",
+      "SPOND_GROUP_MISMATCH": "Spond returned an activity from a different group.",
       "SPOND_CONFLICTING_RESPONSES": "Spond returned conflicting responses for a member.",
       "SPOND_UNKNOWN_RESPONSE_LIST": "Spond returned an unknown response status.",
       "SPOND_INVALID_TIMESTAMP": "Spond returned an invalid activity time.",
-      "SPOND_INCOMPLETE_RESULTS": "The complete Spond event list could not be loaded.",
+      "SPOND_INCOMPLETE_RESULTS": "The complete Spond activity list could not be loaded.",
       "SPOND_INVALID_RESPONSE": "Spond returned data in an unsupported format.",
       "SPOND_REQUEST_FAILED": "The Spond request failed.",
       "generic": "The Spond synchronization could not be completed."
     }
-  },
-  "uiKit": {
-    "title": "UI system",
-    "description": "Reference components, states, themes, and density settings.",
-    "theme": "Theme",
-    "light": "Light",
-    "dark": "Dark",
-    "density": "Density",
-    "defaultDensity": "Default",
-    "compactDensity": "Compact",
-    "actions": "Actions",
-    "actionsDescription": "Shared action hierarchy and interaction states.",
-    "primary": "Primary",
-    "secondary": "Secondary",
-    "ghost": "Ghost",
-    "danger": "Danger",
-    "disabled": "Disabled",
-    "loading": "Loading",
-    "openDialog": "Open dialog",
-    "forms": "Forms",
-    "name": "Name",
-    "fieldHint": "Supporting field guidance appears here.",
-    "sampleName": "Alex Example",
-    "role": "Role",
-    "notes": "Notes",
-    "sampleNote": "Available for the next match.",
-    "notifications": "Enable notifications",
-    "feedback": "Feedback and status",
-    "successMessage": "The changes were saved.",
-    "warningMessage": "Some information still needs attention.",
-    "errorMessage": "The changes could not be saved.",
-    "brand": "Brand",
-    "ready": "Ready",
-    "pending": "Pending",
-    "failed": "Failed",
-    "entities": "Entity list",
-    "sampleMeta": "Player · Level 3",
-    "selectedEntity": "Selected member",
-    "selectedMeta": "Current selection",
-    "properties": "Properties and metadata",
-    "location": "Location",
-    "sampleLocation": "Main pitch",
-    "responsible": "Responsible person",
-    "unassigned": "Not assigned",
-    "sampleDate": "18 October 2026",
-    "sampleTime": "14:30",
-    "table": "Data table",
-    "status": "Status",
-    "empty": "No entries are available.",
-    "dialogTitle": "Example dialog",
-    "dialogBody": "Dialogs use the same hierarchy, spacing, and actions throughout the application."
   }
 }

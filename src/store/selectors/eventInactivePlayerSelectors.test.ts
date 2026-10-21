@@ -44,6 +44,7 @@ function event(overrides: Partial<Activity>): Activity {
     id: 'e-default',
     squadId: 'squad-1',
     kind: 'match',
+    status: 'active',
     name: 'Activity',
     startsAt: '2026-06-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,

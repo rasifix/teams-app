@@ -64,13 +64,13 @@ function AppRoutes() {
                       <Route path="/players/:id" element={<PlayerDetailPage />} />
                       {/* Trainer detail route */}
                       <Route path="/trainers/:id" element={<TrainerDetailPage />} />
-                      <Route path="/events" element={<EventsPage />} />
+                      <Route path="/activities" element={<EventsPage />} />
                       <Route path="/spond-import" element={<SpondImportPage />} />
-                      <Route path="/events/:id" element={<EventDetailPage />} />
-                      <Route path="/events/:eventId/teams/:teamId" element={<TeamDetailPage />} />
-                      <Route path="/events/:eventId/teams/:teamId/select-players" element={<TeamPlayerSelectionPage />} />
-                      <Route path="/events/:eventId/teams/:teamId/lineup" element={<TeamLineupPage />} />
-                      <Route path="/events/:eventId/teams/:teamId/lineup/:lineupTab" element={<TeamLineupPage />} />
+                      <Route path="/activities/:id" element={<EventDetailPage />} />
+                      <Route path="/activities/:eventId/teams/:teamId" element={<TeamDetailPage />} />
+                      <Route path="/activities/:eventId/teams/:teamId/select-players" element={<TeamPlayerSelectionPage />} />
+                      <Route path="/activities/:eventId/teams/:teamId/lineup" element={<TeamLineupPage />} />
+                      <Route path="/activities/:eventId/teams/:teamId/lineup/:lineupTab" element={<TeamLineupPage />} />
                       <Route path="/shirts" element={<ShirtSetsPage />} />
                       <Route path="/squad-settings" element={<SquadSettingsPage />} />
                       <Route path="/match-planning" element={<Navigate to="/squad-settings" replace />} />

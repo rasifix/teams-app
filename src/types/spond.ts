@@ -24,6 +24,9 @@ export interface SpondSubGroup {
 
 export type SpondInvitationResponse = 'open' | 'accepted' | 'declined';
 
+export type SpondActivityType = string;
+export type SpondActivityStatus = 'active' | 'cancelled' | 'deleted';
+
 export interface SpondEventResponse {
   spondMemberId: string;
   response: SpondInvitationResponse;
@@ -33,6 +36,9 @@ export interface SpondEventSnapshot {
   id: string;
   groupId: string;
   name: string;
+  type: SpondActivityType;
+  matchEvent?: boolean;
+  status: SpondActivityStatus;
   startsAt: string;
   endsAt?: string;
   location?: string;
@@ -48,12 +54,12 @@ export interface SpondGroupSnapshot {
 
 export interface SpondSnapshot {
   group: SpondGroupSnapshot;
-  events: SpondEventSnapshot[];
+  activities: SpondEventSnapshot[];
   sourceReadAt: string;
 }
 
 export type SpondMemberDecision =
-  | { action: 'link'; spondMemberId: string; memberId: string }
+  | { action: 'link'; spondMemberId: string; memberId: string; guardianIds: string[] }
   | {
       action: 'create-player';
       spondMemberId: string;
@@ -70,9 +76,9 @@ export type SpondActivityDecision =
       action: 'create';
       spondEventId: string;
       kind: ActivityKind;
-      trainerIds?: string[];
       teams?: Array<{ name: string; strength: number; selectedPlayers: string[] }>;
     }
+  | { action: 'delete'; spondEventId: string }
   | { action: 'skip'; spondEventId: string };
 
 export interface SpondImportRequest {

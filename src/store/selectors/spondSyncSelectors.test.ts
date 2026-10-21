@@ -16,6 +16,7 @@ import {
   selectInitialSpondMemberDrafts,
   selectSpondActivityDecisions,
   selectSpondImportPreview,
+  selectSpondActivityChanges,
   selectSpondMemberRows,
   selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
@@ -33,10 +34,10 @@ const member = (overrides: Partial<SpondMemberSnapshot> = {}): SpondMemberSnapsh
   id: 'sm1', firstName: 'Ada', lastName: 'Lovelace', birthDate: '2014-01-02', guardians: [], ...overrides,
 });
 const activity = (overrides: Partial<Activity> = {}): Activity => ({
-  id: 'a1', squadId: 's1', kind: 'social', name: 'Training', startsAt: '2026-10-10T10:00:00.000Z', teams: [], invitations: [], ...overrides,
+  id: 'a1', squadId: 's1', kind: 'match', status: 'active', name: 'Activity', startsAt: '2026-10-10T10:00:00.000Z', teams: [], invitations: [], ...overrides,
 });
 const event = (overrides: Partial<SpondEventSnapshot> = {}): SpondEventSnapshot => ({
-  id: 'se1', groupId: 'sg1', name: 'Training', startsAt: '2026-10-10T10:00:00.000Z', responses: [], ...overrides,
+  id: 'se1', groupId: 'sg1', name: 'Activity', type: 'event', status: 'active', startsAt: '2026-10-10T10:00:00.000Z', responses: [], ...overrides,
 });
 
 describe('Spond linked group selector', () => {
@@ -84,6 +85,14 @@ describe('Spond member selectors', () => {
     expect(selectSpondActionableMemberRows([...linked, ...changed, ...missing]).map((row) => row.source.id)).toEqual(['changed', 'new']);
   });
 
+  it('retains an unchanged linked member when a source guardian is not linked to that player', () => {
+    const linked = selectSpondMemberRows([
+      member({ guardians: [{ id: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] }),
+    ], [player({ spondId: 'sm1', guardians: [] })]);
+
+    expect(selectSpondActionableMemberRows(linked).map((row) => row.source.id)).toEqual(['sm1']);
+  });
+
   it('excludes members with trainer or custom administrator roles while retaining players and role-less snapshots', () => {
     const rows = selectSpondMemberRows([
       member({ id: 'trainer', roles: ['trainer'] }),
@@ -120,9 +129,26 @@ describe('Spond wizard progress', () => {
 describe('Spond event selectors', () => {
   it('resolves links and otherwise suggests activities on the same day', () => {
     expect(selectSpondEventRows([event()], [activity({ spondId: 'se1' })])[0].linkedActivity?.id).toBe('a1');
-    expect(selectSpondEventRows([event()], [activity()])[0].suggestedActivities).toHaveLength(1);
+    expect(selectSpondEventRows([event({ id: ' se1 ' })], [activity({ spondId: 'se1' })])[0].linkedActivity?.id).toBe('a1');
+    expect(selectSpondEventRows([event()], [activity()])[0].linkedActivity?.id).toBe('a1');
     expect(selectSpondEventRows([event()], [activity({ startsAt: '2026-10-10T18:00:00.000Z' })])[0].suggestedActivities).toHaveLength(1);
     expect(selectSpondEventRows([event()], [activity({ startsAt: '2026-10-11T10:00:00.000Z' })])[0].suggestedActivities).toEqual([]);
+  });
+
+  it('recognizes a unique exact activity as a prior link when its external ID is missing', () => {
+    const rows = selectSpondEventRows([event({ type: 'match' })], [activity({ kind: 'match' })]);
+    expect(rows[0].linkedActivity?.id).toBe('a1');
+    expect(rows[0].needsSync).toBe(false);
+    expect(selectSpondActionableEventRows(rows)).toEqual([]);
+  });
+
+  it('does not infer a prior link when exact fallback matching is ambiguous', () => {
+    const rows = selectSpondEventRows([event({ type: 'match' })], [
+      activity({ id: 'a1', kind: 'match' }),
+      activity({ id: 'a2', kind: 'match' }),
+    ]);
+    expect(rows[0].linkedActivity).toBeUndefined();
+    expect(rows[0].suggestedActivities).toHaveLength(2);
   });
 
   it('defaults a unique same-day match to link and a missing event to create', () => {
@@ -132,19 +158,26 @@ describe('Spond event selectors', () => {
     expect(missing.se1).toMatchObject({ action: 'create', activityId: '' });
   });
 
-  it('infers training from any occurrence in the event name and match otherwise', () => {
+  it('defaults new activities to match until the user assigns a kind', () => {
     const drafts = selectInitialSpondActivityDrafts(selectSpondEventRows([
-      event({ id: 'training', name: 'Goalkeeper TRAININGsession' }),
-      event({ id: 'match', name: 'Cup fixture' }),
+      event({ id: 'tournament', name: 'Cup fixture', type: 'event' }),
     ], []));
 
-    expect(drafts.training.kind).toBe('training');
-    expect(drafts.match.kind).toBe('match');
+    expect(drafts.tournament.kind).toBe('match');
+  });
+
+  it('filters training names case-insensitively before review', () => {
+    const rows = selectSpondEventRows([
+      event({ id: 'training-lower', name: 'Tuesday training' }),
+      event({ id: 'training-upper', name: 'TRAINING camp' }),
+      event({ id: 'match', name: 'Cup event' }),
+    ], []);
+    expect(rows.map((row) => row.source.id)).toEqual(['match']);
   });
 
   it('hides a linked event when its synchronized fields and responses are unchanged', () => {
     const linkedActivity = activity({
-      spondId: 'se1',
+      spondId: 'se1', name: 'Activity',
       invitations: [{ id: 'i1', playerId: 'p1', response: 'accepted' }],
     });
     const rows = selectSpondEventRows(
@@ -166,26 +199,29 @@ describe('Spond event selectors', () => {
     expect(selectSpondActionableEventRows(unlinked)).toHaveLength(1);
   });
 
-  it('filters training rows and supports selecting or clearing all visible rows', () => {
+  it('filters match rows and supports selecting or clearing all visible rows', () => {
     const rows = selectSpondEventRows([
-      event({ id: 'training', name: 'Tuesday Training' }),
-      event({ id: 'match', name: 'Cup MATCHday' }),
-      event({ id: 'social', name: 'Team dinner' }),
+      event({ id: 'tournament-1', type: 'event', name: 'Tuesday Activity' }),
+      event({ id: 'match', type: 'match', name: 'Cup MATCHday' }),
+      event({ id: 'tournament-2', type: 'event', name: 'Team tournament' }),
     ], []);
     const drafts = selectInitialSpondActivityDrafts(rows);
-    const trainingRows = selectFilteredSpondEventRows(rows, drafts, 'training');
+    drafts['tournament-1'].kind = 'tournament';
+    drafts['tournament-2'].kind = 'tournament';
     const matchRows = selectFilteredSpondEventRows(rows, drafts, 'match');
 
-    expect(trainingRows.map((row) => row.source.id)).toEqual(['training']);
     expect(matchRows.map((row) => row.source.id)).toEqual(['match']);
-    expect(drafts.training.kind).toBe('training');
-    expect(selectSpondActivityDraftsWithSelection(drafts, trainingRows, false).training.action).toBe('skip');
-    expect(selectSpondActivityDraftsWithSelection(
-      selectSpondActivityDraftsWithSelection(drafts, trainingRows, false),
-      trainingRows,
-      true,
-    ).training.action).toBe('create');
+    expect(drafts['tournament-1'].kind).toBe('tournament');
+    expect(selectSpondActivityDraftsWithSelection(drafts, matchRows, false).match.action).toBe('skip');
     expect(selectFilteredSpondEventRows(rows, drafts, 'all')).toBe(rows);
+    expect(selectFilteredSpondEventRows(rows, drafts, 'tournament').map((row) => row.source.id)).toEqual(['tournament-1', 'tournament-2']);
+  });
+
+  it('marks a linked activity for deletion when Spond reports it deleted', () => {
+    const rows = selectSpondEventRows([event({ status: 'deleted' })], [activity({ spondId: 'se1' })]);
+    expect(selectSpondActivityDecisions(rows, selectInitialSpondActivityDrafts(rows), true)).toEqual([
+      { action: 'delete', spondEventId: 'se1' },
+    ]);
   });
 });
 
@@ -265,22 +301,22 @@ describe('Spond import defaults', () => {
 
     const linkDrafts = { sm1: { ...createDrafts.sm1, action: 'link' as const, memberId: 'p1' } };
     expect(selectSpondMemberDecisions(rows, linkDrafts, true, false, {})).toEqual([
-      { action: 'link', spondMemberId: 'sm1', memberId: 'p1' },
+      { action: 'link', spondMemberId: 'sm1', memberId: 'p1', guardianIds: [] },
     ]);
   });
 
   it('builds event link, creation, unchanged, and fallback skip decisions', () => {
     const createRows = selectSpondEventRows([event()], []);
     const createDrafts = selectInitialSpondActivityDrafts(createRows);
-    createDrafts.se1 = { ...createDrafts.se1, kind: 'match', teamName: ' First ', trainerIds: [] };
+    createDrafts.se1 = { ...createDrafts.se1, kind: 'match', teamName: ' First ' };
     expect(selectSpondActivityDecisions(createRows, createDrafts, true)).toEqual([{
-      action: 'create', spondEventId: 'se1', kind: 'match', trainerIds: undefined,
+      action: 'create', spondEventId: 'se1', kind: 'match',
       teams: [{ name: 'First', strength: 2, selectedPlayers: [] }],
     }]);
     expect(selectSpondActivityDecisions(createRows, {}, true)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
     expect(selectSpondActivityDecisions(createRows, createDrafts, false)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
 
-    const linkedActivity = activity({ spondId: 'se1' });
+    const linkedActivity = activity({ spondId: 'se1', name: 'Activity' });
     const unchangedRows = selectSpondEventRows([event()], [linkedActivity]);
     expect(selectSpondActivityDecisions(unchangedRows, {}, true)).toEqual([{ action: 'skip', spondEventId: 'se1' }]);
     const changedRows = selectSpondEventRows([event({ location: 'New pitch' })], [linkedActivity]);
@@ -300,8 +336,49 @@ describe('Spond import defaults', () => {
       action: 'create-player', spondMemberId: 'sm1', birthDate: '2014-01-02', level: 1, status: 'active', guardianIds: [],
     }], [{ action: 'link', spondEventId: 'se1', activityId: 'a1' }])).toEqual([
       { id: 'player:sm1', kind: 'player', action: 'create', sourceName: 'Ada Lovelace' },
-      { id: 'event:se1', kind: 'event', action: 'link', sourceName: 'Training', targetName: 'Training' },
+      { id: 'event:se1', kind: 'event', action: 'link', sourceName: 'Activity', targetName: 'Activity' },
     ]);
+  });
+
+  it('previews guardians linked to an existing player', () => {
+    const sourceMember = member({ guardians: [{ id: 'sg1', firstName: 'Grace', lastName: 'Lovelace' }] });
+    const existingPlayer = player({ spondId: 'sm1', guardians: [] });
+    const memberRows = selectSpondMemberRows([sourceMember], [existingPlayer]);
+    const guardianRows = selectSpondGuardianRows([sourceMember], [existingPlayer]);
+
+    expect(selectSpondImportPreview(memberRows, guardianRows, [], [{
+      action: 'link', spondMemberId: 'sm1', memberId: 'p1', guardianIds: ['sg1'],
+    }], [])).toEqual([
+      { id: 'guardian:sg1:sm1', kind: 'guardian', action: 'create', sourceName: 'Grace Lovelace', targetName: 'Ada Lovelace' },
+    ]);
+  });
+
+  it('previews changed linked activity fields and deletions', () => {
+    const linkedActivity = activity({ spondId: 'se1', location: 'Old pitch' });
+    const changedRows = selectSpondEventRows([event({ location: 'New pitch' })], [linkedActivity]);
+    expect(selectSpondImportPreview([], [], changedRows, [], [
+      { action: 'link', spondEventId: 'se1', activityId: 'a1' },
+    ])).toEqual([{
+      id: 'event:se1', kind: 'event', action: 'update', sourceName: 'Activity', targetName: 'Activity', changes: ['location'],
+    }]);
+
+    const deletedRows = selectSpondEventRows([event({ status: 'deleted' })], [activity({ spondId: 'se1' })]);
+    expect(selectSpondImportPreview([], [], deletedRows, [], [
+      { action: 'delete', spondEventId: 'se1' },
+    ])).toEqual([{
+      id: 'event:se1', kind: 'event', action: 'delete', sourceName: 'Activity',
+    }]);
+  });
+
+  it('previews fields for a same-day activity selected as a fallback link', () => {
+    const existing = activity({ name: 'Old name', location: 'Old pitch' });
+    const rows = selectSpondEventRows([event({ name: 'New name', location: 'New pitch' })], [existing]);
+    expect(selectSpondActivityChanges(rows[0].source, existing)).toEqual(['name', 'location']);
+    expect(selectSpondImportPreview([], [], rows, [], [
+      { action: 'link', spondEventId: 'se1', activityId: 'a1' },
+    ])).toEqual([expect.objectContaining({
+      action: 'link', changes: ['name', 'location'],
+    })]);
   });
 
   it('includes only guardians present in a create-player decision', () => {
@@ -317,12 +394,12 @@ describe('Spond import defaults', () => {
     const linkedPlayer = player({ spondId: 'sm1' });
     const unchangedRows = selectSpondMemberRows([member()], [linkedPlayer]);
     expect(selectSpondImportPreview(unchangedRows, [], [], [
-      { action: 'link', spondMemberId: 'sm1', memberId: 'p1' },
+      { action: 'link', spondMemberId: 'sm1', memberId: 'p1', guardianIds: [] },
     ], [])).toEqual([]);
 
     const changedRows = selectSpondMemberRows([member({ birthDate: '2015-03-04' })], [linkedPlayer]);
     expect(selectSpondImportPreview(changedRows, [], [], [
-      { action: 'link', spondMemberId: 'sm1', memberId: 'p1' },
+      { action: 'link', spondMemberId: 'sm1', memberId: 'p1', guardianIds: [] },
     ], [])).toEqual([expect.objectContaining({
       kind: 'player', action: 'update', changes: ['birthDate'],
     })]);
@@ -334,7 +411,7 @@ describe('Spond import defaults', () => {
     for (const lastName of ['D’Amico', 'DʼAmico', 'D&apos;Amico', 'D&#39;Amico']) {
       const rows = selectSpondMemberRows([member({ firstName: 'Eliah', lastName })], [linkedPlayer]);
       expect(selectSpondImportPreview(rows, [], [], [
-        { action: 'link', spondMemberId: 'sm1', memberId: 'p1' },
+        { action: 'link', spondMemberId: 'sm1', memberId: 'p1', guardianIds: [] },
       ], [])).toEqual([]);
     }
   });
@@ -351,16 +428,16 @@ describe('Spond decision summary', () => {
     expect(selectSpondDecisionSummary(memberRows, eventRows, [
       { action: 'create-player', spondMemberId: 'sm1', birthDate: '2014-01-02', level: 3, status: 'active', guardianIds: [] },
     ], [
-      { action: 'create', spondEventId: 'se1', kind: 'social' },
+      { action: 'create', spondEventId: 'se1', kind: 'tournament', teams: [{ name: 'Team 1', strength: 2, selectedPlayers: [] }] },
     ])).toMatchObject({ createdMembers: 1, createdActivities: 1, isReady: true });
   });
 
-  it('rejects a training without trainers and accepts explicit skips', () => {
+  it('rejects a team activity without a team and accepts explicit skips', () => {
     const memberRows = selectSpondMemberRows([member()], []);
     const eventRows = selectSpondEventRows([event()], []);
     expect(selectSpondDecisionSummary(memberRows, eventRows,
       [{ action: 'skip', spondMemberId: 'sm1' }],
-      [{ action: 'create', spondEventId: 'se1', kind: 'training' }],
+      [{ action: 'create', spondEventId: 'se1', kind: 'match' }],
     ).isReady).toBe(false);
     expect(selectSpondDecisionSummary(memberRows, eventRows,
       [{ action: 'skip', spondMemberId: 'sm1' }],
@@ -372,7 +449,7 @@ describe('Spond decision summary', () => {
     const memberRows = selectSpondMemberRows([member()], []);
     const eventRows = selectSpondEventRows([event()], []);
     const missingLinks = selectSpondDecisionSummary(memberRows, eventRows, [
-      { action: 'link', spondMemberId: 'sm1', memberId: '' },
+        { action: 'link', spondMemberId: 'sm1', memberId: '', guardianIds: [] },
     ], [
       { action: 'link', spondEventId: 'se1', activityId: '' },
     ]);

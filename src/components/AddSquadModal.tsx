@@ -65,7 +65,7 @@ export default function AddSquadModal({
 
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
-      setNameError(t('squadModal.errors.nameRequired'));
+      setNameError(t('page.squadModal.errors.nameRequired'));
       return;
     }
 
@@ -82,14 +82,14 @@ export default function AddSquadModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>{t('squadModal.title')}</ModalTitle>
+        <ModalTitle>{t('page.squadModal.title')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
             <RequiredFieldsNote />
-            <Field label={t('squadModal.fields.squadName')} htmlFor="name" error={nameError} required>
+            <Field label={t('domain.squad.fields.name')} htmlFor="name" error={nameError} required>
               <Input
                 type="text"
                 id="name"
@@ -97,22 +97,22 @@ export default function AddSquadModal({
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder={t('squadModal.placeholders.squadName')}
+                placeholder={t('domain.squad.placeholders.name')}
               />
             </Field>
 
-            <Field label={t('squadModal.fields.clubOptional')} htmlFor="club">
+            <Field label={t('domain.squad.fields.club')} htmlFor="club">
               <Input
                 type="text"
                 id="club"
                 name="club"
                 value={formData.club ?? ''}
                 onChange={handleChange}
-                placeholder={t('squadModal.placeholders.club')}
+                placeholder={t('domain.squad.placeholders.club')}
               />
             </Field>
 
-            <Field label={t('squadModal.fields.categoryOptional')} htmlFor="category">
+            <Field label={t('domain.squad.fields.category')} htmlFor="category">
               <Select
                 id="category"
                 name="category"
@@ -122,15 +122,15 @@ export default function AddSquadModal({
                   category: (event.target.value || null) as CreateSquadRequest['category'],
                 }))}
               >
-                <option value="">{t('squadModal.fields.noCategory')}</option>
+                <option value="">{t('domain.squad.fields.noCategory')}</option>
                 {categoryOptions.map((option) => (
                   <option key={option.code} value={option.code}>{option.code}</option>
                 ))}
               </Select>
-              <p className="field-help">{t('squadModal.categoryHint')}</p>
+              <p className="field-help">{t('page.squadModal.categoryHint')}</p>
               {selectedOption?.matchFormat && (
                 <p className="squad-format-hint squad-format-hint--official">
-                  {t('squadModal.officialFormatHint', {
+                  {t('page.squadModal.officialFormatHint', {
                     format: selectedOption.matchFormat.name,
                     min: selectedOption.matchFormat.minPlayersPerTeam ?? '-',
                     max: selectedOption.matchFormat.maxPlayersPerTeam ?? '-',
@@ -138,18 +138,18 @@ export default function AddSquadModal({
                 </p>
               )}
               {selectedOption?.activityType === 'tournament' && !selectedOption.matchFormat && (
-                <p className="squad-format-hint">{t('squadModal.tournamentOnlyHint')}</p>
+                <p className="squad-format-hint">{t('page.squadModal.tournamentOnlyHint')}</p>
               )}
             </Field>
 
-            <Field label={t('squadModal.fields.descriptionOptional')} htmlFor="description">
+            <Field label={t('domain.squad.fields.description')} htmlFor="description">
               <Textarea
                 id="description"
                 name="description"
                 value={formData.description ?? ''}
                 onChange={handleChange}
                 className="ui-textarea--tall"
-                placeholder={t('squadModal.placeholders.description')}
+                placeholder={t('domain.squad.placeholders.description')}
               />
             </Field>
 
@@ -177,7 +177,7 @@ export default function AddSquadModal({
             width="grow"
             disabled={isSubmitting}
           >
-            {isSubmitting ? t('squadModal.creating') : t('squadModal.createAction')}
+            {isSubmitting ? t('page.squadModal.creating') : t('page.squadModal.createAction')}
           </Button>
         </ModalFooter>
       </form>

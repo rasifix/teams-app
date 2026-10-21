@@ -58,22 +58,22 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
     setError(null);
 
     if (!name.trim()) {
-      setError(t('matchFormatModal.errors.nameRequired'));
+      setError(t('page.matchFormatModal.errors.nameRequired'));
       return;
     }
 
     if (numberOfPeriods < 1) {
-      setError(t('matchFormatModal.errors.numberOfPeriodsMin'));
+      setError(t('page.matchFormatModal.errors.numberOfPeriodsMin'));
       return;
     }
 
     if (periodLengthMinutes < 1) {
-      setError(t('matchFormatModal.errors.periodLengthMin'));
+      setError(t('page.matchFormatModal.errors.periodLengthMin'));
       return;
     }
 
     if (minimumPeriodsPerPlayer < 0 || minimumPeriodsPerPlayer > numberOfPeriods) {
-      setError(t('matchFormatModal.errors.minimumPeriodsRange', { total: numberOfPeriods }));
+      setError(t('page.matchFormatModal.errors.minimumPeriodsRange', { total: numberOfPeriods }));
       return;
     }
 
@@ -82,12 +82,12 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
     const maxPlayers = parseOptionalPositiveInt(maxPlayersPerTeam);
 
     if ([onField, minPlayers, maxPlayers].some((value) => value !== undefined && value < 1)) {
-      setError(t('matchFormatModal.errors.playersMin'));
+      setError(t('page.matchFormatModal.errors.playersMin'));
       return;
     }
 
     if (minPlayers !== undefined && maxPlayers !== undefined && minPlayers > maxPlayers) {
-      setError(t('matchFormatModal.errors.playerLimitsRange'));
+      setError(t('page.matchFormatModal.errors.playerLimitsRange'));
       return;
     }
 
@@ -104,7 +104,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
     setIsSaving(false);
 
     if (!wasSaved) {
-      setError(t('matchFormatModal.errors.saveFailed'));
+      setError(t('page.matchFormatModal.errors.saveFailed'));
       return;
     }
 
@@ -115,7 +115,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{isEditing ? t('matchFormatModal.editTitle') : t('matchFormatModal.addTitle')}</ModalTitle>
+          <ModalTitle>{isEditing ? t('page.matchFormatModal.editTitle') : t('page.matchFormatModal.addTitle')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Stack>
@@ -124,22 +124,22 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
 
             {isOfficial && (
               <Alert tone="info">
-                {t('matchFormatModal.officialNotice')}
+                {t('page.matchFormatModal.officialNotice')}
               </Alert>
             )}
 
-            <Field label={t('matchFormatModal.fields.name')} htmlFor="playing-mode-name" required>
+            <Field label={t('domain.matchFormat.fields.name')} htmlFor="playing-mode-name" required>
               <Input
                 id="playing-mode-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t('matchFormatModal.placeholders.name')}
+                placeholder={t('domain.matchFormat.placeholders.name')}
                 autoFocus
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.numberOfPeriods')} htmlFor="playing-mode-periods" required>
+            <Field label={t('domain.matchFormat.fields.numberOfPeriods')} htmlFor="playing-mode-periods" required>
               <Input
                 id="playing-mode-periods"
                 type="number"
@@ -149,7 +149,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.periodLengthMinutes')} htmlFor="playing-mode-length" required>
+            <Field label={t('domain.matchFormat.fields.periodLengthMinutes')} htmlFor="playing-mode-length" required>
               <Input
                 id="playing-mode-length"
                 type="number"
@@ -159,7 +159,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.minimumPeriodsPerPlayer')} htmlFor="playing-mode-minimum-periods" hint={t('matchFormatModal.hints.minimumPeriodsPerPlayer')} required>
+              <Field label={t('domain.matchFormat.fields.minimumPeriodsPerPlayer')} htmlFor="playing-mode-minimum-periods" hint={t('domain.matchFormat.hints.minimumPeriodsPerPlayer')} required>
               <Input
                 id="playing-mode-minimum-periods"
                 type="number"
@@ -170,7 +170,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
               />
             </Field>
 
-            <Field label={t('matchFormatModal.fields.playersOnField')} htmlFor="playing-mode-on-field">
+              <Field label={t('domain.matchFormat.fields.playersOnField')} htmlFor="playing-mode-on-field">
               <Input
                 id="playing-mode-on-field"
                 type="number"
@@ -181,7 +181,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
             </Field>
 
             <ContentGrid variant="equal">
-              <Field label={t('matchFormatModal.fields.minPlayersPerTeam')} htmlFor="playing-mode-min-players">
+              <Field label={t('domain.matchFormat.fields.minPlayersPerTeam')} htmlFor="playing-mode-min-players">
                 <Input
                   id="playing-mode-min-players"
                   type="number"
@@ -190,7 +190,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
                   onChange={(e) => setMinPlayersPerTeam(e.target.value)}
                 />
               </Field>
-              <Field label={t('matchFormatModal.fields.maxPlayersPerTeam')} htmlFor="playing-mode-max-players">
+              <Field label={t('domain.matchFormat.fields.maxPlayersPerTeam')} htmlFor="playing-mode-max-players">
                 <Input
                   id="playing-mode-max-players"
                   type="number"
@@ -200,7 +200,7 @@ export default function MatchFormatModal({ isOpen, onClose, matchFormatToEdit = 
                 />
               </Field>
             </ContentGrid>
-            <p className="field-help">{t('matchFormatModal.hints.playerLimits')}</p>
+            <p className="field-help">{t('domain.matchFormat.hints.playerLimits')}</p>
           </Stack>
         </ModalBody>
         <ModalFooter>

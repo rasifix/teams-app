@@ -11,14 +11,14 @@ export default function UpcomingEventCard({ event }: UpcomingEventCardProps) {
   const { t } = useTranslation();
 
   return (
-    <ActionCardLink to={`/events/${event.id}`} leading={<DateColumn date={getActivityDate(event)} />}>
+    <ActionCardLink to={`/activities/${event.id}`} leading={<DateColumn date={getActivityDate(event)} />}>
       <ActionCardTitle>{event.name}</ActionCardTitle>
       <EntityMeta>
-        <span>{t(`activity.kinds.${event.kind}`)}</span>
+        <span>{t(`domain.activity.kinds.${event.kind}`)}</span>
         <span>{getActivityStartTime(event)}</span>
         {event.location && <span>{event.location}</span>}
       </EntityMeta>
-      {event.kind === 'match' && event.opponentName && <EntityMeta><span>{t('activity.fields.opponent')}: {event.opponentName}</span></EntityMeta>}
+      {event.kind === 'match' && event.opponentName && <EntityMeta><span>{t('domain.activity.fields.opponent')}: {event.opponentName}</span></EntityMeta>}
     </ActionCardLink>
   );
 }

@@ -58,7 +58,7 @@ export default function TeamLineupPage() {
   }, [team?.id]);
 
   const hasChanges = selectHasLineupChanges(savedLineup, draftLineup);
-  const lineupPath = `/events/${eventId}/teams/${teamId}/lineup`;
+  const lineupPath = `/activities/${eventId}/teams/${teamId}/lineup`;
   const navigationBlocker = useBlocker(({ nextLocation }) => {
     const remainsInLineup = nextLocation.pathname === lineupPath ||
       nextLocation.pathname.startsWith(`${lineupPath}/`);
@@ -82,7 +82,7 @@ export default function TeamLineupPage() {
   if (!isInitialized || isLoading) {
     return (
       <Page>
-        <EmptyState>{t('teamLineup.loading')}</EmptyState>
+        <EmptyState>{t('page.teamLineup.loading')}</EmptyState>
       </Page>
     );
   }
@@ -90,7 +90,7 @@ export default function TeamLineupPage() {
   if (!event || event.kind !== 'match' || !team) {
     return (
       <Page>
-        <EmptyState>{t('teamLineup.teamNotFound')}</EmptyState>
+        <EmptyState>{t('page.teamLineup.teamNotFound')}</EmptyState>
       </Page>
     );
   }
@@ -98,10 +98,12 @@ export default function TeamLineupPage() {
   if (!matchFormat || !formation || !draftTeam) {
     return (
       <Page>
-        <EmptyState>{t('teamLineup.notConfigured')}</EmptyState>
+        <EmptyState>{t('page.teamLineup.notConfigured')}</EmptyState>
       </Page>
     );
   }
+
+  const isCancelled = event.status === 'cancelled';
 
   const activePeriod = typeof activeTab === 'number' ? activeTab : 1;
   const benchedPlayers = selectBenchedPlayers(draftTeam, players, activePeriod);
@@ -121,6 +123,7 @@ export default function TeamLineupPage() {
     : [];
 
   const handleAssignSlot = (slotId: string, playerId: string) => {
+    if (isCancelled) return;
     setDraftLineup((current) => {
       const otherPeriods = current.filter((p) => p.periodNumber !== activePeriod);
       const period = current.find((p) => p.periodNumber === activePeriod);
@@ -141,6 +144,7 @@ export default function TeamLineupPage() {
   };
 
   const handleDropOnSlot = (slotId: string, playerId: string) => {
+    if (isCancelled) return;
     setDraftLineup((current) => {
       const otherPeriods = current.filter((p) => p.periodNumber !== activePeriod);
       const period = current.find((p) => p.periodNumber === activePeriod);
@@ -153,6 +157,7 @@ export default function TeamLineupPage() {
   };
 
   const handleDropOnBench = (playerId: string) => {
+    if (isCancelled) return;
     setDraftLineup((current) => {
       const otherPeriods = current.filter((p) => p.periodNumber !== activePeriod);
       const period = current.find((p) => p.periodNumber === activePeriod);
@@ -165,12 +170,12 @@ export default function TeamLineupPage() {
   };
 
   const handleCopyPreviousPeriod = () => {
-    if (activePeriod <= 1) return;
+    if (isCancelled || activePeriod <= 1) return;
     setDraftLineup((current) => selectLineupWithCopiedPeriod(current, activePeriod - 1, activePeriod));
   };
 
   const handleSave = async (): Promise<boolean> => {
-    if (!eventId || !hasChanges) return false;
+    if (isCancelled || !eventId || !hasChanges) return false;
 
     setIsSaving(true);
     setSaveError(null);
@@ -181,7 +186,7 @@ export default function TeamLineupPage() {
     const wasSaved = await updateActivityTeams(eventId, updatedTeams);
     setIsSaving(false);
     if (!wasSaved) {
-      setSaveError(t('teamLineup.saveFailed'));
+      setSaveError(t('page.teamLineup.saveFailed'));
       return false;
     }
 
@@ -199,72 +204,73 @@ export default function TeamLineupPage() {
       <PageToolbar><Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(`/events/${eventId}/teams/${teamId}`)}
+          onClick={() => navigate(`/activities/${eventId}/teams/${teamId}`)}
         >
           ← {t('common.actions.cancel')}
       </Button></PageToolbar>
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
-            <PageTitle>{t('teamLineup.title', { team: team.name })}</PageTitle>
+            <PageTitle>{t('page.teamLineup.title', { team: team.name })}</PageTitle>
           </PageHeaderContent>
           <PageActions><p className="lineup-context">{matchFormat.name} · {formation.name}</p></PageActions>
       </PageHeader>
+      {isCancelled && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}
 
-      <TabList label={t('teamLineup.title', { team: team.name })} className="lineup-tabs">
+      <TabList label={t('page.teamLineup.title', { team: team.name })} className="lineup-tabs">
         {Array.from({ length: matchFormat.numberOfPeriods }, (_, i) => i + 1).map((periodNumber) => (
           <Tab
             key={periodNumber}
             selected={activeTab === periodNumber}
             onClick={() => {
-              navigate(`/events/${eventId}/teams/${teamId}/lineup/${periodNumber}`);
+              navigate(`/activities/${eventId}/teams/${teamId}/lineup/${periodNumber}`);
               setSelectingSlotId(null);
             }}
           >
-            {t('teamLineup.periodLabel', { number: periodNumber })}
+            {t('page.teamLineup.periodLabel', { number: periodNumber })}
           </Tab>
         ))}
         <Tab
           selected={activeTab === 'summary'}
           onClick={() => {
-            navigate(`/events/${eventId}/teams/${teamId}/lineup/summary`);
+              navigate(`/activities/${eventId}/teams/${teamId}/lineup/summary`);
             setSelectingSlotId(null);
           }}
         >
-          {t('teamLineup.summaryTab')}
+          {t('page.teamLineup.summaryTab')}
         </Tab>
       </TabList>
 
       {activeTab !== 'summary' && activePeriod > 1 && (
         <div className="lineup-toolbar">
-          <Button variant="secondary" size="sm" onClick={handleCopyPreviousPeriod}>
-            {t('teamLineup.copyPreviousPeriod')}
+          <Button variant="secondary" size="sm" disabled={isCancelled} onClick={handleCopyPreviousPeriod}>
+            {t('page.teamLineup.copyPreviousPeriod')}
           </Button>
         </div>
       )}
 
       {activeTab !== 'summary' && hasMismatch && (
         <Alert tone="warning" className="lineup-alert">
-          {t('teamLineup.rosterMismatchWarning')}
+          {t('page.teamLineup.rosterMismatchWarning')}
         </Alert>
       )}
 
       {activeTab === 'summary' ? (
         <div className="lineup-print-content">
           <div className="lineup-print-actions">
-            <PanelTitle>{t('teamLineup.summaryTitle')}</PanelTitle>
+            <PanelTitle>{t('page.teamLineup.summaryTitle')}</PanelTitle>
             <Button variant="secondary" onClick={() => window.print()}>
-              {t('teamLineup.printSummary')}
+              {t('page.teamLineup.printSummary')}
             </Button>
           </div>
           {minimumPeriodViolations.length > 0 && (
             <Alert className="lineup-alert">
-              <div className="lineup-violation-title">{t('teamLineup.minimumPeriodsViolationTitle')}</div>
+              <div className="lineup-violation-title">{t('page.teamLineup.minimumPeriodsViolationTitle')}</div>
               <ul className="lineup-violation-list">
                 {minimumPeriodViolations.map((violation) => (
                   <li key={violation.playerId}>
-                    {t('teamLineup.minimumPeriodsViolation', {
-                      player: violation.playerName ?? t('teamLineup.unknownPlayer'),
+                    {t('page.teamLineup.minimumPeriodsViolation', {
+                      player: violation.playerName ?? t('page.teamLineup.unknownPlayer'),
                       count: violation.plannedPeriods,
                       minimum: violation.minimumPeriods,
                     })}
@@ -274,14 +280,14 @@ export default function TeamLineupPage() {
             </Alert>
           )}
           <div className="lineup-print-heading">
-            <h1 className="lineup-print-title">{t('teamLineup.title', { team: team.name })}</h1>
+            <h1 className="lineup-print-title">{t('page.teamLineup.title', { team: team.name })}</h1>
             <p>{matchFormat.name} · {formation.name}</p>
           </div>
           <div className="lineup-summary-grid">
             {lineupSummary.map((period) => (
               <Card key={period.periodNumber} className="lineup-period-card">
                 <CardBody className="lineup-period-body">
-                  <CardTitle className="lineup-period-title">{t('teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
+                  <CardTitle className="lineup-period-title">{t('page.teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
                   <div className="lineup-pitch lineup-pitch--summary">
                     {period.assignments.map((assignment) => (
                       <div
@@ -302,13 +308,13 @@ export default function TeamLineupPage() {
                           {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
                         </span>
                         <span className="lineup-slot-player">
-                          {assignment.playerLabel ?? t('teamLineup.emptySlot')}
+                          {assignment.playerLabel ?? t('page.teamLineup.emptySlot')}
                         </span>
                       </div>
                     ))}
                   </div>
                   <div className="lineup-summary-bench">
-                    <div className="lineup-summary-bench-title">{t('teamLineup.benchLabel')}</div>
+                    <div className="lineup-summary-bench-title">{t('page.teamLineup.benchLabel')}</div>
                     {period.benchedPlayers.length > 0 ? (
                       <div className="lineup-summary-players">
                         {period.benchedPlayers.map((player) => (
@@ -318,12 +324,12 @@ export default function TeamLineupPage() {
                             onMouseEnter={() => setHoveredSummaryPlayerId(player.playerId)}
                             onMouseLeave={() => setHoveredSummaryPlayerId(null)}
                           >
-                            {player.playerName ?? t('teamLineup.unknownPlayer')}
+                            {player.playerName ?? t('page.teamLineup.unknownPlayer')}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <div className="lineup-empty-bench">{t('teamLineup.noBenchedPlayers')}</div>
+                      <div className="lineup-empty-bench">{t('page.teamLineup.noBenchedPlayers')}</div>
                     )}
                   </div>
                 </CardBody>
@@ -333,7 +339,7 @@ export default function TeamLineupPage() {
           <section className="lineup-shirt-page">
             <header className="lineup-shirt-header">
               <h1 className="lineup-shirt-title">{team.name}</h1>
-              <h2 className="lineup-shirt-subtitle">{t('teamLineup.shirtNumbersTitle')}</h2>
+              <h2 className="lineup-shirt-subtitle">{t('page.teamLineup.shirtNumbersTitle')}</h2>
             </header>
             <div className="lineup-shirt-grid">
               {shirtNumberRows.map((row) => (
@@ -342,10 +348,10 @@ export default function TeamLineupPage() {
                   className="lineup-shirt-row"
                 >
                   <span className="lineup-shirt-number">
-                    {row.shirtNumber ?? t('teamLineup.noShirtNumber')}
+                    {row.shirtNumber ?? t('page.teamLineup.noShirtNumber')}
                   </span>
                   <span className="lineup-shirt-name">
-                    {row.playerName ?? t('teamLineup.unknownPlayer')}
+                    {row.playerName ?? t('page.teamLineup.unknownPlayer')}
                   </span>
                 </div>
               ))}
@@ -357,7 +363,7 @@ export default function TeamLineupPage() {
       <ContentGrid variant="editor">
       <Card className="lineup-editor-card">
         <CardBody className="lineup-editor-body">
-          <CardTitle className="lineup-editor-title">{t('teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
+          <CardTitle className="lineup-editor-title">{t('page.teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
           {currentPeriodSummary && (
             <div className="lineup-pitch lineup-pitch--editor">
               {currentPeriodSummary.assignments.map((assignment) => (
@@ -365,7 +371,7 @@ export default function TeamLineupPage() {
                   type="button"
                   data-ui-control="composite"
                   key={assignment.slotId}
-                  draggable={Boolean(assignment.playerId)}
+                  draggable={Boolean(assignment.playerId) && !isCancelled}
                   onDragStart={(event) => {
                     if (!assignment.playerId) return;
                     event.dataTransfer.effectAllowed = 'move';
@@ -375,7 +381,7 @@ export default function TeamLineupPage() {
                     setDragOverSlotId(null);
                     setIsDragOverBench(false);
                   }}
-                  onClick={() => setSelectingSlotId(assignment.slotId)}
+                  onClick={() => !isCancelled && setSelectingSlotId(assignment.slotId)}
                   onDragOver={(event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'move';
@@ -406,7 +412,7 @@ export default function TeamLineupPage() {
                     {assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}
                   </span>
                   <span className="lineup-slot-player">
-                    {assignment.playerLabel ?? t('teamLineup.emptySlot')}
+                    {assignment.playerLabel ?? t('page.teamLineup.emptySlot')}
                   </span>
                 </button>
               ))}
@@ -416,7 +422,7 @@ export default function TeamLineupPage() {
           {selectingAssignment && (
             <div className="lineup-player-picker">
               <div className="lineup-player-picker-title">
-                {t('teamLineup.selectPlayerForPosition', {
+                {t('page.teamLineup.selectPlayerForPosition', {
                   position: t(getPositionLabelKey(selectingAssignment.positionCode)),
                 })}
               </div>
@@ -425,9 +431,10 @@ export default function TeamLineupPage() {
                   type="button"
                   variant="secondary"
                   size="sm"
+                  disabled={isCancelled}
                   onClick={() => handleAssignSlot(selectingAssignment.slotId, '')}
                 >
-                  {t('teamLineup.emptySlot')}
+                  {t('page.teamLineup.emptySlot')}
                 </Button>
                 {assignablePlayers.map((player) => (
                   <Button
@@ -435,6 +442,7 @@ export default function TeamLineupPage() {
                     key={player.id}
                     variant={selectingAssignment.playerId === player.id ? 'primary' : 'secondary'}
                     size="sm"
+                    disabled={isCancelled}
                     aria-pressed={selectingAssignment.playerId === player.id}
                     onClick={() => handleAssignSlot(selectingAssignment.slotId, player.id)}
                   >
@@ -449,7 +457,7 @@ export default function TeamLineupPage() {
 
       <Card className="lineup-editor-card">
         <CardBody className="lineup-editor-body">
-          <CardTitle className="lineup-editor-title">{t('teamLineup.benchTitle', { count: benchedPlayers.length })}</CardTitle>
+          <CardTitle className="lineup-editor-title">{t('page.teamLineup.benchTitle', { count: benchedPlayers.length })}</CardTitle>
           <div
             className={`lineup-bench-drop${isDragOverBench ? ' lineup-bench-drop--drag-over' : ''}`}
             onDragOver={(event) => {
@@ -468,14 +476,14 @@ export default function TeamLineupPage() {
             }}
           >
             {benchedPlayers.length === 0 ? (
-              <EmptyState>{t('teamLineup.noBenchedPlayers')}</EmptyState>
+              <EmptyState>{t('page.teamLineup.noBenchedPlayers')}</EmptyState>
             ) : (
               <div className="lineup-bench-list" role="list">
                 {benchedPlayers.map((player) => (
                   <div
                     key={player.id}
                     role="listitem"
-                    draggable
+                    draggable={!isCancelled}
                     onDragStart={(event) => {
                       event.dataTransfer.effectAllowed = 'move';
                       event.dataTransfer.setData('lineupPlayerId', player.id);
@@ -491,7 +499,7 @@ export default function TeamLineupPage() {
                     <span className="lineup-bench-name">{player.firstName} {player.lastName}</span>
                     <span
                       className="lineup-period-count"
-                      aria-label={t('teamLineup.plannedPeriods', {
+                      aria-label={t('page.teamLineup.plannedPeriods', {
                         count: plannedPeriodCounts.get(player.id) ?? 0,
                         total: matchFormat.numberOfPeriods,
                       })}
@@ -511,8 +519,8 @@ export default function TeamLineupPage() {
 
       <ActionDock>
         <ActionDockContent>
-          {saveError ? <p className="lineup-save-error" role="alert">{saveError}</p> : <span className="lineup-save-status">{hasChanges ? t('teamLineup.unsavedChangesTitle') : t('teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
-          <Button variant="primary" onClick={handleSave} disabled={!hasChanges || isSaving}>
+          {saveError ? <p className="lineup-save-error" role="alert">{saveError}</p> : <span className="lineup-save-status">{hasChanges ? t('page.teamLineup.unsavedChangesTitle') : t('page.teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
+          <Button variant="primary" onClick={handleSave} disabled={isCancelled || !hasChanges || isSaving}>
             {t('common.actions.save')}
           </Button>
         </ActionDockContent>

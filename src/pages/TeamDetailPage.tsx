@@ -43,7 +43,7 @@ export default function TeamDetailPage() {
   const team = event?.teams.find(t => t.id === teamId);
   
   const responsiblePeople = team
-    ? selectTeamResponsiblePeople(team.responsiblePersonIds, trainers, players)
+    ? selectTeamResponsiblePeople(team.responsiblePersonId, trainers, players)
     : [];
   const currentTrainer = selectTrainerForUser(user, trainers);
   const shirtSet = team?.shirtSetId ? shirtSets.find(s => s.id === team.shirtSetId) : null;
@@ -121,7 +121,7 @@ export default function TeamDetailPage() {
   };
   
   const handleAddPlayers = () => {
-    navigate(`/events/${eventId}/teams/${teamId}/select-players`);
+    navigate(`/activities/${eventId}/teams/${teamId}/select-players`);
   };
   
   const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, location?: string) => {
@@ -135,11 +135,11 @@ export default function TeamDetailPage() {
     setIsEditTeamModalOpen(false);
   };
   
-  const handleAssignResponsiblePeople = async (responsiblePersonIds: string[]) => {
+  const handleAssignResponsiblePerson = async (responsiblePersonId: string | undefined) => {
     if (!event || !eventId || !team) return;
 
     const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, responsiblePersonIds: responsiblePersonIds.slice(0, 1) } : t
+      t.id === teamId ? { ...t, responsiblePersonId } : t
     );
 
     await updateActivityTeams(eventId, updatedTeams);
@@ -159,12 +159,13 @@ export default function TeamDetailPage() {
   if (!event || !team) {
     return (
       <Page>
-        <EmptyState>{t('teamDetail.teamNotFound')}</EmptyState>
+        <EmptyState>{t('page.teamDetail.teamNotFound')}</EmptyState>
       </Page>
     );
   }
   
   const playerToRemoveData = playerToRemove ? players.find(p => p.id === playerToRemove) : null;
+  const isCancelled = event.status === 'cancelled';
   
   return (
     <Page>
@@ -172,7 +173,7 @@ export default function TeamDetailPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/events/${eventId}`)}
+            onClick={() => navigate(`/activities/${eventId}`)}
           >
             ← {t('common.actions.back')}
           </Button>
@@ -180,6 +181,7 @@ export default function TeamDetailPage() {
             variant="secondary"
             size="sm"
             onClick={() => setIsEditTeamModalOpen(true)}
+            disabled={isCancelled}
           >
             {t('common.actions.edit')}
           </Button>
@@ -194,11 +196,12 @@ export default function TeamDetailPage() {
           </PageHeaderContent>
           {event.teams.length > 1 && (
             <PageActions className="team-detail-switcher">
-              <Field label={t('teamDetail.switchTeam')} htmlFor="team-switcher">
+              <Field label={t('page.teamDetail.switchTeam')} htmlFor="team-switcher">
               <Select
                 id="team-switcher"
+                controlSize="sm"
                 value={team.id}
-                onChange={(event) => navigate(`/events/${eventId}/teams/${event.target.value}`)}
+                onChange={(event) => navigate(`/activities/${eventId}/teams/${event.target.value}`)}
               >
                 {event.teams.map((eventTeam) => <option key={eventTeam.id} value={eventTeam.id}>{eventTeam.name}</option>)}
               </Select>
@@ -206,6 +209,7 @@ export default function TeamDetailPage() {
             </PageActions>
           )}
       </PageHeader>
+      {isCancelled && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}
       
       <ContentGrid variant="sidebar">
         <Panel>
@@ -214,7 +218,7 @@ export default function TeamDetailPage() {
             <PropertyRow>
               <PropertyLabel>
                 <span>🕐</span>
-                <span>{t('teamModal.fields.startTime')}</span>
+                <span>{t('domain.team.fields.startTime')}</span>
               </PropertyLabel>
               <PropertyValue>
                 {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
@@ -224,7 +228,7 @@ export default function TeamDetailPage() {
               <PropertyRow>
                 <PropertyLabel>
                   <span>📍</span>
-                  <span>{t('teamModal.fields.locationOptional')}</span>
+                  <span>{t('domain.team.fields.location')}</span>
                 </PropertyLabel>
                 <PropertyValue>{event.kind === 'match' ? event.location : team.location || event.location}</PropertyValue>
               </PropertyRow>
@@ -233,7 +237,7 @@ export default function TeamDetailPage() {
             <PropertyRow>
               <PropertyLabel>
                 <span>💪</span>
-                <span>{t('teamModal.fields.strength')}</span>
+                  <span>{t('domain.team.fields.strength')}</span>
               </PropertyLabel>
               <PropertyValue><Strength level={team.strength} /></PropertyValue>
             </PropertyRow>
@@ -241,45 +245,48 @@ export default function TeamDetailPage() {
             <PropertyAction
               data-testid="team-responsible-people-row"
               onClick={() => setIsResponsibleModalOpen(true)}
+              disabled={isCancelled}
             >
               <PropertyLabel>
                 <span>👤</span>
-                <span>{t('teamModal.fields.responsiblePeople')}</span>
+                  <span>{t('domain.team.fields.responsiblePeople')}</span>
               </PropertyLabel>
               {responsiblePeople[0] ? (
                 <PropertyValue>{responsiblePeople[0].firstName} {responsiblePeople[0].lastName}</PropertyValue>
               ) : (
-                <PropertyValue muted>{t('teamModal.noTrainerAssigned')}</PropertyValue>
+                <PropertyValue muted>{t('page.teamModal.noTrainerAssigned')}</PropertyValue>
               )}
             </PropertyAction>
 
             <PropertyAction
               data-testid="team-shirt-set-row"
               onClick={() => setIsAssignShirtsModalOpen(true)}
+              disabled={isCancelled}
             >
               <PropertyLabel>
                 <span>👕</span>
-                <span>{t('teamDetail.shirtSetLabel')}</span>
+                <span>{t('page.teamDetail.shirtSetLabel')}</span>
               </PropertyLabel>
               {shirtSet ? (
                 <PropertyValue>
                   {shirtSet.sponsor}
                 </PropertyValue>
               ) : (
-                <PropertyValue muted>{t('teamDetail.noShirtSetAssigned')}</PropertyValue>
+                <PropertyValue muted>{t('page.teamDetail.noShirtSetAssigned')}</PropertyValue>
               )}
             </PropertyAction>
 
             {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
               <PropertyAction
                 onClick={() => setIsAssignFormationModalOpen(true)}
+                disabled={isCancelled}
               >
                 <PropertyLabel>
                   <span>🧩</span>
-                  <span>{t('teamDetail.formationLabel')}</span>
+                  <span>{t('page.teamDetail.formationLabel')}</span>
                 </PropertyLabel>
                 <PropertyValue muted={!team.formationId}>
-                  {formations.find((formation) => formation.id === team.formationId)?.name ?? t('teamDetail.noFormationAssigned')}
+                  {formations.find((formation) => formation.id === team.formationId)?.name ?? t('page.teamDetail.noFormationAssigned')}
                 </PropertyValue>
               </PropertyAction>
             )}
@@ -287,12 +294,12 @@ export default function TeamDetailPage() {
             <PropertyRow>
               <PropertyLabel>
                 <span>📋</span>
-                <span>{t('teamDetail.lineupLabel')}</span>
+                <span>{t('page.teamDetail.lineupLabel')}</span>
               </PropertyLabel>
               <PropertyActions>
                 {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
-                  <Button size="sm" onClick={() => navigate(`/events/${eventId}/teams/${teamId}/lineup/1`)}>
-                    {t('teamDetail.planLineupAction')}
+                  <Button size="sm" disabled={isCancelled} onClick={() => navigate(`/activities/${eventId}/teams/${teamId}/lineup/1`)}>
+                    {t('page.teamDetail.planLineupAction')}
                   </Button>
                 )}
               </PropertyActions>
@@ -303,7 +310,7 @@ export default function TeamDetailPage() {
         <Panel>
             <PanelHeader>
               <PanelTitle>
-                {t('domain.players')} ({selectedPlayers.length}/{(event.maxPlayersPerTeam ?? players.length)})
+                {t('domain.player.plural')} ({selectedPlayers.length}/{(event.maxPlayersPerTeam ?? players.length)})
               </PanelTitle>
               <PanelActions>
               <Button 
@@ -315,10 +322,10 @@ export default function TeamDetailPage() {
               </Button>
               </PanelActions>
             </PanelHeader>
-            {!selectionEditState?.canEdit && <Alert className="team-detail-player-alert">{t('teamPlayerSelection.eventPassedWarning')}</Alert>}
+            {!selectionEditState?.canEdit && <Alert className="team-detail-player-alert">{t('page.teamPlayerSelection.eventPassedWarning')}</Alert>}
             
             {selectedPlayers.length === 0 ? (
-              <EmptyState>{t('teamDetail.noPlayersSelected')}</EmptyState>
+              <EmptyState>{t('page.teamDetail.noPlayersSelected')}</EmptyState>
             ) : (
               <ListFrame>
                 {selectedPlayers.map(player => {
@@ -363,9 +370,9 @@ export default function TeamDetailPage() {
                           type="button"
                           data-ui-control="composite"
                           className="team-player-remove-button"
-                          onClick={() => setPlayerToRemove(player.id)}
+                          onClick={() => !isCancelled && setPlayerToRemove(player.id)}
                         >
-                          {t('teamDetail.removeAction')}
+                          {t('page.teamDetail.removeAction')}
                         </button>
                       </div>
                     </div>
@@ -402,10 +409,10 @@ export default function TeamDetailPage() {
           <AssignResponsiblePeopleModal
             isOpen={isResponsibleModalOpen}
             onClose={() => setIsResponsibleModalOpen(false)}
-            onSave={handleAssignResponsiblePeople}
+            onSave={handleAssignResponsiblePerson}
             trainers={trainers}
             players={players}
-            currentResponsiblePersonIds={team.responsiblePersonIds}
+            currentResponsiblePersonId={team.responsiblePersonId}
             currentTrainerId={currentTrainer?.id}
           />
 
@@ -423,9 +430,9 @@ export default function TeamDetailPage() {
 
           {matchPlanningEnabled && <AssignTeamPropertyModal
             isOpen={isAssignFormationModalOpen}
-            title={t('teamDetail.assignFormationTitle')}
-            label={t('teamDetail.formationLabel')}
-            emptyOptionLabel={t('teamDetail.noFormationAssigned')}
+            title={t('page.teamDetail.assignFormationTitle')}
+            label={t('page.teamDetail.formationLabel')}
+            emptyOptionLabel={t('page.teamDetail.noFormationAssigned')}
             currentValue={team.formationId}
             options={formationOptions}
             onClose={() => setIsAssignFormationModalOpen(false)}

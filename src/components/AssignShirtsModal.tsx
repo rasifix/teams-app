@@ -53,7 +53,7 @@ export default function AssignShirtsModal({
     e.preventDefault();
     
     if (!selectedShirtSetId) {
-      alert(t('assignShirts.errors.selectSetRequired'));
+      alert(t('page.assignShirts.errors.selectSetRequired'));
       return;
     }
 
@@ -87,18 +87,18 @@ export default function AssignShirtsModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('assignShirts.title')}</ModalTitle>
+          <ModalTitle>{t('page.assignShirts.title')}</ModalTitle>
         </ModalHeader>
 
         <ModalBody>
           <Stack gap="lg">
-            <Field label={t('domain.shirtSets')} htmlFor="shirtSet">
+            <Field label={t('domain.shirtSet.label')} htmlFor="shirtSet">
               <Select
                 id="shirtSet"
                 value={selectedShirtSetId}
                 onChange={(e) => setSelectedShirtSetId(e.target.value)}
               >
-                <option value="">{t('assignShirts.selectSetPlaceholder')}</option>
+                <option value="">{t('page.assignShirts.selectSetPlaceholder')}</option>
                 {shirtSets.map(shirtSet => (
                   <option key={shirtSet.id} value={shirtSet.id}>
                     {shirtSet.sponsor}
@@ -120,14 +120,14 @@ export default function AssignShirtsModal({
                             onChange={(e) => handleShirtAssignment(player.id, parseInt(e.target.value) || 0)}
                             aria-label={`${player.firstName} ${player.lastName}`}
                           >
-                            <option value={0}>{t('assignShirts.noShirt')}</option>
+                            <option value={0}>{t('page.assignShirts.noShirt')}</option>
                             {availableShirts.map(shirt => (
                               <option 
                                 key={shirt.number} 
                                 value={shirt.number}
                                 disabled={isShirtAssigned(shirt.number, player.id) || isShirtUsedInOtherTeams(shirt.number)}
                               >
-                                #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? `(${t('shirts.goalkeeperShort')})` : ''}
+                                #{shirt.number} {shirt.size} {shirt.isGoalkeeper ? `(${t('domain.shirt.labels.goalkeeperShort')})` : ''}
                               </option>
                             ))}
                           </Select>
@@ -138,16 +138,16 @@ export default function AssignShirtsModal({
 
                 {usedShirtsInOtherTeams.size > 0 && (
                   <p className="field-help">
-                    {t('assignShirts.usedInOtherTeamsHint')}
+                    {t('page.assignShirts.usedInOtherTeamsHint')}
                   </p>
                 )}
 
                 <p className="field-help">
-                  {t('assignShirts.unavailableHint')}
+                  {t('page.assignShirts.unavailableHint')}
                 </p>
 
                 {team.selectedPlayers.length === 0 && (
-                  <EmptyState>{t('assignShirts.noPlayersInTeam')}</EmptyState>
+                  <EmptyState>{t('page.assignShirts.noPlayersInTeam')}</EmptyState>
                 )}
               </Stack>
             )}
@@ -166,7 +166,7 @@ export default function AssignShirtsModal({
             type="submit"
             variant="primary"
           >
-            {t('assignShirts.assignAction')}
+            {t('page.assignShirts.assignAction')}
           </Button>
         </ModalFooter>
       </form>

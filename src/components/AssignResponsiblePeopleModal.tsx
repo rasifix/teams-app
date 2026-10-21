@@ -8,27 +8,27 @@ interface AssignResponsiblePeopleModalProps {
   isOpen: boolean;
   trainers: Trainer[];
   players: Player[];
-  currentResponsiblePersonIds?: string[];
+  currentResponsiblePersonId?: string;
   currentTrainerId?: string;
   onClose: () => void;
-  onSave: (responsiblePersonIds: string[]) => Promise<void>;
+  onSave: (responsiblePersonId: string | undefined) => Promise<void>;
 }
 
 export default function AssignResponsiblePeopleModal({
   isOpen,
   trainers,
   players,
-  currentResponsiblePersonIds,
+  currentResponsiblePersonId,
   currentTrainerId,
   onClose,
   onSave,
 }: AssignResponsiblePeopleModalProps) {
   const { t } = useTranslation();
-  const currentResponsiblePersonId = useMemo(
-    () => selectTeamResponsiblePeople(currentResponsiblePersonIds, trainers, players)[0]?.id,
-    [currentResponsiblePersonIds, trainers, players],
+  const resolvedResponsiblePersonId = useMemo(
+    () => selectTeamResponsiblePeople(currentResponsiblePersonId, trainers, players)[0]?.id,
+    [currentResponsiblePersonId, trainers, players],
   );
-  const [selectedId, setSelectedId] = useState<string | undefined>(currentResponsiblePersonId);
+  const [selectedId, setSelectedId] = useState<string | undefined>(resolvedResponsiblePersonId);
   const [filter, setFilter] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -37,10 +37,10 @@ export default function AssignResponsiblePeopleModal({
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedId(currentResponsiblePersonId);
+      setSelectedId(resolvedResponsiblePersonId);
       setFilter('');
     }
-  }, [currentResponsiblePersonId, isOpen]);
+  }, [resolvedResponsiblePersonId, isOpen]);
 
   const toggle = (id: string) => setSelectedId((current) => current === id ? undefined : id);
 
@@ -48,7 +48,7 @@ export default function AssignResponsiblePeopleModal({
     event.preventDefault();
     setIsSaving(true);
     try {
-      await onSave(selectedId ? [selectedId] : []);
+      await onSave(selectedId);
       onClose();
     } finally {
       setIsSaving(false);
@@ -59,7 +59,7 @@ export default function AssignResponsiblePeopleModal({
     if (!currentTrainerId) return;
     setIsSaving(true);
     try {
-      await onSave([currentTrainerId]);
+      await onSave(currentTrainerId);
       onClose();
     } finally {
       setIsSaving(false);
@@ -70,7 +70,7 @@ export default function AssignResponsiblePeopleModal({
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('teamModal.fields.responsiblePeople')}</ModalTitle>
+          <ModalTitle>{t('domain.team.fields.responsiblePeople')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Stack>
@@ -78,13 +78,13 @@ export default function AssignResponsiblePeopleModal({
             type="search"
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            placeholder={t('teamModal.filterPlaceholder')}
-            aria-label={t('teamModal.filterPlaceholder')}
+            placeholder={t('page.teamModal.filterPlaceholder')}
+            aria-label={t('page.teamModal.filterPlaceholder')}
             data-testid="responsible-people-filter"
             autoFocus
           />
           {visibleOptions.length === 0 ? (
-            <EmptyState>{t('teamModal.noPersonsFound')}</EmptyState>
+            <EmptyState>{t('page.teamModal.noPersonsFound')}</EmptyState>
           ) : (
             <EntityList variant="separated">
               {visibleOptions.map((option) => (
@@ -96,7 +96,7 @@ export default function AssignResponsiblePeopleModal({
                     <EntityRow>
                     <EntityContent>
                       <EntityTitle>{option.firstName} {option.lastName}</EntityTitle>
-                      <EntityMeta><span>{t(`teamModal.assigneeSource.${option.source}`)}</span></EntityMeta>
+                      <EntityMeta><span>{t(option.source === 'trainer' ? 'domain.trainer.label' : 'domain.guardian.label')}</span></EntityMeta>
                     </EntityContent>
                     </EntityRow>
                   </label>
@@ -107,7 +107,7 @@ export default function AssignResponsiblePeopleModal({
         </ModalBody>
         <ModalFooter>
           {currentTrainerId && <Button type="button" variant="secondary" disabled={isSaving} onClick={() => void handleAssignToMe()}>
-            {t('teamDetail.assignToMe')}
+            {t('page.teamDetail.assignToMe')}
           </Button>}
           <Button type="button" variant="secondary" onClick={onClose}>
             {t('common.actions.cancel')}

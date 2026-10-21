@@ -12,7 +12,7 @@ application for further setup (for example adding players and trainers).
 This use case does not cover:
 - adding members to the Squad,
 - managing Squad periods (UC-GR-014),
-- creating Events for the Squad,
+- creating Activities for the Squad,
 - assigning shirts or trainers.
 
 ## Primary Actor
@@ -84,7 +84,7 @@ Optional:
 
 Success:
 - A new Squad exists and is persisted.
-- The Squad can be selected for downstream use cases (members, events,
+- The Squad can be selected for downstream use cases (members, Activities,
   invitations, statistics).
 - Audit metadata is stored (creator, timestamp) if audit is enabled.
 
@@ -98,7 +98,7 @@ Failure:
 - Squad `name` must be unique
 - Newly created Squads are active by default
 - The authenticated user is added as member with role Squad Manager
-- Squad creation must not implicitly add Players, Trainers, or Events.
+- Squad creation must not implicitly add Players, Trainers, or Activities.
 - Category is optional and must be one of the SFV categories supported by the
   API.
 - FF14 does not trigger automatic mode creation because SFV defines both 7v7

@@ -27,12 +27,12 @@ export default function MembersTrainersPage() {
   return (
     <Panel>
         <SectionHeader>
-          <SectionHeaderContent><SectionTitle>{t("members.allTrainersTitle", { count: trainers.length })}</SectionTitle></SectionHeaderContent>
+          <SectionHeaderContent><SectionTitle>{t("page.members.allTrainersTitle", { count: trainers.length })}</SectionTitle></SectionHeaderContent>
           <SectionActions><Cluster gap="sm">
             {!spondLinked && (
               <>
                 <Button variant="secondary" size="sm" onClick={() => setIsDuplicateModalOpen(true)}>
-                  {t("members.duplicates.openAction", { count: duplicateGroups.length })}
+                  {t("page.members.duplicates.openAction", { count: duplicateGroups.length })}
                 </Button>
                 <Button variant="primary" size="sm" onClick={openAddTrainerModal}>
                   {t("common.actions.add")}

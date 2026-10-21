@@ -26,19 +26,19 @@ export default function SelectionRemovalDialog({
   const { t } = useTranslation();
 
   return <Modal isOpen={isOpen} onClose={onCancel}>
-    <ModalHeader><ModalTitle>{t('teamDetail.removePlayerTitle')}</ModalTitle></ModalHeader>
+    <ModalHeader><ModalTitle>{t('page.teamDetail.removePlayerTitle')}</ModalTitle></ModalHeader>
     <ModalBody>
       <Stack>
-      <p>{t('teamDetail.removePlayerMessage', { name: playerName })}</p>
-      {reasonRequired && <Field label={t('teamPlayerSelection.removalReason')} htmlFor="selection-removal-reason">
+      <p>{t('page.teamDetail.removePlayerMessage', { name: playerName })}</p>
+      {reasonRequired && <Field label={t('page.teamPlayerSelection.removalReason')} htmlFor="selection-removal-reason">
         <Select
           id="selection-removal-reason"
           value={reason}
           onChange={(event) => onReasonChange(event.target.value as SelectionRemovalReason | '')}
           required
         >
-          <option value="">{t('teamPlayerSelection.selectRemovalReason')}</option>
-          {reasons.map((item) => <option key={item} value={item}>{t(`attendance.reasons.${item}`)}</option>)}
+          <option value="">{t('page.teamPlayerSelection.selectRemovalReason')}</option>
+          {reasons.map((item) => <option key={item} value={item}>{t(`domain.attendance.reasons.${item}`)}</option>)}
         </Select>
       </Field>}
       </Stack>
@@ -46,7 +46,7 @@ export default function SelectionRemovalDialog({
     <ModalFooter>
       <Button type="button" variant="secondary" onClick={onCancel}>{t('common.actions.cancel')}</Button>
       <Button type="button" variant="danger" disabled={reasonRequired && !reason} onClick={onConfirm}>
-        {t('teamDetail.removeAction')}
+        {t('page.teamDetail.removeAction')}
       </Button>
     </ModalFooter>
   </Modal>;

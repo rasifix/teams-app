@@ -6,7 +6,7 @@ const player = (id: string, firstName: string, lastName = 'Player', level = 3): 
   id, firstName, lastName, birthDate: '2015-01-01', level, status: 'active',
 });
 const activity = (overrides: Partial<Activity> = {}): Activity => ({
-  id: 'a1', squadId: 's1', kind: 'match', name: 'Match', startsAt: '2026-05-03T10:00:00.000Z',
+  id: 'a1', squadId: 's1', kind: 'match', status: 'active', name: 'Match', startsAt: '2026-05-03T10:00:00.000Z',
   invitations: [], teams: [], ...overrides,
 });
 
@@ -16,11 +16,11 @@ describe('statistics selectors', () => {
     const p2 = player('p2', 'Ada');
     const activities = [
       activity({ invitations: [{ id: 'i1', playerId: p1.id, response: 'accepted' }], teams: [{ id: 't1', name: 'A', strength: 1, selectedPlayers: [p1.id] }] }),
-      activity({ id: 'social', kind: 'social', invitations: [{ id: 'i2', playerId: p1.id, response: 'accepted' }], teams: [{ id: 't2', name: 'Social', strength: 1, selectedPlayers: [p1.id] }] }),
+      activity({ id: 'tournament', kind: 'tournament', invitations: [{ id: 'i2', playerId: p1.id, response: 'accepted' }], teams: [{ id: 't2', name: 'Tournament', strength: 1, selectedPlayers: [p1.id] }] }),
     ];
     expect(selectPlayerActivityStatistics(activities, [p1, p2])).toEqual([
       { player: p2, invitedCount: 0, acceptedCount: 0, selectedCount: 0, acceptanceRate: 0, selectionRate: 0 },
-      { player: p1, invitedCount: 1, acceptedCount: 1, selectedCount: 1, acceptanceRate: 100, selectionRate: 100 },
+      { player: p1, invitedCount: 2, acceptedCount: 2, selectedCount: 2, acceptanceRate: 100, selectionRate: 100 },
     ]);
   });
 
@@ -60,17 +60,17 @@ describe('statistics selectors', () => {
       teams: [{ id: 't1', name: 'A', strength: 2, selectedPlayers: [activePlayer.id] }],
     });
     const outsidePeriod = activity({ id: 'a2', startsAt: '2025-12-01T10:00:00.000Z' });
-    const social = activity({ id: 'social', kind: 'social' });
+    const tournament = activity({ id: 'tournament', kind: 'tournament' });
 
     const result = selectStatisticsViewData(
-      [outsidePeriod, social, inPeriod],
+      [outsidePeriod, tournament, inPeriod],
       [trialPlayer, activePlayer],
       { id: 'period', name: 'May', startDate: '2026-05-01', endDate: '2026-05-31' },
     );
 
-    expect(result.filteredEvents.map((event) => event.id)).toEqual(['a1']);
+    expect(result.filteredEvents.map((event) => event.id)).toEqual(['tournament', 'a1']);
     expect(result.statisticsPlayers).toEqual([activePlayer]);
-    expect(result.summary).toEqual({ totalPlayers: 1, totalEvents: 1, averageAcceptances: 1, averageSelections: 1 });
+    expect(result.summary).toEqual({ totalPlayers: 1, totalEvents: 2, averageAcceptances: 1, averageSelections: 1 });
   });
 
   it('uses all team events and safe zero averages as statistics-view fallbacks', () => {

@@ -1,10 +1,10 @@
-# UC-EV-008 - Plan Per-Period Lineup
+# UC-EV-008 - Plan Per-Period Match Lineup
 
 ## Goal
 
 Allow an authenticated user to assign each of a Team's selected Players to a
-Formation slot or the bench, independently for each period of the Event's
-Match Format.
+Formation slot or the bench, independently for each period of the Match
+Activity's Match Format.
 
 ## Scope
 
@@ -30,7 +30,7 @@ This use case covers:
 
 This use case does not cover:
 - selecting the Team's Formation (UC-EV-007, a precondition here),
-- assigning the Event's Match Format (UC-EV-006, a precondition here),
+- assigning the Activity's Match Format (UC-EV-006, a precondition here),
 - selecting players into the Team (UC-EV-003).
 
 ## Primary Actor
@@ -41,15 +41,16 @@ Authenticated User with Role admin or trainer
 
 - Team detail UI (per-period lineup editor)
 - Zustand store team update action
-- Events API endpoint used for team update
+- Activities API endpoint used for Team update
 
 ## Preconditions
 
 - User is authenticated and has admin or trainer role in the active squad.
 - Active squad has `matchPlanningEnabled: true`.
-- Target Team's Event has a non-null `matchFormatId`.
+- Target Team's Activity has a non-null `matchFormatId`.
 - Target Team has a non-null `formationId`.
 - Target Team has at least one selected Player.
+- Target Team belongs to a Match Activity.
 
 ## Trigger
 
@@ -173,7 +174,9 @@ Failure:
 
 ## Business Rules
 
-- The Formation is fixed for the whole match; only the player-to-slot
+- Changes are rejected while the Activity is cancelled.
+
+- The Formation is fixed for the whole Match Activity; only the player-to-slot
   mapping (or bench) changes per period.
 - Bench is implicit: no explicit bench list is stored, only field
   assignments.

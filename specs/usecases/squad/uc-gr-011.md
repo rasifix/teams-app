@@ -13,14 +13,16 @@ This use case covers:
 - showing Spond integration status in Group Settings,
 - authenticating temporarily with Spond,
 - selecting a Spond group during initial linking,
-- optionally importing players, guardians, and events as part of the link flow,
-- selecting a predefined Squad period or a custom range when events are
+- optionally importing Players, Guardians, and Activities as part of the link
+  flow,
+- selecting a predefined Squad period or a custom range when Activities are
   included,
 - opening the linked group in Spond,
 - unlinking the Spond group.
 
 This use case does not cover later scoped synchronization from the Players page
-(UC-GR-012), later event synchronization from the Events page (UC-EV-012), or
+(UC-GR-012), later Activity synchronization from the Activities page
+(UC-EV-012), or
 editing data in Spond.
 
 ## Primary Actor
@@ -48,9 +50,10 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
    groups.
 5. Actor selects one group. If only one group is available, the system may
    preselect it and continue.
-6. Actor selects whether to review Players (including their Guardians), Events,
+6. Actor selects whether to review Players (including their Guardians),
+   Activities,
    or both.
-7. If Events are selected, the system offers configured Squad periods and a
+7. If Activities are selected, the system offers configured Squad periods and a
    custom date range. Selecting a period copies its start and end dates into
    the range.
 8. System loads a normalized snapshot and presents the applicable player,
@@ -95,7 +98,7 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
 2. System reports that the group is unavailable.
 3. No changes are applied.
 
-### A3 - Invalid Event Range
+### A3 - Invalid Activity Range
 
 1. The range is incomplete, the end is not after the start, or the range
    exceeds 365 days.
@@ -117,7 +120,7 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
 
 - A Squad links to at most one Spond group.
 - The group selector appears only during initial linking.
-- Players and Events scoped syncs never permit changing the linked group.
+- Players and Activities scoped syncs never permit changing the linked group.
 - Guardians are not an independent import type; they accompany imported
   Players.
 - Predefined periods are owned and managed in Group Settings, not Statistics.
@@ -140,7 +143,7 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
    then Link Spond Group is available.
 2. Given valid Spond credentials, when linking starts, then only groups visible
    to that Spond account are selectable.
-3. Given configured Squad periods and Events selected, then those periods can
+3. Given configured Squad periods and Activities selected, then those periods can
    populate the event date range.
 4. Given a reviewed valid import, when Apply succeeds, then the Squad stores
    the selected Spond group id and all selected changes are committed atomically.
@@ -150,4 +153,3 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
    Spond group and an unlink action.
 7. Given unlink confirmation, when the update succeeds, then `Squad.spondId`
    is cleared without deleting imported local records.
-

@@ -14,7 +14,7 @@ export default function Strength({ level, className = '' }: StrengthProps) {
   const biceps = '🔥'.repeat(bicepsCount);
   
   return (
-    <span className={className} title={t('statistics.teamSelections.strengthLabel', { level })}>
+    <span className={className} title={t('page.statistics.teamSelections.strengthLabel', { level })}>
       {biceps}
     </span>
   );

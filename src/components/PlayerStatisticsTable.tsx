@@ -74,7 +74,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
 
       {visiblePlayerStats.length === 0 ? (
         <PanelBody>
-          <EmptyState>{t('statistics.playerTable.emptyState')}</EmptyState>
+          <EmptyState>{t('page.statistics.playerTable.emptyState')}</EmptyState>
         </PanelBody>
       ) : (
         <>
@@ -83,12 +83,12 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
               <DataTable>
                 <DataTableHead>
                   <DataTableRow>
-                    {sortHeader('name', t('domain.player'))}
-                    {sortHeader('invited', t('statistics.playerTable.invited'))}
-                    {sortHeader('accepted', t('statistics.playerTable.accepted'))}
-                    {sortHeader('selected', t('statistics.playerTable.selected'))}
-                    {sortHeader('acceptanceRate', t('statistics.playerTable.acceptanceRate'))}
-                    {sortHeader('selectionRate', t('statistics.playerTable.selectionRate'))}
+                    {sortHeader('name', t('domain.player.label'))}
+                    {sortHeader('invited', t('page.statistics.playerTable.invited'))}
+                    {sortHeader('accepted', t('page.statistics.playerTable.accepted'))}
+                    {sortHeader('selected', t('page.statistics.playerTable.selected'))}
+                    {sortHeader('acceptanceRate', t('page.statistics.playerTable.acceptanceRate'))}
+                    {sortHeader('selectionRate', t('page.statistics.playerTable.selectionRate'))}
                   </DataTableRow>
                 </DataTableHead>
                 <DataTableBody>
@@ -134,15 +134,15 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                     <span className="player-statistics-metrics">
                       <span className="player-statistics-metric">
                         <strong>{statistic.invitedCount}</strong>
-                        <span>{t('statistics.playerTable.invited')}</span>
+                        <span>{t('page.statistics.playerTable.invited')}</span>
                       </span>
                       <span className="player-statistics-metric">
                         <strong>{statistic.acceptedCount} ({statistic.acceptanceRate.toFixed(0)}%)</strong>
-                        <span>{t('statistics.playerTable.accepted')}</span>
+                        <span>{t('page.statistics.playerTable.accepted')}</span>
                       </span>
                       <span className="player-statistics-metric player-statistics-metric--success">
                         <strong>{statistic.selectedCount} ({statistic.selectionRate.toFixed(0)}%)</strong>
-                        <span>{t('statistics.playerTable.selected')}</span>
+                        <span>{t('page.statistics.playerTable.selected')}</span>
                       </span>
                     </span>
                   </ListAction>

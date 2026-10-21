@@ -38,6 +38,25 @@ export async function deleteActivity(squadId: string, id: string): Promise<void>
   return apiClient.request<void>(apiClient.getSquadEndpoint(squadId, activitiesPath(id)), { method: 'DELETE' });
 }
 
+export async function updateActivityStatus(
+  squadId: string,
+  id: string,
+  status: Activity['status'],
+): Promise<Activity> {
+  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/status')), {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function cancelActivity(squadId: string, id: string): Promise<Activity> {
+  return updateActivityStatus(squadId, id, 'cancelled');
+}
+
+export async function restoreActivity(squadId: string, id: string): Promise<Activity> {
+  return updateActivityStatus(squadId, id, 'active');
+}
+
 export async function updateActivityInvitation(
   squadId: string,
   id: string,

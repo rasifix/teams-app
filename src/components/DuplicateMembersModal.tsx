@@ -44,7 +44,7 @@ export default function DuplicateMembersModal({
     setError(null);
     const trainerId = selectedTrainerForGroup[groupKey];
     if (!trainerId) {
-      setError(t('members.duplicates.errors.noTargetTrainer'));
+      setError(t('page.members.duplicates.errors.noTargetTrainer'));
       return;
     }
 
@@ -53,25 +53,25 @@ export default function DuplicateMembersModal({
     setIsSubmitting(false);
 
     if (!success) {
-      setError(t('members.duplicates.errors.mergeFailed'));
+      setError(t('page.members.duplicates.errors.mergeFailed'));
     }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalHeader>
-        <ModalTitle>{t('members.duplicates.title')}</ModalTitle>
+        <ModalTitle>{t('page.members.duplicates.title')}</ModalTitle>
       </ModalHeader>
 
       <ModalBody>
         <Stack>
-          <p className="body-muted">{t('members.duplicates.description')}</p>
+          <p className="body-muted">{t('page.members.duplicates.description')}</p>
 
           {error && <Alert>{error}</Alert>}
 
           {!hasDuplicates ? (
             <EmptyState>
-              {t('members.duplicates.empty')}
+              {t('page.members.duplicates.empty')}
             </EmptyState>
           ) : (
             <div className="duplicate-member-list">
@@ -82,14 +82,14 @@ export default function DuplicateMembersModal({
                       {group.firstName} {group.lastName}
                     </h3>
                     <span className="member-meta-text">
-                      {t('members.duplicates.groupCount', {
+                      {t('page.members.duplicates.groupCount', {
                         trainerCount: group.trainers.length,
                         guardianCount: group.guardians.length,
                       })}
                     </span>
                   </Split>
 
-                  <Field className="duplicate-member-target" label={t('members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
+                  <Field className="duplicate-member-target" label={t('page.members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
                     <Select
                       id={`target-trainer-${group.key}`}
                       value={selectedTrainerForGroup[group.key]}
@@ -105,7 +105,7 @@ export default function DuplicateMembersModal({
                         <option key={trainer.id} value={trainer.id}>
                           {trainer.firstName} {trainer.lastName}
                           {trainer.assignedTeamCount > 0
-                            ? ` (${t('members.duplicates.assignedTeams', { count: trainer.assignedTeamCount })})`
+                            ? ` (${t('page.members.duplicates.assignedTeams', { count: trainer.assignedTeamCount })})`
                             : ''}
                         </option>
                       ))}
@@ -120,7 +120,7 @@ export default function DuplicateMembersModal({
                             {guardian.firstName} {guardian.lastName}
                           </EntityTitle>
                           <EntityMeta>
-                            {t('members.duplicates.linkedPlayers', { count: guardian.playerIds.length })}
+                            {t('page.members.duplicates.linkedPlayers', { count: guardian.playerIds.length })}
                           </EntityMeta>
                         </EntityContent>
                         <EntityActions><Button
@@ -131,7 +131,7 @@ export default function DuplicateMembersModal({
                             void handleMerge(group.key, guardian.id);
                           }}
                         >
-                          {t('members.duplicates.mergeAction')}
+                          {t('page.members.duplicates.mergeAction')}
                         </Button></EntityActions>
                       </EntityRow>
                     ))}

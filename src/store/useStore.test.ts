@@ -21,7 +21,7 @@ function createActivity(overrides: Partial<Activity>): Activity {
   return {
     id: 'event-default',
     squadId: 'squad-1',
-    kind: 'match',
+    kind: 'match', status: 'active',
     name: 'Default Activity',
     startsAt: '2026-01-01T10:00:00.000Z',
     maxPlayersPerTeam: 12,
@@ -56,19 +56,19 @@ describe('useStore selectors', () => {
           id: 'e1',
           name: 'Older Activity',
           startsAt: '2026-03-01T10:00:00.000Z',
-          teams: [createTeam({ id: 't1', responsiblePersonIds: ['tr-1'], name: 'Blue', strength: 3 })],
+          teams: [createTeam({ id: 't1', responsiblePersonId: 'tr-1', name: 'Blue', strength: 3 })],
         }),
         createActivity({
           id: 'e2',
           name: 'Newest Activity',
           startsAt: '2026-04-01T10:00:00.000Z',
-          teams: [createTeam({ id: 't2', responsiblePersonIds: ['tr-1'], name: 'Red', strength: 1 })],
+          teams: [createTeam({ id: 't2', responsiblePersonId: 'tr-1', name: 'Red', strength: 1 })],
         }),
         createActivity({
           id: 'e3',
           name: 'No Assignment',
           startsAt: '2026-05-01T10:00:00.000Z',
-          teams: [createTeam({ id: 't3', responsiblePersonIds: ['tr-2'], name: 'Green', strength: 2 })],
+          teams: [createTeam({ id: 't3', responsiblePersonId: 'tr-2', name: 'Green', strength: 2 })],
         }),
       ],
     });
@@ -93,7 +93,7 @@ describe('useStore selectors', () => {
           teams: [
             createTeam({
               id: 't1',
-              responsiblePersonIds: ['tr-1'],
+      responsiblePersonId: 'tr-1',
               startTime: '13:15',
               location: 'Team Field',
             }),
@@ -118,9 +118,9 @@ describe('useStore selectors', () => {
           startsAt: '2026-04-01T10:00:00.000Z',
           location: 'Main Stadium',
           teams: [
-            createTeam({ id: 't1', responsiblePersonIds: ['tr-1'], startTime: '', location: '   ' }),
-            createTeam({ id: 't2', responsiblePersonIds: ['tr-2'], startTime: '12:30' }),
-            createTeam({ id: 't3', responsiblePersonIds: ['tr-3'], startTime: '09:00' }),
+            createTeam({ id: 't1', responsiblePersonId: 'tr-1', startTime: '', location: '   ' }),
+            createTeam({ id: 't2', responsiblePersonId: 'tr-2', startTime: '12:30' }),
+            createTeam({ id: 't3', responsiblePersonId: 'tr-3', startTime: '09:00' }),
           ],
         }),
       ],
@@ -140,7 +140,7 @@ describe('useStore selectors', () => {
         kind: 'match',
         startsAt: '2026-04-01T10:00:00.000Z',
         location: 'Match Stadium',
-        teams: [createTeam({ id: 't1', responsiblePersonIds: ['tr-1'], startTime: '13:15', location: 'Team Field' })],
+        teams: [createTeam({ id: 't1', responsiblePersonId: 'tr-1', startTime: '13:15', location: 'Team Field' })],
       })],
     });
     const [entry] = useStore.getState().getTrainerEventHistory('tr-1');
@@ -156,7 +156,7 @@ describe('useStore selectors', () => {
           id: 'e-guardian',
           name: 'Guardian Led Activity',
           startsAt: '2026-06-01T10:00:00.000Z',
-          teams: [createTeam({ id: 'tg-1', responsiblePersonIds: ['g-42'], name: 'Guardians', strength: 2 })],
+          teams: [createTeam({ id: 'tg-1', responsiblePersonId: 'g-42', name: 'Guardians', strength: 2 })],
         }),
       ],
     });

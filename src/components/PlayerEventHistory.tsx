@@ -36,24 +36,24 @@ export default function PlayerEventHistory({
         <ActionCard
           key={item.eventId}
           leading={<DateColumn date={item.eventDate} />}
-          onClick={() => navigate(`/events/${item.eventId}`)}
+          onClick={() => navigate(`/activities/${item.eventId}`)}
         >
                 <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
                 <div className="member-event-status">
                   {item.isSelected ? (
                     <Cluster gap="sm">
                       <Badge tone="success">
-                        {t('statistics.playerTable.selected')}
+                        {t('page.statistics.playerTable.selected')}
                       </Badge>
                       <span className="member-meta-text">
-                        {t('playerDetail.assignedTeam', {
-                          teamName: item.teamName || t('team.unknownTeam'),
+                        {t('page.playerDetail.assignedTeam', {
+                          teamName: item.teamName || t('domain.team.unknownLabel'),
                         })}
                       </span>
                     </Cluster>
                   ) : (
                     <Badge tone={invitationTone(item.invitationStatus)}>
-                      {t(`invitationStatus.${item.invitationStatus}`)}
+                      {t(`domain.invitation.status.${item.invitationStatus}`)}
                     </Badge>
                   )}
                 </div>
@@ -64,10 +64,10 @@ export default function PlayerEventHistory({
 
   return (
     <Panel className={className}>
-        <PanelHeader><PanelTitle>{t('domain.events')}</PanelTitle></PanelHeader>
+        <PanelHeader><PanelTitle>{t('domain.activity.plural')}</PanelTitle></PanelHeader>
         {eventHistory.length === 0 ? (
           <EmptyState>
-            <p>{t('players.eventHistory.empty')}</p>
+            <p>{t('page.players.eventHistory.empty')}</p>
           </EmptyState>
         ) : (
           <div className="member-event-history-content">

@@ -56,17 +56,17 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     const isEditing = editingPeriodId !== null;
 
     if (!periodNameInput.trim()) {
-      setPeriodError(t('statistics.period.errors.nameRequired'));
+      setPeriodError(t('page.statistics.period.errors.nameRequired'));
       return;
     }
 
     if (!startDateInput || !endDateInput) {
-      setPeriodError(t('statistics.period.errors.startEndRequired'));
+      setPeriodError(t('page.statistics.period.errors.startEndRequired'));
       return;
     }
 
     if (startDateInput > endDateInput) {
-      setPeriodError(t('statistics.period.errors.invalidDateRange'));
+      setPeriodError(t('page.statistics.period.errors.invalidDateRange'));
       return;
     }
 
@@ -85,7 +85,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     setIsSavingPeriod(false);
 
     if (!wasSaved) {
-      setPeriodError(t('statistics.period.errors.saveFailed'));
+      setPeriodError(t('page.statistics.period.errors.saveFailed'));
       return;
     }
 
@@ -102,7 +102,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
 
     const wasDeleted = await deleteSquadPeriod(deletingPeriod.id);
     if (!wasDeleted) {
-      setPeriodError(t('statistics.period.errors.deleteFailed'));
+      setPeriodError(t('page.statistics.period.errors.deleteFailed'));
       return;
     }
 
@@ -117,14 +117,14 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     <>
       <Modal isOpen={isOpen} onClose={handleClose}>
         <ModalHeader>
-          <ModalTitle>{editingPeriodId ? t('statistics.period.editPeriod') : t('statistics.period.addPeriod')}</ModalTitle>
+          <ModalTitle>{editingPeriodId ? t('page.statistics.period.editPeriod') : t('page.statistics.period.addPeriod')}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <Stack>
           <p className="body-muted">
             {editingPeriodId
-              ? t('statistics.period.editDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })
-              : t('statistics.period.addDescription', { squad: squad?.name ?? t('statistics.period.thisSquad') })}
+              ? t('page.statistics.period.editDescription', { squad: squad?.name ?? t('page.statistics.period.thisSquad') })
+              : t('page.statistics.period.addDescription', { squad: squad?.name ?? t('page.statistics.period.thisSquad') })}
           </p>
           <Panel padding="compact">
             <Stack>
@@ -134,7 +134,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
                 type="text"
                 value={periodNameInput}
                 onChange={(e) => setPeriodNameInput(e.target.value)}
-                placeholder={t('statistics.period.placeholders.name')}
+                placeholder={t('page.statistics.period.placeholders.name')}
               />
             </Field>
 
@@ -170,15 +170,15 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
             </Button>
           )}
           <Button type="button" onClick={handleSavePeriod} disabled={isSavingPeriod}>
-            {editingPeriodId ? t('statistics.period.updatePeriod') : t('statistics.period.addPeriod')}
+            {editingPeriodId ? t('page.statistics.period.updatePeriod') : t('page.statistics.period.addPeriod')}
           </Button>
         </ModalFooter>
       </Modal>
 
       <ConfirmDialog
         isOpen={deletingPeriod !== null}
-        title={t('statistics.period.deleteTitle')}
-        message={deletingPeriod ? t('statistics.period.deleteMessage', { period: deletingPeriod.name }) : ''}
+        title={t('page.statistics.period.deleteTitle')}
+        message={deletingPeriod ? t('page.statistics.period.deleteMessage', { period: deletingPeriod.name }) : ''}
         confirmText={t('common.actions.delete')}
         onConfirm={handleDeletePeriod}
         onCancel={() => setDeletingPeriod(null)}

@@ -7,32 +7,19 @@ describe('memberService', () => {
     vi.restoreAllMocks();
   });
 
-  it('loads trainers from the full members endpoint and filters flat member payloads', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue([
-      {
-        id: 'player-1',
-        firstName: 'Pat',
-        lastName: 'Player',
-        birthDate: '2014-06-15',
-        level: 3,
-        status: 'active',
-        roles: ['player'],
-      },
-      {
-        id: 'trainer-1',
-        firstName: 'Terry',
-        lastName: 'Trainer',
-        email: 'trainer@example.com',
-        roles: ['trainer'],
-      },
-      {
-        id: 'admin-1',
-        firstName: 'Alex',
-        lastName: 'Admin',
-        email: 'admin@example.com',
-        roles: ['admin'],
-      },
-    ]);
+  it('loads trainers from the grouped members endpoint', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
+      players: [],
+      trainers: [
+        {
+          id: 'trainer-1',
+          firstName: 'Terry',
+          lastName: 'Trainer',
+          email: 'trainer@example.com',
+          roles: ['trainer'],
+        },
+      ],
+    });
 
     const trainers = await getTrainers('squad-1');
 
@@ -93,29 +80,6 @@ describe('memberService', () => {
         },
       ],
     });
-  });
-
-  it('keeps legacy trainer entries without roles when the backend returns a flat list', async () => {
-    vi.spyOn(apiClient, 'request').mockResolvedValue([
-      {
-        id: 'trainer-1',
-        firstName: 'Terry',
-        lastName: 'Trainer',
-        email: 'trainer@example.com',
-      },
-    ]);
-
-    const trainers = await getTrainers('squad-1');
-
-    expect(trainers).toEqual([
-      {
-        id: 'trainer-1',
-        firstName: 'Terry',
-        lastName: 'Trainer',
-        email: 'trainer@example.com',
-        roles: [],
-      },
-    ]);
   });
 
   it('omits preferredShirtNumber when null in add member payload', async () => {

@@ -68,15 +68,13 @@ export function selectTeamAssigneeById(
 }
 
 export function selectTeamResponsiblePeople(
-  responsiblePersonIds: string[] | undefined,
+  responsiblePersonId: string | undefined,
   trainers: Trainer[],
   players: Player[] = []
 ): TeamAssignee[] {
   const members = selectTeamAssigneeMap(trainers, players);
-  return (responsiblePersonIds ?? []).flatMap((id) => {
-    const member = members.get(id);
-    return member ? [member] : [];
-  }).slice(0, 1);
+  const member = responsiblePersonId ? members.get(responsiblePersonId) : undefined;
+  return member ? [member] : [];
 }
 
 export function selectTrainerForUser(

@@ -76,7 +76,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
         <ModalTitle>
-          {isEditMode ? t('trainerModal.editTitle') : t('trainerModal.addTitle')}
+          {isEditMode ? t('page.trainerModal.editTitle') : t('page.trainerModal.addTitle')}
         </ModalTitle>
       </ModalHeader>
 
@@ -92,7 +92,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                placeholder={t('trainerModal.placeholders.firstName')}
+                placeholder={t('domain.member.placeholders.firstName')}
               />
             </Field>
 
@@ -104,18 +104,18 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
                 value={formData.lastName}
                 onChange={handleChange}
                 required
-                placeholder={t('trainerModal.placeholders.lastName')}
+                placeholder={t('domain.member.placeholders.lastName')}
               />
             </Field>
 
-            <Field label={t('trainerModal.fields.emailOptional')} htmlFor="email">
+            <Field label={t('domain.member.fields.email')} htmlFor="email">
               <Input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder={t('trainerModal.placeholders.email')}
+                placeholder={t('domain.member.placeholders.email')}
               />
             </Field>
           </Stack>
@@ -133,7 +133,7 @@ export default function AddTrainerModal({ isOpen, onClose, onSave, onUpdate, edi
             type="submit"
             variant="primary"
           >
-            {isEditMode ? t('trainerModal.updateAction') : t('trainerModal.addAction')}
+            {isEditMode ? t('page.trainerModal.updateAction') : t('page.trainerModal.addAction')}
           </Button>
         </ModalFooter>
       </form>

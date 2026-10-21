@@ -386,7 +386,7 @@ export const useStore = create<AppState>()(
                 const membersData = result.value.data as { players: Player[], trainers: Trainer[] };
                 newState.members = toMembers(membersData.players, membersData.trainers);
               } else if (type === 'activities') {
-                newState.activities = sortActivities(result.value.data);
+                newState.activities = sortActivities(result.value.data.map((activity) => ({ ...activity, status: activity.status ?? 'active' })));
               }
             } else {
               // Map index to appropriate error handling
@@ -1637,7 +1637,7 @@ export const useStore = create<AppState>()(
           return undefined;
         };
 
-        const isResponsible = (team: Team) => (team.responsiblePersonIds || []).includes(trainerId);
+        const isResponsible = (team: Team) => team.responsiblePersonId === trainerId;
 
         return get().activities
           .filter((event) => event.teams.some(isResponsible))

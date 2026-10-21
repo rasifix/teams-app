@@ -32,10 +32,12 @@ import {
 interface InvitePlayersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onInvite: (playerIds: string[], status: InvitationResponse) => void;
+  onInvite: (playerIds: string[], status: BulkInvitationStatus) => void;
   alreadyInvitedPlayerIds: string[];
   players: Player[];
 }
+
+type BulkInvitationStatus = Extract<InvitationResponse, 'open' | 'accepted'>;
 
 export default function InvitePlayersModal({ 
   isOpen, 
@@ -47,7 +49,7 @@ export default function InvitePlayersModal({
   const { t } = useTranslation();
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
-  const [invitationStatus, setInvitationResponse] = useState<InvitationResponse>('accepted');
+  const [invitationStatus, setInvitationResponse] = useState<BulkInvitationStatus>('accepted');
 
   useEffect(() => {
     if (isOpen) {
@@ -101,9 +103,9 @@ export default function InvitePlayersModal({
     <Modal isOpen={isOpen} onClose={handleClose}>
       <form onSubmit={handleSubmit}>
         <ModalHeader>
-          <ModalTitle>{t('invitePlayers.title')}</ModalTitle>
-          <ModalSubtitle>{t('invitePlayers.subtitle')}</ModalSubtitle>
-          <Alert tone="warning" className="invite-player-header-alert">{t('invitePlayers.inactiveExcludedHint')}</Alert>
+          <ModalTitle>{t('page.invitePlayers.title')}</ModalTitle>
+          <ModalSubtitle>{t('page.invitePlayers.subtitle')}</ModalSubtitle>
+          <Alert tone="warning" className="invite-player-header-alert">{t('page.invitePlayers.inactiveExcludedHint')}</Alert>
         </ModalHeader>
 
         <ModalBody>
@@ -118,14 +120,14 @@ export default function InvitePlayersModal({
           </Panel>
             {availablePlayers.length === 0 ? (
               <EmptyState>
-                <p>{t('invitePlayers.noPlayers')}</p>
-                <p className="field-help">{t('invitePlayers.noPlayersDetail')}</p>
+                <p>{t('page.invitePlayers.noPlayers')}</p>
+                <p className="field-help">{t('page.invitePlayers.noPlayersDetail')}</p>
               </EmptyState>
             ) : (
               <>
                 <Alert tone="info">
                   <Stack gap="sm">
-                  <p className="invite-player-status-title">{t('invitePlayers.defaultStatus')}</p>
+                  <p className="invite-player-status-title">{t('page.invitePlayers.defaultStatus')}</p>
                   <ChoiceGroup>
                     <label className="checkbox-label">
                       <Radio
@@ -134,7 +136,7 @@ export default function InvitePlayersModal({
                         checked={invitationStatus === 'accepted'}
                         onChange={() => setInvitationResponse('accepted')}
                       />
-                      {t('invitationStatus.accepted')}
+                      {t('domain.invitation.status.accepted')}
                     </label>
                     <label className="checkbox-label">
                       <Radio
@@ -143,7 +145,7 @@ export default function InvitePlayersModal({
                         checked={invitationStatus === 'open'}
                         onChange={() => setInvitationResponse('open')}
                       />
-                      {t('invitationStatus.open')}
+                      {t('domain.invitation.status.open')}
                     </label>
                   </ChoiceGroup>
                   </Stack>
@@ -157,7 +159,7 @@ export default function InvitePlayersModal({
                     size="sm"
                     onClick={handleSelectAll}
                   >
-                    {t('invitePlayers.selectAll')}
+                    {t('page.invitePlayers.selectAll')}
                   </Button>
                   <Button
                     type="button"
@@ -165,11 +167,11 @@ export default function InvitePlayersModal({
                     size="sm"
                     onClick={handleDeselectAll}
                   >
-                    {t('invitePlayers.deselectAll')}
+                    {t('page.invitePlayers.deselectAll')}
                   </Button>
                   </Cluster>
                   <span className="body-muted">
-                    {t('invitePlayers.selectedCount', { count: selectedPlayerIds.size })}
+                    {t('page.invitePlayers.selectedCount', { count: selectedPlayerIds.size })}
                   </span>
                 </Split>
 
@@ -211,7 +213,7 @@ export default function InvitePlayersModal({
               variant="success"
               disabled={selectedPlayerIds.size === 0}
             >
-              {t('invitePlayers.inviteAction')} {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
+              {t('page.invitePlayers.inviteAction')} {selectedPlayerIds.size > 0 ? `(${selectedPlayerIds.size})` : ''}
             </Button>
         </ModalFooter>
       </form>

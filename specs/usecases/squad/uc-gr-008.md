@@ -15,7 +15,7 @@ This use case covers:
 This use case does not cover:
 - creating or editing Match Formats (UC-GR-009),
 - creating or editing Formations (UC-GR-010),
-- assigning a Match Format to an Event (UC-EV-006),
+- assigning a Match Format to an Activity (UC-EV-006),
 - selecting a Formation or planning a lineup for a Team (UC-EV-007, UC-EV-008).
 
 ## Primary Actor
@@ -56,7 +56,8 @@ Optional category update:
 3. User switches the toggle on.
 4. System persists `matchPlanningEnabled: true` for the squad.
 5. System reveals Match Formats and Formations management sections in Group
-   Settings, and enables the Match Format/Formation/lineup fields on Events
+   Settings, and enables the Match Format/Formation/lineup fields on Match
+   Activities
    and Teams within the squad.
 
 ## Alternative Flows
@@ -67,8 +68,8 @@ Optional category update:
    Formations, or Team lineups.
 2. System persists `matchPlanningEnabled: false`.
 3. System hides Match Formats/Formations management sections and the
-   Match Format/Formation/lineup fields on Events and Teams.
-4. Existing Match Formats, Formations, Event `matchFormatId` values, Team
+   Match Format/Formation/lineup fields on Match Activities and Teams.
+4. Existing Match Formats, Formations, Activity `matchFormatId` values, Team
    `formationId` values, and Team `lineup` data are left untouched in
    storage (soft hide only).
 
@@ -78,7 +79,7 @@ Optional category update:
    data.
 2. System persists `matchPlanningEnabled: true`.
 3. System reveals the previously hidden data unchanged (Match Formats,
-   Formations, Event/Team assignments reappear as they were).
+   Formations, Activity/Team assignments reappear as they were).
 
 ### A3 - Persistence Failure
 
@@ -107,7 +108,7 @@ Optional category update:
 
 Success:
 - Squad's `matchPlanningEnabled` reflects the new value.
-- No Match Format, Formation, Event, or Team data is deleted by toggling.
+- No Match Format, Formation, Activity, or Team data is deleted by toggling.
 
 Failure:
 - Squad's `matchPlanningEnabled` remains unchanged.

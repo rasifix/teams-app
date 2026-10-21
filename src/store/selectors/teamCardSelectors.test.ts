@@ -10,7 +10,7 @@ const team = (overrides: Partial<Team> = {}): Team => ({
   id: 't1', name: 'Orange', strength: 2, selectedPlayers: [], ...overrides,
 });
 const activity = (overrides: Partial<Activity> = {}): Activity => ({
-  id: 'a1', squadId: 's1', kind: 'match', name: 'Match', startsAt: '2026-05-03T10:30:00.000Z',
+  id: 'a1', squadId: 's1', kind: 'match', status: 'active', name: 'Match', startsAt: '2026-05-03T10:30:00.000Z',
   location: 'Main field', invitations: [], teams: [], ...overrides,
 });
 
@@ -22,7 +22,7 @@ describe('selectTeamCardView', () => {
     const shirtSet: ShirtSet = { id: 'shirts', sponsor: 'Club', color: '#fff', shirts: [] };
     const selectedTeam = team({
       selectedPlayers: [ada.id, ben.id],
-      responsiblePersonIds: [trainer.id],
+      responsiblePersonId: trainer.id,
       shirtSetId: shirtSet.id,
       shirtAssignments: [{ playerId: ada.id, shirtNumber: 7 }],
     });
@@ -46,9 +46,9 @@ describe('selectTeamCardView', () => {
   });
 
   it('uses team overrides for non-match activities', () => {
-    const training = activity({ kind: 'training', location: 'Squad field' });
-    const trainingTeam = team({ startTime: '18:15', location: 'Side field' });
-    const result = selectTeamCardView(trainingTeam, training, [], [], [], [], new Set(), 0);
+    const tournament = activity({ kind: 'tournament', location: 'Squad field' });
+    const tournamentTeam = team({ startTime: '18:15', location: 'Side field' });
+    const result = selectTeamCardView(tournamentTeam, tournament, [], [], [], [], new Set(), 0);
     expect(result.displayTime).toBe('18:15');
     expect(result.displayLocation).toBe('Side field');
     expect(result.hasCapacity).toBe(false);

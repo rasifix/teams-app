@@ -28,15 +28,15 @@ export default function EventsPage() {
   const pastActivities = selectPastActivities(teamActivities);
 
   if (loading) {
-    return <Page><EmptyState><p>{t('events.loading')}</p></EmptyState></Page>;
+    return <Page><EmptyState><p>{t('page.events.loading')}</p></EmptyState></Page>;
   }
 
   return (
     <Page>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>{t('events.title')}</PageTitle>
-          <PageDescription>{t('events.subtitle')}</PageDescription>
+          <PageTitle>{t('page.events.title')}</PageTitle>
+          <PageDescription>{t('page.events.subtitle')}</PageDescription>
         </PageHeaderContent>
         <PageActions>
           {canSyncSpond && spondLinked && (
@@ -52,13 +52,13 @@ export default function EventsPage() {
         <SpondSyncResultBanner />
         {error && <Alert>{error}</Alert>}
         <Panel>
-          <PanelHeader><PanelTitle>{t('events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
-          <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
+          <PanelHeader><PanelTitle>{t('page.events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
+          <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/activities/${activityId}`)} />
         </Panel>
         {pastActivities.length > 0 && (
           <Panel>
-            <PanelHeader><PanelTitle>{t('events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
-            <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/events/${activityId}`)} />
+            <PanelHeader><PanelTitle>{t('page.events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
+          <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/activities/${activityId}`)} />
           </Panel>
         )}
       </Stack>

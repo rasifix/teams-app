@@ -71,17 +71,17 @@ export default function UiKitPage() {
       <Page>
         <PageHeader>
           <PageHeaderContent>
-            <PageTitle>{t('uiKit.title')}</PageTitle>
-            <PageDescription>{t('uiKit.description')}</PageDescription>
+            <PageTitle>{t('page.uiKit.title')}</PageTitle>
+            <PageDescription>{t('page.uiKit.description')}</PageDescription>
           </PageHeaderContent>
           <Stack gap="sm">
-            <ChoiceGroup aria-label={t('uiKit.theme')}>
-              <Button size="sm" variant={theme === 'light' ? 'primary' : 'secondary'} onClick={() => setTheme('light')}>{t('uiKit.light')}</Button>
-              <Button size="sm" variant={theme === 'dark' ? 'primary' : 'secondary'} onClick={() => setTheme('dark')}>{t('uiKit.dark')}</Button>
+            <ChoiceGroup aria-label={t('page.uiKit.theme')}>
+              <Button size="sm" variant={theme === 'light' ? 'primary' : 'secondary'} onClick={() => setTheme('light')}>{t('page.uiKit.light')}</Button>
+              <Button size="sm" variant={theme === 'dark' ? 'primary' : 'secondary'} onClick={() => setTheme('dark')}>{t('page.uiKit.dark')}</Button>
             </ChoiceGroup>
-            <ChoiceGroup aria-label={t('uiKit.density')}>
-              <Button size="sm" variant={density === 'default' ? 'primary' : 'secondary'} onClick={() => setDensity('default')}>{t('uiKit.defaultDensity')}</Button>
-              <Button size="sm" variant={density === 'compact' ? 'primary' : 'secondary'} onClick={() => setDensity('compact')}>{t('uiKit.compactDensity')}</Button>
+            <ChoiceGroup aria-label={t('page.uiKit.density')}>
+              <Button size="sm" variant={density === 'default' ? 'primary' : 'secondary'} onClick={() => setDensity('default')}>{t('page.uiKit.defaultDensity')}</Button>
+              <Button size="sm" variant={density === 'compact' ? 'primary' : 'secondary'} onClick={() => setDensity('compact')}>{t('page.uiKit.compactDensity')}</Button>
             </ChoiceGroup>
           </Stack>
         </PageHeader>
@@ -90,58 +90,58 @@ export default function UiKitPage() {
           <Panel>
             <SectionHeader>
               <SectionHeaderContent>
-                <SectionTitle>{t('uiKit.actions')}</SectionTitle>
-                <SectionDescription>{t('uiKit.actionsDescription')}</SectionDescription>
+                <SectionTitle>{t('page.uiKit.actions')}</SectionTitle>
+                <SectionDescription>{t('page.uiKit.actionsDescription')}</SectionDescription>
               </SectionHeaderContent>
             </SectionHeader>
             <Cluster>
-              <Button>{t('uiKit.primary')}</Button>
-              <Button variant="secondary">{t('uiKit.secondary')}</Button>
-              <Button variant="ghost">{t('uiKit.ghost')}</Button>
-              <Button variant="danger">{t('uiKit.danger')}</Button>
-              <Button disabled>{t('uiKit.disabled')}</Button>
-              <Button loading>{t('uiKit.loading')}</Button>
-              <Button onClick={() => setModalOpen(true)}>{t('uiKit.openDialog')}</Button>
+              <Button>{t('page.uiKit.primary')}</Button>
+              <Button variant="secondary">{t('page.uiKit.secondary')}</Button>
+              <Button variant="ghost">{t('page.uiKit.ghost')}</Button>
+              <Button variant="danger">{t('page.uiKit.danger')}</Button>
+              <Button disabled>{t('page.uiKit.disabled')}</Button>
+              <Button loading>{t('page.uiKit.loading')}</Button>
+              <Button onClick={() => setModalOpen(true)}>{t('page.uiKit.openDialog')}</Button>
             </Cluster>
           </Panel>
 
           <ContentGrid variant="equal">
             <Panel>
               <SectionHeader>
-                <SectionHeaderContent><SectionTitle>{t('uiKit.forms')}</SectionTitle></SectionHeaderContent>
+                <SectionHeaderContent><SectionTitle>{t('page.uiKit.forms')}</SectionTitle></SectionHeaderContent>
               </SectionHeader>
               <Stack>
-                <Field label={t('uiKit.name')} htmlFor="ui-kit-name" hint={t('uiKit.fieldHint')}>
-                  <Input id="ui-kit-name" defaultValue={t('uiKit.sampleName')} />
+                <Field label={t('page.uiKit.name')} htmlFor="ui-kit-name" hint={t('page.uiKit.fieldHint')}>
+                  <Input id="ui-kit-name" defaultValue={t('page.uiKit.sampleName')} />
                 </Field>
-                <Field label={t('uiKit.role')} htmlFor="ui-kit-role">
-                  <Select id="ui-kit-role" defaultValue="player"><option value="player">{t('domain.player')}</option><option value="trainer">{t('domain.trainers')}</option></Select>
+                <Field label={t('page.uiKit.role')} htmlFor="ui-kit-role">
+                  <Select id="ui-kit-role" defaultValue="player"><option value="player">{t('domain.player.label')}</option><option value="trainer">{t('domain.trainer.label')}</option></Select>
                 </Field>
-                <Field label={t('uiKit.notes')} htmlFor="ui-kit-notes">
-                  <Textarea id="ui-kit-notes" defaultValue={t('uiKit.sampleNote')} />
+                <Field label={t('page.uiKit.notes')} htmlFor="ui-kit-notes">
+                  <Textarea id="ui-kit-notes" defaultValue={t('page.uiKit.sampleNote')} />
                 </Field>
                 <Cluster gap="sm">
-                  <Switch checked={switchChecked} onChange={() => setSwitchChecked(value => !value)} label={t('uiKit.notifications')} />
-                  <span>{t('uiKit.notifications')}</span>
+                  <Switch checked={switchChecked} onChange={() => setSwitchChecked(value => !value)} label={t('page.uiKit.notifications')} />
+                  <span>{t('page.uiKit.notifications')}</span>
                 </Cluster>
               </Stack>
             </Panel>
 
             <Panel>
-              <SectionHeader><SectionHeaderContent><SectionTitle>{t('uiKit.feedback')}</SectionTitle></SectionHeaderContent></SectionHeader>
+              <SectionHeader><SectionHeaderContent><SectionTitle>{t('page.uiKit.feedback')}</SectionTitle></SectionHeaderContent></SectionHeader>
               <Stack>
-                <Alert tone="success">{t('uiKit.successMessage')}</Alert>
-                <Alert tone="warning">{t('uiKit.warningMessage')}</Alert>
-                <Alert tone="error">{t('uiKit.errorMessage')}</Alert>
+                <Alert tone="success">{t('page.uiKit.successMessage')}</Alert>
+                <Alert tone="warning">{t('page.uiKit.warningMessage')}</Alert>
+                <Alert tone="error">{t('page.uiKit.errorMessage')}</Alert>
                 <Cluster>
-                  <Badge tone="brand">{t('uiKit.brand')}</Badge>
-                  <Badge tone="success">{t('uiKit.ready')}</Badge>
-                  <Badge tone="warning">{t('uiKit.pending')}</Badge>
+                  <Badge tone="brand">{t('page.uiKit.brand')}</Badge>
+                  <Badge tone="success">{t('page.uiKit.ready')}</Badge>
+                  <Badge tone="warning">{t('page.uiKit.pending')}</Badge>
                 </Cluster>
                 <Legend>
-                  <LegendItem><StatusMarker tone="success">✓</StatusMarker>{t('uiKit.ready')}</LegendItem>
-                  <LegendItem><StatusMarker tone="warning">?</StatusMarker>{t('uiKit.pending')}</LegendItem>
-                  <LegendItem><StatusMarker tone="danger">×</StatusMarker>{t('uiKit.failed')}</LegendItem>
+                  <LegendItem><StatusMarker tone="success">✓</StatusMarker>{t('page.uiKit.ready')}</LegendItem>
+                  <LegendItem><StatusMarker tone="warning">?</StatusMarker>{t('page.uiKit.pending')}</LegendItem>
+                  <LegendItem><StatusMarker tone="danger">×</StatusMarker>{t('page.uiKit.failed')}</LegendItem>
                 </Legend>
               </Stack>
             </Panel>
@@ -149,47 +149,47 @@ export default function UiKitPage() {
 
           <ContentGrid variant="equal">
             <Panel>
-              <SectionHeader><SectionHeaderContent><SectionTitle>{t('uiKit.entities')}</SectionTitle></SectionHeaderContent></SectionHeader>
+              <SectionHeader><SectionHeaderContent><SectionTitle>{t('page.uiKit.entities')}</SectionTitle></SectionHeaderContent></SectionHeader>
               <EntityList>
                 <EntityRow>
                   <EntityLeading><IconTile tone="brand">⚽</IconTile></EntityLeading>
-                  <EntityContent><EntityTitle>{t('uiKit.sampleName')}</EntityTitle><EntityMeta>{t('uiKit.sampleMeta')}</EntityMeta></EntityContent>
+                  <EntityContent><EntityTitle>{t('page.uiKit.sampleName')}</EntityTitle><EntityMeta>{t('page.uiKit.sampleMeta')}</EntityMeta></EntityContent>
                   <EntityActions><Button size="sm" variant="secondary">{t('common.actions.edit')}</Button></EntityActions>
                 </EntityRow>
                 <EntityRow selected>
                   <EntityLeading><IconTile tone="success">✓</IconTile></EntityLeading>
-                  <EntityContent><EntityTitle>{t('uiKit.selectedEntity')}</EntityTitle><EntityMeta>{t('uiKit.selectedMeta')}</EntityMeta></EntityContent>
+                  <EntityContent><EntityTitle>{t('page.uiKit.selectedEntity')}</EntityTitle><EntityMeta>{t('page.uiKit.selectedMeta')}</EntityMeta></EntityContent>
                 </EntityRow>
               </EntityList>
             </Panel>
 
             <Panel>
-              <SectionHeader><SectionHeaderContent><SectionTitle>{t('uiKit.properties')}</SectionTitle></SectionHeaderContent></SectionHeader>
+              <SectionHeader><SectionHeaderContent><SectionTitle>{t('page.uiKit.properties')}</SectionTitle></SectionHeaderContent></SectionHeader>
               <PropertyList>
-                <PropertyRow><PropertyLabel>{t('uiKit.location')}</PropertyLabel><PropertyValue>{t('uiKit.sampleLocation')}</PropertyValue></PropertyRow>
-                <PropertyRow><PropertyLabel>{t('uiKit.responsible')}</PropertyLabel><PropertyValue muted>{t('uiKit.unassigned')}</PropertyValue></PropertyRow>
+                <PropertyRow><PropertyLabel>{t('page.uiKit.location')}</PropertyLabel><PropertyValue>{t('page.uiKit.sampleLocation')}</PropertyValue></PropertyRow>
+                <PropertyRow><PropertyLabel>{t('page.uiKit.responsible')}</PropertyLabel><PropertyValue muted>{t('page.uiKit.unassigned')}</PropertyValue></PropertyRow>
               </PropertyList>
-              <MetadataList><MetadataItem>📅 {t('uiKit.sampleDate')}</MetadataItem><MetadataItem>🕐 {t('uiKit.sampleTime')}</MetadataItem></MetadataList>
+              <MetadataList><MetadataItem>📅 {t('page.uiKit.sampleDate')}</MetadataItem><MetadataItem>🕐 {t('page.uiKit.sampleTime')}</MetadataItem></MetadataList>
             </Panel>
           </ContentGrid>
 
           <Card>
             <CardBody>
-              <SectionHeader><SectionHeaderContent><SectionTitle>{t('uiKit.table')}</SectionTitle></SectionHeaderContent></SectionHeader>
+              <SectionHeader><SectionHeaderContent><SectionTitle>{t('page.uiKit.table')}</SectionTitle></SectionHeaderContent></SectionHeader>
               <DataTable density="compact">
-                <DataTableHead><DataTableRow><DataTableHeaderCell>{t('uiKit.name')}</DataTableHeaderCell><DataTableHeaderCell>{t('uiKit.role')}</DataTableHeaderCell><DataTableHeaderCell align="end">{t('uiKit.status')}</DataTableHeaderCell></DataTableRow></DataTableHead>
-                <DataTableBody><DataTableRow interactive><DataTableCell strong>{t('uiKit.sampleName')}</DataTableCell><DataTableCell>{t('domain.player')}</DataTableCell><DataTableCell align="end"><Badge tone="success" size="sm">{t('uiKit.ready')}</Badge></DataTableCell></DataTableRow></DataTableBody>
+                <DataTableHead><DataTableRow><DataTableHeaderCell>{t('page.uiKit.name')}</DataTableHeaderCell><DataTableHeaderCell>{t('page.uiKit.role')}</DataTableHeaderCell><DataTableHeaderCell align="end">{t('page.uiKit.status')}</DataTableHeaderCell></DataTableRow></DataTableHead>
+                <DataTableBody><DataTableRow interactive><DataTableCell strong>{t('page.uiKit.sampleName')}</DataTableCell><DataTableCell>{t('domain.player.label')}</DataTableCell><DataTableCell align="end"><Badge tone="success" size="sm">{t('page.uiKit.ready')}</Badge></DataTableCell></DataTableRow></DataTableBody>
               </DataTable>
             </CardBody>
           </Card>
 
-          <EmptyState>{t('uiKit.empty')}</EmptyState>
+          <EmptyState>{t('page.uiKit.empty')}</EmptyState>
         </Stack>
       </Page>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <ModalHeader><ModalTitle>{t('uiKit.dialogTitle')}</ModalTitle></ModalHeader>
-        <ModalBody>{t('uiKit.dialogBody')}</ModalBody>
+        <ModalHeader><ModalTitle>{t('page.uiKit.dialogTitle')}</ModalTitle></ModalHeader>
+        <ModalBody>{t('page.uiKit.dialogBody')}</ModalBody>
         <ModalFooter><Button variant="secondary" onClick={() => setModalOpen(false)}>{t('common.actions.close')}</Button></ModalFooter>
       </Modal>
     </div>

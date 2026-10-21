@@ -134,7 +134,7 @@ The actor chooses the Spond-logo Sync action on Members > Players.
 - `POST /api/squads/{squadId}/spond/import`
 
 The apply request contains Player decisions, automatic Guardian ids, and skip
-decisions for Events so this scoped flow changes only member data.
+decisions for Activities so this scoped flow changes only member data.
 
 ## Acceptance Criteria
 
@@ -155,4 +155,3 @@ decisions for Events so this scoped flow changes only member data.
 8. Given a selected new Player without a birth date, then Apply is blocked.
 9. Given a successful apply, then the actor returns to Players and sees a
    one-time translated completion message.
-

@@ -15,6 +15,7 @@ interface PlayerInvitationsCardProps {
   onRemoveInvitation: (invitationId: string) => void;
   assignedPlayerIds?: string[];
   readOnly?: boolean;
+  allowDeclineReasonEdit?: boolean;
 }
 
 export default function PlayerInvitationsCard({
@@ -26,6 +27,7 @@ export default function PlayerInvitationsCard({
   onRemoveInvitation,
   assignedPlayerIds = [],
   readOnly = false,
+  allowDeclineReasonEdit = false,
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
@@ -36,11 +38,11 @@ export default function PlayerInvitationsCard({
 
   return <Panel>
     <PanelHeader>
-      <PanelTitle>{t('domain.players')}</PanelTitle>
-      {!readOnly && <PanelActions><Button type="button" size="sm" onClick={onInviteClick}>{t('playerInvitations.invite')}</Button></PanelActions>}
+      <PanelTitle>{t('domain.player.plural')}</PanelTitle>
+      {!readOnly && <PanelActions><Button type="button" size="sm" onClick={onInviteClick}>{t('page.playerInvitations.invite')}</Button></PanelActions>}
     </PanelHeader>
     <Stack gap="sm">
-    <TabList label={t('domain.players')}>
+      <TabList label={t('domain.player.plural')}>
       {(['available', 'open', 'declined'] as const).map((response) => {
         const isActive = activeResponse === response;
         const count = response === 'available' ? availableCount : counts[response];
@@ -49,28 +51,34 @@ export default function PlayerInvitationsCard({
           selected={isActive}
           onClick={() => setActiveResponse(response)}
         >
-          {t(`invitationStatus.${response}`)} ({count})
+          {t(`domain.invitation.status.${response}`)} ({count})
         </Tab>;
       })}
     </TabList>
-    {visibleRows.length === 0 ? <EmptyState>{t('playerInvitations.empty.noneWithStatus', { status: t(`invitationStatus.${activeResponse}`) })}</EmptyState> : <EntityList variant="bare">
+    {visibleRows.length === 0 ? <EmptyState>{t('page.playerInvitations.empty.noneWithStatus', { status: t(`domain.invitation.status.${activeResponse}`) })}</EmptyState> : <EntityList variant="bare">
       {visibleRows.map(({ invitation, player, assigned, managed }) => {
         return <EntityRow key={invitation.id} density="compact" data-testid="invitation-row">
           <EntityContent>
             <EntityTitle>{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</EntityTitle>
-            {invitation.response === 'declined' && readOnly && <EntityMeta><span>{t(`activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span></EntityMeta>}
+            {invitation.response === 'declined' && readOnly && !allowDeclineReasonEdit && <EntityMeta><span>{t(`domain.activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span></EntityMeta>}
           </EntityContent>
           {player && <Level level={player.level} className="invitation-player-level" />}
-          {invitation.response === 'declined' && !readOnly && <Select controlSize="sm" aria-label={t('activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
+          {!managed && !readOnly && <Select controlSize="sm" aria-label={t('domain.activity.fields.invitationResponse')} value={invitation.response} onChange={(event) => {
+            const response = event.target.value as InvitationResponse;
+            onStatusChange(invitation.id, response, response === 'declined' ? invitation.declineReason : undefined);
+          }}>
+            {(['open', 'accepted', 'declined'] as const).map((response) => <option key={response} value={response}>{t(`domain.invitation.status.${response}`)}</option>)}
+          </Select>}
+          {invitation.response === 'declined' && (!readOnly || allowDeclineReasonEdit) && <Select controlSize="sm" aria-label={t('domain.activity.fields.declineReason')} value={declineReasons[invitation.id] ?? invitation.declineReason ?? ''} onChange={(event) => {
             const reason = event.target.value as InvitationDeclineReason | '';
             setDeclineReasons((current) => ({ ...current, [invitation.id]: reason }));
             onStatusChange(invitation.id, 'declined', reason || undefined);
           }}>
-            <option value="">{t('activity.declineReasons.unspecified')}</option>
-            {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`activity.declineReasons.${reason}`)}</option>)}
+            <option value="">{t('domain.activity.declineReasons.unspecified')}</option>
+            {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`domain.activity.declineReasons.${reason}`)}</option>)}
           </Select>}
           {!assigned && !managed && <EntityActions><IconButton
-            label={t('playerInvitations.remove')}
+            label={t('page.playerInvitations.remove')}
             variant="danger"
             onClick={() => onRemoveInvitation(invitation.id)}
           >

@@ -48,38 +48,38 @@ export default function EditTeamModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle>{t('teamModal.editTitle')}</ModalTitle>
+        <ModalTitle>{t('page.teamModal.editTitle')}</ModalTitle>
       </ModalHeader>
 
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
             <RequiredFieldsNote />
-            <Field label={t('teamModal.fields.teamName')} htmlFor="teamName" required>
+            <Field label={t('domain.team.fields.name')} htmlFor="teamName" required>
               <Input
                 type="text"
                 id="teamName"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 required
-                placeholder={t('teamModal.placeholders.teamName')}
+                placeholder={t('domain.team.placeholders.name')}
                 autoFocus
               />
             </Field>
 
-            <Field label={t('teamModal.fields.strength')} htmlFor="strength">
+            <Field label={t('domain.team.fields.strength')} htmlFor="strength">
               <Select
                 id="strength"
                 value={strength}
                 onChange={(e) => setStrength(parseInt(e.target.value))}
               >
-                <option value={1}>{t('teamModal.strength.highest')}</option>
-                <option value={2}>{t('teamModal.strength.medium')}</option>
-                <option value={3}>{t('teamModal.strength.lowest')}</option>
+                <option value={1}>{t('domain.team.strength.highest')}</option>
+                <option value={2}>{t('domain.team.strength.medium')}</option>
+                <option value={3}>{t('domain.team.strength.lowest')}</option>
               </Select>
             </Field>
 
-            {showActivityOverrides && <Field label={t('teamModal.fields.startTime')} htmlFor="startTime">
+            {showActivityOverrides && <Field label={t('domain.team.fields.startTime')} htmlFor="startTime">
               <Input
                 type="time"
                 id="startTime"
@@ -88,13 +88,13 @@ export default function EditTeamModal({
               />
             </Field>}
 
-            {showActivityOverrides && <Field label={t('teamModal.fields.locationOptional')} htmlFor="location">
+            {showActivityOverrides && <Field label={t('domain.team.fields.location')} htmlFor="location">
               <Input
                 type="text"
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder={t('teamModal.placeholders.location')}
+                placeholder={t('domain.team.placeholders.location')}
               />
             </Field>}
           </Stack>

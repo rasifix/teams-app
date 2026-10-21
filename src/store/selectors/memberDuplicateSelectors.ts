@@ -49,9 +49,8 @@ function trainerAssignmentCounts(trainers: Trainer[], activities: Activity[]): M
 
   activities.forEach((activity) => {
     activity.teams.forEach((team) => {
-      (team.responsiblePersonIds || []).forEach((personId) => {
-        if (counts.has(personId)) counts.set(personId, (counts.get(personId) || 0) + 1);
-      });
+      const personId = team.responsiblePersonId;
+      if (personId && counts.has(personId)) counts.set(personId, (counts.get(personId) || 0) + 1);
     });
   });
 

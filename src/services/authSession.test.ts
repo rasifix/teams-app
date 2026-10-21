@@ -52,7 +52,7 @@ it('clears the token and redirects to login', () => {
   const removeItem = vi.fn();
   const assign = vi.fn();
   vi.stubGlobal('localStorage', { removeItem });
-  vi.stubGlobal('window', { location: { pathname: '/events', assign } });
+  vi.stubGlobal('window', { location: { pathname: '/activities', assign } });
 
   clearSessionAndRedirectToLogin();
 

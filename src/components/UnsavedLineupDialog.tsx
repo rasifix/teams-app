@@ -21,20 +21,20 @@ export default function UnsavedLineupDialog({
   return (
     <Modal isOpen={isOpen} onClose={onCancel}>
       <ModalHeader>
-        <ModalTitle>{t('teamLineup.unsavedChangesTitle')}</ModalTitle>
+        <ModalTitle>{t('page.teamLineup.unsavedChangesTitle')}</ModalTitle>
       </ModalHeader>
       <ModalBody>
-        <p className="body-muted">{t('teamLineup.unsavedChangesMessage')}</p>
+        <p className="body-muted">{t('page.teamLineup.unsavedChangesMessage')}</p>
       </ModalBody>
       <ModalFooter>
         <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>
           {t('common.actions.cancel')}
         </Button>
         <Button type="button" variant="secondary" onClick={onDiscard} disabled={isSaving}>
-          {t('teamLineup.discardChanges')}
+          {t('page.teamLineup.discardChanges')}
         </Button>
         <Button type="button" variant="primary" onClick={onSave} disabled={isSaving}>
-          {t('teamLineup.saveAndLeave')}
+          {t('page.teamLineup.saveAndLeave')}
         </Button>
       </ModalFooter>
     </Modal>

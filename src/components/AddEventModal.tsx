@@ -26,6 +26,8 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [location, setLocation] = useState('');
   const [opponentName, setOpponentName] = useState('');
   const [numberOfTeams, setNumberOfTeams] = useState(1);
@@ -54,6 +56,8 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     setName('');
     setDate('');
     setStartTime('');
+    setEndDate('');
+    setEndTime('');
     setLocation('');
     setOpponentName('');
     setNumberOfTeams(1);
@@ -68,13 +72,23 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
     event.preventDefault();
     setError(null);
     if (minPlayersPerTeam < 1 || minPlayersPerTeam > maxPlayersPerTeam) {
-      setError(t('editEventModal.errors.minGreaterThanMax'));
+      setError(t('page.editEventModal.errors.minGreaterThanMax'));
+      return;
+    }
+    if ((endDate && !endTime) || (!endDate && endTime)) {
+      setError(t('common.validation.endDateTimeTogether'));
+      return;
+    }
+    const startsAt = toStartsAt(date, startTime);
+    const endsAt = endDate && endTime ? toStartsAt(endDate, endTime) : undefined;
+    if (endsAt && new Date(endsAt).getTime() <= new Date(startsAt).getTime()) {
+      setError(t('common.validation.endAfterStart'));
       return;
     }
     const teamCount = config.fixedTeamCount ?? Math.max(1, numberOfTeams);
     const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
       id: crypto.randomUUID(),
-      name: `${t('domain.team')} ${index + 1}`,
+      name: `${t('domain.team.label')} ${index + 1}`,
       strength: 2,
       startTime,
       selectedPlayers: [],
@@ -82,8 +96,10 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
     onAdd({
       kind,
+      status: 'active',
       name: name.trim(),
-      startsAt: toStartsAt(date, startTime),
+      startsAt,
+      endsAt,
       location: location.trim() || undefined,
       opponentName: config.showOpponent ? opponentName.trim() || undefined : undefined,
       matchFormatId: config.showMatchFormat ? matchFormatId || null : undefined,
@@ -97,49 +113,55 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalHeader><ModalTitle>{t('eventModal.addTitle')}</ModalTitle></ModalHeader>
+      <ModalHeader><ModalTitle>{t('page.eventModal.addTitle')}</ModalTitle></ModalHeader>
       <form onSubmit={handleSubmit}>
         <ModalBody>
           <Stack>
-            <Field label={t('activity.fields.kind')} htmlFor="activity-kind">
+            <Field label={t('domain.activity.fields.kind')} htmlFor="activity-kind">
               <Select id="activity-kind" value={kind} onChange={(event) => setKind(event.target.value as ActivityKind)}>
-                <option value="match">{t('activity.kinds.match')}</option>
-                <option value="tournament">{t('activity.kinds.tournament')}</option>
+                <option value="match">{t('domain.activity.kinds.match')}</option>
+                <option value="tournament">{t('domain.activity.kinds.tournament')}</option>
               </Select>
             </Field>
-            <Field label={t('eventModal.fields.eventNameRequired')} htmlFor="event-name">
+            <Field label={t('page.eventModal.fields.eventNameRequired')} htmlFor="event-name">
               <Input id="event-name" type="text" value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
             </Field>
-            {config.showOpponent && <Field label={t('activity.fields.opponent')} htmlFor="activity-opponent">
+            {config.showOpponent && <Field label={t('domain.activity.fields.opponent')} htmlFor="activity-opponent">
               <Input id="activity-opponent" type="text" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} />
             </Field>}
-            {config.showMatchFormat && <Field label={t('activity.fields.matchFormat')} htmlFor="activity-format">
+            {config.showMatchFormat && <Field label={t('domain.activity.fields.matchFormat')} htmlFor="activity-format">
               <Select id="activity-format" value={matchFormatId} onChange={(event) => setMatchFormatId(event.target.value)}>
-                <option value="">{t('eventModal.fields.noMatchFormat')}</option>
+                <option value="">{t('domain.activity.fields.noMatchFormat')}</option>
                 {matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
               </Select>
             </Field>}
-            {config.showTeamCount && <Field label={t('eventModal.fields.numberOfTeamsRequired')} htmlFor="activity-teams">
+            {config.showTeamCount && <Field label={t('page.eventModal.fields.numberOfTeamsRequired')} htmlFor="activity-teams">
               <Input id="activity-teams" type="number" min={1} value={numberOfTeams} onChange={(event) => setNumberOfTeams(Math.max(1, Number(event.target.value) || 1))} required />
             </Field>}
-            <Field label={t('eventModal.fields.dateRequired')} htmlFor="event-date">
+            <Field label={t('page.eventModal.fields.dateRequired')} htmlFor="event-date">
               <Input id="event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
             </Field>
-            <Field label={t('activity.fields.startTime')} htmlFor="event-time">
+            <Field label={t('domain.activity.fields.startTime')} htmlFor="event-time">
               <Input id="event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required />
             </Field>
-            <Field label={t('eventModal.fields.location')} htmlFor="event-location">
+            <Field label={t('domain.activity.fields.endDate')} htmlFor="event-end-date">
+              <Input id="event-end-date" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
+            </Field>
+            <Field label={t('domain.activity.fields.endTime')} htmlFor="event-end-time">
+              <Input id="event-end-time" type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} />
+            </Field>
+            <Field label={t('domain.activity.fields.location')} htmlFor="event-location">
               <Input id="event-location" type="text" value={location} onChange={(event) => setLocation(event.target.value)} />
             </Field>
-            <Field label={t('eventModal.fields.maxPlayersPerTeamRequired')} htmlFor="max-players">
+            <Field label={t('page.eventModal.fields.maxPlayersPerTeamRequired')} htmlFor="max-players">
               <Input id="max-players" type="number" min={1} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required />
             </Field>
-            <Field label={t('eventModal.fields.minPlayersPerTeamRequired')} htmlFor="min-players">
+            <Field label={t('page.eventModal.fields.minPlayersPerTeamRequired')} htmlFor="min-players">
               <Input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required />
             </Field>
             <Split gap="sm">
-              <span className="body-muted" data-testid="add-event-invited-count">{t('invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
-              <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('eventModal.invitePlayersAction')}</Button>
+              <span className="body-muted" data-testid="add-event-invited-count">{t('page.invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('page.eventModal.invitePlayersAction')}</Button>
             </Split>
             {error && <Alert>{error}</Alert>}
           </Stack>

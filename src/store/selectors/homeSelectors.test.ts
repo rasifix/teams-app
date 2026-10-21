@@ -6,6 +6,7 @@ const buildEvent = (overrides: Partial<Activity>): Activity => ({
   id: 'event-default',
   squadId: 'squad-1',
   kind: 'match',
+  status: 'active',
   name: 'Activity',
   startsAt: '2026-01-01T10:00:00.000Z',
   maxPlayersPerTeam: 12,

@@ -16,6 +16,7 @@ import {
   selectInvitationsByResponse,
   selectPastActivities,
   selectSelectedPlayerIds,
+  shouldRemovePlayerFromSelection,
   selectUpcomingActivities,
   sortActivities,
   toStartsAt,
@@ -25,6 +26,7 @@ const activity = (overrides: Partial<Activity> = {}): Activity => ({
   id: 'a',
   squadId: 's',
   kind: 'match',
+  status: 'active',
   name: 'A',
   startsAt: '2026-05-02T10:00:00.000Z',
   teams: [],
@@ -114,6 +116,7 @@ describe('sorting and splitting', () => {
 
   it('does not mark invalid dates as completed', () => {
     expect(isActivityCompleted(activity({ startsAt: 'garbage' }), now)).toBe(false);
+    expect(isActivityCompleted(activity({ startsAt: '2026-06-14T21:00:00.000Z', status: 'cancelled' }), now)).toBe(false);
   });
 
   it('returns upcoming ascending and past most recent first', () => {
@@ -123,10 +126,10 @@ describe('sorting and splitting', () => {
   });
 
   it('filters by kind', () => {
-    const list = [activity({ id: '1', kind: 'match' }), activity({ id: '2', kind: 'training' })];
-    expect(selectActivitiesOfKinds(list, ['training']).map((a) => a.id)).toEqual(['2']);
+    const list = [activity({ id: '1', kind: 'match' }), activity({ id: '2', kind: 'tournament' })];
+    expect(selectActivitiesOfKinds(list, ['tournament']).map((a) => a.id)).toEqual(['2']);
     expect(isTeamActivity(list[0])).toBe(true);
-    expect(isTeamActivity(list[1])).toBe(false);
+    expect(isTeamActivity(list[1])).toBe(true);
   });
 });
 
@@ -179,5 +182,12 @@ describe('invitations', () => {
     expect(isSpondManagedInvitation(activity({ spondId: 'event-1' }), player())).toBe(false);
     expect(isSpondManagedInvitation(activity(), player({ spondId: 'member-1' }))).toBe(false);
     expect(isSpondManagedInvitation(activity({ spondId: 'event-1' }), undefined)).toBe(false);
+  });
+
+  it('removes a player from planning only when a response newly becomes declined', () => {
+    expect(shouldRemovePlayerFromSelection('accepted', 'declined')).toBe(true);
+    expect(shouldRemovePlayerFromSelection('open', 'declined')).toBe(true);
+    expect(shouldRemovePlayerFromSelection('declined', 'declined')).toBe(false);
+    expect(shouldRemovePlayerFromSelection('declined', 'accepted')).toBe(false);
   });
 });

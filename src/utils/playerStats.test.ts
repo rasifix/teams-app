@@ -6,7 +6,7 @@ function activity(overrides: Partial<Activity>): Activity {
   return {
     id: 'activity-default',
     squadId: 'squad-1',
-    kind: 'match',
+    kind: 'match', status: 'active',
     name: 'Activity',
     startsAt: '2026-06-01T10:00:00.000Z',
     teams: [],
@@ -25,15 +25,9 @@ describe('getPlayerStats', () => {
       }),
       activity({
         id: 'tournament',
-        kind: 'tournament',
+        kind: 'tournament', status: 'active',
         invitations: [{ id: 'i-tournament', playerId: 'p1', response: 'declined', declineReason: 'injured' }],
         teams: [{ id: 't-tournament', name: 'Red', strength: 2, startTime: '10:00', selectedPlayers: ['p1'] }],
-      }),
-      activity({
-        id: 'training',
-        kind: 'training',
-        invitations: [{ id: 'i-training', playerId: 'p1', response: 'accepted' }],
-        teams: [{ id: 't-training', name: 'Training', strength: 2, startTime: '10:00', selectedPlayers: ['p1'] }],
       }),
     ];
 

@@ -194,16 +194,16 @@ export default function MembersPage() {
       )}
 
       {/* Tab Navigation */}
-      <NavigationTabs label={t('common.tabs')} className="members-tabs">
+      <NavigationTabs label={t('common.tabs')} mobileFit className="members-tabs">
           <NavigationTab to="/members/players">
-            {t('domain.player.plural')} ({players.length})
+            {t('domain.player.plural')} <span className={'ui-tab-count'}>({players.length})</span>
           </NavigationTab>
           <NavigationTab to="/members/trainers">
-            {t('domain.trainer.plural')} ({trainers.length})
+            {t('domain.trainer.plural')} <span className={'ui-tab-count'}>({trainers.length})</span>
           </NavigationTab>
           {isAdmin && (
           <NavigationTab to="/members/guardians">
-            {t('domain.guardian.plural')} ({guardians.length})
+            {t('domain.guardian.plural')} <span className={'ui-tab-count'}>({guardians.length})</span>
           </NavigationTab>
           )}
       </NavigationTabs>

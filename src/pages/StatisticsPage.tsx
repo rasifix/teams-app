@@ -56,7 +56,7 @@ export default function StatisticsPage() {
           <SummaryCard tone="accent"><SummaryCardContent value={summary.averageSelections.toFixed(1)} label={t('page.statistics.summary.avgSelectionsPerPlayer')} /></SummaryCard>
         </ContentGrid>
 
-        <NavigationTabs label={t('common.tabs')}>
+        <NavigationTabs label={t('common.tabs')} mobileFit>
           <NavigationTab to="/statistics/player-statistics">
             {t('page.statistics.tabs.playerStatistics')}
           </NavigationTab>

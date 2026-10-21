@@ -42,7 +42,7 @@ export default function PlayerInvitationsCard({
       {!readOnly && <PanelActions><Button type="button" size="sm" onClick={onInviteClick}>{t('page.playerInvitations.invite')}</Button></PanelActions>}
     </PanelHeader>
     <Stack gap="sm">
-      <TabList label={t('domain.player.plural')}>
+      <TabList label={t('domain.player.plural')} mobileFit>
       {(['available', 'open', 'declined'] as const).map((response) => {
         const isActive = activeResponse === response;
         const count = response === 'available' ? availableCount : counts[response];
@@ -51,7 +51,7 @@ export default function PlayerInvitationsCard({
           selected={isActive}
           onClick={() => setActiveResponse(response)}
         >
-          {t(`domain.invitation.status.${response}`)} ({count})
+          {t(`domain.invitation.status.${response}`)} <span className={'ui-tab-count'}>({count})</span>
         </Tab>;
       })}
     </TabList>

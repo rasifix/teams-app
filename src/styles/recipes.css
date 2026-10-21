@@ -95,6 +95,13 @@
 .ui-tab:hover { background: var(--color-surface-subtle); color: var(--color-text-strong); }
 .ui-tab--active,
 .ui-tab--active:hover { background: var(--color-control-strong); color: var(--color-on-control-strong); box-shadow: var(--shadow-sm); }
+.ui-tab-count { display: inline; }
+@media (max-width: 39.999rem) {
+  .ui-tabs-scroll--mobile-fit { overflow-x: visible; }
+  .ui-tabs-scroll--mobile-fit .ui-tabs { display: grid; width: 100%; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ui-tabs-scroll--mobile-fit .ui-tab { min-width: 0; padding-inline: var(--space-2); text-align: center; white-space: normal; }
+  .ui-tab-count { display: none; }
+}
 .ui-tab:focus-visible,
 .icon-button:focus-visible,
 .ui-action-card:focus-visible,

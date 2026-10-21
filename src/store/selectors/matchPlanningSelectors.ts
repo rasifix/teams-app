@@ -1,4 +1,4 @@
-import type { Formation, FormationSlot, LineupPositionAssignment, Player, MatchFormat, PositionCode, Team, TeamLineupPeriod } from '../../types';
+import type { Activity, Formation, FormationSlot, LineupPositionAssignment, Player, MatchFormat, PositionCode, Team, TeamLineupPeriod } from '../../types';
 
 export interface LineupSummaryPeriod {
   periodNumber: number;
@@ -54,6 +54,20 @@ export function selectMatchFormatById(matchFormats: MatchFormat[], matchFormatId
 export function selectFormationById(formations: Formation[], formationId: string | null | undefined): Formation | undefined {
   if (!formationId) return undefined;
   return formations.find((formation) => formation.id === formationId);
+}
+
+export function selectReferencedFormationIds(activities: Activity[]): Set<string> {
+  return new Set(
+    activities.flatMap((activity) => activity.teams.flatMap((team) => (
+      team.formationId ? [team.formationId] : []
+    )))
+  );
+}
+
+export function selectReferencedMatchFormatIds(activities: Activity[]): Set<string> {
+  return new Set(
+    activities.flatMap((activity) => activity.matchFormatId ? [activity.matchFormatId] : [])
+  );
 }
 
 export function selectLineupRouteTab(

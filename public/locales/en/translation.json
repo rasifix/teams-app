@@ -835,13 +835,19 @@
         "minimumPeriods": "Minimum per player: {{count}} periods",
         "setDefault": "Set as default",
         "deleteTitle": "Delete Match Format",
-        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+        "errors": {
+          "deleteFailed": "The match format could not be deleted. It may still be used by an activity, or please try again."
+        }
       },
       "formations": {
         "title": "Formations",
         "emptyState": "No formations yet. Add one to get started.",
         "deleteTitle": "Delete Formation",
-        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+        "deleteMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+        "errors": {
+          "deleteFailed": "The formation could not be deleted. It may still be assigned to a team, or please try again."
+        }
       }
     },
     "matchFormatModal": {

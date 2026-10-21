@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
+import { useActivities, useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
 import { AddCardButton, Alert, Badge, Button, ButtonAnchor, ButtonLink, Cluster, ContentGrid, EntityActions, EntityContent, EntityList, EntityMeta, EntityTitle, Field, IconButton, IconTile, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Split, Stack, SwipeableEntityRow, Switch } from '../components/ui';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
 import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
-import { getPositionLabelKey, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
+import { getPositionLabelKey, selectReferencedFormationIds, selectReferencedMatchFormatIds, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
 import type { Formation, SquadCategory, MatchFormat, Period } from '../types';
 import { GROUP_CATEGORIES } from '../store/selectors/squadCategorySelectors';
 import {
@@ -23,9 +23,12 @@ export default function SquadSettingsPage() {
   const { t } = useTranslation();
   const squad = useSquad();
   const navigate = useNavigate();
+  const { activities } = useActivities();
   const periods = useSquadPeriods();
   const sfvCatalog = useSfvCatalog();
   const spondGroupUrl = selectSpondGroupUrl(squad);
+  const referencedFormationIds = selectReferencedFormationIds(activities);
+  const referencedMatchFormatIds = selectReferencedMatchFormatIds(activities);
   const initializeApp = useStore((state) => state.initializeApp);
   const deactivateSquad = useStore((state) => state.deactivateSquad);
   const deleteSquadPeriod = useStore((state) => state.deleteSquadPeriod);
@@ -52,9 +55,11 @@ export default function SquadSettingsPage() {
   const [isMatchFormatModalOpen, setIsMatchFormatModalOpen] = useState(false);
   const [editingMatchFormat, setEditingMatchFormat] = useState<MatchFormat | null>(null);
   const [deletingMatchFormat, setDeletingMatchFormat] = useState<MatchFormat | null>(null);
+  const [matchFormatDeleteError, setMatchFormatDeleteError] = useState<string | null>(null);
   const [isFormationModalOpen, setIsFormationModalOpen] = useState(false);
   const [editingFormation, setEditingFormation] = useState<Formation | null>(null);
   const [deletingFormation, setDeletingFormation] = useState<Formation | null>(null);
+  const [formationDeleteError, setFormationDeleteError] = useState<string | null>(null);
   const [isPeriodModalOpen, setIsPeriodModalOpen] = useState(false);
   const [periodToEdit, setPeriodToEdit] = useState<Period | null>(null);
   const [deletingPeriod, setDeletingPeriod] = useState<Period | null>(null);
@@ -68,6 +73,32 @@ export default function SquadSettingsPage() {
   useEffect(() => {
     setSelectedCategory(squad?.category ?? '');
   }, [squad?.category]);
+
+  const handleDeleteFormation = async () => {
+    if (!deletingFormation) return;
+
+    const formationToDelete = deletingFormation;
+    setDeletingFormation(null);
+    setFormationDeleteError(null);
+    const wasDeleted = await deleteFormation(formationToDelete.id);
+    if (wasDeleted) {
+      return;
+    }
+
+    setFormationDeleteError(t('page.matchPlanning.formations.errors.deleteFailed'));
+  };
+
+  const handleDeleteMatchFormat = async () => {
+    if (!deletingMatchFormat) return;
+
+    const matchFormatToDelete = deletingMatchFormat;
+    setDeletingMatchFormat(null);
+    setMatchFormatDeleteError(null);
+    const wasDeleted = await deleteMatchFormat(matchFormatToDelete.id);
+    if (wasDeleted) return;
+
+    setMatchFormatDeleteError(t('page.matchPlanning.matchFormats.errors.deleteFailed'));
+  };
 
   const handleSaveCategory = async () => {
     setCategorySaveError(null);
@@ -137,8 +168,8 @@ export default function SquadSettingsPage() {
 
   const handleDeletePeriod = async () => {
     if (!deletingPeriod) return;
-    const wasDeleted = await deleteSquadPeriod(deletingPeriod.id);
-    if (wasDeleted) setDeletingPeriod(null);
+    await deleteSquadPeriod(deletingPeriod.id);
+    setDeletingPeriod(null);
   };
 
   return (
@@ -323,12 +354,16 @@ export default function SquadSettingsPage() {
                 <PanelTitle>{t('page.matchPlanning.matchFormats.title')}</PanelTitle>
               </PanelHeader>
 
+              {matchFormatDeleteError && <Alert>{matchFormatDeleteError}</Alert>}
+
               <EntityList>
-                {matchFormats.map((matchFormat) => (
+                {matchFormats.map((matchFormat) => {
+                    const canDeleteMatchFormat = !referencedMatchFormatIds.has(matchFormat.id);
+                    return (
                     <SwipeableEntityRow
                       key={matchFormat.id}
                       align="start"
-                      onDelete={() => setDeletingMatchFormat(matchFormat)}
+                      onDelete={canDeleteMatchFormat ? () => setDeletingMatchFormat(matchFormat) : undefined}
                       showDesktopDelete={false}
                     >
                       <EntityContent>
@@ -387,7 +422,7 @@ export default function SquadSettingsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                           </svg>
                         </IconButton>}
-                        <IconButton
+                        {canDeleteMatchFormat && <IconButton
                           label={t('common.actions.delete')}
                           variant="danger"
                           onClick={() => setDeletingMatchFormat(matchFormat)}
@@ -395,10 +430,11 @@ export default function SquadSettingsPage() {
                           <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                           </svg>
-                        </IconButton>
+                        </IconButton>}
                       </EntityActions>
                     </SwipeableEntityRow>
-                ))}
+                    );
+                })}
                 <AddCardButton
                   cardSize="sm"
                   label={t('common.actions.add')}
@@ -415,11 +451,14 @@ export default function SquadSettingsPage() {
                 <PanelTitle>{t('page.matchPlanning.formations.title')}</PanelTitle>
               </PanelHeader>
 
+              {formationDeleteError && <Alert>{formationDeleteError}</Alert>}
+
               <EntityList>
                 {formations.map((formation) => {
                     const displayIndexes = selectSlotDisplayIndexes(formation.slots);
+                    const canDeleteFormation = !referencedFormationIds.has(formation.id);
                     return (
-                      <SwipeableEntityRow key={formation.id} align="start" onDelete={() => setDeletingFormation(formation)} showDesktopDelete={false}>
+                      <SwipeableEntityRow key={formation.id} align="start" onDelete={canDeleteFormation ? () => setDeletingFormation(formation) : undefined} showDesktopDelete={false}>
                         <EntityContent>
                           <EntityTitle>{formation.name}</EntityTitle>
                           <div className="settings-formation-slots">
@@ -446,15 +485,17 @@ export default function SquadSettingsPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                               </svg>
                             </IconButton>
-                            <IconButton
-                              label={t('common.actions.delete')}
-                              variant="danger"
-                              onClick={() => setDeletingFormation(formation)}
-                            >
-                              <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                              </svg>
-                            </IconButton>
+                            {canDeleteFormation && (
+                              <IconButton
+                                label={t('common.actions.delete')}
+                                variant="danger"
+                                onClick={() => setDeletingFormation(formation)}
+                              >
+                                <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244-2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                              </IconButton>
+                            )}
                         </EntityActions>
                       </SwipeableEntityRow>
                     );
@@ -517,11 +558,11 @@ export default function SquadSettingsPage() {
           title={t('page.matchPlanning.matchFormats.deleteTitle')}
           message={t('page.matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
           confirmText={t('common.actions.delete')}
-          onConfirm={async () => {
-            await deleteMatchFormat(deletingMatchFormat.id);
+          onConfirm={() => void handleDeleteMatchFormat()}
+          onCancel={() => {
             setDeletingMatchFormat(null);
+            setMatchFormatDeleteError(null);
           }}
-          onCancel={() => setDeletingMatchFormat(null)}
         />
       )}
 
@@ -531,11 +572,11 @@ export default function SquadSettingsPage() {
           title={t('page.matchPlanning.formations.deleteTitle')}
           message={t('page.matchPlanning.formations.deleteMessage', { name: deletingFormation.name })}
           confirmText={t('common.actions.delete')}
-          onConfirm={async () => {
-            await deleteFormation(deletingFormation.id);
+          onConfirm={() => void handleDeleteFormation()}
+          onCancel={() => {
             setDeletingFormation(null);
+            setFormationDeleteError(null);
           }}
-          onCancel={() => setDeletingFormation(null)}
         />
       )}
 

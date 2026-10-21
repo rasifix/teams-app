@@ -37,6 +37,11 @@ export default function SwipeableEntityRow({ children, extraActions, onEdit, onD
     touchStartX.current = null;
   };
 
+  const handleDelete = () => {
+    setIsSwiped(false);
+    onDelete?.();
+  };
+
   return (
     <EntityRow
       {...props}
@@ -49,12 +54,12 @@ export default function SwipeableEntityRow({ children, extraActions, onEdit, onD
         <EntityActions className={'ui-entity-actions--separated'}>
           {extraActions}
           {onEdit && <IconButton label={t('common.actions.edit')} onClick={onEdit}><PencilIcon /></IconButton>}
-          {onDelete && showDesktopDelete && <IconButton className="ui-swipeable-row__delete" label={t('common.actions.delete')} variant="danger" onClick={onDelete}><TrashIcon /></IconButton>}
+          {onDelete && showDesktopDelete && <IconButton className="ui-swipeable-row__delete" label={t('common.actions.delete')} variant="danger" onClick={handleDelete}><TrashIcon /></IconButton>}
         </EntityActions>
       )}
       {onDelete && (
         <div className={`ui-swipe-action-tray${isSwiped ? ' ui-swipe-action-tray--visible' : ''}`}>
-          <IconButton label={t('common.actions.delete')} variant="inverse" onClick={onDelete}><TrashIcon /></IconButton>
+          <IconButton label={t('common.actions.delete')} variant="inverse" onClick={handleDelete}><TrashIcon /></IconButton>
         </div>
       )}
     </EntityRow>

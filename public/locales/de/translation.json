@@ -835,13 +835,19 @@
         "minimumPeriods": "Minimum pro Spieler: {{count}} Abschnitte",
         "setDefault": "Als Standard festlegen",
         "deleteTitle": "Spielformat löschen",
-        "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+        "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "errors": {
+          "deleteFailed": "Das Spielformat konnte nicht gelöscht werden. Es wird möglicherweise noch von einer Aktivität verwendet. Bitte versuche es erneut."
+        }
       },
       "formations": {
         "title": "Formationen",
         "emptyState": "Noch keine Formationen. Füge eine hinzu, um zu starten.",
         "deleteTitle": "Formation löschen",
-        "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+        "deleteMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "errors": {
+          "deleteFailed": "Die Formation konnte nicht gelöscht werden. Sie ist möglicherweise noch einem Team zugewiesen. Bitte versuche es erneut."
+        }
       }
     },
     "matchFormatModal": {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Formation, FormationSlot, Player, MatchFormat, Team } from '../../types';
+import type { Activity, Formation, FormationSlot, Player, MatchFormat, Team } from '../../types';
 import {
   hasLineupRosterMismatch,
   selectAssignmentsForPeriod,
@@ -9,6 +9,8 @@ import {
   selectBenchedPlayers,
   selectDefaultMatchFormat,
   selectFormationById,
+  selectReferencedFormationIds,
+  selectReferencedMatchFormatIds,
   selectMatchFormatById,
   selectPlannedPeriodCounts,
   selectLineupSummary,
@@ -433,6 +435,37 @@ describe('selectFormationById', () => {
   it('returns undefined for a missing or empty id', () => {
     expect(selectFormationById(formations, 'missing')).toBeUndefined();
     expect(selectFormationById(formations, null)).toBeUndefined();
+  });
+});
+
+describe('selectReferencedFormationIds', () => {
+  it('returns every formation referenced by a team', () => {
+    const activities = [
+      { teams: [team({ id: 't1', formationId: 'f1' }), team({ id: 't2', formationId: 'f2' })] },
+      { teams: [team({ id: 't3', formationId: 'f1' }), team({ id: 't4', formationId: null })] },
+    ] as Activity[];
+
+    expect(selectReferencedFormationIds(activities)).toEqual(new Set(['f1', 'f2']));
+  });
+
+  it('returns an empty set when activities have no formation references', () => {
+    expect(selectReferencedFormationIds([{ teams: [team({ formationId: undefined })] }] as Activity[])).toEqual(new Set());
+  });
+});
+
+describe('selectReferencedMatchFormatIds', () => {
+  it('returns every match format referenced by an activity', () => {
+    const activities = [
+      { matchFormatId: 'm1' },
+      { matchFormatId: 'm2' },
+      { matchFormatId: 'm1' },
+    ] as Activity[];
+
+    expect(selectReferencedMatchFormatIds(activities)).toEqual(new Set(['m1', 'm2']));
+  });
+
+  it('returns an empty set when activities have no match format', () => {
+    expect(selectReferencedMatchFormatIds([{ matchFormatId: null }] as Activity[])).toEqual(new Set());
   });
 });
 

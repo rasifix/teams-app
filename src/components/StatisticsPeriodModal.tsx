@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
 import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Stack } from './ui';
-import ConfirmDialog from './ConfirmDialog';
 import { useSquad, useStore } from '../store';
 
 interface StatisticsPeriodModalProps {
@@ -19,10 +18,9 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
   const [periodError, setPeriodError] = useState<string | null>(null);
   const [isSavingPeriod, setIsSavingPeriod] = useState(false);
   const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
-  const [deletingPeriod, setDeletingPeriod] = useState<Period | null>(null);
 
   const squad = useSquad();
-  const { addSquadPeriod, updateSquadPeriod, deleteSquadPeriod } = useStore();
+  const { addSquadPeriod, updateSquadPeriod } = useStore();
 
   const resetPeriodForm = () => {
     setEditingPeriodId(null);
@@ -97,22 +95,6 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     handleClose();
   };
 
-  const handleDeletePeriod = async () => {
-    if (!deletingPeriod) return;
-
-    const wasDeleted = await deleteSquadPeriod(deletingPeriod.id);
-    if (!wasDeleted) {
-      setPeriodError(t('page.statistics.period.errors.deleteFailed'));
-      return;
-    }
-
-    if (editingPeriodId === deletingPeriod.id) {
-      resetPeriodForm();
-    }
-
-    setDeletingPeriod(null);
-  };
-
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleClose}>
@@ -164,26 +146,11 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
         </ModalBody>
         <ModalFooter>
           <Button type="button" variant="secondary" onClick={handleClose}>{t('common.actions.cancel')}</Button>
-          {editingPeriodId && (
-            <Button type="button" variant="dangerGhost" onClick={() => setDeletingPeriod(periodToEdit)}>
-              {t('common.actions.delete')}
-            </Button>
-          )}
           <Button type="button" onClick={handleSavePeriod} disabled={isSavingPeriod}>
             {editingPeriodId ? t('page.statistics.period.updatePeriod') : t('page.statistics.period.addPeriod')}
           </Button>
         </ModalFooter>
       </Modal>
-
-      <ConfirmDialog
-        isOpen={deletingPeriod !== null}
-        title={t('page.statistics.period.deleteTitle')}
-        message={deletingPeriod ? t('page.statistics.period.deleteMessage', { period: deletingPeriod.name }) : ''}
-        confirmText={t('common.actions.delete')}
-        onConfirm={handleDeletePeriod}
-        onCancel={() => setDeletingPeriod(null)}
-        confirmButtonColor="red"
-      />
     </>
   );
 }

@@ -48,7 +48,7 @@ export default function EventsPage() {
         </PageActions>
       </PageHeader>
 
-      <Stack gap="lg">
+      <Stack gap="lg" data-page-section="events">
         <SpondSyncResultBanner />
         {error && <Alert>{error}</Alert>}
         <Panel>

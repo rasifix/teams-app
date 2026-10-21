@@ -28,7 +28,7 @@ export default function EventCard({ activity, onClick }: EventCardProps) {
             <Badge tone="brand" size="sm">{t(`domain.activity.kinds.${activity.kind}`)}</Badge>
           </Cluster>
           <EntityMeta>
-            {activity.location && <span>{activity.location}</span>}
+            {activity.location && <span data-event-field="location">{activity.location}</span>}
             {activity.kind === 'match' && activity.opponentName && <span>{t('domain.activity.fields.opponent')}: {activity.opponentName}</span>}
           </EntityMeta>
           <Cluster gap="sm" className="event-card-counts" aria-label={t('page.events.invitationCounts')}>

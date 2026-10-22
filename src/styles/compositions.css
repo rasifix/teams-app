@@ -104,7 +104,7 @@
 
 /* Event participation matrix */
 .participation-event-heading { min-width: 3.625rem; padding: 0.625rem var(--space-2); color: var(--color-text-strong); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); text-align: center; }
-.participation-event-link { display: flex; justify-content: center; transition: opacity var(--transition-fast); }
+.participation-event-link { display: flex; width: 100%; justify-content: center; transition: opacity var(--transition-fast); }
 .participation-event-link:hover { opacity: 0.7; }
 .participation-player-level { font-size: var(--font-size-xs); }
 

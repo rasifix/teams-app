@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Team } from '../../types';
-import { removePlayerFromSelection, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
+import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
 
 const team = (overrides: Partial<Team> = {}): Team => ({
   id: 'team-1', name: 'Team', strength: 2, selectedPlayers: ['p1', 'p2'], ...overrides,
@@ -32,6 +32,28 @@ describe('selectSelectionEditState', () => {
     expect(selectSelectionEditState({
       startsAt: '2026-10-20T10:00:00.000Z', status: 'cancelled',
     }, new Date(2026, 9, 19, 12)).canEdit).toBe(false);
+  });
+});
+
+describe('selectAllTeamsHaveResponsiblePeople', () => {
+  it('returns true when every team has a responsible person', () => {
+    expect(selectAllTeamsHaveResponsiblePeople({
+      teams: [team({ responsiblePersonId: 'trainer-1' }), team({ id: 'team-2', responsiblePersonId: 'guardian-1' })],
+    })).toBe(true);
+  });
+
+  it('returns false when any team is missing a responsible person', () => {
+    expect(selectAllTeamsHaveResponsiblePeople({
+      teams: [team({ responsiblePersonId: 'trainer-1' }), team({ id: 'team-2' })],
+    })).toBe(false);
+  });
+
+  it.each([
+    { teams: [] as Team[] },
+    { teams: [team({ responsiblePersonId: '' })] },
+    { teams: [team({ responsiblePersonId: '   ' })] },
+  ])('returns false for incomplete responsible-person data (%j)', ({ teams }) => {
+    expect(selectAllTeamsHaveResponsiblePeople({ teams })).toBe(false);
   });
 });
 

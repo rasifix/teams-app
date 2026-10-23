@@ -20,7 +20,7 @@ import { selectActivityPhase, selectActivityPhaseSections } from '../store/selec
 import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
-import { removePlayerFromSelection, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
+import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
 import Strength from '../components/Strength';
 import Level from '../components/Level';
 import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, EntityContent, EntityList, EntityRow, EntityTitle, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
@@ -131,6 +131,7 @@ export default function EventDetailPage() {
   const phase = selectActivityPhase(activity);
   const sections = selectActivityPhaseSections(phase);
   const selectionEditState = selectSelectionEditState(activity);
+  const allTeamsHaveResponsiblePeople = selectAllTeamsHaveResponsiblePeople(activity);
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const renderTeam = (team: Team) => {
@@ -218,9 +219,15 @@ export default function EventDetailPage() {
         <PanelHeader className="ui-responsive-action-row">
           <PanelTitle>{t('page.eventDetail.teamsTitle')}</PanelTitle>
           <PanelActions>
-            {activity.teams.length > 0 && <Button type="button" variant="secondary" size="sm" onClick={() => setIsPrintSummaryOpen(true)}>{t('page.eventDetail.printTeams')}</Button>}
+            {activity.teams.length > 0 && (
+              <IconButton label={t('page.eventDetail.printTeams')} onClick={() => setIsPrintSummaryOpen(true)}>
+                <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V4h12v5M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v6H6z" />
+                </svg>
+              </IconButton>
+            )}
             {!selectionEditState.isSent && selectionEditState.canEdit && activity.teams.length > 0 && (
-              <Button type="button" size="sm" disabled={isSendingSelection} onClick={() => void handleMarkSelectionSent()}>
+              <Button type="button" size="sm" disabled={isSendingSelection || !allTeamsHaveResponsiblePeople} onClick={() => void handleMarkSelectionSent()}>
                 {t('page.eventDetail.markSelectionSent')}
               </Button>
             )}

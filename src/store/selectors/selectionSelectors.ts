@@ -13,6 +13,13 @@ export interface SelectionValidation {
   canSend: boolean;
 }
 
+export function selectAllTeamsHaveResponsiblePeople(
+  activity: Pick<Activity, 'teams'>,
+): boolean {
+  const teams = activity.teams ?? [];
+  return teams.length > 0 && teams.every((team) => Boolean(team.responsiblePersonId?.trim()));
+}
+
 export function selectSelectionValidation(
   activity: Pick<Activity, 'teams' | 'minPlayersPerTeam' | 'maxPlayersPerTeam'>,
 ): SelectionValidation {

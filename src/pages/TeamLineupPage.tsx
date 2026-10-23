@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers, useMatchPlanning, useAppInitialized, useAppLoading } from '../store';
-import { ActionDock, ActionDockContent, Alert, Card, CardBody, CardTitle, Button, ContentGrid, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, PanelTitle, Tab, TabList } from '../components/ui';
+import { ActionDock, ActionDockContent, Alert, Card, CardBody, CardTitle, Button, ContentGrid, EmptyState, IconButton, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PanelTitle, Tab, TabList } from '../components/ui';
 import UnsavedLineupDialog from '../components/UnsavedLineupDialog';
 import {
   selectMatchFormatById,
@@ -201,13 +201,6 @@ export default function TeamLineupPage() {
 
   return (
     <Page actionDock className="lineup-page">
-      <PageToolbar><Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(`/activities/${eventId}/teams/${teamId}`)}
-        >
-          ← {t('common.actions.cancel')}
-      </Button></PageToolbar>
       <PageHeader>
           <PageHeaderContent>
             <p className="eyebrow">{event.name}</p>
@@ -259,9 +252,11 @@ export default function TeamLineupPage() {
         <div className="lineup-print-content">
           <div className="lineup-print-actions">
             <PanelTitle>{t('page.teamLineup.summaryTitle')}</PanelTitle>
-            <Button variant="secondary" onClick={() => window.print()}>
-              {t('page.teamLineup.printSummary')}
-            </Button>
+            <IconButton label={t('page.teamLineup.printSummary')} onClick={() => window.print()}>
+              <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V4h12v5M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v6H6z" />
+              </svg>
+            </IconButton>
           </div>
           {minimumPeriodViolations.length > 0 && (
             <Alert className="lineup-alert">
@@ -288,7 +283,7 @@ export default function TeamLineupPage() {
               <Card key={period.periodNumber} className="lineup-period-card">
                 <CardBody className="lineup-period-body">
                   <CardTitle className="lineup-period-title">{t('page.teamLineup.periodLabel', { number: period.periodNumber })}</CardTitle>
-                  <div className="lineup-pitch lineup-pitch--summary">
+                  <div className="lineup-pitch--summary">
                     {period.assignments.map((assignment) => (
                       <div
                         key={assignment.slotId}
@@ -365,7 +360,7 @@ export default function TeamLineupPage() {
         <CardBody className="lineup-editor-body">
           <CardTitle className="lineup-editor-title">{t('page.teamLineup.slotsTitle', { formation: formation.name })}</CardTitle>
           {currentPeriodSummary && (
-            <div className="lineup-pitch lineup-pitch--editor">
+            <div className="lineup-pitch--editor">
               {currentPeriodSummary.assignments.map((assignment) => (
                 <button
                   type="button"
@@ -520,9 +515,14 @@ export default function TeamLineupPage() {
       <ActionDock>
         <ActionDockContent>
           {saveError ? <p className="lineup-save-error" role="alert">{saveError}</p> : <span className="lineup-save-status">{hasChanges ? t('page.teamLineup.unsavedChangesTitle') : t('page.teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
-          <Button variant="primary" onClick={handleSave} disabled={isCancelled || !hasChanges || isSaving}>
-            {t('common.actions.save')}
-          </Button>
+          <PageActions>
+            <Button variant="secondary" onClick={() => navigate(`/activities/${eventId}/teams/${teamId}`)}>
+              {t('common.actions.cancel')}
+            </Button>
+            <Button variant="primary" onClick={handleSave} disabled={isCancelled || !hasChanges || isSaving}>
+              {t('common.actions.save')}
+            </Button>
+          </PageActions>
         </ActionDockContent>
       </ActionDock>
       <UnsavedLineupDialog

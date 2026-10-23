@@ -132,15 +132,15 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                       <Level level={statistic.player.level} />
                     </span>
                     <span className="player-statistics-metrics">
-                      <span className="player-statistics-metric">
+                      <span>
                         <strong>{statistic.invitedCount}</strong>
                         <span>{t('page.statistics.playerTable.invited')}</span>
                       </span>
-                      <span className="player-statistics-metric">
+                      <span>
                         <strong>{statistic.acceptedCount} ({statistic.acceptanceRate.toFixed(0)}%)</strong>
                         <span>{t('page.statistics.playerTable.accepted')}</span>
                       </span>
-                      <span className="player-statistics-metric player-statistics-metric--success">
+                      <span className="player-statistics-metric--success">
                         <strong>{statistic.selectedCount} ({statistic.selectionRate.toFixed(0)}%)</strong>
                         <span>{t('page.statistics.playerTable.selected')}</span>
                       </span>

@@ -20,9 +20,14 @@ export async function getActivityById(squadId: string, id: string): Promise<Acti
   }
 }
 
-export async function createActivity(squadId: string, payload: ActivityPayload): Promise<Activity> {
+export async function createActivity(
+  squadId: string,
+  payload: ActivityPayload,
+  idempotencyKey: string = crypto.randomUUID(),
+): Promise<Activity> {
   return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath()), {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(payload),
   });
 }

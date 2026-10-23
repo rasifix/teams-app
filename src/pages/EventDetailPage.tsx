@@ -130,7 +130,6 @@ export default function EventDetailPage() {
 
   const phase = selectActivityPhase(activity);
   const sections = selectActivityPhaseSections(phase);
-  const allowSpondResponseEdit = spondLinked && activity.status === 'active' && (phase === 'started' || phase === 'recorded');
   const selectionEditState = selectSelectionEditState(activity);
   const allTeamsHaveResponsiblePeople = selectAllTeamsHaveResponsiblePeople(activity);
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
@@ -248,9 +247,8 @@ export default function EventDetailPage() {
         invitations={activity.invitations}
         currentActivity={activity}
         players={players}
-        readOnly={activity.status === 'cancelled' || (!allowSpondResponseEdit && (spondLinked || phase !== 'planning'))}
+        readOnly={spondLinked || activity.status === 'cancelled' || phase !== 'planning'}
         allowDeclineReasonEdit={spondLinked && activity.status === 'active'}
-        allowResponseEdit={allowSpondResponseEdit}
         onInviteClick={() => setIsInviteOpen(true)}
         onStatusChange={handleInvitationStatusChange}
         onRemoveInvitation={handleRemoveInvitation}

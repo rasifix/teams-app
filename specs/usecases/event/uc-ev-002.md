@@ -7,10 +7,8 @@ existing Activity in a Squad without a Spond link.
 
 ## Scope
 
-For Spond-linked Squads, the response is changed in Spond before the Activity
-starts. After the Activity starts, authorized staff may make a local correction
-when a parent communicated outside Spond. Local decline reasons remain editable
-by staff.
+For Spond-linked Squads, the response is changed in Spond only. Local decline
+reasons remain editable by staff.
 
 This use case covers:
 - opening the invitation entry modal from an Activity Detail page,

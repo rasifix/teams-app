@@ -16,6 +16,7 @@ interface PlayerInvitationsCardProps {
   assignedPlayerIds?: string[];
   readOnly?: boolean;
   allowDeclineReasonEdit?: boolean;
+  allowResponseEdit?: boolean;
 }
 
 export default function PlayerInvitationsCard({
@@ -28,6 +29,7 @@ export default function PlayerInvitationsCard({
   assignedPlayerIds = [],
   readOnly = false,
   allowDeclineReasonEdit = false,
+  allowResponseEdit = false,
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
@@ -57,13 +59,14 @@ export default function PlayerInvitationsCard({
     </TabList>
     {visibleRows.length === 0 ? <EmptyState>{t('page.playerInvitations.empty.noneWithStatus', { status: t(`domain.invitation.status.${activeResponse}`) })}</EmptyState> : <EntityList variant="bare">
       {visibleRows.map(({ invitation, player, assigned, managed }) => {
+        const canEditResponse = allowResponseEdit || !managed;
         return <EntityRow key={invitation.id} density="compact" data-testid="invitation-row">
           <EntityContent>
             <EntityTitle>{player ? `${player.firstName} ${player.lastName}` : invitation.playerId}</EntityTitle>
             {invitation.response === 'declined' && readOnly && !allowDeclineReasonEdit && <EntityMeta><span>{t(`domain.activity.declineReasons.${invitation.declineReason ?? 'unspecified'}`)}</span></EntityMeta>}
           </EntityContent>
           {player && <Level level={player.level} className="invitation-player-level" />}
-          {!managed && !readOnly && <Select controlSize="sm" aria-label={t('domain.activity.fields.invitationResponse')} value={invitation.response} onChange={(event) => {
+          {canEditResponse && !readOnly && <Select controlSize="sm" aria-label={t('domain.activity.fields.invitationResponse')} value={invitation.response} onChange={(event) => {
             const response = event.target.value as InvitationResponse;
             onStatusChange(invitation.id, response, response === 'declined' ? invitation.declineReason : undefined);
           }}>

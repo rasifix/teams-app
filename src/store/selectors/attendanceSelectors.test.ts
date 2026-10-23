@@ -84,7 +84,10 @@ describe('attendance dialog selectors', () => {
       present: 1,
       absent: 0,
       excused: 1,
-      excusedWithReason: [{ playerId: 'p4', name: 'Cy X', reason: 'sick' }],
+      recordedRows: [
+        { playerId: 'p2', name: 'Ada X', status: 'present', reason: undefined },
+        { playerId: 'p4', name: 'Cy X', status: 'excused', reason: 'sick' },
+      ],
     });
     expect(selectAttendanceSummary(activity, players)).toMatchObject({ isRecorded: false, present: 0, excused: 0 });
   });

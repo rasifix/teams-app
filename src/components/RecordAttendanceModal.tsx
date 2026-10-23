@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, EntityContent, EntityList, EntityRow, EntityTitle, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
+import { Button, EntityContent, EntityList, EntityRow, EntityTitle, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select } from './ui';
 import type { ActivityAttendance } from '../types';
 import { ATTENDANCE_REASONS, toAttendanceRecords, type AttendanceDialogRow } from '../store/selectors/attendanceSelectors';
 
@@ -51,26 +51,26 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
               {rows.map((row) => {
                 const isExcused = row.status === 'excused';
                 return (
-                  <EntityRow key={row.playerId} align="start" data-testid="attendance-row">
+                  <EntityRow key={row.playerId} density="compact" data-attendance-dialog="true" data-testid="attendance-row">
                     <EntityContent>
-                    <Stack gap="sm">
-                    <Split gap="sm">
                       <EntityTitle>{row.name}</EntityTitle>
-                      <Select
-                        value={row.status}
-                        onChange={(event) => update(row.playerId, {
-                          status: event.target.value as AttendanceDialogRow['status'],
-                          reason: '',
-                        })}
-                        aria-label={`${row.name}: ${t('page.attendance.statusLabel')}`}
-                      >
-                        <option value="present">{t('domain.attendance.status.present')}</option>
-                        <option value="absent">{t('domain.attendance.status.absent')}</option>
-                        <option value="excused">{t('domain.attendance.status.excused')}</option>
-                      </Select>
-                    </Split>
+                    </EntityContent>
+                    <Select
+                      controlSize="sm"
+                      value={row.status}
+                      onChange={(event) => update(row.playerId, {
+                        status: event.target.value as AttendanceDialogRow['status'],
+                        reason: '',
+                      })}
+                      aria-label={`${row.name}: ${t('page.attendance.statusLabel')}`}
+                    >
+                      <option value="present">{t('domain.attendance.status.present')}</option>
+                      <option value="absent">{t('domain.attendance.status.absent')}</option>
+                      <option value="excused">{t('domain.attendance.status.excused')}</option>
+                    </Select>
                     {isExcused && (
                       <Select
+                        controlSize="sm"
                         value={row.reason}
                         onChange={(event) => update(row.playerId, { reason: event.target.value as AttendanceDialogRow['reason'] })}
                         aria-label={t('page.attendance.reasonPlaceholder')}
@@ -81,8 +81,6 @@ export default function RecordAttendanceModal({ isOpen, initialRows, onClose, on
                         ))}
                       </Select>
                     )}
-                    </Stack>
-                    </EntityContent>
                   </EntityRow>
                 );
               })}

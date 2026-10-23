@@ -75,7 +75,7 @@ export interface AttendanceSummary {
   present: number;
   absent: number;
   excused: number;
-  excusedWithReason: Array<{ playerId: string; name: string; reason?: AttendanceReason }>;
+  recordedRows: Array<{ playerId: string; name: string; status: AttendanceStatus; reason?: AttendanceReason }>;
 }
 
 /** Summary of recorded attendance restricted to selected players. */
@@ -89,8 +89,8 @@ export function selectAttendanceSummary(activity: Activity, players: Player[]): 
     present: records.filter((record) => record.status === 'present').length,
     absent: records.filter((record) => record.status === 'absent').length,
     excused: excused.length,
-    excusedWithReason: excused
-      .map((record) => ({ playerId: record.personId, name: namesById.get(record.personId) ?? record.personId, reason: record.reason }))
+    recordedRows: records
+      .map((record) => ({ playerId: record.personId, name: namesById.get(record.personId) ?? record.personId, status: record.status, reason: record.reason }))
       .sort((a, b) => a.name.localeCompare(b.name)),
   };
 }

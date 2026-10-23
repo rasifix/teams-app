@@ -34,10 +34,13 @@ export default function ActivityAttendanceCard({ activity, players, readOnly = f
           <Badge tone="danger">{t('domain.attendance.status.absent')}: {summary.absent}</Badge>
           <Badge tone="warning">{t('domain.attendance.status.excused')}: {summary.excused}</Badge>
         </Cluster>
-        {summary.excusedWithReason.length > 0 && <EntityList variant="bare">
-          {summary.excusedWithReason.map((entry) => <EntityRow key={entry.playerId} density="compact">
+        {summary.recordedRows.length > 0 && <EntityList variant="bare">
+          {summary.recordedRows.map((entry) => <EntityRow key={entry.playerId} density="compact">
             <EntityContent><EntityTitle>{entry.name}</EntityTitle></EntityContent>
-            {entry.reason && <EntityMeta><span>{t(`domain.attendance.reasons.${entry.reason}`)}</span></EntityMeta>}
+            <EntityMeta>
+              <span>{t(`domain.attendance.status.${entry.status}`)}</span>
+              {entry.reason && <span>{t(`domain.attendance.reasons.${entry.reason}`)}</span>}
+            </EntityMeta>
           </EntityRow>)}
         </EntityList>}
       </Stack>}

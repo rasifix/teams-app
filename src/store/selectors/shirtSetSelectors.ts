@@ -84,6 +84,7 @@ export function selectShirtAssignmentSetup(
   const playersById = new Map(players.map((player) => [player.id, player]));
   const currentByPlayerId = new Map((currentAssignments ?? []).map((assignment) => [assignment.playerId, assignment.shirtNumber]));
   const preserveCurrent = selectedShirtSetId === currentShirtSetId;
+  const isFirstAssignment = !currentShirtSetId;
   const assignedNumbers = new Set<number>();
 
   const assignments = (team.selectedPlayers ?? []).map((playerId) => {
@@ -100,6 +101,24 @@ export function selectShirtAssignmentSetup(
     if (shirtNumber > 0) assignedNumbers.add(shirtNumber);
     return { playerId, shirtNumber };
   });
+
+  if (isFirstAssignment) {
+    const remainingNumbers = availableShirts
+      .map((shirt) => shirt.number)
+      .filter((number) => !assignedNumbers.has(number) && !usedInOtherTeams.has(number));
+    let nextNumberIndex = 0;
+
+    assignments.forEach((assignment) => {
+      if (assignment.shirtNumber > 0) return;
+
+      const shirtNumber = remainingNumbers[nextNumberIndex];
+      if (shirtNumber === undefined) return;
+
+      assignment.shirtNumber = shirtNumber;
+      assignedNumbers.add(shirtNumber);
+      nextNumberIndex += 1;
+    });
+  }
 
   return { shirtSet, availableShirts, assignments, usedInOtherTeams };
 }

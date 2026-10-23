@@ -35,6 +35,46 @@ describe('selectShirtAssignmentSetup', () => {
     ]);
   });
 
+  it('fills remaining players with the lowest eligible shirts on first assignment', () => {
+    const result = selectShirtAssignmentSetup(
+      { ...team, selectedPlayers: ['p1', 'p2'] },
+      [
+        { ...players[0], preferredShirtNumber: undefined },
+        { ...players[1], preferredShirtNumber: undefined },
+      ],
+      [{ ...shirtSet, shirts: [shirt(4), shirt(2), shirt(7), { ...shirt(3), status: 'unavailable' }] }],
+      'set-1',
+      undefined,
+      undefined,
+      { 'set-1': [2] },
+    );
+
+    expect(result.assignments).toEqual([
+      { playerId: 'p1', shirtNumber: 4 },
+      { playerId: 'p2', shirtNumber: 7 },
+    ]);
+  });
+
+  it('does not auto-fill players when editing an existing shirt-set assignment', () => {
+    const result = selectShirtAssignmentSetup(
+      { ...team, selectedPlayers: ['p1', 'p2'] },
+      [
+        { ...players[0], preferredShirtNumber: undefined },
+        { ...players[1], preferredShirtNumber: undefined },
+      ],
+      [{ ...shirtSet, shirts: [shirt(2), shirt(4)] }],
+      'set-1',
+      'set-1',
+      [{ playerId: 'p1', shirtNumber: 2 }],
+      {},
+    );
+
+    expect(result.assignments).toEqual([
+      { playerId: 'p1', shirtNumber: 2 },
+      { playerId: 'p2', shirtNumber: 0 },
+    ]);
+  });
+
   it('returns safe empty data when the selected set does not exist', () => {
     const result = selectShirtAssignmentSetup(team, players, [shirtSet], 'missing', undefined, undefined, {});
     expect(result).toMatchObject({ shirtSet: null, availableShirts: [], assignments: [] });

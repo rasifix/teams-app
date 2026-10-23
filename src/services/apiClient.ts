@@ -8,6 +8,16 @@ import {
 /** Squad-scoped API base path (`/api/squads` remains a deprecated backend alias). */
 export const SQUADS_PATH = '/api/squads';
 
+const SPOND_PROXY_ENDPOINTS = new Set([
+  '/api/integrations/spond/groups',
+  '/api/integrations/spond/snapshot',
+]);
+
+interface ApiErrorBody {
+  error?: unknown;
+  message?: unknown;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -50,9 +60,20 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      if (isProtectedEndpoint && isAuthenticationFailure(response.status, token)) {
+      const errorBody = await response.json().catch(() => null) as ApiErrorBody | null;
+      const errorCode = typeof errorBody?.error === 'string' ? errorBody.error : null;
+      const isSpondProxyEndpoint = SPOND_PROXY_ENDPOINTS.has(endpoint);
+
+      // Spond proxy authentication failures use HTTP 401 too, but they refer
+      // to the supplied Spond credentials rather than the app session.
+      if (isProtectedEndpoint && !isSpondProxyEndpoint && isAuthenticationFailure(response.status, token)) {
         clearSessionAndRedirectToLogin();
       }
+
+      if (isSpondProxyEndpoint && errorCode?.startsWith('SPOND_')) {
+        throw new Error(errorCode);
+      }
+
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
     }
 

@@ -113,10 +113,10 @@ describe('Spond wizard progress', () => {
     expect(selectSpondReviewSteps([])).toEqual([]);
   });
 
-  it('uses a separate link flow and a three-step scoped sync flow', () => {
+  it('uses separate progress flows for linking, player sync, and event sync', () => {
     expect(selectSpondWizardProgressSteps('link')).toEqual(['credentials', 'group', 'linked']);
     expect(selectSpondWizardProgressSteps('players')).toEqual(['credentials', 'diff', 'results']);
-    expect(selectSpondWizardProgressSteps('events')).toEqual(['credentials', 'diff', 'results']);
+    expect(selectSpondWizardProgressSteps('events')).toEqual(['credentials', 'range', 'diff', 'results']);
   });
 });
 

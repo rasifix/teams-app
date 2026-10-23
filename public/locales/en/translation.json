@@ -1096,6 +1096,7 @@
       "steps": {
         "credentials": "Enter credentials",
         "group": "Select group",
+        "range": "Choose date range",
         "diff": "Review changes",
         "results": "Synchronization complete",
         "linked": "Group linked",

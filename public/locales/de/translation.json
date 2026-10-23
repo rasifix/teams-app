@@ -1096,6 +1096,7 @@
       "steps": {
         "credentials": "Zugangsdaten eingeben",
         "group": "Gruppe auswählen",
+        "range": "Datumsbereich auswählen",
         "diff": "Änderungen prüfen",
         "results": "Synchronisierung abgeschlossen",
         "linked": "Gruppe verknüpft",

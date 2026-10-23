@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert } from './ui';
 
@@ -16,16 +16,9 @@ interface SpondSyncNavigationState {
 export default function SpondSyncResultBanner({ className = '' }: { className?: string }) {
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const [result] = useState(
     () => (location.state as SpondSyncNavigationState | null)?.spondSyncResult,
   );
-
-  useEffect(() => {
-    if (result) {
-      navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
-    }
-  }, [location.pathname, location.search, navigate, result]);
 
   if (!result) return null;
 

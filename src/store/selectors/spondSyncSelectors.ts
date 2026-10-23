@@ -446,6 +446,13 @@ export interface SpondSyncRange {
   to: string;
 }
 
+export function selectCurrentSpondPeriodId(periods: Period[], today = new Date()): string {
+  const todayDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()]
+    .map((part) => String(part).padStart(2, '0'));
+  const todayValue = `${todayDate[0]}-${todayDate[1]}-${todayDate[2]}`;
+  return periods.find((period) => period.startDate <= todayValue && todayValue <= period.endDate)?.id ?? '';
+}
+
 export function selectSpondSyncRange(
   periods: Period[],
   periodId: string,

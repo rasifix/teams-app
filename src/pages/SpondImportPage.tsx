@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Card, CardBody, CardTitle, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
 import {
+  SpondImportTypesStep,
   SpondCredentialsStep,
   SpondGroupStep,
 } from '../components/spondImport/SpondConnectionSteps';
@@ -13,7 +14,7 @@ import type { SpondSyncResult } from '../components/SpondSyncResultBanner';
 import { useAuth } from '../hooks/useAuth';
 import { createSpondReadClient, importSpondSnapshot } from '../services/spondService';
 import { linkSquadToSpond } from '../services/squadService';
-import { useActivities, usePlayers, useSfvCatalog, useSquad, useStore, useTrainers } from '../store';
+import { useActivities, usePlayers, useSfvCatalog, useSquad, useSquadPeriods, useStore, useTrainers } from '../store';
 import {
   selectInitialSpondActivityDrafts,
   selectInitialSpondGuardianSelection,
@@ -25,6 +26,7 @@ import {
   selectSpondActivityDecisions,
   selectSpondLinkedGroup,
   selectSpondActivityDraftsWithSelection,
+  selectCurrentSpondPeriodId,
   selectSpondDateRangeError,
   selectSpondDecisionSummary,
   selectSpondEventRows,
@@ -33,6 +35,7 @@ import {
   selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
   selectSpondWizardProgressSteps,
+  selectSpondSyncRange,
   type SpondActivityDraft,
   type SpondEventFilter,
   type SpondMemberDraft,
@@ -42,7 +45,7 @@ import type { SpondGroupSnapshot, SpondSnapshot } from '../types/spond';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { localDateStartToUtcISOString } from '../utils/dateFormatter';
 
-type Step = 'credentials' | 'group' | 'diff' | 'results' | 'linked';
+type Step = 'credentials' | 'group' | 'range' | 'diff' | 'results' | 'linked';
 
 const isoDate = (date: Date): string => date.toISOString().slice(0, 10);
 const shiftedDate = (days: number): string => {
@@ -74,8 +77,16 @@ export default function SpondImportPage() {
   const [groupId, setGroupId] = useState(squad?.spondId ?? '');
   const [selectedSubGroupId, setSelectedSubGroupId] = useState('');
   const types = isEventOnly ? ['events'] : ['players', 'guardians'];
-  const from = shiftedDate(-30);
-  const to = shiftedDate(180);
+  const periods = useSquadPeriods();
+  const fallbackRange = useMemo(() => ({ from: shiftedDate(-30), to: shiftedDate(180) }), []);
+  const defaultPeriodId = useMemo(() => selectCurrentSpondPeriodId(periods), [periods]);
+  const initialRange = useMemo(
+    () => selectSpondSyncRange(periods, defaultPeriodId, fallbackRange),
+    [defaultPeriodId, fallbackRange, periods],
+  );
+  const [periodId, setPeriodId] = useState(defaultPeriodId);
+  const [from, setFrom] = useState(initialRange.from);
+  const [to, setTo] = useState(initialRange.to);
   const [snapshot, setSnapshot] = useState<SpondSnapshot | null>(null);
   const [memberDrafts, setMemberDrafts] = useState<Record<string, SpondMemberDraft>>({});
   const [activityDrafts, setActivityDrafts] = useState<Record<string, SpondActivityDraft>>({});
@@ -188,7 +199,7 @@ export default function SpondImportPage() {
         }
         setGroupId(linkedGroup.groupId);
         setSelectedSubGroupId(linkedGroup.subGroupId ?? '');
-        await loadSnapshot(linkedGroup.groupId, linkedGroup.subGroupId ?? '');
+        setStep('range');
         return;
       }
       const preferred = selectSpondLinkedGroup(available, squad.spondId)?.groupId
@@ -219,6 +230,13 @@ export default function SpondImportPage() {
     setActivityDrafts((current) => ({ ...current, [id]: { ...current[id], ...update } }));
   };
 
+  const updatePeriod = (nextPeriodId: string) => {
+    setPeriodId(nextPeriodId);
+    const nextRange = selectSpondSyncRange(periods, nextPeriodId, { from, to });
+    setFrom(nextRange.from);
+    setTo(nextRange.to);
+  };
+
   const setVisibleEventSelection = (selected: boolean) => {
     setActivityDrafts((current) => selectSpondActivityDraftsWithSelection(current, visibleEventRows, selected));
   };
@@ -229,6 +247,7 @@ export default function SpondImportPage() {
 
   const previousStep = () => {
     if (step === 'group') setStep('credentials');
+    else if (step === 'range') setStep('credentials');
     else if (step === 'diff') setStep('credentials');
   };
 
@@ -373,6 +392,29 @@ export default function SpondImportPage() {
               onGroupChange={selectGroup}
               onBack={previousStep}
               onNext={() => void linkGroup()}
+            />
+          )}
+          {step === "range" && isEventOnly && (
+            <SpondImportTypesStep
+              scope="events"
+              groups={groups}
+              groupId={groupId}
+              selectedSubGroupId={selectedSubGroupId}
+              subGroupSelectionLocked
+              onSubGroupSelectionChange={setSelectedSubGroupId}
+              types={['events']}
+              periods={periods}
+              periodId={periodId}
+              from={from}
+              to={to}
+              dateRangeError={dateRangeError}
+              busy={busy}
+              onToggleType={() => undefined}
+              onPeriodChange={updatePeriod}
+              onFromChange={(nextFrom) => { setPeriodId(''); setFrom(nextFrom); }}
+              onToChange={(nextTo) => { setPeriodId(''); setTo(nextTo); }}
+              onBack={previousStep}
+              onNext={() => void loadSnapshot()}
             />
           )}
           {step === "diff" && isPlayerOnly && (

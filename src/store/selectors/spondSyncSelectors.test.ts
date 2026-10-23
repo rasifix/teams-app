@@ -22,6 +22,7 @@ import {
   selectSpondMemberDraftsWithSelection,
   selectNextSpondReviewStep,
   selectSpondSyncRange,
+  selectCurrentSpondPeriodId,
   selectSpondWizardProgressSteps,
   selectSpondLinkedGroup,
   selectSpondReviewSteps,
@@ -461,6 +462,20 @@ describe('Spond decision summary', () => {
 });
 
 describe('Spond date range selector', () => {
+  it('proposes the first period containing today', () => {
+    const periods = [
+      { id: 'current-a', name: 'Current A', startDate: '2026-01-01', endDate: '2026-12-31' },
+      { id: 'current-b', name: 'Current B', startDate: '2026-06-01', endDate: '2026-11-30' },
+    ];
+    expect(selectCurrentSpondPeriodId(periods, new Date(2026, 9, 23))).toBe('current-a');
+  });
+
+  it('returns no proposed period when today is outside all periods', () => {
+    expect(selectCurrentSpondPeriodId([
+      { id: 'past', name: 'Past', startDate: '2026-01-01', endDate: '2026-06-30' },
+    ], new Date(2026, 9, 23))).toBe('');
+  });
+
   it('accepts a valid range and covers missing, reversed, and oversized ranges', () => {
     expect(selectSpondDateRangeError('2026-01-01', '2026-12-31')).toBeNull();
     expect(selectSpondDateRangeError('', '2026-12-31')).toBe('missing');

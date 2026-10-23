@@ -33,6 +33,7 @@ describe('navigation selectors', () => {
     expect(items.map((item) => item.path)).toEqual(['/members', '/activities', '/shirts', '/squad-settings', '/statistics']);
   });
 
+
   it('shows all navigation items for trainers', () => {
     const items = selectHeaderNavItems(
       {

@@ -297,6 +297,11 @@
     }
   },
   "page": {
+    "activityAudit": {
+      "title": "Activity log", "description": "Review who changed what and when in this squad.", "panelTitle": "All actions", "loading": "Loading activity log...", "loadFailed": "The activity log could not be loaded.", "empty": "No activity actions have been recorded yet.", "loadMore": "Load more", "unknownActivity": "Unknown activity",
+      "columns": { "when": "When", "who": "Who", "what": "What", "activity": "Activity" },
+      "eventTypes": { "ActivityCreated": "Created activity", "ActivityImported": "Imported activity", "ActivityDetailsChanged": "Changed activity details", "ActivityDeleted": "Deleted activity", "InvitationAdded": "Added invitation", "InvitationRemoved": "Removed invitation", "InvitationResponseChanged": "Changed invitation response", "TeamAdded": "Added team", "TeamChanged": "Changed team", "TeamRemoved": "Removed team", "PlayerSelected": "Selected player", "PlayerUnselected": "Unselected player", "LineupChanged": "Changed lineup", "SelectionPublished": "Published selection", "AttendanceRecorded": "Recorded attendance", "AttendanceRemoved": "Removed attendance", "TaskCreated": "Created task", "TaskChanged": "Changed task", "TaskDeleted": "Deleted task", "TaskSignupAdded": "Added task signup", "TaskSignupRemoved": "Removed task signup", "TrainingPlanChanged": "Changed training plan" }
+    },
     "events": {
       "title": "Activities",
       "subtitle": "Plan matches and tournaments, then manage attendance and teams.",
@@ -565,7 +570,9 @@
       "inactiveIndicatorTooltip": "Inactive player is still assigned in this future activity.",
       "removePlayer": "Remove player",
       "unknownPlayer": "Unknown player",
-      "assignedShirtsCount": "{{count}} assigned"
+      "assignedShirtsCount": "{{count}} assigned",
+      "noResponsiblePerson": "No responsible person assigned",
+      "playersCount": "{{selected}} / {{max}} players"
     },
     "invitePlayers": {
       "title": "Invite Players",
@@ -725,6 +732,7 @@
       },
       "loading": "Loading activity...",
       "notFound": "Activity not found.",
+      "viewHistory": "View change history",
       "navigationLabel": "Activity navigation",
       "teamsTitle": "Teams",
       "addTeam": "Add team",
@@ -743,6 +751,36 @@
       "deleteEventMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "errors": {
         "noEventId": "No activity ID provided"
+      }
+    },
+    "activityHistory": {
+      "title": "Change history",
+      "panelTitle": "Changes to this activity",
+      "loading": "Loading change history...",
+      "loadFailed": "The change history could not be loaded.",
+      "empty": "No changes have been recorded yet.",
+      "loadMore": "Load more",
+      "responses": { "accepted": "accepted", "declined": "declined", "open": "left open" },
+      "statuses": { "present": "present", "absent": "absent", "excused": "excused" },
+      "fields": { "name": "name", "startsAt": "start time", "endsAt": "end time", "location": "location", "kind": "type", "status": "status", "opponentName": "opponent", "matchFormatId": "match format", "maxPlayersPerTeam": "maximum players per team", "minPlayersPerTeam": "minimum players per team", "spondId": "Spond link" },
+      "changes": {
+        "activityCreated": "{{actor}} created this activity.",
+        "activityImported": "{{actor}} imported this activity.",
+        "activityDetailsChanged": "{{actor}} changed activity details ({{fields}}).",
+        "activityDeleted": "{{actor}} deleted this activity.",
+        "invitationAdded": "{{actor}} invited {{player}}.",
+        "invitationRemoved": "{{actor}} removed the invitation for {{player}}.",
+        "invitationResponseChanged": "{{player}}'s invitation was {{response}} by {{actor}}.",
+        "teamAdded": "{{actor}} added team {{team}}.",
+        "teamChanged": "{{actor}} changed team {{team}}.",
+        "teamRemoved": "{{actor}} removed team {{team}}.",
+        "playerSelected": "{{actor}} selected {{player}} for team {{team}}.",
+        "playerUnselected": "{{actor}} removed {{player}} from team {{team}}.",
+        "lineupChanged": "{{actor}} changed the lineup.",
+        "selectionPublished": "{{actor}} published the selection.",
+        "attendanceRecorded": "{{actor}} recorded {{person}} as {{status}}.",
+        "attendanceRemoved": "{{actor}} removed the attendance record for {{person}}.",
+        "otherChange": "{{actor}} made a change to this activity."
       }
     },
     "teamDetail": {

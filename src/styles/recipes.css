@@ -389,6 +389,7 @@
 .ui-data-table { width: 100%; min-width: 100%; border-collapse: collapse; }
 .ui-data-table__head { background: var(--color-surface-subtle); }
 .ui-data-table__body { background: rgb(var(--color-surface)); }
+.activity-audit-details { overflow-x: auto; margin: var(--space-2) 0 0; color: var(--color-text-muted); font-family: var(--font-family-mono); font-size: var(--font-size-xs); white-space: pre-wrap; }
 .ui-data-table__row { border-bottom: 1px solid var(--color-border); transition: background var(--transition-fast); }
 .ui-data-table__row--interactive { cursor: pointer; }
 .ui-data-table__row--interactive:hover,

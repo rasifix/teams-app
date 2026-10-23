@@ -297,6 +297,11 @@
     }
   },
   "page": {
+    "activityAudit": {
+      "title": "Aktivitätsprotokoll", "description": "Prüfe, wer in dieser Mannschaft wann was geändert hat.", "panelTitle": "Alle Aktionen", "loading": "Aktivitätsprotokoll wird geladen ...", "loadFailed": "Das Aktivitätsprotokoll konnte nicht geladen werden.", "empty": "Es wurden noch keine Aktionen aufgezeichnet.", "loadMore": "Mehr laden", "unknownActivity": "Unbekannte Aktivität",
+      "columns": { "when": "Wann", "who": "Wer", "what": "Was", "activity": "Aktivität" },
+      "eventTypes": { "ActivityCreated": "Aktivität erstellt", "ActivityImported": "Aktivität importiert", "ActivityDetailsChanged": "Aktivitätsdetails geändert", "ActivityDeleted": "Aktivität gelöscht", "InvitationAdded": "Einladung hinzugefügt", "InvitationRemoved": "Einladung entfernt", "InvitationResponseChanged": "Antwort geändert", "TeamAdded": "Team hinzugefügt", "TeamChanged": "Team geändert", "TeamRemoved": "Team entfernt", "PlayerSelected": "Spieler ausgewählt", "PlayerUnselected": "Spieler abgewählt", "LineupChanged": "Aufstellung geändert", "SelectionPublished": "Auswahl veröffentlicht", "AttendanceRecorded": "Anwesenheit erfasst", "AttendanceRemoved": "Anwesenheit entfernt", "TaskCreated": "Aufgabe erstellt", "TaskChanged": "Aufgabe geändert", "TaskDeleted": "Aufgabe gelöscht", "TaskSignupAdded": "Aufgabenanmeldung hinzugefügt", "TaskSignupRemoved": "Aufgabenanmeldung entfernt", "TrainingPlanChanged": "Trainingsplan geändert" }
+    },
     "events": {
       "title": "Aktivitäten",
       "subtitle": "Spiele und Turniere planen, Teilnahmen und Teams verwalten.",
@@ -565,7 +570,9 @@
       "inactiveIndicatorTooltip": "Inaktiver Spieler ist in dieser zukünftigen Aktivität noch zugewiesen.",
       "removePlayer": "Spieler entfernen",
       "unknownPlayer": "Unbekannter Spieler",
-      "assignedShirtsCount": "{{count}} zugewiesen"
+      "assignedShirtsCount": "{{count}} zugewiesen",
+      "noResponsiblePerson": "Keine verantwortliche Person zugewiesen",
+      "playersCount": "{{selected}} / {{max}} Spieler"
     },
     "invitePlayers": {
       "title": "Spieler einladen",
@@ -725,6 +732,7 @@
       },
       "loading": "Aktivität wird geladen...",
       "notFound": "Aktivität nicht gefunden.",
+      "viewHistory": "Änderungsverlauf anzeigen",
       "navigationLabel": "Aktivität wechseln",
       "teamsTitle": "Teams",
       "addTeam": "Team hinzufügen",
@@ -743,6 +751,36 @@
       "deleteEventMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "errors": {
         "noEventId": "Keine Aktivitäts-ID angegeben"
+      }
+    },
+    "activityHistory": {
+      "title": "Änderungsverlauf",
+      "panelTitle": "Änderungen an dieser Aktivität",
+      "loading": "Änderungsverlauf wird geladen ...",
+      "loadFailed": "Der Änderungsverlauf konnte nicht geladen werden.",
+      "empty": "Es wurden noch keine Änderungen aufgezeichnet.",
+      "loadMore": "Mehr laden",
+      "responses": { "accepted": "angenommen", "declined": "abgelehnt", "open": "offen gelassen" },
+      "statuses": { "present": "anwesend", "absent": "abwesend", "excused": "entschuldigt" },
+      "fields": { "name": "Name", "startsAt": "Startzeit", "endsAt": "Endzeit", "location": "Ort", "kind": "Typ", "status": "Status", "opponentName": "Gegner", "matchFormatId": "Spielformat", "maxPlayersPerTeam": "maximale Spielerzahl pro Team", "minPlayersPerTeam": "minimale Spielerzahl pro Team", "spondId": "Spond-Verknüpfung" },
+      "changes": {
+        "activityCreated": "{{actor}} hat diese Aktivität erstellt.",
+        "activityImported": "{{actor}} hat diese Aktivität importiert.",
+        "activityDetailsChanged": "{{actor}} hat Aktivitätsdetails geändert ({{fields}}).",
+        "activityDeleted": "{{actor}} hat diese Aktivität gelöscht.",
+        "invitationAdded": "{{actor}} hat {{player}} eingeladen.",
+        "invitationRemoved": "{{actor}} hat die Einladung für {{player}} entfernt.",
+        "invitationResponseChanged": "Die Einladung von {{player}} wurde von {{actor}} {{response}}.",
+        "teamAdded": "{{actor}} hat Team {{team}} hinzugefügt.",
+        "teamChanged": "{{actor}} hat Team {{team}} geändert.",
+        "teamRemoved": "{{actor}} hat Team {{team}} entfernt.",
+        "playerSelected": "{{actor}} hat {{player}} Team {{team}} zugeteilt.",
+        "playerUnselected": "{{actor}} hat {{player}} aus Team {{team}} entfernt.",
+        "lineupChanged": "{{actor}} hat die Aufstellung geändert.",
+        "selectionPublished": "{{actor}} hat die Auswahl veröffentlicht.",
+        "attendanceRecorded": "{{actor}} hat {{person}} als {{status}} erfasst.",
+        "attendanceRemoved": "{{actor}} hat den Anwesenheitseintrag für {{person}} entfernt.",
+        "otherChange": "{{actor}} hat eine Änderung an dieser Aktivität vorgenommen."
       }
     },
     "teamDetail": {

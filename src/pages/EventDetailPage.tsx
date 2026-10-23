@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import { useAuth } from '../hooks/useAuth';
-import { useSquad, useStore, useTrainers } from '../store/useStore';
+import { useSquad, useTrainers } from '../store/useStore';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useShirtSets } from '../store';
 import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
@@ -11,19 +11,17 @@ import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
+import TeamCard from '../components/TeamCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TeamPrintSummary from '../components/TeamPrintSummary';
+import { ACTIVITY_AUDIT_LOG_ENABLED } from '../config/features';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, shouldRemovePlayerFromSelection } from '../store/selectors/activitySelectors';
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
-import { selectTeamResponsiblePeople } from '../store/selectors/teamTrainerSelectors';
-import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
-import Strength from '../components/Strength';
-import Level from '../components/Level';
-import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, EntityContent, EntityList, EntityRow, EntityTitle, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
+import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
 export default function EventDetailPage() {
   const { t, i18n } = useTranslation();
@@ -35,7 +33,6 @@ export default function EventDetailPage() {
   const { user } = useAuth();
   const squad = useSquad();
   const trainers = useTrainers();
-  const getTeamAverageLevel = useStore((state) => state.getTeamAverageLevel);
   const spondLinked = selectIsSpondLinked(squad);
   const canManage = canAccessRestrictedManagement(user, { squad, trainers });
   const loading = useAppLoading();
@@ -134,55 +131,6 @@ export default function EventDetailPage() {
   const allTeamsHaveResponsiblePeople = selectAllTeamsHaveResponsiblePeople(activity);
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
-  const renderTeam = (team: Team) => {
-    const teamTime = activity.kind === 'match' ? getActivityStartTime(activity) : team.startTime || getActivityStartTime(activity);
-    const teamLocation = activity.kind === 'match' ? activity.location : team.location || activity.location;
-    const hasDifferentTime = teamTime !== getActivityStartTime(activity);
-    const hasDifferentLocation = teamLocation !== activity.location;
-    const selectedPlayers = selectTeamPlayersByName(team, players);
-    const responsiblePeople = selectTeamResponsiblePeople(team.responsiblePersonId, trainers, players);
-
-    return <article key={team.id} aria-label={t('page.events.teamCardLabel', { team: team.name })} className="event-detail-team-card">
-      <div className="event-detail-team-header">
-        <div className="event-detail-team-main">
-          <Cluster gap="sm">
-            {team.name}
-            <Strength level={team.strength || 2} className="event-detail-team-strength" />
-            <Badge>👥 {selectedPlayers.length}/{activity.maxPlayersPerTeam ?? players.length}</Badge>
-            {selectedPlayers.length > 0 && <Badge>⭐ {getTeamAverageLevel(team).toFixed(1)}</Badge>}
-          </Cluster>
-          {(hasDifferentTime || hasDifferentLocation) && <p className="event-detail-team-overrides">
-            {hasDifferentTime && <>🕐 {teamTime}</>}
-            {hasDifferentLocation && <span className={hasDifferentTime ? 'event-detail-location-offset' : ''}>📍 {teamLocation}</span>}
-          </p>}
-          {responsiblePeople.length > 0 && <p className="event-detail-responsible">
-            👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}
-          </p>}
-        </div>
-        <IconButton
-          label={t('page.events.openTeamDetails', { team: team.name })}
-          onClick={() => navigate(`/activities/${activity.id}/teams/${team.id}`)}
-        >
-          <svg className="icon-sm" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-          </svg>
-        </IconButton>
-      </div>
-      <div className="event-detail-roster">
-        {selectedPlayers.length > 0 ? <EntityList variant="bare">
-          {selectedPlayers.map((player) => {
-            const shirtNumber = team.shirtAssignments?.find((assignment) => assignment.playerId === player.id)?.shirtNumber;
-            return <EntityRow key={player.id} density="compact">
-            {shirtNumber && shirtNumber > 0 && <span className="event-detail-shirt-number">{shirtNumber}</span>}
-            <EntityContent><EntityTitle>{player.firstName} {player.lastName}</EntityTitle></EntityContent>
-            <Level level={player.level} className="event-detail-player-level" />
-          </EntityRow>;
-          })}
-        </EntityList> : <p className="event-detail-empty-roster">{t('page.teamDetail.noPlayersSelected')}</p>}
-      </div>
-    </article>;
-  };
-
   return <Page>
     <AdjacentNavigation aria-label={t('page.eventDetail.navigationLabel')}>
         {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/activities/${previous.id}`)} className="event-detail-navigation-button">← {previous.name}</Button> : <span />}
@@ -205,6 +153,7 @@ export default function EventDetailPage() {
           {activity.kind === 'match' && activity.opponentName && <p className="event-detail-opponent">{t('domain.activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
         <PageActions>
+          {ACTIVITY_AUDIT_LOG_ENABLED && <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/activities/${activity.id}/history`)}>{t('page.eventDetail.viewHistory')}</Button>}
           {activity.status === 'active' && <Button type="button" variant="secondary" size="sm" onClick={() => setIsEditOpen(true)}>{t('common.actions.edit')}</Button>}
           {canManage && !spondLinked && activity.status === 'active' && <Button type="button" variant="ghost" size="sm" onClick={() => setIsCancelOpen(true)}>{t('page.eventDetail.cancelActivity')}</Button>}
           {canManage && !spondLinked && activity.status === 'cancelled' && <Button type="button" variant="secondary" size="sm" onClick={() => setIsRestoreOpen(true)}>{t('page.eventDetail.restoreActivity')}</Button>}
@@ -239,7 +188,21 @@ export default function EventDetailPage() {
         </Alert>}
         {activity.teams.length === 0 && !selectCanAddActivityTeam(activity) && <Alert tone="warning">{t('domain.activity.noTeamsLegacy')}</Alert>}
         <Stack gap="sm">
-          {activity.kind === 'match' ? activity.teams[0] && renderTeam(activity.teams[0]) : activity.teams.map(renderTeam)}
+          {(activity.kind === 'match' ? activity.teams.slice(0, 1) : activity.teams).map((team) => (
+            <TeamCard
+              key={team.id}
+              team={team}
+              activity={activity}
+              inactiveFutureEventPlayerIds={new Set()}
+              players={players}
+              trainers={trainers}
+              shirtSets={shirtSets}
+              activities={activities}
+              maxPlayersPerTeam={activity.maxPlayersPerTeam ?? players.length}
+              readOnly
+              onOpenTeam={(teamId) => navigate(`/activities/${activity.id}/teams/${teamId}`)}
+            />
+          ))}
           {selectCanAddActivityTeam(activity) && <AddCardButton cardSize="sm" onClick={() => void handleAddTeam()} label={t('page.eventDetail.addTeam')} />}
         </Stack>
       </Panel>

@@ -118,8 +118,9 @@ This use case covers:
   data.
 - Selection changes are rejected while the Activity is cancelled.
 - The invitation overview remains visible in planning, selection-sent,
-  started, and attendance-recorded phases. It is editable only during planning
-  (and remains read-only for Spond-managed invitations).
+  started, and attendance-recorded phases. It is editable only during planning,
+  except that after a Spond-linked Activity has started, authorized staff may
+  locally correct a Spond-managed response and decline reason.
 - The invitation overview renders Players as a plain compact list. It does not
   use draggable cards or expose drag-and-drop affordances; Team selection is
   changed only through the Team's Player-selection editor.

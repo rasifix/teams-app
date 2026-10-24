@@ -450,26 +450,26 @@ export default function TeamLineupPage() {
         </CardBody>
       </Card>
 
-      <Card className="lineup-editor-card">
+      <Card
+        className={`lineup-editor-card${isDragOverBench ? ' lineup-editor-card--bench-drop' : ''}`}
+        onDragOver={(event) => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          setIsDragOverBench(true);
+        }}
+        onDragLeave={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragOverBench(false);
+        }}
+        onDrop={(event) => {
+          event.preventDefault();
+          const playerId = event.dataTransfer.getData('lineupPlayerId');
+          if (playerId) handleDropOnBench(playerId);
+          setIsDragOverBench(false);
+        }}
+      >
         <CardBody className="lineup-editor-body">
           <CardTitle className="lineup-editor-title">{t('page.teamLineup.benchTitle', { count: benchedPlayers.length })}</CardTitle>
-          <div
-            className={`lineup-bench-drop${isDragOverBench ? ' lineup-bench-drop--drag-over' : ''}`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.dataTransfer.dropEffect = 'move';
-              setIsDragOverBench(true);
-            }}
-            onDragLeave={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragOverBench(false);
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              const playerId = event.dataTransfer.getData('lineupPlayerId');
-              if (playerId) handleDropOnBench(playerId);
-              setIsDragOverBench(false);
-            }}
-          >
+          <div className="lineup-bench-drop">
             {benchedPlayers.length === 0 ? (
               <EmptyState>{t('page.teamLineup.noBenchedPlayers')}</EmptyState>
             ) : (

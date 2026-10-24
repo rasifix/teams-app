@@ -193,9 +193,15 @@ export function applyLineupPlayerDrop(
     ];
   }
 
+  if (!targetAssignment) {
+    return assignments.map((assignment) => assignment.playerId === playerId
+      ? { ...assignment, slotId: targetSlotId }
+      : assignment);
+  }
+
   return assignments.map((assignment) => {
     if (assignment.slotId === sourceAssignment.slotId) {
-      return { ...assignment, playerId: targetAssignment?.playerId ?? playerId };
+      return { ...assignment, playerId: targetAssignment.playerId };
     }
     if (assignment.slotId === targetSlotId) {
       return { ...assignment, playerId };

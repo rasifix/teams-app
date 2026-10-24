@@ -124,6 +124,13 @@ describe('applyLineupPlayerDrop', () => {
     ]);
   });
 
+  it('moves a field player into an empty slot', () => {
+    expect(applyLineupPlayerDrop(assignments, 'p1', 'st')).toEqual([
+      { slotId: 'st', playerId: 'p1' },
+      { slotId: 'cb', playerId: 'p2' },
+    ]);
+  });
+
   it('switches players when dropping onto an occupied slot', () => {
     expect(applyLineupPlayerDrop(assignments, 'p1', 'cb')).toEqual([
       { slotId: 'gk', playerId: 'p2' },

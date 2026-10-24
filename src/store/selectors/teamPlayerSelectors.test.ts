@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Player, Team } from '../../types';
-import { selectAvailablePlayersForTeamSelection, selectTeamPlayersByName, selectTeamPlayersInRosterOrder, selectTeamPrintSummaries, selectTeamSelectionCapacity } from './teamPlayerSelectors';
+import { selectAvailablePlayersForTeamSelection, selectTeamPlayersByName, selectTeamPlayersInRosterOrder, selectTeamPrintSummaries, selectTeamSelectionCapacity, selectTeamSelectionColumns } from './teamPlayerSelectors';
 
 function player(id: string, firstName: string, lastName: string): Player {
   return { id, firstName, lastName, birthDate: '2015-06-15', level: 3, status: 'active' };
@@ -67,6 +67,20 @@ describe('team selection view selectors', () => {
       availableAdditionSlots: 0,
       canAddMore: true,
     });
+  });
+
+  it('builds selected and unselected columns from current, added, and removed players', () => {
+    const current = [player('p1', 'Ada', 'One'), player('p2', 'Ben', 'Two')];
+    const available = [player('p3', 'Cara', 'Three'), player('p4', 'Drew', 'Four')];
+    expect(selectTeamSelectionColumns(current, available, ['p3'], ['p2'])).toEqual({
+      selectedPlayers: [current[0], available[0]],
+      unselectedPlayers: [current[1], available[1]],
+    });
+  });
+
+  it('ignores duplicate current players in candidates and falls back to empty columns', () => {
+    const current = [player('p1', 'Ada', 'One')];
+    expect(selectTeamSelectionColumns(current, [current[0]], [], [])).toEqual({ selectedPlayers: current, unselectedPlayers: [] });
   });
 });
 

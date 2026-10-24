@@ -52,6 +52,33 @@ export function selectTeamSelectionCapacity(
   };
 }
 
+export interface TeamSelectionColumns {
+  selectedPlayers: Player[];
+  unselectedPlayers: Player[];
+}
+
+export function selectTeamSelectionColumns(
+  currentPlayers: Player[],
+  availablePlayers: Player[],
+  selectedPlayerIds: string[],
+  removedPlayerIds: string[],
+): TeamSelectionColumns {
+  const selectedIds = new Set(selectedPlayerIds);
+  const removedIds = new Set(removedPlayerIds);
+  const currentIds = new Set(currentPlayers.map((player) => player.id));
+
+  return {
+    selectedPlayers: [
+      ...currentPlayers.filter((player) => !removedIds.has(player.id)),
+      ...availablePlayers.filter((player) => selectedIds.has(player.id)),
+    ],
+    unselectedPlayers: [
+      ...currentPlayers.filter((player) => removedIds.has(player.id)),
+      ...availablePlayers.filter((player) => !selectedIds.has(player.id) && !currentIds.has(player.id)),
+    ],
+  };
+}
+
 export interface TeamPrintSummary {
   team: Team;
   location?: string;

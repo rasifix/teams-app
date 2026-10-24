@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
+import type { DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers } from '../store';
-import { selectAvailablePlayersForTeamSelection, selectTeamPlayersInRosterOrder, selectTeamSelectionCapacity } from '../store/selectors/teamPlayerSelectors';
+import { selectAvailablePlayersForTeamSelection, selectTeamPlayersInRosterOrder, selectTeamSelectionCapacity, selectTeamSelectionColumns } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
-import { ActionCard, ActionCardTitle, ActionDock, ActionDockContent, Alert, Badge, Button, Cluster, EmptyState, EntityActions, EntityContent, EntityList, EntityRow, EntityTitle, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select, Split, Stack } from '../components/ui';
-import Level from '../components/Level';
+import { ActionDock, ActionDockContent, Alert, Badge, Button, Cluster, DragHandleIcon, EmptyState, EntityList, IconButton, MovePlayerIcon, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select, Split, Stack, TrashIcon } from '../components/ui';
+import PlayerRow from '../components/PlayerRow';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 import { formatInstantDateTime } from '../utils/dateFormatter';
 import type { SelectionRemovalReason } from '../types';
@@ -25,6 +26,10 @@ export default function TeamPlayerSelectionPage() {
   const [removedPlayerIds, setRemovedPlayerIds] = useState<string[]>([]);
   const [removalReasons, setRemovalReasons] = useState<Record<string, SelectionRemovalReason | ''>>({});
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [draggedPlayerId, setDraggedPlayerId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<'selected' | 'unselected' | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   
   const availablePlayers = useMemo(() => event && team
     ? selectAvailablePlayersForTeamSelection(event, team.id, players, levelRange)
@@ -34,30 +39,71 @@ export default function TeamPlayerSelectionPage() {
     ? selectTeamSelectionCapacity(team, maxPlayersPerTeam, selectedPlayerIds, removedPlayerIds)
     : null;
   
-  const handleTogglePlayer = (playerId: string) => {
-    setSelectedPlayerIds(prev =>
-      prev.includes(playerId)
-        ? prev.filter(id => id !== playerId)
-        : [...prev, playerId]
-    );
-  };
-  
-  const handleSelectAll = () => {
-    const playersToSelect = availablePlayers
-      .slice(0, selectionCapacity?.availableAdditionSlots ?? 0)
-      .map((player) => player.id);
-    setSelectedPlayerIds(playersToSelect);
-  };
-  
-  const handleDeselectAll = () => {
-    setSelectedPlayerIds([]);
-  };
-  
   const currentPlayers = team ? selectTeamPlayersInRosterOrder(team, players) : [];
   const editState = event ? selectSelectionEditState(event) : null;
+  const { selectedPlayers, unselectedPlayers } = selectTeamSelectionColumns(
+    currentPlayers, availablePlayers, selectedPlayerIds, removedPlayerIds,
+  );
+
+  const moveToSelected = (playerId: string) => {
+    if (!editState?.canEdit) return;
+    if (removedPlayerIds.includes(playerId)) {
+      setRemovedPlayerIds((current) => current.filter((id) => id !== playerId));
+    } else if (!selectedPlayerIds.includes(playerId) && selectionCapacity?.canAddMore) {
+      setSelectedPlayerIds((current) => [...current, playerId]);
+    }
+  };
+
+  const moveToUnselected = (playerId: string) => {
+    if (!editState?.canEdit) return;
+    if (currentPlayers.some((player) => player.id === playerId)) {
+      setRemovedPlayerIds((current) => current.includes(playerId) ? current : [...current, playerId]);
+    } else {
+      setSelectedPlayerIds((current) => current.filter((id) => id !== playerId));
+    }
+  };
+
+  const handleDragStart = (event: DragEvent<HTMLElement>, playerId: string) => {
+    setDraggedPlayerId(playerId);
+    event.dataTransfer.setData('text/plain', playerId);
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const canDropOn = (target: 'selected' | 'unselected', playerId: string | null) => {
+    if (!playerId || !editState?.canEdit) return false;
+    if (target === 'selected') {
+      return unselectedPlayers.some((player) => player.id === playerId)
+        && (currentPlayers.some((player) => player.id === playerId) || Boolean(selectionCapacity?.canAddMore));
+    }
+    return selectedPlayers.some((player) => player.id === playerId);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLElement>, target: 'selected' | 'unselected') => {
+    setDropTarget(target);
+    if (canDropOn(target, draggedPlayerId)) event.preventDefault();
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLElement>) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropTarget(null);
+  };
+
+  const handleDrop = (event: DragEvent<HTMLElement>, target: 'selected' | 'unselected', movePlayer: (playerId: string) => void) => {
+    event.preventDefault();
+    const playerId = event.dataTransfer.getData('text/plain');
+    if (canDropOn(target, playerId)) movePlayer(playerId);
+    setDraggedPlayerId(null);
+    setDropTarget(null);
+  };
+
+  const handleDeselectAll = () => selectedPlayers.forEach((player) => moveToUnselected(player.id));
+
+  const dragHandle = <DragHandleIcon />;
 
   const handleSave = async () => {
-    if (!event || !eventId || !team || !editState?.canEdit) return;
+    if (!event || !eventId || !team || !editState?.canEdit || isSaving) return;
+
+    setIsSaving(true);
+    setSaveError(false);
     
     const updatedPlayers = [
       ...(team.selectedPlayers ?? []).filter((playerId) => !removedPlayerIds.includes(playerId)),
@@ -71,8 +117,14 @@ export default function TeamPlayerSelectionPage() {
       event.teams, team.id, updatedPlayers, editState.requiresRemovalReason ? reasons : {}, new Date().toISOString(),
     );
 
-    if (await updateActivitySelection(eventId, updatedTeams)) {
-      navigate(`/activities/${eventId}/teams/${teamId}`);
+    try {
+      if (await updateActivitySelection(eventId, updatedTeams)) {
+        navigate(`/activities/${eventId}/teams/${teamId}`);
+      } else {
+        setSaveError(true);
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
   
@@ -118,6 +170,8 @@ export default function TeamPlayerSelectionPage() {
           })}
         </Alert>
       )}
+
+      {saveError && <Alert>{t('page.teamPlayerSelection.saveFailed')}</Alert>}
       
       <LevelRangeSelector
         minLevel={1}
@@ -126,65 +180,10 @@ export default function TeamPlayerSelectionPage() {
         onChange={setLevelRange}
       />
 
-      {currentPlayers.length > 0 && (
-        <Panel>
-          <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.currentPlayers')}</PanelTitle></PanelHeader>
-          <EntityList variant="bare">
-            {currentPlayers.map((player) => {
-              const isRemoved = removedPlayerIds.includes(player.id);
-              return (
-                <EntityRow key={player.id} className={isRemoved ? 'team-selection-current-row--removed' : undefined}>
-                  <EntityContent><EntityTitle>{player.firstName} {player.lastName}</EntityTitle></EntityContent>
-                  <EntityActions>
-                  <Button
-                    type="button"
-                    variant="dangerGhost"
-                    size="sm"
-                    disabled={!editState?.canEdit}
-                    onClick={() => setRemovedPlayerIds((current) => isRemoved
-                      ? current.filter((id) => id !== player.id)
-                      : [...current, player.id])}
-                  >
-                    {isRemoved ? t('page.teamPlayerSelection.undoRemove') : t('page.teamPlayerSelection.removePlayer')}
-                  </Button>
-                  {isRemoved && editState?.requiresRemovalReason && (
-                    <Select
-                      controlSize="sm"
-                      value={removalReasons[player.id] ?? ''}
-                      onChange={(changeEvent) => setRemovalReasons((current) => ({
-                        ...current,
-                        [player.id]: changeEvent.target.value as SelectionRemovalReason | '',
-                      }))}
-                      aria-label={t('page.teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })}
-                      required
-                    >
-                      <option value="">{t('page.teamPlayerSelection.selectRemovalReason')}</option>
-                      {(['sick', 'injured', 'noShow', 'other'] as SelectionRemovalReason[]).map((reason) => (
-                        <option key={reason} value={reason}>{t(`domain.attendance.reasons.${reason}`)}</option>
-                      ))}
-                    </Select>
-                  )}
-                  </EntityActions>
-                </EntityRow>
-              );
-            })}
-          </EntityList>
-        </Panel>
-      )}
-      
       {/* Selection Controls */}
-      {availablePlayers.length > 0 && (
+      {selectedPlayers.length > 0 && (
         <Split gap="sm">
           <Cluster gap="sm">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleSelectAll}
-            disabled={!editState?.canEdit}
-          >
-            {t('common.actions.selectAll')}
-          </Button>
           <Button
             type="button"
             variant="secondary"
@@ -196,55 +195,53 @@ export default function TeamPlayerSelectionPage() {
           </Button>
           </Cluster>
           <Badge>
-            {t('page.teamPlayerSelection.selectedCount', { count: selectedPlayerIds.length })}
+            {t('page.teamPlayerSelection.selectedCount', { count: selectedPlayers.length })}
           </Badge>
         </Split>
       )}
       
-      {/* Available Players List */}
-      {availablePlayers.length === 0 ? (
-        <Panel><EmptyState>
-            {t('page.teamPlayerSelection.noPlayersInRange')}
-        </EmptyState></Panel>
-      ) : (
-        <EntityList variant="separated">
-          {availablePlayers.map(player => {
-            const isSelected = selectedPlayerIds.includes(player.id);
-            const isDisabled = !editState?.canEdit || (!isSelected && !canAddMore);
-            
-            return (
-              <ActionCard
+      <div className="team-selection-columns">
+        <Panel className={`team-selection-column team-selection-column--selected${dropTarget === 'selected' ? ` team-selection-column--${canDropOn('selected', draggedPlayerId) ? 'drop-active' : 'drop-invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'selected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'selected', moveToSelected)}>
+          <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.selectedPlayers')}</PanelTitle><Badge>{selectedPlayers.length}</Badge></PanelHeader>
+          {dropTarget === 'selected' && <p className="team-selection-drop-hint">{t(canDropOn('selected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToSelected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
+          <EntityList variant="bare">
+            {selectedPlayers.length === 0 ? <EmptyState>{t('page.teamPlayerSelection.noSelectedPlayers')}</EmptyState> : selectedPlayers.map((player) => (
+              <PlayerRow
                 key={player.id}
-                onClick={() => !isDisabled && handleTogglePlayer(player.id)}
-                disabled={isDisabled}
-                selected={isSelected}
-                showChevron={false}
-                className="team-selection-option"
-                leading={<span className={`team-selection-check${isSelected ? ' team-selection-check--selected' : ''}`} aria-hidden="true">
-                  {isSelected && <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                </span>}
-                trailing={<Level level={player.level} />}
-              >
-                <ActionCardTitle>{player.firstName} {player.lastName}</ActionCardTitle>
-              </ActionCard>
-            );
-          })}
-        </EntityList>
-      )}
+                player={player}
+                fallbackName=""
+                density="compact"
+                leading={dragHandle}
+                draggable={editState?.canEdit}
+                onDragStart={(event) => handleDragStart(event, player.id)}
+                onDragEnd={() => { setDraggedPlayerId(null); setDropTarget(null); }}
+                className="team-selection-player-row"
+                actions={<>
+                  <IconButton className="team-selection-desktop-remove" label={t('page.teamPlayerSelection.moveToUnselected', { name: `${player.firstName} ${player.lastName}` })} variant="danger" disabled={!editState?.canEdit} onClick={() => moveToUnselected(player.id)}><TrashIcon /></IconButton>
+                  <IconButton className="team-selection-mobile-move" label={t('page.teamPlayerSelection.moveToUnselected', { name: `${player.firstName} ${player.lastName}` })} disabled={!editState?.canEdit} onClick={() => moveToUnselected(player.id)}><MovePlayerIcon direction="down" /></IconButton>
+                </>}
+              />
+            ))}
+          </EntityList>
+        </Panel>
+        <Panel className={`team-selection-column${dropTarget === 'unselected' ? ` team-selection-column--${canDropOn('unselected', draggedPlayerId) ? 'drop-active' : 'drop-invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'unselected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'unselected', moveToUnselected)}>
+          <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.unselectedPlayers')}</PanelTitle><Badge>{unselectedPlayers.length}</Badge></PanelHeader>
+          {dropTarget === 'unselected' && <p className="team-selection-drop-hint">{t(canDropOn('unselected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToUnselected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
+          <EntityList variant="bare">
+            {unselectedPlayers.length === 0 ? <EmptyState>{t('page.teamPlayerSelection.noPlayersInRange')}</EmptyState> : unselectedPlayers.map((player) => {
+              const isDisabled = !editState?.canEdit || (!currentPlayers.some((currentPlayer) => currentPlayer.id === player.id) && !canAddMore);
+              const isRemovedCurrentPlayer = currentPlayers.some((currentPlayer) => currentPlayer.id === player.id);
+              return <PlayerRow key={player.id} player={player} fallbackName="" density="compact" leading={dragHandle} draggable={!isDisabled} onDragStart={(event) => handleDragStart(event, player.id)} onDragEnd={() => { setDraggedPlayerId(null); setDropTarget(null); }} onClick={() => moveToSelected(player.id)} aria-disabled={isDisabled} className={`team-selection-player-row${isDisabled ? ' team-selection-player-row--disabled' : ''}`} trailing={isRemovedCurrentPlayer && editState?.requiresRemovalReason ? <Select controlSize="sm" value={removalReasons[player.id] ?? ''} onClick={(event) => event.stopPropagation()} onChange={(event) => setRemovalReasons((current) => ({ ...current, [player.id]: event.target.value as SelectionRemovalReason | '' }))} aria-label={t('page.teamPlayerSelection.removalReasonFor', { name: `${player.firstName} ${player.lastName}` })} required><option value="">{t('page.teamPlayerSelection.selectRemovalReason')}</option>{(['sick', 'injured', 'noShow', 'other'] as SelectionRemovalReason[]).map((reason) => <option key={reason} value={reason}>{t(`domain.attendance.reasons.${reason}`)}</option>)}</Select> : undefined} actions={<IconButton className="team-selection-mobile-move" label={t('page.teamPlayerSelection.moveToSelected', { name: `${player.firstName} ${player.lastName}` })} disabled={isDisabled} onClick={() => moveToSelected(player.id)}><MovePlayerIcon direction="up" /></IconButton>} />;
+            })}
+          </EntityList>
+        </Panel>
+      </div>
       </Stack>
       
       {/* Fixed Bottom Bar */}
       <ActionDock>
         <ActionDockContent width="medium">
-          <div className="team-selection-dock-summary">
-            {t('page.teamPlayerSelection.selectedPlayersSummary', { count: selectedPlayerIds.length })}
-            {!canAddMore && selectedPlayerIds.length > 0 && (
-              <div className="team-selection-dock-error">
-                {t('page.teamPlayerSelection.tooManySelected', { max: remainingSlots })}
-              </div>
-            )}
-          </div>
-          <Cluster gap="sm">
+          <Cluster gap="sm" className="team-selection-dock-actions">
             <Button
               type="button"
               variant="secondary"
@@ -253,12 +250,12 @@ export default function TeamPlayerSelectionPage() {
               {t('common.actions.cancel')}
             </Button>
             <Button
+              type="button"
               onClick={handleSave}
+              loading={isSaving}
               disabled={!editState?.canEdit || (selectedPlayerIds.length === 0 && removedPlayerIds.length === 0) || !canAddMore || hasMissingRemovalReasons}
             >
-              {selectedPlayerIds.length > 0
-                ? t('page.teamPlayerSelection.addPlayersAction', { count: selectedPlayerIds.length })
-                : t('page.teamPlayerSelection.saveChanges')}
+              {t('common.actions.save')}
             </Button>
           </Cluster>
         </ActionDockContent>

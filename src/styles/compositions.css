@@ -172,6 +172,18 @@
 /* Team player selection */
 .team-selection-context,
 .lineup-context { color: var(--color-text-subtle); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
+.team-selection-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.team-selection-column { min-width: 0; }
+.team-selection-column--drop-active { border-color: var(--color-brand-border); background: var(--color-brand-subtle); box-shadow: var(--shadow-selected); }
+.team-selection-column--drop-invalid { border-color: var(--color-danger-border); background: rgb(var(--color-danger-subtle) / 0.45); box-shadow: inset 0 0 0 2px var(--color-danger-border); }
+.team-selection-column .ui-panel-header { margin-bottom: var(--space-3); }
+.team-selection-drop-hint { margin: calc(var(--space-2) * -1) 0 var(--space-3); color: var(--color-text-muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
+.team-selection-player-row { min-height: 2.75rem; cursor: grab; padding-block: var(--space-2); }
+.team-selection-mobile-move { display: none; }
+.team-selection-player-row:active { cursor: grabbing; }
+.team-selection-player-row--disabled { cursor: default; opacity: 0.5; }
+.team-selection-drag-handle { display: grid; width: 1rem; flex: none; gap: 0.125rem; padding-block: 0.125rem; color: var(--color-text-disabled); }
+.team-selection-drag-handle span { width: 0.25rem; height: 0.25rem; border-radius: var(--radius-round); background: currentColor; box-shadow: 0.375rem 0 currentColor; }
 .team-selection-current-row--removed { background: var(--color-danger-subtle); }
 .team-selection-current-row--removed .ui-entity-title { color: var(--color-text-subtle); text-decoration: line-through; }
 .team-selection-option { align-items: center; }
@@ -180,6 +192,13 @@
 .team-selection-check--selected { border-color: var(--color-brand-strong); background: var(--color-brand-strong); color: var(--color-on-action); }
 .team-selection-dock-summary { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
 .team-selection-dock-error { margin-top: var(--space-1); color: var(--color-danger-text); font-size: var(--font-size-xs); }
+.team-selection-dock-actions { margin-left: auto; }
+@media (max-width: 44rem) {
+  .team-selection-columns { grid-template-columns: 1fr; }
+  .team-selection-mobile-move { display: inline-flex; }
+  .team-selection-player-row .team-selection-drag-handle { display: none; }
+  .team-selection-desktop-remove { display: none; }
+}
 
 /* Team lineup */
 .lineup-tabs { margin-bottom: var(--space-5); }

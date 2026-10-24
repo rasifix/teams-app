@@ -1017,7 +1017,7 @@
     }
   },
   "filters": {
-    "playerLevel": "Nach Spielerlevel filtern:",
+    "playerLevel": "Spielerlevel:",
     "from": "Von:",
     "to": "Bis:"
   },

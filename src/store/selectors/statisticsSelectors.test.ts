@@ -32,11 +32,11 @@ describe('statistics selectors', () => {
       ],
       teams: [{ id: 't1', name: 'A', strength: 2, selectedPlayers: ['p2'] }],
     });
-    const rows = selectEventParticipationRows([player('p1', 'Zoe'), player('p2', 'Ada'), player('p3', 'Ben', 'Player', 1)], [activityWithResponses], [2, 5]);
+    const rows = selectEventParticipationRows([player('p1', 'Zoe'), player('p2', 'Ada'), player('p3', 'Ben', 'Player', 1)], [activityWithResponses], [3]);
     expect(rows.map((row) => row.player.id)).toEqual(['p2', 'p1']);
     expect(rows[0].attendance[0].status).toBe('selected');
     expect(rows[1].attendance[0].status).toBe('injured');
-    expect(selectEventParticipationRows([], [], [1, 5])).toEqual([]);
+    expect(selectEventParticipationRows([], [], [])).toEqual([]);
   });
 
   it('groups selected team history by strength and team name with activity dates', () => {
@@ -44,12 +44,12 @@ describe('statistics selectors', () => {
       { id: 't1', name: '', strength: 2, selectedPlayers: ['p1'] },
       { id: 't2', name: 'B', strength: 1, selectedPlayers: [] },
     ] })];
-    const strength = selectTeamSelectionMatrixData([player('p1', 'Ada')], activities, [1, 5], 'strength', (value) => `Strength ${value}`, 'Team');
+    const strength = selectTeamSelectionMatrixData([player('p1', 'Ada')], activities, [], 'strength', (value) => `Strength ${value}`, 'Team');
     expect(strength.columns.map((column) => column.strength)).toEqual([1, 2]);
     expect(strength.rows[0].cells[1].events[0]).toEqual({ eventId: 'a1', eventName: 'Match', eventDate: '2026-05-03', teamId: 't1', teamName: 'Team 1' });
-    const named = selectTeamSelectionMatrixData([player('p1', 'Ada')], activities, [1, 5], 'teamName', (value) => String(value), 'Team');
+    const named = selectTeamSelectionMatrixData([player('p1', 'Ada')], activities, [], 'teamName', (value) => String(value), 'Team');
     expect(named.columns.map((column) => column.label)).toEqual(['B', 'Team 1']);
-    expect(selectTeamSelectionMatrixData([], [], [1, 5], 'strength', String, 'Team')).toEqual({ columns: [], rows: [] });
+    expect(selectTeamSelectionMatrixData([], [], [], 'strength', String, 'Team')).toEqual({ columns: [], rows: [] });
   });
 
   it('builds the statistics view for the selected period and excludes trial players', () => {
@@ -90,9 +90,9 @@ describe('statistics selectors', () => {
       { player: cy, invitedCount: 1, acceptedCount: 1, selectedCount: 0, acceptanceRate: 100, selectionRate: 0 },
     ];
 
-    expect(selectVisiblePlayerStatistics(statistics, [1, 4], 'invited', 'desc').map(({ player: entry }) => entry.id)).toEqual(['p1', 'p2']);
-    expect(selectVisiblePlayerStatistics(statistics, [1, 5], 'name', 'asc').map(({ player: entry }) => entry.id)).toEqual(['p2', 'p3', 'p1']);
-    expect(selectVisiblePlayerStatistics(statistics, [5, 5], 'selected', 'asc').map(({ player: entry }) => entry.id)).toEqual(['p3']);
+    expect(selectVisiblePlayerStatistics(statistics, [2, 4], 'invited', 'desc').map(({ player: entry }) => entry.id)).toEqual(['p1', 'p2']);
+    expect(selectVisiblePlayerStatistics(statistics, [], 'name', 'asc').map(({ player: entry }) => entry.id)).toEqual(['p2', 'p3', 'p1']);
+    expect(selectVisiblePlayerStatistics(statistics, [5], 'selected', 'asc').map(({ player: entry }) => entry.id)).toEqual(['p3']);
     expect(selectVisiblePlayerStatistics(statistics, [6, 7], 'name', 'asc')).toEqual([]);
   });
 

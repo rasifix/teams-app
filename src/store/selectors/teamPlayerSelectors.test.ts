@@ -130,12 +130,12 @@ describe('selectAvailablePlayersForTeamSelection', () => {
 
   it('returns accepted, unassigned players within the level range', () => {
     const players = [makePlayer('p1', 'Zoe'), makePlayer('p2', 'Mia'), makePlayer('p3', 'Ana'), makePlayer('p4', 'Eli'), makePlayer('p5', 'Low', 1)];
-    expect(selectAvailablePlayersForTeamSelection(activity, 't1', players, [2, 4]).map((player) => player.id)).toEqual(['p1']);
+    expect(selectAvailablePlayersForTeamSelection(activity, 't1', players, [3]).map((player) => player.id)).toEqual(['p1']);
   });
 
   it('returns no candidates when no invitations qualify, and filters an unknown team by assignment', () => {
     const players = [makePlayer('p1', 'Zoe')];
-    expect(selectAvailablePlayersForTeamSelection(activity, 'missing', players, [1, 5])).toEqual(players);
-    expect(selectAvailablePlayersForTeamSelection({ ...activity, invitations: [] }, 't1', players, [1, 5])).toEqual([]);
+    expect(selectAvailablePlayersForTeamSelection(activity, 'missing', players, [])).toEqual(players);
+    expect(selectAvailablePlayersForTeamSelection({ ...activity, invitations: [] }, 't1', players, [])).toEqual([]);
   });
 });

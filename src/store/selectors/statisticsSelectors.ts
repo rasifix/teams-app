@@ -120,7 +120,7 @@ export function selectStatisticsViewData(
 
 export function selectVisiblePlayerStatistics(
   playerStatistics: PlayerActivityStatistics[],
-  levelRange: [number, number],
+  selectedLevels: number[],
   sortField: PlayerStatisticsSortField,
   sortDirection: SortDirection,
 ): PlayerActivityStatistics[] {
@@ -136,7 +136,7 @@ export function selectVisiblePlayerStatistics(
   };
 
   return playerStatistics
-    .filter(({ player }) => player.level >= levelRange[0] && player.level <= levelRange[1])
+    .filter(({ player }) => selectedLevels.length === 0 || selectedLevels.includes(player.level))
     .sort((left, right) => {
       const primary = comparisonFor(left, right);
       const comparison = primary === 0 && sortField !== 'name'
@@ -160,11 +160,11 @@ export function selectNextUpcomingEventIndex(events: Activity[], now: Date): num
 export function selectEventParticipationRows(
   players: Player[],
   activities: Activity[],
-  levelRange: [number, number]
+  selectedLevels: number[]
 ): EventParticipationRow[] {
   const teamActivities = activities.filter(isTeamActivity);
   return players
-    .filter((player) => player.level >= levelRange[0] && player.level <= levelRange[1])
+    .filter((player) => selectedLevels.length === 0 || selectedLevels.includes(player.level))
     .sort(comparePlayers)
     .map((player) => ({
       player,
@@ -185,7 +185,7 @@ const displayTeamName = (teamName: string, fallbackIndex: number, fallbackLabel:
 export function selectTeamSelectionMatrixData(
   players: Player[],
   activities: Activity[],
-  levelRange: [number, number],
+  selectedLevels: number[],
   mode: TeamSelectionMode,
   strengthLabel: (strength: number) => string,
   fallbackTeamLabel: string
@@ -208,7 +208,7 @@ export function selectTeamSelectionMatrixData(
     : left.label.localeCompare(right.label, undefined, { numeric: true, sensitivity: 'base' }));
 
   const rows = players
-    .filter((player) => player.level >= levelRange[0] && player.level <= levelRange[1])
+    .filter((player) => selectedLevels.length === 0 || selectedLevels.includes(player.level))
     .sort(comparePlayers)
     .map<TeamSelectionMatrixRow>((player) => {
       const selectedCount = teamActivities.filter((activity) =>

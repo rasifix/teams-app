@@ -123,7 +123,7 @@ export function selectAvailablePlayersForTeamSelection(
   activity: Activity,
   teamId: string,
   players: Player[],
-  levelRange: [number, number]
+  selectedLevels: number[]
 ): Player[] {
   const invitedAccepted = new Set((activity.invitations ?? [])
     .filter((invitation) => invitation.response === 'accepted')
@@ -137,8 +137,7 @@ export function selectAvailablePlayersForTeamSelection(
     .filter((player) => invitedAccepted.has(player.id)
       && !assignedElsewhere.has(player.id)
       && !assignedToCurrent.has(player.id)
-      && player.level >= levelRange[0]
-      && player.level <= levelRange[1])
+      && (selectedLevels.length === 0 || selectedLevels.includes(player.level)))
     .sort((left, right) => {
       const firstName = left.firstName.localeCompare(right.firstName);
       return firstName || left.lastName.localeCompare(right.lastName) || left.id.localeCompare(right.id);

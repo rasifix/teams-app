@@ -5,7 +5,7 @@ import type { Activity, Player } from '../types';
 import { getActivityDate } from '../store/selectors/activitySelectors';
 import { selectEventParticipationRows, selectNextUpcomingEventIndex } from '../store/selectors/statisticsSelectors';
 import { invitationStatusMeta, invitationStatusOrder } from '../utils/invitationStatus';
-import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, DateColumn, EmptyState, Legend, LegendItem, Panel, PanelBody, Stack, StatusMarker, StickyMatrix, type SemanticTone } from './ui';
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, DateColumn, EmptyState, FilterBar, Legend, LegendItem, Panel, PanelBody, Stack, StatusMarker, StickyMatrix, type SemanticTone } from './ui';
 import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
@@ -18,7 +18,7 @@ interface EventParticipationMatrixProps {
 export default function EventParticipationMatrix({ players, events }: EventParticipationMatrixProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handlePlayerClick = (playerId: string) => {
@@ -31,8 +31,8 @@ export default function EventParticipationMatrix({ players, events }: EventParti
   };
 
   const sortedData = useMemo(
-    () => selectEventParticipationRows(players, events, levelRange),
-    [players, events, levelRange]
+    () => selectEventParticipationRows(players, events, selectedLevels),
+    [players, events, selectedLevels]
   );
 
   const getStatusIcon = (status: string): { icon: string; tone: SemanticTone } => {
@@ -99,7 +99,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
     <Panel padding="none">
       <PanelBody>
         <Stack gap="sm">
-          <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+          <FilterBar><LevelRangeSelector selectedLevels={selectedLevels} onChange={setSelectedLevels} /></FilterBar>
           <Legend>
             <LegendItem>
               <StatusMarker tone="success">✓</StatusMarker>

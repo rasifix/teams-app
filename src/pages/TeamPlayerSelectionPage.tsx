@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers } from '../store';
 import { selectAvailablePlayersForTeamSelection, selectTeamPlayersInRosterOrder, selectTeamSelectionCapacity, selectTeamSelectionColumns } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
-import { ActionDock, ActionDockContent, Alert, Badge, Button, Cluster, DragHandleIcon, EmptyState, EntityList, IconButton, MovePlayerIcon, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select, Split, Stack, TrashIcon } from '../components/ui';
+import { ActionDock, ActionDockContent, Alert, Badge, Button, Cluster, DragHandleIcon, EmptyState, EntityList, FilterBar, IconButton, MovePlayerIcon, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select, Split, Stack, TrashIcon } from '../components/ui';
 import PlayerRow from '../components/PlayerRow';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 import { formatInstantDateTime } from '../utils/dateFormatter';
@@ -25,15 +25,15 @@ export default function TeamPlayerSelectionPage() {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
   const [removedPlayerIds, setRemovedPlayerIds] = useState<string[]>([]);
   const [removalReasons, setRemovalReasons] = useState<Record<string, SelectionRemovalReason | ''>>({});
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [draggedPlayerId, setDraggedPlayerId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<'selected' | 'unselected' | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   
   const availablePlayers = useMemo(() => event && team
-    ? selectAvailablePlayersForTeamSelection(event, team.id, players, levelRange)
-    : [], [event, team, players, levelRange]);
+    ? selectAvailablePlayersForTeamSelection(event, team.id, players, selectedLevels)
+    : [], [event, team, players, selectedLevels]);
   const maxPlayersPerTeam = event?.maxPlayersPerTeam ?? players.length;
   const selectionCapacity = team
     ? selectTeamSelectionCapacity(team, maxPlayersPerTeam, selectedPlayerIds, removedPlayerIds)
@@ -173,13 +173,6 @@ export default function TeamPlayerSelectionPage() {
 
       {saveError && <Alert>{t('page.teamPlayerSelection.saveFailed')}</Alert>}
       
-      <LevelRangeSelector
-        minLevel={1}
-        maxLevel={5}
-        defaultRange={levelRange}
-        onChange={setLevelRange}
-      />
-
       {/* Selection Controls */}
       {selectedPlayers.length > 0 && (
         <Split gap="sm">
@@ -227,6 +220,12 @@ export default function TeamPlayerSelectionPage() {
         <Panel className={`team-selection-column${dropTarget === 'unselected' ? ` team-selection-column--${canDropOn('unselected', draggedPlayerId) ? 'drop-active' : 'drop-invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'unselected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'unselected', moveToUnselected)}>
           <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.unselectedPlayers')}</PanelTitle><Badge>{unselectedPlayers.length}</Badge></PanelHeader>
           {dropTarget === 'unselected' && <p className="team-selection-drop-hint">{t(canDropOn('unselected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToUnselected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
+          <FilterBar>
+            <LevelRangeSelector
+              selectedLevels={selectedLevels}
+              onChange={setSelectedLevels}
+            />
+          </FilterBar>
           <EntityList variant="bare">
             {unselectedPlayers.length === 0 ? <EmptyState>{t('page.teamPlayerSelection.noPlayersInRange')}</EmptyState> : unselectedPlayers.map((player) => {
               const isDisabled = !editState?.canEdit || (!currentPlayers.some((currentPlayer) => currentPlayer.id === player.id) && !canAddMore);

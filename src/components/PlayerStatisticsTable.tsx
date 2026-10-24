@@ -19,6 +19,7 @@ import {
   DataTableRow,
   DataTableSortButton,
   EmptyState,
+  FilterBar,
   ListAction,
   ListFrame,
   Panel,
@@ -34,13 +35,13 @@ interface PlayerStatisticsTableProps {
 export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsTableProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [sortField, setSortField] = useState<PlayerStatisticsSortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const visiblePlayerStats = useMemo(
-    () => selectVisiblePlayerStatistics(playerStats, levelRange, sortField, sortDirection),
-    [levelRange, playerStats, sortDirection, sortField],
+    () => selectVisiblePlayerStatistics(playerStats, selectedLevels, sortField, sortDirection),
+    [selectedLevels, playerStats, sortDirection, sortField],
   );
 
   const handleSort = (field: PlayerStatisticsSortField) => {
@@ -69,7 +70,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
   return (
     <Panel padding="none">
       <PanelBody>
-        <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+        <FilterBar><LevelRangeSelector selectedLevels={selectedLevels} onChange={setSelectedLevels} /></FilterBar>
       </PanelBody>
 
       {visiblePlayerStats.length === 0 ? (

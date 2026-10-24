@@ -144,6 +144,7 @@
 .ui-list-action { display: flex; min-height: 3rem; width: 100%; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-3); color: inherit; text-align: left; transition: color var(--transition-fast); }
 .ui-list-action:hover { color: var(--color-brand-text); }
 .ui-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-bottom: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-subtle); padding: var(--space-3); }
+.ui-filter-bar--embedded { margin-bottom: 0; border: 0; border-radius: 0; background: transparent; padding: 0; }
 .ui-filter-label { color: var(--color-text-subtle); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); letter-spacing: var(--tracking-wide); text-transform: uppercase; white-space: nowrap; }
 .ui-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; margin: -1px; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .ui-action-card { display: flex; width: 100%; min-width: 0; min-height: var(--card-row-height-lg); cursor: pointer; align-items: flex-start; gap: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: rgb(var(--color-surface) / 0.4); padding: var(--space-4); text-align: left; transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast); }

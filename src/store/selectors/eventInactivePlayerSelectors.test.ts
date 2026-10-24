@@ -72,7 +72,7 @@ describe('event inactive player selectors', () => {
       player({ id: 'p2', level: 3, status: 'trial' }),
       player({ id: 'p3', level: 4, status: 'inactive' }),
       player({ id: 'p4', level: 5, status: 'active' }),
-    ], ['p2'], [2, 4]);
+    ], ['p2'], [2, 3, 4]);
 
     expect(result.map((entry) => entry.id)).toEqual(['p1']);
   });
@@ -80,8 +80,8 @@ describe('event inactive player selectors', () => {
   it('returns an empty invite list when the range or exclusions remove every player', () => {
     const players = [player({ id: 'p1', level: 1 }), player({ id: 'p2', level: 5 })];
     expect(selectAvailableInvitePlayers(players, [], [2, 4])).toEqual([]);
-    expect(selectAvailableInvitePlayers(players, ['p1', 'p2'], [1, 5])).toEqual([]);
-    expect(selectAvailableInvitePlayers([], [], [1, 5])).toEqual([]);
+    expect(selectAvailableInvitePlayers(players, ['p1', 'p2'], [])).toEqual([]);
+    expect(selectAvailableInvitePlayers([], [], [])).toEqual([]);
   });
 
   it('detects future event dates only', () => {

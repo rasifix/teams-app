@@ -7,7 +7,7 @@ import { formatDate } from '../utils/dateFormatter';
 import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
 import Strength from './Strength';
-import { Button, Cluster, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, MetadataItem, MetadataList, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, PanelBody, Stack, StickyMatrix, Tab, TabList, VisuallyHidden } from './ui';
+import { Button, Cluster, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, FilterBar, MetadataItem, MetadataList, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, PanelBody, Stack, StickyMatrix, Tab, TabList, VisuallyHidden } from './ui';
 
 interface TeamSelectionMatrixProps {
   players: Player[];
@@ -24,7 +24,7 @@ interface SelectedCell {
 export default function TeamSelectionMatrix({ players, events }: TeamSelectionMatrixProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [groupByMode, setGroupByMode] = useState<TeamSelectionMode>('strength');
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
 
@@ -32,12 +32,12 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
     () => selectTeamSelectionMatrixData(
       players,
       events,
-      levelRange,
+      selectedLevels,
       groupByMode,
       (strength) => t('page.statistics.teamSelections.strengthLabel', { level: strength }),
       t('domain.team.label')
     ),
-    [events, groupByMode, levelRange, players, t]
+    [events, groupByMode, selectedLevels, players, t]
   );
 
   const handlePlayerClick = (playerId: string) => {
@@ -72,10 +72,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
     return (
       <Panel>
         <Stack>
-          <LevelRangeSelector
-            defaultRange={levelRange}
-            onChange={setLevelRange}
-          />
+          <FilterBar><LevelRangeSelector selectedLevels={selectedLevels} onChange={setSelectedLevels} /></FilterBar>
           <Cluster gap="sm">
             <strong>{t('page.statistics.teamSelections.groupBy')}</strong>
             <TabList label={t('page.statistics.teamSelections.groupBy')}>
@@ -106,7 +103,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
       <Panel padding="none">
         <PanelBody>
           <Stack gap="sm">
-            <LevelRangeSelector defaultRange={levelRange} onChange={setLevelRange} />
+            <FilterBar><LevelRangeSelector selectedLevels={selectedLevels} onChange={setSelectedLevels} /></FilterBar>
             <Cluster gap="sm">
               <strong>{t('page.statistics.teamSelections.groupBy')}</strong>
               <TabList label={t('page.statistics.teamSelections.groupBy')}>

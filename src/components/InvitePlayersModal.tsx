@@ -48,13 +48,13 @@ export default function InvitePlayersModal({
 }: InvitePlayersModalProps) {
   const { t } = useTranslation();
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(new Set());
-  const [levelRange, setLevelRange] = useState<[number, number]>([1, 5]);
+  const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [invitationStatus, setInvitationResponse] = useState<BulkInvitationStatus>('accepted');
 
   useEffect(() => {
     if (isOpen) {
       setSelectedPlayerIds(new Set());
-      setLevelRange([1, 5]);
+      setSelectedLevels([]);
       setInvitationResponse('accepted');
     }
   }, [isOpen]);
@@ -72,7 +72,7 @@ export default function InvitePlayersModal({
   };
 
   const handleSelectAll = () => {
-    const availablePlayerIds = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, levelRange).map((player) => player.id);
+    const availablePlayerIds = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, selectedLevels).map((player) => player.id);
     setSelectedPlayerIds(new Set(availablePlayerIds));
   };
 
@@ -97,7 +97,7 @@ export default function InvitePlayersModal({
     onClose();
   };
 
-  const availablePlayers = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, levelRange);
+  const availablePlayers = selectAvailableInvitePlayers(players, alreadyInvitedPlayerIds, selectedLevels);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -112,10 +112,8 @@ export default function InvitePlayersModal({
           <Stack>
           <Panel padding="compact">
             <LevelRangeSelector
-              minLevel={1}
-              maxLevel={5}
-              defaultRange={levelRange}
-              onChange={setLevelRange}
+              selectedLevels={selectedLevels}
+              onChange={setSelectedLevels}
             />
           </Panel>
             {availablePlayers.length === 0 ? (

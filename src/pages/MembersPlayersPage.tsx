@@ -8,6 +8,7 @@ import type { MembersOutletContext } from "./MembersPage";
 import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
 import { useSquad } from '../store';
 import { selectFilteredPlayers, selectPlayerBirthYears } from '../store/selectors/memberSelectors';
+import LevelRangeSelector from '../components/LevelRangeSelector';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
@@ -57,33 +58,7 @@ export default function MembersPlayersPage() {
         </SectionHeader>
 
         <FilterBar>
-          <FilterGroup>
-            <FilterLabel>{t("page.members.levelFilter")}</FilterLabel>
-            <ChoiceGroup>
-              {[1, 2, 3, 4, 5].map((level) => (
-                <Button
-                  type="button"
-                  variant={selectedLevels.includes(level) ? "primary" : "secondary"}
-                  size="sm"
-                  key={level}
-                  aria-pressed={selectedLevels.includes(level)}
-                  onClick={() => {
-                    setSelectedLevels((prev) =>
-                      prev.includes(level) ? prev.filter((entry) => entry !== level) : [...prev, level]
-                    );
-                  }}
-                  className="member-level-filter"
-                >
-                  {level}
-                </Button>
-              ))}
-              {selectedLevels.length > 0 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedLevels([])}>
-                  {t("common.actions.clear")}
-                </Button>
-              )}
-            </ChoiceGroup>
-          </FilterGroup>
+          <LevelRangeSelector selectedLevels={selectedLevels} onChange={setSelectedLevels} />
 
           {availableYears.length > 0 && (
             <FilterGroup>

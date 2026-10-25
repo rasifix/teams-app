@@ -214,7 +214,7 @@ export default function ActivityDetailPage() {
           {t('page.eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
         </Alert>}
         {activity.teams.length === 0 && !selectCanAddActivityTeam(activity) && <Alert tone="warning">{t('domain.activity.noTeamsLegacy')}</Alert>}
-        <Stack gap="sm">
+        <Stack gap="card">
           {(activity.kind === 'match' ? activity.teams.slice(0, 1) : activity.teams).map((team) => (
             <TeamCard
               key={team.id}

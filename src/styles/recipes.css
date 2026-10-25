@@ -329,6 +329,7 @@
 .ui-stack--sm { gap: var(--space-2); }
 .ui-stack--md { gap: var(--space-4); }
 .ui-stack--lg { gap: var(--space-6); }
+.ui-stack--card { gap: var(--card-gap); }
 .ui-cluster { display: flex; align-items: center; }
 .ui-cluster--center { align-items: center; }
 .ui-cluster--start { align-items: flex-start; }
@@ -344,7 +345,7 @@
 .ui-split--center { align-items: center; }
 .ui-split--start { align-items: flex-start; }
 .ui-split--end { align-items: flex-end; }
-.ui-content-grid { display: grid; gap: var(--space-5); }
+.ui-content-grid { display: grid; gap: var(--card-gap); }
 .ui-content-grid--metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 
 /* Section hierarchy */

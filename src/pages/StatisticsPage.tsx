@@ -14,6 +14,9 @@ interface StatisticsOutletContext {
   statisticsPeriod: Period | null;
   statisticsPlayers: Player[];
   playerStatistics: PlayerActivityStatistics[];
+  openPlayer: (playerId: string) => void;
+  openActivity: (activityId: string) => void;
+  openTeam: (activityId: string, teamId: string) => void;
 }
 
 export default function StatisticsPage() {
@@ -73,6 +76,9 @@ export default function StatisticsPage() {
           statisticsPeriod,
           statisticsPlayers,
           playerStatistics,
+          openPlayer: (playerId: string) => navigate(`/players/${playerId}`),
+          openActivity: (activityId: string) => navigate(`/activities/${activityId}`),
+          openTeam: (activityId: string, teamId: string) => navigate(`/activities/${activityId}/teams/${teamId}`),
         } satisfies StatisticsOutletContext} />
       </Stack>
     </Page>

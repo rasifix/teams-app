@@ -26,6 +26,7 @@ export interface MembersOutletContext {
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
   openBirthdayCalendar: () => void;
+  openMember: (memberType: 'players' | 'trainers', memberId: string) => void;
   canImportFromSpond: boolean;
   canManageBirthdayCalendar: boolean;
   spondLinked: boolean;
@@ -212,6 +213,7 @@ export default function MembersPage() {
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
     openBirthdayCalendar: () => setIsBirthdayCalendarOpen(true),
+    openMember: (memberType, memberId) => navigate(`/${memberType}/${memberId}`),
     canImportFromSpond: isAdmin && spondLinked,
     canManageBirthdayCalendar: isAdmin,
     spondLinked,

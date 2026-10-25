@@ -10,7 +10,7 @@ import type { MembersOutletContext } from "./MembersPage";
 
 export default function MembersTrainersPage() {
   const { t } = useTranslation();
-  const { trainers, players, openAddTrainerModal, requestDeleteTrainer, spondLinked } = useOutletContext<MembersOutletContext>();
+  const { trainers, players, openAddTrainerModal, openMember, requestDeleteTrainer, spondLinked } = useOutletContext<MembersOutletContext>();
   const { activities } = useActivities();
   const { mergeGuardianIntoTrainer } = useTrainers();
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
@@ -42,7 +42,7 @@ export default function MembersTrainersPage() {
           </Cluster></SectionActions>
         </SectionHeader>
 
-        <MembersList members={trainers} onDelete={spondLinked ? undefined : requestDeleteTrainer} memberType="trainers" />
+        <MembersList members={trainers} onDelete={spondLinked ? undefined : requestDeleteTrainer} memberType="trainers" onOpenMember={openMember} />
 
         <DuplicateMembersModal
           isOpen={isDuplicateModalOpen}

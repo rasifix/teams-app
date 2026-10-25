@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getBirthYear } from '../utils/birthDate';
 import {
@@ -30,11 +29,11 @@ import {
 
 interface PlayerStatisticsTableProps {
   playerStats: PlayerActivityStatistics[];
+  onOpenPlayer: (playerId: string) => void;
 }
 
-export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsTableProps) {
+export default function PlayerStatisticsTable({ playerStats, onOpenPlayer }: PlayerStatisticsTableProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [sortField, setSortField] = useState<PlayerStatisticsSortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -64,8 +63,6 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
       </DataTableSortButton>
     </DataTableHeaderCell>
   );
-
-  const openPlayer = (playerId: string) => navigate(`/players/${playerId}`);
 
   return (
     <Panel padding="none">
@@ -100,7 +97,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                           type="button"
                           data-ui-control="composite"
                           className="player-statistics-link"
-                          onClick={() => openPlayer(statistic.player.id)}
+                          onClick={() => onOpenPlayer(statistic.player.id)}
                         >
                           <span>{statistic.player.firstName} {statistic.player.lastName}</span>
                           <Level level={statistic.player.level} />
@@ -125,7 +122,7 @@ export default function PlayerStatisticsTable({ playerStats }: PlayerStatisticsT
                   <ListAction
                     key={statistic.player.id}
                     className="player-statistics-mobile-action"
-                    onClick={() => openPlayer(statistic.player.id)}
+                    onClick={() => onOpenPlayer(statistic.player.id)}
                   >
                     <span className="player-statistics-mobile-title">
                       <span>{statistic.player.firstName} {statistic.player.lastName}</span>

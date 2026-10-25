@@ -10,7 +10,7 @@ import LevelRangeSelector from '../components/LevelRangeSelector';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
-  const { players, openAddPlayerModal, openBirthdayCalendar, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
+  const { players, openAddPlayerModal, openBirthdayCalendar, openMember, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -100,7 +100,7 @@ export default function MembersPlayersPage() {
           </FilterGroup>
         </FilterBar>
 
-        <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" />
+        <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" onOpenMember={openMember} />
       </Panel>
     </>
   );

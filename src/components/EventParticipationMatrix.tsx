@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Player } from '../types';
 import { getActivityDate } from '../store/selectors/activitySelectors';
@@ -13,21 +12,18 @@ import Level from './Level';
 interface EventParticipationMatrixProps {
   players: Player[];
   events: Activity[];
+  onOpenPlayer: (playerId: string) => void;
+  onOpenActivity: (activityId: string) => void;
 }
 
-export default function EventParticipationMatrix({ players, events }: EventParticipationMatrixProps) {
+export default function EventParticipationMatrix({ players, events, onOpenPlayer, onOpenActivity }: EventParticipationMatrixProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handlePlayerClick = (playerId: string) => {
-    navigate(`/players/${playerId}`);
-  };
-
   const handleEventClick = (eventId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/activities/${eventId}`);
+    onOpenActivity(eventId);
   };
 
   const sortedData = useMemo(
@@ -151,7 +147,7 @@ export default function EventParticipationMatrix({ players, events }: EventParti
                   highlight
                 >
                   <DataTableCell sticky className="statistics-matrix-player-cell">
-                    <button type="button" data-ui-control="composite" className="statistics-player-link" onClick={() => handlePlayerClick(player.id)}>
+                    <button type="button" data-ui-control="composite" className="statistics-player-link" onClick={() => onOpenPlayer(player.id)}>
                       <span>{player.firstName} {player.lastName}</span>
                       <Level level={player.level} className="participation-player-level" />
                     </button>

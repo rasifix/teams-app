@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Player } from '../types';
 import { selectTeamSelectionMatrixData, type SelectionEventDetail, type TeamSelectionMode } from '../store/selectors/statisticsSelectors';
@@ -12,6 +11,8 @@ import { Button, Cluster, DataTable, DataTableBody, DataTableCell, DataTableHead
 interface TeamSelectionMatrixProps {
   players: Player[];
   events: Activity[];
+  onOpenPlayer: (playerId: string) => void;
+  onOpenTeam: (activityId: string, teamId: string) => void;
 }
 
 interface SelectedCell {
@@ -21,9 +22,8 @@ interface SelectedCell {
   events: SelectionEventDetail[];
 }
 
-export default function TeamSelectionMatrix({ players, events }: TeamSelectionMatrixProps) {
+export default function TeamSelectionMatrix({ players, events, onOpenPlayer, onOpenTeam }: TeamSelectionMatrixProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [groupByMode, setGroupByMode] = useState<TeamSelectionMode>('strength');
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
@@ -40,10 +40,6 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
     [events, groupByMode, selectedLevels, players, t]
   );
 
-  const handlePlayerClick = (playerId: string) => {
-    navigate(`/players/${playerId}`);
-  };
-
   const handleCellClick = (
     player: Player,
     groupLabel: string,
@@ -58,7 +54,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
   };
 
   const handleOpenTeam = (eventId: string, teamId: string) => {
-    navigate(`/activities/${eventId}/teams/${teamId}`);
+    onOpenTeam(eventId, teamId);
     setSelectedCell(null);
   };
 
@@ -162,7 +158,7 @@ export default function TeamSelectionMatrix({ players, events }: TeamSelectionMa
                         <button
                           type="button"
                           data-ui-control="composite"
-                          onClick={() => handlePlayerClick(player.id)}
+                          onClick={() => onOpenPlayer(player.id)}
                           className="selection-matrix-player-button"
                         >
                           <span>{player.firstName} {player.lastName}</span>

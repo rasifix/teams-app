@@ -116,7 +116,7 @@ member card variants remain clear and accessible.
 
 ### 5. Clarify data and action boundaries in shared components
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
 - [x] Refactor [ActivityCard](../src/components/ActivityCard.tsx) to receive its
   summary data and navigation callbacks instead of reading the store and
@@ -129,7 +129,7 @@ member card variants remain clear and accessible.
 - [x] Separate service, clipboard, and confirmation coordination from
   [BirthdayCalendarModal](../src/components/BirthdayCalendarModal.tsx)'s view;
   coordinate these actions in [MembersPage](../src/pages/MembersPage.tsx).
-- [ ] Review router dependencies in `MembersList`, `PlayerStatisticsTable`, and
+- [x] Review router dependencies in `MembersList`, `PlayerStatisticsTable`, and
   the statistics matrices; pass route actions where that improves reuse and
   isolated testing.
 

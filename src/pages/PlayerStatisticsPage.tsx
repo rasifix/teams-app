@@ -8,10 +8,11 @@ interface StatisticsOutletContext {
   filteredEvents: Activity[];
   statisticsPlayers: Player[];
   playerStatistics: PlayerActivityStatistics[];
+  openPlayer: (playerId: string) => void;
 }
 
 export default function PlayerStatisticsPage() {
-  const { playerStatistics } = useOutletContext<StatisticsOutletContext>();
+  const { playerStatistics, openPlayer } = useOutletContext<StatisticsOutletContext>();
 
-  return <PlayerStatisticsTable playerStats={playerStatistics} />;
+  return <PlayerStatisticsTable playerStats={playerStatistics} onOpenPlayer={openPlayer} />;
 }

@@ -1,7 +1,6 @@
 import type { Player, Trainer } from '../types';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import PlayerCard from './PlayerCard';
 import MemberCardShell from './MemberCardShell';
 import { EmptyState } from './ui';
@@ -13,6 +12,7 @@ interface MembersListProps<T extends Member> {
   members: T[];
   onDelete?: (member: T) => void;
   memberType: 'players' | 'trainers';
+  onOpenMember: (memberType: 'players' | 'trainers', memberId: string) => void;
   emptyMessage?: string;
 }
 
@@ -20,9 +20,8 @@ function isPlayer(member: Member): member is Player {
   return 'level' in member && 'birthDate' in member;
 }
 
-export default function MembersList<T extends Member>({ members, onDelete, memberType, emptyMessage }: MembersListProps<T>) {
+export default function MembersList<T extends Member>({ members, onDelete, memberType, onOpenMember, emptyMessage }: MembersListProps<T>) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [swipedMemberId, setSwipedMemberId] = useState<string | null>(null);
 
   if (members.length === 0) {
@@ -33,7 +32,7 @@ export default function MembersList<T extends Member>({ members, onDelete, membe
   const handleMemberClick = (member: T, event: React.MouseEvent) => {
     const target = event.target as HTMLElement;
     if (!shouldNavigateFromRow(swipedMemberId === member.id, Boolean(target.closest('.delete-button')))) return;
-    navigate(`/${memberType}/${member.id}`);
+    onOpenMember(memberType, member.id);
   };
 
   const handleDeleteClick = (member: T, event: React.MouseEvent) => {

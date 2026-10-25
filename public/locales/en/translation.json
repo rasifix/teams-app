@@ -164,11 +164,14 @@
         "strength": "Strength",
         "startTime": "Start time",
         "location": "Location",
+        "meetingTime": "Meeting time",
+        "meetingLocation": "Meeting location",
         "responsiblePeople": "Responsible person"
       },
       "placeholders": {
         "name": "Enter team name",
-        "location": "e.g. Main Field A"
+        "location": "e.g. Main Field A",
+        "meetingLocation": "e.g. Club entrance"
       },
       "strength": {
         "highest": "1 - Highest 🔥🔥🔥",
@@ -746,11 +749,18 @@
       "restoreActivityMessage": "Restore \"{{name}}\" and make it editable again?",
       "markSelectionSent": "Selection sent",
       "selectionSentAt": "Selection sent on {{dateTime}}",
+      "shareWhatsApp": "Share to WhatsApp",
+      "whatsappMessage": {
+        "matchWithOpponent": "{{name}} vs {{opponent}}",
+        "responsiblePerson": "Responsible",
+        "selectedPlayers": "Selected players"
+      },
       "printTeams": "Print Teams",
       "deleteEventTitle": "Delete Activity",
       "deleteEventMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "errors": {
-        "noEventId": "No activity ID provided"
+        "noEventId": "No activity ID provided",
+        "whatsAppUnavailable": "WhatsApp could not be opened. Please allow pop-ups and try again."
       }
     },
     "activityHistory": {

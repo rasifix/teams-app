@@ -35,6 +35,14 @@ export default function TeamPropertiesSection({ activity, team, responsiblePeopl
         <PropertyLabel><span>📍</span><span>{t('domain.team.fields.location')}</span></PropertyLabel>
         <PropertyValue>{location}</PropertyValue>
       </PropertyRow>}
+      {team.meetingTime && <PropertyRow>
+        <PropertyLabel><span>🕐</span><span>{t('domain.team.fields.meetingTime')}</span></PropertyLabel>
+        <PropertyValue>{team.meetingTime}</PropertyValue>
+      </PropertyRow>}
+      {team.meetingLocation && <PropertyRow>
+        <PropertyLabel><span>📍</span><span>{t('domain.team.fields.meetingLocation')}</span></PropertyLabel>
+        <PropertyValue>{team.meetingLocation}</PropertyValue>
+      </PropertyRow>}
       <PropertyRow>
         <PropertyLabel><span>💪</span><span>{t('domain.team.fields.strength')}</span></PropertyLabel>
         <PropertyValue><Strength level={team.strength} /></PropertyValue>

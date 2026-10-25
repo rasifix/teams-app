@@ -103,6 +103,8 @@ export default function TeamPrintSummary({
                       {location && format === 'selection' && (
                         <p>📍 {location}</p>
                       )}
+                      {team.meetingTime && <p>🕐 {t('domain.team.fields.meetingTime')}: {team.meetingTime}</p>}
+                      {team.meetingLocation && <p>📍 {t('domain.team.fields.meetingLocation')}: {team.meetingLocation}</p>}
                       {responsiblePeople.length > 0 && (
                         <p className="team-print-responsible">👤 {responsiblePeople.map((person) => person.firstName + ' ' + person.lastName).join(', ')}</p>
                       )}

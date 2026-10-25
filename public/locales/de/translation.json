@@ -164,11 +164,14 @@
         "strength": "Stärke",
         "startTime": "Startzeit",
         "location": "Standort",
-        "responsiblePeople": "Verantwortliche Person"
+        "meetingTime": "Besammlungszeit",
+        "meetingLocation": "Treffpunkt",
+        "responsiblePeople": "Betreuer"
       },
       "placeholders": {
         "name": "Teamname eingeben",
-        "location": "z.B. Hauptfeld A"
+        "location": "z.B. Hauptfeld A",
+        "meetingLocation": "z.B. Clubhaus-Eingang"
       },
       "strength": {
         "highest": "1 - Höchste 🔥🔥🔥",
@@ -374,7 +377,7 @@
     },
     "teamModal": {
       "editTitle": "Team bearbeiten",
-      "noTrainerAssigned": "Keine verantwortliche Person zugewiesen",
+      "noTrainerAssigned": "Kein Betreuer zugewiesen",
       "filterPlaceholder": "Nach Name filtern",
       "noPersonsFound": "Keine passenden Personen"
     },
@@ -572,7 +575,7 @@
       "removePlayer": "Spieler entfernen",
       "unknownPlayer": "Unbekannter Spieler",
       "assignedShirtsCount": "{{count}} zugewiesen",
-      "noResponsiblePerson": "Keine verantwortliche Person zugewiesen",
+      "noResponsiblePerson": "Kein Betreuer zugewiesen",
       "playersCount": "{{selected}} / {{max}} Spieler"
     },
     "invitePlayers": {
@@ -747,11 +750,18 @@
       "restoreActivityMessage": "\"{{name}}\" wiederherstellen und wieder bearbeitbar machen?",
       "markSelectionSent": "Aufgebot versendet",
       "selectionSentAt": "Aufgebot versendet am {{dateTime}}",
+      "shareWhatsApp": "An WhatsApp teilen",
+      "whatsappMessage": {
+        "matchWithOpponent": "{{name}} gegen {{opponent}}",
+        "responsiblePerson": "Verantwortlich",
+        "selectedPlayers": "Aufgebot"
+      },
       "printTeams": "Teams drucken",
       "deleteEventTitle": "Aktivität löschen",
       "deleteEventMessage": "Möchtest du \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "errors": {
-        "noEventId": "Keine Aktivitäts-ID angegeben"
+        "noEventId": "Keine Aktivitäts-ID angegeben",
+        "whatsAppUnavailable": "WhatsApp konnte nicht geöffnet werden. Bitte erlaube Pop-ups und versuche es erneut."
       }
     },
     "activityHistory": {
@@ -1005,7 +1015,7 @@
       "properties": "Eigenschaften und Metadaten",
       "location": "Ort",
       "sampleLocation": "Hauptplatz",
-      "responsible": "Verantwortliche Person",
+      "responsible": "Betreuer",
       "unassigned": "Nicht zugewiesen",
       "sampleDate": "18. Oktober 2026",
       "sampleTime": "14:30",

@@ -407,7 +407,6 @@
 .ui-data-table__cell--center { text-align: center; }
 .ui-data-table__cell--end { text-align: right; }
 .ui-data-table__cell--strong,
-.team-player-name { color: var(--color-text-strong); font-weight: var(--font-weight-semibold); }
 .ui-data-table__cell--sticky { position: sticky; left: 0; z-index: 10; border-right: 1px solid var(--color-border); }
 .ui-data-table__head .ui-data-table__cell--sticky { background: var(--color-surface-subtle); }
 .ui-data-table__body .ui-data-table__cell--sticky { background: rgb(var(--color-surface)); }
@@ -458,6 +457,7 @@
 .ui-kit-preview .ui-metadata-list { margin-top: var(--space-5); }
 
 @media (min-width: 40rem) {
+  .ui-content-grid--equalSm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .auth-name-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ui-page-header,
   .ui-section-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }

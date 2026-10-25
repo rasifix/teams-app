@@ -90,11 +90,11 @@ export default function TeamDetailPage() {
     navigate(`/activities/${eventId}/teams/${teamId}/select-players`);
   };
   
-  const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, location?: string) => {
+  const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, location?: string, meetingTime?: string, meetingLocation?: string) => {
     if (!event || !eventId || !team) return;
     
     const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, name, strength, startTime, location } : t
+      t.id === teamId ? { ...t, name, strength, startTime, location, meetingTime, meetingLocation } : t
     );
     
     await updateActivityTeams(eventId, updatedTeams);
@@ -177,7 +177,7 @@ export default function TeamDetailPage() {
       </PageHeader>
       {isCancelled && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}
       
-      <ContentGrid variant="sidebar">
+      <ContentGrid variant="equalSm">
         <TeamPropertiesSection
           activity={event}
           team={team}
@@ -197,7 +197,6 @@ export default function TeamDetailPage() {
           maxPlayers={event.maxPlayersPerTeam ?? players.length}
           canEditSelection={Boolean(selectionEditState?.canEdit)}
           isCancelled={isCancelled}
-          shirtSetColor={shirtSet?.color ?? null}
           onEditPlayers={handleAddPlayers}
           onRemovePlayer={setPlayerToRemove}
         />
@@ -223,6 +222,8 @@ export default function TeamDetailPage() {
             currentStrength={team.strength}
             currentStartTime={team.startTime}
             currentLocation={team.location}
+            currentMeetingTime={team.meetingTime}
+            currentMeetingLocation={team.meetingLocation}
             showActivityOverrides={event.kind !== 'match'}
           />
           

@@ -43,6 +43,7 @@ be described in files grouped in subfolders per category.
 * UC-EV-014 - cancel or restore activity
 * UC-EV-015 - delete activity
 * UC-EV-016 - view activity change history
+* UC-EV-017 - share match selection via WhatsApp
 
 ## Statistics
 

@@ -7,9 +7,10 @@ import { Badge, Card, ChevronRightIcon, Cluster, EntityContent, EntityList, Icon
 interface TeamCardProps {
   view: TeamCardView;
   onOpenTeam: () => void;
+  onShareWhatsApp?: () => void;
 }
 
-export default function TeamCard({ view, onOpenTeam }: TeamCardProps) {
+export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -23,9 +24,14 @@ export default function TeamCard({ view, onOpenTeam }: TeamCardProps) {
               <MetadataItem><span className="team-card-level-symbol">★</span> {view.averageLevel.toFixed(1)}</MetadataItem>
             </Cluster>
           </EntityContent>
-          <IconButton label={t('page.events.openTeamDetails', { team: view.teamName })} onClick={onOpenTeam}>
-            <ChevronRightIcon className="icon-sm" />
-          </IconButton>
+          <Cluster gap="sm">
+            {onShareWhatsApp && <IconButton label={t('page.eventDetail.shareWhatsApp')} disabled={view.selectedPlayerCount === 0} onClick={onShareWhatsApp}>
+              <img className="icon-sm" src="/whatsapp.svg" alt="" aria-hidden="true" />
+            </IconButton>}
+            <IconButton label={t('page.events.openTeamDetails', { team: view.teamName })} onClick={onOpenTeam}>
+              <ChevronRightIcon className="icon-sm" />
+            </IconButton>
+          </Cluster>
         </Split>
       </div>
 

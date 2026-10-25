@@ -5,11 +5,13 @@ import { Button, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalF
 interface EditTeamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, strength: number, startTime: string | undefined, location?: string) => void;
+  onSave: (name: string, strength: number, startTime: string | undefined, location?: string, meetingTime?: string, meetingLocation?: string) => void;
   currentName: string;
   currentStrength: number;
   currentStartTime?: string;
   currentLocation?: string;
+  currentMeetingTime?: string;
+  currentMeetingLocation?: string;
   showActivityOverrides?: boolean;
 }
 
@@ -21,6 +23,8 @@ export default function EditTeamModal({
   currentStrength,
   currentStartTime,
   currentLocation,
+  currentMeetingTime,
+  currentMeetingLocation,
   showActivityOverrides = true,
 }: EditTeamModalProps) {
   const { t } = useTranslation();
@@ -28,19 +32,23 @@ export default function EditTeamModal({
   const [strength, setStrength] = useState(currentStrength);
   const [startTime, setStartTime] = useState(currentStartTime);
   const [location, setLocation] = useState(currentLocation || '');
+  const [meetingTime, setMeetingTime] = useState(currentMeetingTime || '');
+  const [meetingLocation, setMeetingLocation] = useState(currentMeetingLocation || '');
 
   useEffect(() => {
     setTeamName(currentName);
     setStrength(currentStrength);
     setStartTime(currentStartTime);
     setLocation(currentLocation || '');
-  }, [currentName, currentStrength, currentStartTime, currentLocation, isOpen]);
+    setMeetingTime(currentMeetingTime || '');
+    setMeetingLocation(currentMeetingLocation || '');
+  }, [currentName, currentStrength, currentStartTime, currentLocation, currentMeetingTime, currentMeetingLocation, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (teamName.trim()) {
       const normalizedLocation = location.trim();
-      onSave(teamName.trim(), strength, startTime || undefined, normalizedLocation || undefined);
+      onSave(teamName.trim(), strength, startTime || undefined, normalizedLocation || undefined, meetingTime || undefined, meetingLocation.trim() || undefined);
       onClose();
     }
   };
@@ -97,6 +105,13 @@ export default function EditTeamModal({
                 placeholder={t('domain.team.placeholders.location')}
               />
             </Field>}
+
+            <Field label={t('domain.team.fields.meetingTime')} htmlFor="meetingTime">
+              <Input type="time" id="meetingTime" value={meetingTime} onChange={(e) => setMeetingTime(e.target.value)} />
+            </Field>
+            <Field label={t('domain.team.fields.meetingLocation')} htmlFor="meetingLocation">
+              <Input type="text" id="meetingLocation" value={meetingLocation} onChange={(e) => setMeetingLocation(e.target.value)} placeholder={t('domain.team.placeholders.meetingLocation')} />
+            </Field>
           </Stack>
         </ModalBody>
 

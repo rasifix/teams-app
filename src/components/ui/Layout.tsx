@@ -29,7 +29,7 @@ export function Split({ gap = 'md', align = 'center', className, ...props }: Spl
 }
 
 export interface ContentGridProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'equal' | 'sidebar' | 'sidebarEnd' | 'editor' | 'dashboard' | 'threeColumn' | 'metrics';
+  variant?: 'equal' | 'equalSm' | 'sidebar' | 'sidebarEnd' | 'editor' | 'dashboard' | 'threeColumn' | 'metrics';
 }
 
 export function ContentGrid({ variant = 'equal', className, ...props }: ContentGridProps) {

@@ -142,6 +142,8 @@ export interface Team {
   strength: number; // 1 (highest) to 3 (lowest), default 2
   startTime?: string; // HH:MM override; otherwise use the activity start time
   location?: string; // Optional team location
+  meetingTime?: string; // HH:MM team meeting time
+  meetingLocation?: string; // Optional team meeting location
   selectedPlayers: string[]; // Player IDs assigned to this team
   selectionRemovals?: SelectionRemoval[]; // Audit trail for players removed after the selection was sent
   responsiblePersonId?: string; // At most one trainer or guardian responsible for the team; players are never responsible

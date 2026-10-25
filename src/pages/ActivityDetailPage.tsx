@@ -22,6 +22,7 @@ import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, shouldR
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
+import { selectTeamWhatsAppMessage } from '../store/selectors/teamCardSelectors';
 import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
 export default function ActivityDetailPage() {
@@ -48,6 +49,7 @@ export default function ActivityDetailPage() {
   const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
   const [isSendingSelection, setIsSendingSelection] = useState(false);
   const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [whatsAppShareError, setWhatsAppShareError] = useState(false);
   const { previous, next } = selectAdjacentActivities(activities, activity?.id ?? '');
   const error = !id ? t('page.eventDetail.errors.noEventId') : errors.activities || (hasErrors ? t('common.errors.failedToLoadData') : null);
 
@@ -106,6 +108,29 @@ export default function ActivityDetailPage() {
     setIsSendingSelection(true);
     await markActivitySelectionSent(activity.id);
     setIsSendingSelection(false);
+  };
+
+  const handleShareTeamToWhatsApp = (team: Team) => {
+    if (!activity || activity.kind !== 'match' || activity.status !== 'active') return;
+    const view = selectTeamCardView(team, players, trainers, new Set(), activity.maxPlayersPerTeam ?? players.length);
+    const message = selectTeamWhatsAppMessage(activity, view, i18n.language, {
+      activityTitle: activity.opponentName
+        ? t('page.eventDetail.whatsappMessage.matchWithOpponent', { name: activity.name, opponent: activity.opponentName })
+        : activity.name,
+      responsiblePerson: t('page.eventDetail.whatsappMessage.responsiblePerson'),
+      meetingTime: t('domain.team.fields.meetingTime'),
+      meetingLocation: t('domain.team.fields.meetingLocation'),
+      selectedPlayers: t('page.eventDetail.whatsappMessage.selectedPlayers'),
+      unknownPlayer: t('page.teamCard.unknownPlayer'),
+    });
+    if (!message) return;
+    const whatsappWindow = window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+    if (whatsappWindow) {
+      whatsappWindow.opener = null;
+      setWhatsAppShareError(false);
+    } else {
+      setWhatsAppShareError(true);
+    }
   };
 
   const handleDeleteActivity = async () => {
@@ -184,6 +209,7 @@ export default function ActivityDetailPage() {
           </PanelActions>
         </PanelHeader>
         {selectionError && <Alert tone="warning">{selectionError}</Alert>}
+        {whatsAppShareError && <Alert tone="warning">{t('page.eventDetail.errors.whatsAppUnavailable')}</Alert>}
         {activity.selectionSentAt && <Alert tone="success" className="event-detail-selection-alert">
           {t('page.eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
         </Alert>}
@@ -194,6 +220,9 @@ export default function ActivityDetailPage() {
               key={team.id}
               view={selectTeamCardView(team, players, trainers, new Set(), activity.maxPlayersPerTeam ?? players.length)}
               onOpenTeam={() => navigate(`/activities/${activity.id}/teams/${team.id}`)}
+              onShareWhatsApp={canManage && activity.kind === 'match' && activity.status === 'active'
+                ? () => handleShareTeamToWhatsApp(team)
+                : undefined}
             />
           ))}
           {selectCanAddActivityTeam(activity) && <AddCardButton cardSize="sm" onClick={() => void handleAddTeam()} label={t('page.eventDetail.addTeam')} />}

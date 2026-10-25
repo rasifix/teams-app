@@ -1,24 +1,24 @@
-import { TrashIcon } from '../components/ui';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useActivities, useSquad, useSquadPeriods, useMatchPlanning, useSfvCatalog, useStore } from '../store';
-import { AddCardButton, Alert, Badge, Button, ButtonAnchor, ButtonLink, Cluster, ContentGrid, EntityActions, EntityContent, EntityList, EntityMeta, EntityTitle, Field, IconButton, IconTile, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelDescription, PanelHeader, PanelTitle, Select, Split, Stack, SwipeableEntityRow, Switch } from '../components/ui';
+import { useActivities, useMatchPlanning, useSfvCatalog, useSquad, useSquadPeriods, useStore } from '../store';
+import { ContentGrid, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
 import ConfirmDialog from '../components/ConfirmDialog';
 import MatchFormatModal, { type MatchFormatFormData } from '../components/MatchFormatModal';
 import FormationModal from '../components/FormationModal';
 import StatisticsPeriodModal from '../components/StatisticsPeriodModal';
-import { getPositionLabelKey, selectReferencedFormationIds, selectReferencedMatchFormatIds, selectSlotDisplayIndexes } from '../store/selectors/matchPlanningSelectors';
-import type { Formation, SquadCategory, MatchFormat, Period } from '../types';
-import { GROUP_CATEGORIES } from '../store/selectors/squadCategorySelectors';
-import {
-  selectIsOfficialMatchFormat,
-  selectIsTournamentOnlyCategory,
-  selectOfficialMatchFormatForCategory,
-} from '../store/selectors/sfvCatalogSelectors';
+import { selectReferencedFormationIds, selectReferencedMatchFormatIds } from '../store/selectors/matchPlanningSelectors';
+import type { Formation, MatchFormat, Period, PositionCode, SquadCategory } from '../types';
 import { selectSpondGroupUrl } from '../store/selectors/squadSettingsSelectors';
 import { unlinkSquadFromSpond } from '../services/squadService';
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
+import SpondSettingsSection from '../components/squadSettings/SpondSettingsSection';
+import PeriodsSettingsSection from '../components/squadSettings/PeriodsSettingsSection';
+import CategorySettingsSection from '../components/squadSettings/CategorySettingsSection';
+import MatchPlanningSettingsSection from '../components/squadSettings/MatchPlanningSettingsSection';
+import MatchFormatsSettingsSection from '../components/squadSettings/MatchFormatsSettingsSection';
+import FormationsSettingsSection from '../components/squadSettings/FormationsSettingsSection';
+import DeactivateSquadSection from '../components/squadSettings/DeactivateSquadSection';
 
 export default function SquadSettingsPage() {
   const { t } = useTranslation();
@@ -33,20 +33,10 @@ export default function SquadSettingsPage() {
   const initializeApp = useStore((state) => state.initializeApp);
   const deactivateSquad = useStore((state) => state.deactivateSquad);
   const deleteSquadPeriod = useStore((state) => state.deleteSquadPeriod);
-  const selectedOfficialFormat = (category: SquadCategory | '') => selectOfficialMatchFormatForCategory(sfvCatalog, category || null);
   const {
-    matchPlanningEnabled,
-    matchFormats,
-    formations,
-    setMatchPlanningEnabled,
-    configureSquadCategory,
-    addMatchFormat,
-    updateMatchFormat,
-    deleteMatchFormat,
-    setDefaultMatchFormat,
-    addFormation,
-    updateFormation,
-    deleteFormation,
+    matchPlanningEnabled, matchFormats, formations, setMatchPlanningEnabled,
+    configureSquadCategory, addMatchFormat, updateMatchFormat, deleteMatchFormat,
+    setDefaultMatchFormat, addFormation, updateFormation, deleteFormation,
   } = useMatchPlanning();
 
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
@@ -71,44 +61,29 @@ export default function SquadSettingsPage() {
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [deactivateError, setDeactivateError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setSelectedCategory(squad?.category ?? '');
-  }, [squad?.category]);
+  useEffect(() => setSelectedCategory(squad?.category ?? ''), [squad?.category]);
 
   const handleDeleteFormation = async () => {
     if (!deletingFormation) return;
-
     const formationToDelete = deletingFormation;
     setDeletingFormation(null);
     setFormationDeleteError(null);
-    const wasDeleted = await deleteFormation(formationToDelete.id);
-    if (wasDeleted) {
-      return;
-    }
-
-    setFormationDeleteError(t('page.matchPlanning.formations.errors.deleteFailed'));
+    if (!await deleteFormation(formationToDelete.id)) setFormationDeleteError(t('page.matchPlanning.formations.errors.deleteFailed'));
   };
 
   const handleDeleteMatchFormat = async () => {
     if (!deletingMatchFormat) return;
-
-    const matchFormatToDelete = deletingMatchFormat;
+    const formatToDelete = deletingMatchFormat;
     setDeletingMatchFormat(null);
     setMatchFormatDeleteError(null);
-    const wasDeleted = await deleteMatchFormat(matchFormatToDelete.id);
-    if (wasDeleted) return;
-
-    setMatchFormatDeleteError(t('page.matchPlanning.matchFormats.errors.deleteFailed'));
+    if (!await deleteMatchFormat(formatToDelete.id)) setMatchFormatDeleteError(t('page.matchPlanning.matchFormats.errors.deleteFailed'));
   };
 
   const handleSaveCategory = async () => {
     setCategorySaveError(null);
     setIsSavingCategory(true);
     try {
-      const success = await configureSquadCategory(selectedCategory || null);
-      if (!success) {
-        setCategorySaveError(t('page.matchPlanning.category.saveFailed'));
-      }
+      if (!await configureSquadCategory(selectedCategory || null)) setCategorySaveError(t('page.matchPlanning.category.saveFailed'));
     } catch {
       setCategorySaveError(t('page.matchPlanning.category.saveFailed'));
     } finally {
@@ -118,8 +93,11 @@ export default function SquadSettingsPage() {
 
   const handleToggleEnabled = async () => {
     setIsTogglingEnabled(true);
-    await setMatchPlanningEnabled(!matchPlanningEnabled);
-    setIsTogglingEnabled(false);
+    try {
+      await setMatchPlanningEnabled(!matchPlanningEnabled);
+    } finally {
+      setIsTogglingEnabled(false);
+    }
   };
 
   const handleUnlinkSpond = async () => {
@@ -152,19 +130,18 @@ export default function SquadSettingsPage() {
   };
 
   const handleSaveMatchFormat = async (data: MatchFormatFormData) => {
-    if (editingMatchFormat) {
-      return updateMatchFormat(editingMatchFormat.id, data);
-    }
-    const created = await addMatchFormat(data);
-    return created !== null;
+    if (editingMatchFormat) return updateMatchFormat(editingMatchFormat.id, data);
+    return (await addMatchFormat(data)) !== null;
   };
 
-  const handleSaveFormation = async (data: { name: string; slots: Array<{ id?: string; positionCode: import('../types').PositionCode }> }) => {
-    if (editingFormation) {
-      return updateFormation(editingFormation.id, data);
-    }
-    const created = await addFormation(data);
-    return created !== null;
+  const handleSaveFormation = async (data: { name: string; slots: Array<{ id?: string; positionCode: PositionCode }> }) => {
+    if (editingFormation) return updateFormation(editingFormation.id, data);
+    return (await addFormation(data)) !== null;
+  };
+
+  const openPeriod = (period: Period | null) => {
+    setPeriodToEdit(period);
+    setIsPeriodModalOpen(true);
   };
 
   const handleDeletePeriod = async () => {
@@ -173,436 +150,90 @@ export default function SquadSettingsPage() {
     setDeletingPeriod(null);
   };
 
-  return (
-    <Page>
-      <SpondSyncResultBanner className="settings-banner" />
-      <PageHeader>
-        <PageHeaderContent>
-          <PageTitle>{t('page.squadSettings.title')}</PageTitle>
-          <PageDescription>{t('page.squadSettings.description')}</PageDescription>
-        </PageHeaderContent>
-      </PageHeader>
+  return <Page>
+    <SpondSyncResultBanner className="settings-banner" />
+    <PageHeader><PageHeaderContent>
+      <PageTitle>{t('page.squadSettings.title')}</PageTitle>
+      <PageDescription>{t('page.squadSettings.description')}</PageDescription>
+    </PageHeaderContent></PageHeader>
 
-      <ContentGrid variant="equal">
-        <Stack>
-          <Panel>
-            <Cluster align="start" gap="sm" wrap={false}>
-              <IconTile tone="brand">
-                <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 12.75 10.5 15l5.25-6M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-              </IconTile>
-              <EntityContent>
-                <PanelTitle>{t('page.squadSettings.spond.title')}</PanelTitle>
-                <p className="field-help">{t('page.squadSettings.spond.description')}</p>
-              </EntityContent>
-            </Cluster>
-            {unlinkSpondError && <Alert className="settings-panel-alert">{unlinkSpondError}</Alert>}
-            <Cluster gap="sm" className="settings-panel-actions">
-            {spondGroupUrl ? (
-              <>
-                <ButtonAnchor
-                  size="sm"
-                  href={spondGroupUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {t('page.squadSettings.spond.openGroup')}
-                </ButtonAnchor>
-                <Button variant="danger" size="sm" onClick={() => setIsUnlinkSpondDialogOpen(true)}>
-                  {t('page.squadSettings.spond.unlinkGroup')}
-                </Button>
-              </>
-            ) : (
-              <ButtonLink size="sm" to="/spond-import">
-                {t('page.squadSettings.spond.linkGroup')}
-              </ButtonLink>
-            )}
-            </Cluster>
-          </Panel>
+    <ContentGrid variant="equal">
+      <Stack>
+        <SpondSettingsSection groupUrl={spondGroupUrl} error={unlinkSpondError} onUnlink={() => setIsUnlinkSpondDialogOpen(true)} />
+        <PeriodsSettingsSection periods={periods} onAdd={() => openPeriod(null)} onEdit={openPeriod} onDelete={setDeletingPeriod} />
+      </Stack>
+      <Stack>
+        <CategorySettingsSection category={selectedCategory} squadCategory={squad?.category} catalog={sfvCatalog} isSaving={isSavingCategory} error={categorySaveError} onChange={(category) => { setSelectedCategory(category); setCategorySaveError(null); }} onSave={() => void handleSaveCategory()} />
+        <MatchPlanningSettingsSection enabled={matchPlanningEnabled} isSaving={isTogglingEnabled} onToggle={() => void handleToggleEnabled()} />
+      </Stack>
+    </ContentGrid>
 
-          <Panel>
-            <PanelHeader>
-              <Cluster align="start" gap="sm" wrap={false}>
-                <IconTile tone="info">
-                  <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 9.75h16.5m-15-4.5h13.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z" />
-                  </svg>
-                </IconTile>
-                <EntityContent>
-                  <PanelTitle>{t('page.squadSettings.periods.title')}</PanelTitle>
-                  <p className="field-help">{t('page.squadSettings.periods.description')}</p>
-                </EntityContent>
-              </Cluster>
-            </PanelHeader>
-            <EntityList>
-              {periods.map((period) => (
-                <SwipeableEntityRow
-                  key={period.id}
-                  onEdit={() => {
-                    setPeriodToEdit(period);
-                    setIsPeriodModalOpen(true);
-                  }}
-                  onDelete={() => setDeletingPeriod(period)}
-                >
-                  <EntityContent>
-                    <EntityTitle>{period.name}</EntityTitle>
-                    <EntityMeta>
-                      {t('page.squadSettings.periods.range', { startDate: period.startDate, endDate: period.endDate })}
-                    </EntityMeta>
-                  </EntityContent>
-                </SwipeableEntityRow>
-              ))}
-              <AddCardButton
-                cardSize="sm"
-                label={t('page.squadSettings.periods.add')}
-                onClick={() => {
-                  setPeriodToEdit(null);
-                  setIsPeriodModalOpen(true);
-                }}
-              />
-            </EntityList>
-          </Panel>
-        </Stack>
-
-        <Stack>
-          <Panel>
-            <Cluster align="start" gap="sm" wrap={false}>
-              <IconTile tone="brand">
-                <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.75c-4.5 0-8.25 2.1-8.25 4.5S7.5 12.75 12 12.75s8.25-2.1 8.25-4.5S16.5 3.75 12 3.75Zm-8.25 4.5v7.5c0 2.4 3.75 4.5 8.25 4.5s8.25-2.1 8.25-4.5v-7.5" />
-                </svg>
-              </IconTile>
-              <EntityContent>
-                <PanelTitle>{t('page.matchPlanning.category.title')}</PanelTitle>
-                <p className="field-help">{t('page.matchPlanning.category.description')}</p>
-              </EntityContent>
-            </Cluster>
-            <div className="settings-category-form">
-              <Field className="settings-category-field" label={t('page.matchPlanning.category.label')} htmlFor="squad-category">
-                <Select
-                  id="squad-category"
-                  controlSize="sm"
-                  className={'settings-category-select'}
-                  value={selectedCategory}
-                  onChange={(event) => {
-                    setSelectedCategory(event.target.value as SquadCategory | '');
-                    setCategorySaveError(null);
-                  }}
-                >
-                  <option value="">{t('page.matchPlanning.category.none')}</option>
-                  {GROUP_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </Select>
-              </Field>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleSaveCategory}
-                disabled={isSavingCategory || selectedCategory === (squad?.category ?? '')}
-              >
-                {isSavingCategory ? t('page.matchPlanning.category.saving') : t('common.actions.save')}
-              </Button>
-            </div>
-            {categorySaveError && <Alert className="settings-category-alert">{categorySaveError}</Alert>}
-            {selectedCategory && selectedOfficialFormat(selectedCategory) && (
-              <Alert tone="warning" className="settings-category-alert">
-                {t('page.matchPlanning.category.officialModeHint', { mode: selectedOfficialFormat(selectedCategory)?.name })}
-              </Alert>
-            )}
-            {selectedCategory && selectIsTournamentOnlyCategory(sfvCatalog, selectedCategory) && (
-              <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.tournamentOnlyHint')}</Alert>
-            )}
-            {selectedCategory === 'FF14' && (
-              <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.ff14Hint')}</Alert>
-            )}
-          </Panel>
-
-          <Panel>
-            <Split align="start">
-              <Cluster align="start" gap="sm" wrap={false}>
-                <IconTile tone="success">
-                  <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-18v18M3 12h18M5.64 5.64l12.72 12.72m0-12.72L5.64 18.36" />
-                  </svg>
-                </IconTile>
-                <EntityContent>
-                  <PanelTitle>{t('page.matchPlanning.title')}</PanelTitle>
-                  <p className="field-help">{t('page.matchPlanning.description')}</p>
-                </EntityContent>
-              </Cluster>
-            <Switch
-              checked={matchPlanningEnabled}
-              label={t('page.matchPlanning.title')}
-              disabled={isTogglingEnabled}
-              onClick={handleToggleEnabled}
-            />
-            </Split>
-            {!matchPlanningEnabled && (
-              <Alert tone="info" className="settings-disabled-alert">
-                {t('page.matchPlanning.disabledState')}
-              </Alert>
-            )}
-          </Panel>
-        </Stack>
-      </ContentGrid>
-
-      {matchPlanningEnabled && (
-        <ContentGrid variant="equal" className="settings-grid--secondary">
-          <Panel>
-              <PanelHeader>
-                <PanelTitle>{t('page.matchPlanning.matchFormats.title')}</PanelTitle>
-              </PanelHeader>
-
-              {matchFormatDeleteError && <Alert>{matchFormatDeleteError}</Alert>}
-
-              <EntityList>
-                {matchFormats.map((matchFormat) => {
-                    const canDeleteMatchFormat = !referencedMatchFormatIds.has(matchFormat.id);
-                    return (
-                    <SwipeableEntityRow
-                      key={matchFormat.id}
-                      align="start"
-                      onDelete={canDeleteMatchFormat ? () => setDeletingMatchFormat(matchFormat) : undefined}
-                      showDesktopDelete={false}
-                    >
-                      <EntityContent>
-                        <Cluster gap="sm">
-                          <EntityTitle>{matchFormat.name}</EntityTitle>
-                          {matchFormat.isDefault && (
-                            <Badge tone="brand" size="sm">
-                              {t('page.matchPlanning.matchFormats.defaultBadge')}
-                            </Badge>
-                          )}
-                          {selectIsOfficialMatchFormat(matchFormat) && (
-                            <Badge tone="info" size="sm">
-                              {t('page.matchPlanning.matchFormats.officialBadge')}
-                            </Badge>
-                          )}
-                        </Cluster>
-                        {matchFormat.playersOnField !== undefined && (
-                          <EntityMeta>
-                            {t('page.matchPlanning.matchFormats.players', {
-                              onField: matchFormat.playersOnField,
-                              min: matchFormat.minPlayersPerTeam ?? '-',
-                              max: matchFormat.maxPlayersPerTeam ?? '-',
-                            })}
-                          </EntityMeta>
-                        )}
-                        <EntityMeta>
-                          {t('page.matchPlanning.matchFormats.summary', {
-                            periods: matchFormat.numberOfPeriods,
-                            minutes: matchFormat.periodLengthMinutes,
-                          })}
-                        </EntityMeta>
-                        <EntityMeta>
-                          {t('page.matchPlanning.matchFormats.minimumPeriods', {
-                            count: matchFormat.minimumPeriodsPerPlayer ?? 0,
-                          })}
-                        </EntityMeta>
-                      </EntityContent>
-                      <EntityActions className={'ui-entity-actions--separated'}>
-                        {!matchFormat.isDefault && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDefaultMatchFormat(matchFormat.id)}
-                          >
-                            {t('page.matchPlanning.matchFormats.setDefault')}
-                          </Button>
-                        )}
-                        {!selectIsOfficialMatchFormat(matchFormat) && <IconButton
-                          label={t('common.actions.edit')}
-                          onClick={() => {
-                            setEditingMatchFormat(matchFormat);
-                            setIsMatchFormatModalOpen(true);
-                          }}
-                        >
-                          <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                          </svg>
-                        </IconButton>}
-                        {canDeleteMatchFormat && <IconButton
-                          label={t('common.actions.delete')}
-                          variant="danger"
-                          onClick={() => setDeletingMatchFormat(matchFormat)}
-                        >
-                          <TrashIcon />
-                        </IconButton>}
-                      </EntityActions>
-                    </SwipeableEntityRow>
-                    );
-                })}
-                <AddCardButton
-                  cardSize="sm"
-                  label={t('common.actions.add')}
-                  onClick={() => {
-                    setEditingMatchFormat(null);
-                    setIsMatchFormatModalOpen(true);
-                  }}
-                />
-              </EntityList>
-          </Panel>
-
-          <Panel>
-              <PanelHeader>
-                <PanelTitle>{t('page.matchPlanning.formations.title')}</PanelTitle>
-              </PanelHeader>
-
-              {formationDeleteError && <Alert>{formationDeleteError}</Alert>}
-
-              <EntityList>
-                {formations.map((formation) => {
-                    const displayIndexes = selectSlotDisplayIndexes(formation.slots);
-                    const canDeleteFormation = !referencedFormationIds.has(formation.id);
-                    return (
-                      <SwipeableEntityRow key={formation.id} align="start" onDelete={canDeleteFormation ? () => setDeletingFormation(formation) : undefined} showDesktopDelete={false}>
-                        <EntityContent>
-                          <EntityTitle>{formation.name}</EntityTitle>
-                          <div className="settings-formation-slots">
-                            {formation.slots.map((slot) => {
-                              const displayIndex = displayIndexes.get(slot.id);
-                              return (
-                                <Badge key={slot.id} tone="neutral" size="sm">
-                                  {t(getPositionLabelKey(slot.positionCode))}
-                                  {displayIndex !== null && displayIndex !== undefined ? ` ${displayIndex}` : ''}
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        </EntityContent>
-                        <EntityActions className={'ui-entity-actions--separated'}>
-                            <IconButton
-                              label={t('common.actions.edit')}
-                              onClick={() => {
-                                setEditingFormation(formation);
-                                setIsFormationModalOpen(true);
-                              }}
-                            >
-                              <svg className="icon-xs" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                              </svg>
-                            </IconButton>
-                            {canDeleteFormation && (
-                              <IconButton
-                                label={t('common.actions.delete')}
-                                variant="danger"
-                                onClick={() => setDeletingFormation(formation)}
-                              >
-                                <TrashIcon />
-                              </IconButton>
-                            )}
-                        </EntityActions>
-                      </SwipeableEntityRow>
-                    );
-                })}
-                <AddCardButton
-                  cardSize="sm"
-                  label={t('common.actions.add')}
-                  onClick={() => {
-                    setEditingFormation(null);
-                    setIsFormationModalOpen(true);
-                  }}
-                />
-              </EntityList>
-          </Panel>
-        </ContentGrid>
-      )}
-
-      <Panel tone="danger" className="settings-danger-panel">
-        <PanelTitle>{t('page.squadSettings.deactivate.title')}</PanelTitle>
-        <PanelDescription>{t('page.squadSettings.deactivate.description')}</PanelDescription>
-        {deactivateError && <Alert className="settings-danger-alert">{deactivateError}</Alert>}
-        <Button className="settings-danger-action" variant="danger" size="sm" onClick={() => setIsDeactivateDialogOpen(true)}>
-          {t('page.squadSettings.deactivate.action')}
-        </Button>
-      </Panel>
-
-      {isMatchFormatModalOpen && (
-        <MatchFormatModal
-          isOpen={isMatchFormatModalOpen}
-          onClose={() => setIsMatchFormatModalOpen(false)}
-          matchFormatToEdit={editingMatchFormat}
-          onSave={handleSaveMatchFormat}
-        />
-      )}
-
-      {isFormationModalOpen && (
-        <FormationModal
-          isOpen={isFormationModalOpen}
-          onClose={() => setIsFormationModalOpen(false)}
-          formationToEdit={editingFormation}
-          onSave={handleSaveFormation}
-        />
-      )}
-
-      {deletingPeriod && (
-        <ConfirmDialog
-          isOpen={true}
-          title={t('page.statistics.period.deleteTitle')}
-          message={t('page.statistics.period.deleteMessage', { period: deletingPeriod.name })}
-          confirmText={t('common.actions.delete')}
-          onConfirm={() => void handleDeletePeriod()}
-          onCancel={() => setDeletingPeriod(null)}
-          confirmButtonColor="red"
-        />
-      )}
-
-      {deletingMatchFormat && (
-        <ConfirmDialog
-          isOpen={true}
-          title={t('page.matchPlanning.matchFormats.deleteTitle')}
-          message={t('page.matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
-          confirmText={t('common.actions.delete')}
-          onConfirm={() => void handleDeleteMatchFormat()}
-          onCancel={() => {
-            setDeletingMatchFormat(null);
-            setMatchFormatDeleteError(null);
-          }}
-        />
-      )}
-
-      {deletingFormation && (
-        <ConfirmDialog
-          isOpen={true}
-          title={t('page.matchPlanning.formations.deleteTitle')}
-          message={t('page.matchPlanning.formations.deleteMessage', { name: deletingFormation.name })}
-          confirmText={t('common.actions.delete')}
-          onConfirm={() => void handleDeleteFormation()}
-          onCancel={() => {
-            setDeletingFormation(null);
-            setFormationDeleteError(null);
-          }}
-        />
-      )}
-
-      <ConfirmDialog
-        isOpen={isUnlinkSpondDialogOpen}
-        title={t('page.squadSettings.spond.unlinkTitle')}
-        message={t('page.squadSettings.spond.unlinkMessage')}
-        confirmText={isUnlinkingSpond ? t('common.states.processing') : t('page.squadSettings.spond.unlinkGroup')}
-        onConfirm={() => void handleUnlinkSpond()}
-        onCancel={() => setIsUnlinkSpondDialogOpen(false)}
+    {matchPlanningEnabled && <ContentGrid variant="equal" className="settings-grid--secondary">
+      <MatchFormatsSettingsSection
+        formats={matchFormats}
+        referencedIds={referencedMatchFormatIds}
+        error={matchFormatDeleteError}
+        onAdd={() => { setEditingMatchFormat(null); setIsMatchFormatModalOpen(true); }}
+        onEdit={(format) => { setEditingMatchFormat(format); setIsMatchFormatModalOpen(true); }}
+        onDelete={setDeletingMatchFormat}
+        onSetDefault={(id) => void setDefaultMatchFormat(id)}
       />
-
-      <ConfirmDialog
-        isOpen={isDeactivateDialogOpen}
-        title={t('page.squadSettings.deactivate.confirmTitle')}
-        message={t('page.squadSettings.deactivate.confirmMessage')}
-        confirmText={isDeactivating ? t('common.states.processing') : t('page.squadSettings.deactivate.action')}
-        onConfirm={() => void handleDeactivateSquad()}
-        onCancel={() => !isDeactivating && setIsDeactivateDialogOpen(false)}
+      <FormationsSettingsSection
+        formations={formations}
+        referencedIds={referencedFormationIds}
+        error={formationDeleteError}
+        onAdd={() => { setEditingFormation(null); setIsFormationModalOpen(true); }}
+        onEdit={(formation) => { setEditingFormation(formation); setIsFormationModalOpen(true); }}
+        onDelete={setDeletingFormation}
       />
+    </ContentGrid>}
 
-      <StatisticsPeriodModal
-        isOpen={isPeriodModalOpen}
-        onClose={() => {
-          setIsPeriodModalOpen(false);
-          setPeriodToEdit(null);
-        }}
-        periodToEdit={periodToEdit}
-      />
-    </Page>
-  );
+    <DeactivateSquadSection error={deactivateError} onDeactivate={() => setIsDeactivateDialogOpen(true)} />
+
+    {isMatchFormatModalOpen && <MatchFormatModal isOpen={isMatchFormatModalOpen} onClose={() => setIsMatchFormatModalOpen(false)} matchFormatToEdit={editingMatchFormat} onSave={handleSaveMatchFormat} />}
+    {isFormationModalOpen && <FormationModal isOpen={isFormationModalOpen} onClose={() => setIsFormationModalOpen(false)} formationToEdit={editingFormation} onSave={handleSaveFormation} />}
+
+    {deletingPeriod && <ConfirmDialog
+      isOpen={true}
+      title={t('page.statistics.period.deleteTitle')}
+      message={t('page.statistics.period.deleteMessage', { period: deletingPeriod.name })}
+      confirmText={t('common.actions.delete')}
+      onConfirm={() => void handleDeletePeriod()}
+      onCancel={() => setDeletingPeriod(null)}
+      confirmButtonColor="red"
+    />}
+    {deletingMatchFormat && <ConfirmDialog
+      isOpen={true}
+      title={t('page.matchPlanning.matchFormats.deleteTitle')}
+      message={t('page.matchPlanning.matchFormats.deleteMessage', { name: deletingMatchFormat.name })}
+      confirmText={t('common.actions.delete')}
+      onConfirm={() => void handleDeleteMatchFormat()}
+      onCancel={() => { setDeletingMatchFormat(null); setMatchFormatDeleteError(null); }}
+    />}
+    {deletingFormation && <ConfirmDialog
+      isOpen={true}
+      title={t('page.matchPlanning.formations.deleteTitle')}
+      message={t('page.matchPlanning.formations.deleteMessage', { name: deletingFormation.name })}
+      confirmText={t('common.actions.delete')}
+      onConfirm={() => void handleDeleteFormation()}
+      onCancel={() => { setDeletingFormation(null); setFormationDeleteError(null); }}
+    />}
+    <ConfirmDialog
+      isOpen={isUnlinkSpondDialogOpen}
+      title={t('page.squadSettings.spond.unlinkTitle')}
+      message={t('page.squadSettings.spond.unlinkMessage')}
+      confirmText={isUnlinkingSpond ? t('common.states.processing') : t('page.squadSettings.spond.unlinkGroup')}
+      onConfirm={() => void handleUnlinkSpond()}
+      onCancel={() => setIsUnlinkSpondDialogOpen(false)}
+    />
+    <ConfirmDialog
+      isOpen={isDeactivateDialogOpen}
+      title={t('page.squadSettings.deactivate.confirmTitle')}
+      message={t('page.squadSettings.deactivate.confirmMessage')}
+      confirmText={isDeactivating ? t('common.states.processing') : t('page.squadSettings.deactivate.action')}
+      onConfirm={() => void handleDeactivateSquad()}
+      onCancel={() => !isDeactivating && setIsDeactivateDialogOpen(false)}
+    />
+    <StatisticsPeriodModal isOpen={isPeriodModalOpen} onClose={() => { setIsPeriodModalOpen(false); setPeriodToEdit(null); }} periodToEdit={periodToEdit} />
+  </Page>;
 }

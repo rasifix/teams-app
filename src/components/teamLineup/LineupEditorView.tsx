@@ -14,16 +14,20 @@ interface Props {
   onSelectSlot: (slotId: string) => void;
   onAssign: (slotId: string, playerId: string) => void;
   onDrop: (slotId: string, playerId: string) => void;
+  onCopyPreviousPeriod?: () => void;
 }
 
-export default function LineupEditorView({ formationName, period, selectingSlotId, assignablePlayers, readOnly, onSelectSlot, onAssign, onDrop }: Props) {
+export default function LineupEditorView({ formationName, period, selectingSlotId, assignablePlayers, readOnly, onSelectSlot, onAssign, onDrop, onCopyPreviousPeriod }: Props) {
   const { t } = useTranslation();
   const [dragOverSlotId, setDragOverSlotId] = useState<string | null>(null);
   const selectingAssignment = period?.assignments.find((assignment) => assignment.slotId === selectingSlotId);
 
   return <Card className="lineup-editor-card">
     <CardBody className="lineup-editor-body">
-      <CardTitle className="lineup-editor-title">{t('page.teamLineup.slotsTitle', { formation: formationName })}</CardTitle>
+      <div className="lineup-editor-heading">
+        <CardTitle className="lineup-editor-title">{t('page.teamLineup.slotsTitle', { formation: formationName })}</CardTitle>
+        {onCopyPreviousPeriod && <Button variant="secondary" size="sm" disabled={readOnly} onClick={onCopyPreviousPeriod}>{t('page.teamLineup.copyPreviousPeriod')}</Button>}
+      </div>
       {period && <div className="lineup-pitch--editor">
         {period.assignments.map((assignment) => <button
           type="button"

@@ -11,9 +11,10 @@ import {
   selectMatchFormatById, selectFormationById, selectBenchedPlayers,
   selectAssignablePlayersForSlot, selectPlannedPeriodCounts,
   selectMinimumPeriodViolations, selectLineupSummary, selectLineupShirtNumberRows,
-  selectLineupWithCopiedPeriod, applyLineupPlayerDrop, selectLineupRouteTab,
+  selectLineupRouteTab,
   selectHasLineupChanges, hasLineupRosterMismatch,
 } from '../store/selectors/matchPlanningSelectors';
+import { assignLineupPlayer, copyLineupPeriod, dropLineupPlayer } from '../store/selectors/lineupTransitions';
 import type { Team, TeamLineupPeriod } from '../types';
 
 export default function TeamLineupPage() {
@@ -77,37 +78,25 @@ export default function TeamLineupPage() {
     ? selectAssignablePlayersForSlot(draftTeam, players, activePeriod, selectingSlotId)
     : [];
 
-  const updatePeriodAssignments = (assignments: TeamLineupPeriod['assignments']) => {
-    setDraftLineup((current) => {
-      const otherPeriods = current.filter((period) => period.periodNumber !== activePeriod);
-      return [...otherPeriods, { periodNumber: activePeriod, assignments }].sort((left, right) => left.periodNumber - right.periodNumber);
-    });
-  };
-
   const handleAssignSlot = (slotId: string, playerId: string) => {
     if (isCancelled) return;
-    const existingAssignments = draftLineup.find((period) => period.periodNumber === activePeriod)?.assignments ?? [];
-    const withoutPlayer = existingAssignments.filter((assignment) => assignment.playerId !== playerId);
-    const withoutSlot = withoutPlayer.filter((assignment) => assignment.slotId !== slotId);
-    updatePeriodAssignments(playerId ? [...withoutSlot, { slotId, playerId }] : withoutSlot);
+    setDraftLineup((current) => assignLineupPlayer(current, activePeriod, slotId, playerId));
     setSelectingSlotId(null);
   };
 
   const handleDropOnSlot = (slotId: string, playerId: string) => {
     if (isCancelled) return;
-    const assignments = draftLineup.find((period) => period.periodNumber === activePeriod)?.assignments ?? [];
-    updatePeriodAssignments(applyLineupPlayerDrop(assignments, playerId, slotId));
+    setDraftLineup((current) => dropLineupPlayer(current, activePeriod, playerId, slotId));
   };
 
   const handleDropOnBench = (playerId: string) => {
     if (isCancelled) return;
-    const assignments = draftLineup.find((period) => period.periodNumber === activePeriod)?.assignments ?? [];
-    updatePeriodAssignments(applyLineupPlayerDrop(assignments, playerId, null));
+    setDraftLineup((current) => dropLineupPlayer(current, activePeriod, playerId, null));
   };
 
   const handleCopyPreviousPeriod = () => {
     if (isCancelled || activePeriod <= 1) return;
-    setDraftLineup((current) => selectLineupWithCopiedPeriod(current, activePeriod - 1, activePeriod));
+    setDraftLineup((current) => copyLineupPeriod(current, activePeriod - 1, activePeriod));
   };
 
   const handleSave = async (): Promise<boolean> => {
@@ -155,10 +144,9 @@ export default function TeamLineupPage() {
       shirtNumberRows={shirtNumberRows}
       violations={minimumPeriodViolations}
     /> : <>
-      {activePeriod > 1 && <div className="lineup-toolbar"><Button variant="secondary" size="sm" disabled={isCancelled} onClick={handleCopyPreviousPeriod}>{t('page.teamLineup.copyPreviousPeriod')}</Button></div>}
       {hasMismatch && <Alert tone="warning" className="lineup-alert">{t('page.teamLineup.rosterMismatchWarning')}</Alert>}
       <ContentGrid variant="editor">
-        <LineupEditorView formationName={formation.name} period={currentPeriodSummary} selectingSlotId={selectingSlotId} assignablePlayers={assignablePlayers} readOnly={isCancelled} onSelectSlot={setSelectingSlotId} onAssign={handleAssignSlot} onDrop={handleDropOnSlot} />
+        <LineupEditorView formationName={formation.name} period={currentPeriodSummary} selectingSlotId={selectingSlotId} assignablePlayers={assignablePlayers} readOnly={isCancelled} onSelectSlot={setSelectingSlotId} onAssign={handleAssignSlot} onDrop={handleDropOnSlot} onCopyPreviousPeriod={activePeriod > 1 ? handleCopyPreviousPeriod : undefined} />
         <LineupBenchView players={benchedPlayers} plannedPeriodCounts={plannedPeriodCounts} totalPeriods={matchFormat.numberOfPeriods} readOnly={isCancelled} onDrop={handleDropOnBench} />
       </ContentGrid>
     </>}

@@ -202,7 +202,7 @@
 
 /* Team lineup */
 .lineup-tabs { margin-bottom: var(--space-5); }
-.lineup-toolbar { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
+.lineup-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .lineup-alert { margin-bottom: var(--space-4); }
 .lineup-print-actions { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
 .lineup-violation-title { font-weight: var(--font-weight-semibold); }
@@ -217,7 +217,7 @@
 .lineup-period-body { padding: var(--space-4); }
 .lineup-period-title { margin-bottom: var(--space-3); color: var(--color-text-subtle); font-size: var(--font-size-sm); letter-spacing: var(--tracking-label); text-align: center; text-transform: uppercase; }
 .lineup-editor-body { padding: var(--space-4); }
-.lineup-editor-title { margin-bottom: var(--space-4); font-size: var(--font-size-lg); letter-spacing: var(--tracking-tight); }
+.lineup-editor-title { margin-bottom: 0; font-size: var(--font-size-lg); letter-spacing: var(--tracking-tight); }
 .lineup-pitch--summary,
 .lineup-pitch--editor { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; margin-inline: auto; background: linear-gradient(to bottom right, rgb(var(--color-pitch-start)), rgb(var(--color-pitch-end))); box-shadow: var(--shadow-inset); }
 .lineup-pitch--summary { max-width: 20rem; border-radius: var(--radius-lg); }

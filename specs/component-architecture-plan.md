@@ -139,12 +139,12 @@ that integration is the behavior under test.
 
 ### 6. Narrow TeamCard's responsibilities
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
-- [ ] Use the existing `selectTeamCardView` boundary to supply a view model from
+- [x] Use the existing `selectTeamCardView` boundary to supply a view model from
   a container where practical.
-- [ ] Separate roster/header presentation from drag-and-drop payload handling.
-- [ ] Keep capacity and player swap/replace decisions in the coordinating layer
+- [x] Separate roster/header presentation from drag-and-drop payload handling.
+- [x] Keep capacity and player swap/replace decisions in the coordinating layer
   or pure tested helpers, not in presentational markup.
 
 **Done when:** a TeamCard view can be rendered from a focused view model and

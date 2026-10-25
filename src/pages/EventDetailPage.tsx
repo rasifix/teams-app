@@ -12,6 +12,7 @@ import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditEventModal from '../components/EditEventModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import TeamCard from '../components/TeamCard';
+import { selectTeamCardView } from '../store/selectors/teamCardSelectors';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TeamPrintSummary from '../components/TeamPrintSummary';
 import { ACTIVITY_AUDIT_LOG_ENABLED } from '../config/features';
@@ -191,16 +192,8 @@ export default function EventDetailPage() {
           {(activity.kind === 'match' ? activity.teams.slice(0, 1) : activity.teams).map((team) => (
             <TeamCard
               key={team.id}
-              team={team}
-              activity={activity}
-              inactiveFutureEventPlayerIds={new Set()}
-              players={players}
-              trainers={trainers}
-              shirtSets={shirtSets}
-              activities={activities}
-              maxPlayersPerTeam={activity.maxPlayersPerTeam ?? players.length}
-              readOnly
-              onOpenTeam={(teamId) => navigate(`/activities/${activity.id}/teams/${teamId}`)}
+              view={selectTeamCardView(team, players, trainers, new Set(), activity.maxPlayersPerTeam ?? players.length)}
+              onOpenTeam={() => navigate(`/activities/${activity.id}/teams/${team.id}`)}
             />
           ))}
           {selectCanAddActivityTeam(activity) && <AddCardButton cardSize="sm" onClick={() => void handleAddTeam()} label={t('page.eventDetail.addTeam')} />}

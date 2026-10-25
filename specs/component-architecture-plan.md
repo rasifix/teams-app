@@ -43,7 +43,7 @@ Review and split these pages in small, independently reviewable changes:
 - [x] [SquadSettingsPage](../src/pages/SquadSettingsPage.tsx): separate settings
   sections for Spond, periods, category, match planning, formats, formations,
   and squad deactivation.
-- [ ] [TeamLineupPage](../src/pages/TeamLineupPage.tsx): separate lineup editor,
+- [x] [TeamLineupPage](../src/pages/TeamLineupPage.tsx): separate lineup editor,
   bench, and summary views from draft persistence and navigation protection.
 - [ ] [SpondImportPage](../src/pages/SpondImportPage.tsx): separate wizard-step
   presentation from client lifecycle, snapshot loading, and import orchestration.

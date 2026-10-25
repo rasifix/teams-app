@@ -9,7 +9,7 @@ import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader
 import ActivityCoreFields from './ActivityCoreFields';
 import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 
-interface EditEventModalProps {
+interface EditActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: Partial<ActivityPayload>) => void;
@@ -17,7 +17,7 @@ interface EditEventModalProps {
   minMaxPlayers: number;
 }
 
-export default function EditEventModal({ isOpen, onClose, onSave, currentActivity, minMaxPlayers }: EditEventModalProps) {
+export default function EditActivityModal({ isOpen, onClose, onSave, currentActivity, minMaxPlayers }: EditActivityModalProps) {
   const { t } = useTranslation();
   const matchFormats = useSquadMatchFormats();
   const [kind, setKind] = useState<ActivityKind>(currentActivity.kind);

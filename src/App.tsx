@@ -18,15 +18,15 @@ import MembersTrainersPage from './pages/MembersTrainersPage';
 import MembersGuardiansPage from './pages/MembersGuardiansPage';
 import PlayerDetailPage from './pages/PlayerDetailPage';
 import TrainerDetailPage from './pages/TrainerDetailPage';
-import EventsPage from './pages/EventsPage';
+import ActivitiesPage from './pages/ActivitiesPage';
 import SpondImportPage from './pages/SpondImportPage';
-import EventDetailPage from './pages/EventDetailPage';
+import ActivityDetailPage from './pages/ActivityDetailPage';
 import TeamDetailPage from './pages/TeamDetailPage';
 import TeamPlayerSelectionPage from './pages/TeamPlayerSelectionPage';
 import TeamLineupPage from './pages/TeamLineupPage';
 import StatisticsPage from './pages/StatisticsPage';
 import PlayerStatisticsPage from './pages/PlayerStatisticsPage';
-import EventParticipationPage from './pages/EventParticipationPage';
+import ActivityParticipationPage from './pages/ActivityParticipationPage';
 import TeamSelectionStatisticsPage from './pages/TeamSelectionStatisticsPage';
 import ShirtSetsPage from './pages/ShirtSetsPage';
 import SquadSettingsPage from './pages/SquadSettingsPage';
@@ -66,10 +66,10 @@ function AppRoutes() {
                       <Route path="/players/:id" element={<PlayerDetailPage />} />
                       {/* Trainer detail route */}
                       <Route path="/trainers/:id" element={<TrainerDetailPage />} />
-                      <Route path="/activities" element={<EventsPage />} />
+                      <Route path="/activities" element={<ActivitiesPage />} />
                       {ACTIVITY_AUDIT_LOG_ENABLED && <Route path="/activities/:id/history" element={<ActivityHistoryPage />} />}
                       <Route path="/spond-import" element={<SpondImportPage />} />
-                      <Route path="/activities/:id" element={<EventDetailPage />} />
+                      <Route path="/activities/:id" element={<ActivityDetailPage />} />
                       <Route path="/activities/:eventId/teams/:teamId" element={<TeamDetailPage />} />
                       <Route path="/activities/:eventId/teams/:teamId/select-players" element={<TeamPlayerSelectionPage />} />
                       <Route path="/activities/:eventId/teams/:teamId/lineup" element={<TeamLineupPage />} />
@@ -79,7 +79,7 @@ function AppRoutes() {
                       <Route path="/match-planning" element={<Navigate to="/squad-settings" replace />} />
                       <Route path="/statistics" element={<StatisticsPage />}>
                         <Route path="player-statistics" element={<PlayerStatisticsPage />} />
-                        <Route path="event-participation" element={<EventParticipationPage />} />
+                        <Route path="event-participation" element={<ActivityParticipationPage />} />
                         <Route path="team-selections" element={<TeamSelectionStatisticsPage />} />
                       </Route>
                     </Route>

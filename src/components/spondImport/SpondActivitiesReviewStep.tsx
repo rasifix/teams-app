@@ -10,7 +10,7 @@ import { formatInstantDateTime } from '../../utils/dateFormatter';
 import { Button, Checkbox, Cluster, ContentGrid, EmptyState, EntityContent, EntityMeta, EntityTitle, Field, Input, Panel, Select, Split, Stack } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
-interface SpondEventsReviewStepProps {
+interface SpondActivitiesReviewStepProps {
   rows: SpondEventRow[];
   drafts: Record<string, SpondActivityDraft>;
   activities: Activity[];
@@ -25,7 +25,7 @@ interface SpondEventsReviewStepProps {
   showActions?: boolean;
 }
 
-export default function SpondEventsReviewStep({
+export default function SpondActivitiesReviewStep({
   rows,
   drafts,
   activities,
@@ -38,7 +38,7 @@ export default function SpondEventsReviewStep({
   onBack,
   onNext,
   showActions = true,
-}: SpondEventsReviewStepProps) {
+}: SpondActivitiesReviewStepProps) {
   const { t, i18n } = useTranslation();
 
   return (

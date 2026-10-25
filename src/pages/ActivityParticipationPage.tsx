@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router-dom';
 import type { Activity, Player } from '../types';
-import EventParticipationMatrix from '../components/EventParticipationMatrix';
+import ActivityParticipationMatrix from '../components/ActivityParticipationMatrix';
 
 interface StatisticsOutletContext {
   filteredEvents: Activity[];
@@ -9,11 +9,11 @@ interface StatisticsOutletContext {
   openActivity: (activityId: string) => void;
 }
 
-export default function EventParticipationPage() {
+export default function ActivityParticipationPage() {
   const { filteredEvents, statisticsPlayers, openPlayer, openActivity } = useOutletContext<StatisticsOutletContext>();
 
   return (
-    <EventParticipationMatrix 
+    <ActivityParticipationMatrix 
       players={statisticsPlayers} 
       events={filteredEvents} 
       onOpenPlayer={openPlayer}

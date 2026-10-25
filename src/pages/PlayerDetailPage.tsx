@@ -19,8 +19,8 @@ import {
 } from '../store/useStore';
 import {
   selectFutureEventsWithoutInvitation,
-  selectGroupedPlayerEventHistory,
-  selectPlayerEventHistory,
+  selectGroupedPlayerActivityHistory,
+  selectPlayerActivityHistory,
 } from '../store/selectors/playerDetailSelectors';
 import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
 
@@ -73,12 +73,12 @@ export default function PlayerDetailPage() {
   const playerStatusLabel = t(`domain.player.status.${playerStatus}`);
 
   const playerEventHistory = useMemo(
-    () => (player ? selectPlayerEventHistory(events, player.id) : []),
+    () => (player ? selectPlayerActivityHistory(events, player.id) : []),
     [events, player]
   );
 
-  const groupedPlayerEventHistory = useMemo(
-    () => selectGroupedPlayerEventHistory(squadPeriods, playerEventHistory, t('page.statistics.period.outsidePeriods')),
+  const groupedPlayerActivityHistory = useMemo(
+    () => selectGroupedPlayerActivityHistory(squadPeriods, playerEventHistory, t('page.statistics.period.outsidePeriods')),
     [squadPeriods, playerEventHistory, t]
   );
 
@@ -295,7 +295,7 @@ export default function PlayerDetailPage() {
       <ContentGrid variant="sidebarEnd">
         <PlayerDetailHistorySections
           eventHistory={playerEventHistory}
-          groupedEventHistory={groupedPlayerEventHistory ?? undefined}
+          groupedEventHistory={groupedPlayerActivityHistory ?? undefined}
           futureEventsWithoutInvitation={futureEventsWithoutInvitation}
           onOpenEvent={(eventId) => navigate(`/activities/${eventId}`)}
         />

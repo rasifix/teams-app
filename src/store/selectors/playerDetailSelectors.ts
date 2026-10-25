@@ -1,10 +1,10 @@
-import type { Activity, Period, PlayerEventHistoryItem } from '../../types';
+import type { Activity, Period, PlayerActivityHistoryItem } from '../../types';
 import { getActivityDate, getInvitationStatus, isTeamActivity } from './activitySelectors';
 
-export interface GroupedPlayerEventHistory {
+export interface GroupedPlayerActivityHistory {
   id: string;
   title: string;
-  eventHistory: PlayerEventHistoryItem[];
+  eventHistory: PlayerActivityHistoryItem[];
 }
 
 export interface GroupedDatedHistory<T> {
@@ -36,7 +36,7 @@ const hasNonOverlappingPeriods = (periods: Period[]): boolean => {
   return true;
 };
 
-export const selectPlayerEventHistory = (activities: Activity[], playerId: string): PlayerEventHistoryItem[] =>
+export const selectPlayerActivityHistory = (activities: Activity[], playerId: string): PlayerActivityHistoryItem[] =>
   activities
     .filter((activity) => isTeamActivity(activity) && activity.invitations.some((invitation) => invitation.playerId === playerId))
     .sort((left, right) => new Date(left.startsAt).getTime() - new Date(right.startsAt).getTime())
@@ -53,11 +53,11 @@ export const selectPlayerEventHistory = (activities: Activity[], playerId: strin
       };
     });
 
-export const selectGroupedPlayerEventHistory = (
+export const selectGroupedPlayerActivityHistory = (
   squadPeriods: Period[],
-  playerEventHistory: PlayerEventHistoryItem[],
+  playerEventHistory: PlayerActivityHistoryItem[],
   outsidePeriodsTitle: string
-): GroupedPlayerEventHistory[] | null => selectGroupedDatedHistory(squadPeriods, playerEventHistory, outsidePeriodsTitle);
+): GroupedPlayerActivityHistory[] | null => selectGroupedDatedHistory(squadPeriods, playerEventHistory, outsidePeriodsTitle);
 
 export const selectGroupedDatedHistory = <T extends { eventDate: string }>(
   squadPeriods: Period[],

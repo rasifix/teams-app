@@ -1,36 +1,36 @@
 import { useTranslation } from 'react-i18next';
 import { ActionCard, ActionCardTitle, Badge, Cluster, EmptyState, Panel, PanelHeader, PanelTitle, SectionEyebrow, Stack, type BadgeTone } from './ui';
-import type { PlayerEventHistoryItem } from '../types';
+import type { PlayerActivityHistoryItem } from '../types';
 import { DateColumn } from './ui';
 
-interface PlayerEventHistoryGroup {
+interface PlayerActivityHistoryGroup {
   id: string;
   title: string;
-  eventHistory: PlayerEventHistoryItem[];
+  eventHistory: PlayerActivityHistoryItem[];
 }
 
-interface PlayerEventHistoryProps {
-  eventHistory: PlayerEventHistoryItem[];
-  groupedEventHistory?: PlayerEventHistoryGroup[];
+interface PlayerActivityHistoryProps {
+  eventHistory: PlayerActivityHistoryItem[];
+  groupedEventHistory?: PlayerActivityHistoryGroup[];
   className?: string;
   onOpenEvent: (eventId: string) => void;
 }
 
-export default function PlayerEventHistory({
+export default function PlayerActivityHistory({
   eventHistory,
   groupedEventHistory,
   className = '',
   onOpenEvent,
-}: PlayerEventHistoryProps) {
+}: PlayerActivityHistoryProps) {
   const { t } = useTranslation();
-  const invitationTone = (status: PlayerEventHistoryItem['invitationStatus']): BadgeTone => {
+  const invitationTone = (status: PlayerActivityHistoryItem['invitationStatus']): BadgeTone => {
     if (status === 'accepted') return 'success';
     if (status === 'open' || status === 'sick') return 'warning';
     if (status === 'declined' || status === 'injured') return 'danger';
     return 'neutral';
   };
 
-  const renderEventCards = (items: PlayerEventHistoryItem[]) => (
+  const renderEventCards = (items: PlayerActivityHistoryItem[]) => (
     <Stack gap="sm">
       {items.map((item) => (
         <ActionCard

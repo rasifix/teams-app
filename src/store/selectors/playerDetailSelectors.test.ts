@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Activity, ActivityInvitation, Period, PlayerEventHistoryItem, Team } from '../../types';
+import type { Activity, ActivityInvitation, Period, PlayerActivityHistoryItem, Team } from '../../types';
 import {
   selectFutureEventsWithoutInvitation,
   selectGroupedDatedHistory,
-  selectGroupedPlayerEventHistory,
-  selectPlayerEventHistory,
+  selectGroupedPlayerActivityHistory,
+  selectPlayerActivityHistory,
 } from './playerDetailSelectors';
 
 function team(overrides: Partial<Team>): Team {
@@ -60,7 +60,7 @@ describe('player detail selectors', () => {
       }),
     ];
 
-    const history = selectPlayerEventHistory(events, 'p1');
+    const history = selectPlayerActivityHistory(events, 'p1');
 
     expect(history.map((entry) => entry.eventId)).toEqual(['e1', 'e2']);
     expect(history[1]).toMatchObject({
@@ -76,7 +76,7 @@ describe('player detail selectors', () => {
       { id: 'period-b', name: 'B', startDate: '2026-04-01', endDate: '2026-07-01' },
     ];
 
-    const history: PlayerEventHistoryItem[] = [
+    const history: PlayerActivityHistoryItem[] = [
       {
         eventId: 'e1',
         eventName: 'In A',
@@ -100,7 +100,7 @@ describe('player detail selectors', () => {
       },
     ];
 
-    const grouped = selectGroupedPlayerEventHistory(periods, history, 'Outside periods');
+    const grouped = selectGroupedPlayerActivityHistory(periods, history, 'Outside periods');
 
     expect(grouped).not.toBeNull();
     expect(grouped?.map((group) => group.id)).toEqual(['outside-periods', 'period-b', 'period-a']);
@@ -114,7 +114,7 @@ describe('player detail selectors', () => {
       { id: 'p2', name: 'Two', startDate: '2026-03-01', endDate: '2026-05-01' },
     ];
 
-    const grouped = selectGroupedPlayerEventHistory(overlappingPeriods, [], 'Outside periods');
+    const grouped = selectGroupedPlayerActivityHistory(overlappingPeriods, [], 'Outside periods');
 
     expect(grouped).toBeNull();
   });

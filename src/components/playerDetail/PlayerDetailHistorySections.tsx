@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import type { Activity, PlayerEventHistoryItem } from '../../types';
-import type { GroupedPlayerEventHistory } from '../../store/selectors/playerDetailSelectors';
+import type { Activity, PlayerActivityHistoryItem } from '../../types';
+import type { GroupedPlayerActivityHistory } from '../../store/selectors/playerDetailSelectors';
 import { getActivityDate } from '../../store/selectors/activitySelectors';
 import { ActionCard, ActionCardTitle, Badge, DateColumn, Panel, PanelHeader, PanelTitle, Stack } from '../ui';
-import PlayerEventHistory from '../PlayerEventHistory';
+import PlayerActivityHistory from '../PlayerActivityHistory';
 
 interface Props {
-  eventHistory: PlayerEventHistoryItem[];
-  groupedEventHistory?: GroupedPlayerEventHistory[];
+  eventHistory: PlayerActivityHistoryItem[];
+  groupedEventHistory?: GroupedPlayerActivityHistory[];
   futureEventsWithoutInvitation: Activity[];
   onOpenEvent: (eventId: string) => void;
 }
@@ -16,7 +16,7 @@ export default function PlayerDetailHistorySections({ eventHistory, groupedEvent
   const { t } = useTranslation();
 
   return <>
-    <PlayerEventHistory eventHistory={eventHistory} groupedEventHistory={groupedEventHistory} onOpenEvent={onOpenEvent} />
+    <PlayerActivityHistory eventHistory={eventHistory} groupedEventHistory={groupedEventHistory} onOpenEvent={onOpenEvent} />
     {futureEventsWithoutInvitation.length > 0 && <Panel className="member-detail-section">
       <PanelHeader><PanelTitle>{t('page.playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
       <Stack gap="sm" className="member-event-list">

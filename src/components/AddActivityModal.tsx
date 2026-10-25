@@ -11,7 +11,7 @@ import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader
 import ActivityCoreFields from './ActivityCoreFields';
 import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 
-interface AddEventModalProps {
+interface AddActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (activity: ActivityPayload) => void;
@@ -19,7 +19,7 @@ interface AddEventModalProps {
 
 const initialKind: ActivityKind = 'match';
 
-export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalProps) {
+export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivityModalProps) {
   const { t } = useTranslation();
   const matchFormats = useSquadMatchFormats();
   const { players } = usePlayers();

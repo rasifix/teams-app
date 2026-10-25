@@ -9,7 +9,7 @@ import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useShirtSets 
 import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
-import EditEventModal from '../components/EditEventModal';
+import EditActivityModal from '../components/EditActivityModal';
 import ActivityAttendanceCard from '../components/ActivityAttendanceCard';
 import TeamCard from '../components/TeamCard';
 import { selectTeamCardView } from '../store/selectors/teamCardSelectors';
@@ -24,7 +24,7 @@ import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivi
 import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
 import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
-export default function EventDetailPage() {
+export default function ActivityDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -214,7 +214,7 @@ export default function EventDetailPage() {
     </ContentGrid>
 
     {!spondLinked && activity.status === 'active' && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
-    {activity.status === 'active' && <EditEventModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
+    {activity.status === 'active' && <EditActivityModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
     <ConfirmDialog isOpen={isCancelOpen} title={t('page.eventDetail.cancelActivityTitle')} message={t('page.eventDetail.cancelActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.cancelActivity')} cancelText={t('common.actions.cancel')} onConfirm={handleCancelActivity} onCancel={() => setIsCancelOpen(false)} confirmButtonColor="blue" />
     <ConfirmDialog isOpen={isRestoreOpen} title={t('page.eventDetail.restoreActivityTitle')} message={t('page.eventDetail.restoreActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.restoreActivity')} cancelText={t('common.actions.cancel')} onConfirm={handleRestoreActivity} onCancel={() => setIsRestoreOpen(false)} confirmButtonColor="green" />
     <ConfirmDialog isOpen={isDeleteOpen} title={t('page.eventDetail.deleteEventTitle')} message={t('page.eventDetail.deleteEventMessage', { name: activity.name })} confirmText={t('common.actions.delete')} cancelText={t('common.actions.cancel')} onConfirm={handleDeleteActivity} onCancel={() => setIsDeleteOpen(false)} confirmButtonColor="red" />

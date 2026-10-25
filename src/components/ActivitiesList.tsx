@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next';
 import ActivityCard from './ActivityCard';
 import { ContentGrid, EmptyState } from './ui';
 
-interface EventsListProps {
+interface ActivitiesListProps {
   activities: Activity[];
   summaries: Map<string, ActivityCardSummary>;
   onOpenActivity: (activityId: string) => void;
   onOpenTeam: (activityId: string, teamId: string) => void;
 }
 
-export default function EventsList({ activities, summaries, onOpenActivity, onOpenTeam }: EventsListProps) {
+export default function ActivitiesList({ activities, summaries, onOpenActivity, onOpenTeam }: ActivitiesListProps) {
   const { t } = useTranslation();
 
   if (activities.length === 0) {

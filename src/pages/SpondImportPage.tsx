@@ -7,7 +7,7 @@ import {
   SpondCredentialsStep,
   SpondGroupStep,
 } from '../components/spondImport/SpondConnectionSteps';
-import SpondEventsReviewStep from '../components/spondImport/SpondEventsReviewStep';
+import SpondActivitiesReviewStep from '../components/spondImport/SpondActivitiesReviewStep';
 import SpondGuardiansReviewStep from '../components/spondImport/SpondGuardiansReviewStep';
 import SpondPlayersReviewStep from '../components/spondImport/SpondPlayersReviewStep';
 import type { SpondSyncResult } from '../components/SpondSyncResultBanner';
@@ -444,7 +444,7 @@ export default function SpondImportPage() {
             </Stack>
           )}
           {step === "diff" && isEventOnly && (
-            <SpondEventsReviewStep
+            <SpondActivitiesReviewStep
               rows={visibleEventRows}
               drafts={activityDrafts}
               activities={activities}

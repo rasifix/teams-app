@@ -9,14 +9,14 @@ import { formatDate } from '../utils/dateFormatter';
 import LevelRangeSelector from './LevelRangeSelector';
 import Level from './Level';
 
-interface EventParticipationMatrixProps {
+interface ActivityParticipationMatrixProps {
   players: Player[];
   events: Activity[];
   onOpenPlayer: (playerId: string) => void;
   onOpenActivity: (activityId: string) => void;
 }
 
-export default function EventParticipationMatrix({ players, events, onOpenPlayer, onOpenActivity }: EventParticipationMatrixProps) {
+export default function ActivityParticipationMatrix({ players, events, onOpenPlayer, onOpenActivity }: ActivityParticipationMatrixProps) {
   const { t } = useTranslation();
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);

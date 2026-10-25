@@ -3,11 +3,11 @@ import { getActivityDate, getActivityStartTime } from '../store/selectors/activi
 import type { Activity } from '../types';
 import { ActionCardLink, ActionCardTitle, Badge, DateColumn, EntityMeta } from './ui';
 
-interface UpcomingEventCardProps {
+interface UpcomingActivityCardProps {
   event: Activity;
 }
 
-export default function UpcomingEventCard({ event }: UpcomingEventCardProps) {
+export default function UpcomingActivityCard({ event }: UpcomingActivityCardProps) {
   const { t } = useTranslation();
 
   return (

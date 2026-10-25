@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
-import EventsList from '../components/EventsList';
-import AddEventModal from '../components/AddEventModal';
+import ActivitiesList from '../components/ActivitiesList';
+import AddActivityModal from '../components/AddActivityModal';
 import { Alert, Button, Cluster, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Stack } from '../components/ui';
 import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities } from '../store/selectors/activitySelectors';
 import { usePlayers, useSquad, useTrainers } from '../store';
@@ -14,7 +14,7 @@ import SpondBadge from '../components/SpondBadge';
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import { selectActivityCardSummary } from '../store/selectors/activityViewSelectors';
 
-export default function EventsPage() {
+export default function ActivitiesPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { activities, loading, error, addActivity } = useActivities();
@@ -57,16 +57,16 @@ export default function EventsPage() {
         {error && <Alert>{error}</Alert>}
         <Panel>
           <PanelHeader><PanelTitle>{t('page.events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
-          <EventsList activities={futureActivities} summaries={futureSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
+          <ActivitiesList activities={futureActivities} summaries={futureSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
         </Panel>
         {pastActivities.length > 0 && (
           <Panel>
             <PanelHeader><PanelTitle>{t('page.events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
-          <EventsList activities={pastActivities} summaries={pastSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
+          <ActivitiesList activities={pastActivities} summaries={pastSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
           </Panel>
         )}
       </Stack>
-      {!spondLinked && <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />}
+      {!spondLinked && <AddActivityModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={addActivity} />}
     </Page>
   );
 }

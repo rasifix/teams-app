@@ -158,7 +158,7 @@ export interface PlayerSelection {
   teamId: string;
 }
 
-export interface PlayerEventHistoryItem {
+export interface PlayerActivityHistoryItem {
   eventId: string;
   eventName: string;
   eventDate: string; // YYYY-MM-DD

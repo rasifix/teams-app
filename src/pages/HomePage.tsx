@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import AddSquadModal from '../components/AddSquadModal';
-import UpcomingEventCard from '../components/UpcomingEventCard';
+import UpcomingActivityCard from '../components/UpcomingActivityCard';
 import { useSquad, useSquads, useSquadsError, useSquadsLoading, useStore } from '../store/useStore';
 import { useActivities } from '../hooks/useActivities';
 import { selectUpcomingEvents } from '../store/selectors/homeSelectors';
@@ -135,7 +135,7 @@ export default function HomePage() {
             {upcomingEvents.length === 0 ? (
               <EmptyState>{t('page.home.upcomingEvents.empty')}</EmptyState>
             ) : (
-              <Stack gap="sm">{upcomingEvents.map((event) => <UpcomingEventCard key={event.id} event={event} />)}</Stack>
+              <Stack gap="sm">{upcomingEvents.map((event) => <UpcomingActivityCard key={event.id} event={event} />)}</Stack>
             )}
           </section>
 

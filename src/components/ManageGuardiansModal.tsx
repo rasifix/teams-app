@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Guardian } from '../types';
 import type { ExistingGuardianUserOption } from '../store/selectors/guardianAssignmentSelectors';
-import { hasDuplicateGuardian } from '../utils/guardians';
-import { Alert, Button, ChoiceGroup, FieldLabel, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, RequiredFieldsNote, RequiredMark, Select, Stack } from './ui';
+import { selectAvailableExistingGuardianUsers } from '../store/selectors/guardianFormSelectors';
+import { buildGuardianFormResult } from '../utils/guardianForm';
+import { Alert, Button, ChoiceGroup, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Radio, RequiredFieldsNote, Stack } from './ui';
+import ExistingGuardianSection from './ExistingGuardianSection';
+import DocumentedGuardianSection from './DocumentedGuardianSection';
 
 interface ManageGuardiansModalProps {
   isOpen: boolean;
@@ -31,16 +34,10 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = Boolean(editingGuardian);
 
-  const availableExistingUsers = useMemo(() => {
-    const nonCurrentGuardians = guardians.filter((guardian) => guardian.id !== editingGuardian?.id);
-    return existingUsers.filter((existingUser) => !hasDuplicateGuardian(nonCurrentGuardians, {
-      id: existingUser.id,
-      firstName: existingUser.firstName,
-      lastName: existingUser.lastName,
-      email: existingUser.email,
-      isDocumentedOnly: false,
-    }));
-  }, [guardians, existingUsers, editingGuardian?.id]);
+  const availableExistingUsers = useMemo(
+    () => selectAvailableExistingGuardianUsers(guardians, existingUsers, editingGuardian?.id),
+    [guardians, existingUsers, editingGuardian?.id],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -102,68 +99,25 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
     event.preventDefault();
     setError(null);
 
-    if (mode === 'existing') {
-      if (!selectedMemberId && !isEditMode) {
-        setError(t('page.guardians.errors.selectExistingUser'));
-        return;
-      }
-
-      const selectedUser = existingUsers.find((entry) => entry.id === selectedMemberId);
-
-      if (!isEditMode && !selectedUser) {
-        setError(t('page.guardians.errors.selectExistingUser'));
-        return;
-      }
-
-      const guardian: Guardian = {
-        id: selectedUser?.id || selectedMemberId || editingGuardian?.id || crypto.randomUUID(),
-        firstName: isEditMode ? existingFirstName.trim() : (selectedUser?.firstName || existingFirstName.trim()),
-        lastName: isEditMode ? existingLastName.trim() : (selectedUser?.lastName || existingLastName.trim()),
-        email: isEditMode ? (existingEmail.trim() || undefined) : (selectedUser?.email || existingEmail.trim() || undefined),
-        isDocumentedOnly: false,
-      };
-
-      const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
-      if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-        setError(t('page.guardians.errors.alreadyAssigned'));
-        return;
-      }
-
-      setIsSubmitting(true);
-      const success = isEditMode && editingGuardian && onEdit
-        ? await onEdit(editingGuardian.id, {
-            firstName: guardian.firstName,
-            lastName: guardian.lastName,
-            email: guardian.email,
-          })
-        : await onAssign(guardian);
-      if (success) {
-        handleClose();
-      } else {
-        setIsSubmitting(false);
-      }
+    const result = buildGuardianFormResult({
+      mode,
+      selectedMemberId,
+      existingUsers,
+      guardians,
+      editingGuardian,
+      existingFirstName,
+      existingLastName,
+      existingEmail,
+      firstName,
+      lastName,
+      email: documentedEmail,
+    });
+    if (result.error || !result.guardian) {
+      setError(t(`page.guardians.errors.${result.error ?? 'documentedNameRequired'}`));
       return;
     }
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setError(t('page.guardians.errors.documentedNameRequired'));
-      return;
-    }
-
-    const guardian: Guardian = {
-      id: crypto.randomUUID(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: documentedEmail.trim() || undefined,
-      isDocumentedOnly: true,
-    };
-
-    const nonCurrentGuardians = guardians.filter((existingGuardian) => existingGuardian.id !== editingGuardian?.id);
-    if (hasDuplicateGuardian(nonCurrentGuardians, guardian)) {
-      setError(t('page.guardians.errors.documentedDuplicate'));
-      return;
-    }
-
+    const guardian = result.guardian;
     setIsSubmitting(true);
     const success = isEditMode && editingGuardian && onEdit
       ? await onEdit(editingGuardian.id, {
@@ -217,101 +171,27 @@ export default function ManageGuardiansModal({ isOpen, onClose, guardians, exist
             </ChoiceGroup>
 
             {mode === 'existing' ? (
-              <div>
-                <FieldLabel htmlFor="guardian-existing">{t('page.guardians.existingUser')}{!isEditMode && <RequiredMark />}</FieldLabel>
-                <Select
-                  id="guardian-existing"
-                  value={selectedMemberId}
-                  onChange={(e) => handleSelectedExistingUserChange(e.target.value)}
-                  disabled={isEditMode}
-                >
-                  <option value="">{t('page.guardians.selectUser')}</option>
-                  {availableExistingUsers.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName}
-                    </option>
-                  ))}
-                </Select>
-                {availableExistingUsers.length === 0 && (
-                  <p className="field-help">{t('page.guardians.noAvailableUsers')}</p>
-                )}
-                {isEditMode && (
-                  <p className="field-help">{t('page.guardians.selectionLocked')}</p>
-                )}
-                {isEditMode && (
-                <Stack gap="sm" className="guardian-edit-fields">
-                  <div>
-                    <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}<RequiredMark /></FieldLabel>
-                    <Input
-                      id="guardian-existing-first-name"
-                      type="text"
-                      value={existingFirstName}
-                      onChange={(e) => setExistingFirstName(e.target.value)}
-                      placeholder={t('auth.firstName')}
-                      required={mode === 'existing'}
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel htmlFor="guardian-existing-last-name">{t('auth.lastName')}<RequiredMark /></FieldLabel>
-                    <Input
-                      id="guardian-existing-last-name"
-                      type="text"
-                      value={existingLastName}
-                      onChange={(e) => setExistingLastName(e.target.value)}
-                      placeholder={t('auth.lastName')}
-                      required={mode === 'existing'}
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel htmlFor="guardian-existing-email">{t('auth.emailAddress')}<RequiredMark /></FieldLabel>
-                    <Input
-                      id="guardian-existing-email"
-                      type="email"
-                      value={existingEmail}
-                      onChange={(e) => setExistingEmail(e.target.value)}
-                      placeholder={t('auth.emailAddress')}
-                      required={mode === 'existing'}
-                    />
-                  </div>
-                </Stack>
-                )}
-              </div>
+              <ExistingGuardianSection
+                availableUsers={availableExistingUsers}
+                selectedMemberId={selectedMemberId}
+                isEditMode={isEditMode}
+                firstName={existingFirstName}
+                lastName={existingLastName}
+                email={existingEmail}
+                onSelect={handleSelectedExistingUserChange}
+                onFirstNameChange={setExistingFirstName}
+                onLastNameChange={setExistingLastName}
+                onEmailChange={setExistingEmail}
+              />
             ) : (
-              <>
-                <div>
-                  <FieldLabel htmlFor="guardian-first-name">{t('auth.firstName')}<RequiredMark /></FieldLabel>
-                  <Input
-                    id="guardian-first-name"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={t('domain.member.placeholders.firstName')}
-                    required
-                  />
-                </div>
-                <div>
-                  <FieldLabel htmlFor="guardian-last-name">{t('auth.lastName')}<RequiredMark /></FieldLabel>
-                  <Input
-                    id="guardian-last-name"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder={t('domain.member.placeholders.lastName')}
-                    required
-                  />
-                </div>
-                <div>
-                  <FieldLabel htmlFor="guardian-documented-email">{t('domain.member.fields.email')}</FieldLabel>
-                  <Input
-                    id="guardian-documented-email"
-                    type="email"
-                    value={documentedEmail}
-                    onChange={(e) => setDocumentedEmail(e.target.value)}
-                    placeholder={t('domain.member.placeholders.email')}
-                  />
-                </div>
-                <p className="field-help">{t('page.guardians.documentedHint')}</p>
-              </>
+              <DocumentedGuardianSection
+                firstName={firstName}
+                lastName={lastName}
+                email={documentedEmail}
+                onFirstNameChange={setFirstName}
+                onLastNameChange={setLastName}
+                onEmailChange={setDocumentedEmail}
+              />
             )}
 
             {error && <Alert>{error}</Alert>}

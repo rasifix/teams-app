@@ -152,13 +152,13 @@ callbacks without assembling the entire activity/store data graph.
 
 ### 7. Extract and test guardian form decisions
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
-- [ ] Move existing-user eligibility filtering from
+- [x] Move existing-user eligibility filtering from
   [ManageGuardiansModal](../src/components/ManageGuardiansModal.tsx) into a
   selector and add tests for normal, duplicate, and editing-self cases.
-- [ ] Separate existing-user and documented-guardian form sections.
-- [ ] Isolate validation and guardian payload construction from modal rendering.
+- [x] Separate existing-user and documented-guardian form sections.
+- [x] Isolate validation and guardian payload construction from modal rendering.
 
 **Done when:** derived choices and submission decisions are independently
 testable, with the modal focused on form interaction and presentation.

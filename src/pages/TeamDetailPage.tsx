@@ -3,8 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useActivities, usePlayers, useTrainers, useShirtSets, useMatchPlanning } from '../store';
-import { Alert, Button, Cluster, ContentGrid, EmptyState, Field, ListFrame, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, PropertyAction, PropertyActions, PropertyLabel, PropertyList, PropertyRow, PropertyValue, Select } from '../components/ui';
-import Level from '../components/Level';
+import { Alert, Button, Cluster, ContentGrid, EmptyState, Field, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Select } from '../components/ui';
 import Strength from '../components/Strength';
 import SelectionRemovalDialog from '../components/SelectionRemovalDialog';
 import EditTeamModal from '../components/EditTeamModal';
@@ -13,11 +12,11 @@ import AssignResponsiblePeopleModal from '../components/AssignResponsiblePeopleM
 import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamResponsiblePeople, selectTrainerForUser } from '../store/selectors/teamTrainerSelectors';
-import { getActivityTime } from '../store/selectors/activitySelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
 import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
-import { getBirthYear } from '../utils/birthDate';
 import type { SelectionRemovalReason } from '../types';
+import TeamPropertiesSection from '../components/teamDetail/TeamPropertiesSection';
+import TeamRosterSection from '../components/teamDetail/TeamRosterSection';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -33,7 +32,6 @@ export default function TeamDetailPage() {
   
   const [playerToRemove, setPlayerToRemove] = useState<string | null>(null);
   const [removalReason, setRemovalReason] = useState<SelectionRemovalReason | ''>('');
-  const [swipedPlayerId, setSwipedPlayerId] = useState<string | null>(null);
   const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
   const [isResponsibleModalOpen, setIsResponsibleModalOpen] = useState(false);
   const [isAssignShirtsModalOpen, setIsAssignShirtsModalOpen] = useState(false);
@@ -76,7 +74,6 @@ export default function TeamDetailPage() {
     await updateActivitySelection(eventId, updatedTeams);
     setPlayerToRemove(null);
     setRemovalReason('');
-    setSwipedPlayerId(null);
   };
 
   const handleChangeFormation = async (formationId: string | undefined) => {
@@ -89,37 +86,6 @@ export default function TeamDetailPage() {
     await updateActivityTeams(eventId, updatedTeams);
   };
 
-  const handleTouchStart = (playerId: string, e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    const startX = touch.clientX;
-    
-    const handleTouchMove = (moveEvent: TouchEvent) => {
-      const moveTouch = moveEvent.touches[0];
-      const diffX = startX - moveTouch.clientX;
-      
-      // If swiped left more than 50px, show delete button
-      if (diffX > 50 && swipedPlayerId !== playerId) {
-        setSwipedPlayerId(playerId);
-        document.removeEventListener('touchmove', handleTouchMove);
-        document.removeEventListener('touchend', handleTouchEnd);
-      }
-      // If swiped right more than 30px while delete button is showing, hide it
-      else if (diffX < -30 && swipedPlayerId === playerId) {
-        setSwipedPlayerId(null);
-        document.removeEventListener('touchmove', handleTouchMove);
-        document.removeEventListener('touchend', handleTouchEnd);
-      }
-    };
-    
-    const handleTouchEnd = () => {
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-    
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
-  };
-  
   const handleAddPlayers = () => {
     navigate(`/activities/${eventId}/teams/${teamId}/select-players`);
   };
@@ -212,175 +178,29 @@ export default function TeamDetailPage() {
       {isCancelled && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}
       
       <ContentGrid variant="sidebar">
-        <Panel>
-          <PropertyList>
-            
-            <PropertyRow>
-              <PropertyLabel>
-                <span>🕐</span>
-                <span>{t('domain.team.fields.startTime')}</span>
-              </PropertyLabel>
-              <PropertyValue>
-                {event.kind === 'match' ? getActivityTime(event) : team.startTime || getActivityTime(event)}
-              </PropertyValue>
-            </PropertyRow>
-            {(event.kind === 'match' ? event.location : team.location || event.location) && (
-              <PropertyRow>
-                <PropertyLabel>
-                  <span>📍</span>
-                  <span>{t('domain.team.fields.location')}</span>
-                </PropertyLabel>
-                <PropertyValue>{event.kind === 'match' ? event.location : team.location || event.location}</PropertyValue>
-              </PropertyRow>
-            )}
-
-            <PropertyRow>
-              <PropertyLabel>
-                <span>💪</span>
-                  <span>{t('domain.team.fields.strength')}</span>
-              </PropertyLabel>
-              <PropertyValue><Strength level={team.strength} /></PropertyValue>
-            </PropertyRow>
-
-            <PropertyAction
-              data-testid="team-responsible-people-row"
-              onClick={() => setIsResponsibleModalOpen(true)}
-              disabled={isCancelled}
-            >
-              <PropertyLabel>
-                <span>👤</span>
-                  <span>{t('domain.team.fields.responsiblePeople')}</span>
-              </PropertyLabel>
-              {responsiblePeople[0] ? (
-                <PropertyValue>{responsiblePeople[0].firstName} {responsiblePeople[0].lastName}</PropertyValue>
-              ) : (
-                <PropertyValue muted>{t('page.teamModal.noTrainerAssigned')}</PropertyValue>
-              )}
-            </PropertyAction>
-
-            <PropertyAction
-              data-testid="team-shirt-set-row"
-              onClick={() => setIsAssignShirtsModalOpen(true)}
-              disabled={isCancelled}
-            >
-              <PropertyLabel>
-                <span>👕</span>
-                <span>{t('page.teamDetail.shirtSetLabel')}</span>
-              </PropertyLabel>
-              {shirtSet ? (
-                <PropertyValue>
-                  {shirtSet.sponsor}
-                </PropertyValue>
-              ) : (
-                <PropertyValue muted>{t('page.teamDetail.noShirtSetAssigned')}</PropertyValue>
-              )}
-            </PropertyAction>
-
-            {matchPlanningEnabled && event.kind === 'match' && event.matchFormatId && (
-              <PropertyAction
-                onClick={() => setIsAssignFormationModalOpen(true)}
-                disabled={isCancelled}
-              >
-                <PropertyLabel>
-                  <span>🧩</span>
-                  <span>{t('page.teamDetail.formationLabel')}</span>
-                </PropertyLabel>
-                <PropertyValue muted={!team.formationId}>
-                  {formations.find((formation) => formation.id === team.formationId)?.name ?? t('page.teamDetail.noFormationAssigned')}
-                </PropertyValue>
-              </PropertyAction>
-            )}
-
-            <PropertyRow>
-              <PropertyLabel>
-                <span>📋</span>
-                <span>{t('page.teamDetail.lineupLabel')}</span>
-              </PropertyLabel>
-              <PropertyActions>
-                {(event.kind === 'match' ? event.matchFormatId : undefined) && team.formationId && (
-                  <Button size="sm" disabled={isCancelled} onClick={() => navigate(`/activities/${eventId}/teams/${teamId}/lineup/1`)}>
-                    {t('page.teamDetail.planLineupAction')}
-                  </Button>
-                )}
-              </PropertyActions>
-            </PropertyRow>
-          </PropertyList>
-        </Panel>
-        
-        <Panel>
-            <PanelHeader>
-              <PanelTitle>
-                {t('domain.player.plural')} ({selectedPlayers.length}/{(event.maxPlayersPerTeam ?? players.length)})
-              </PanelTitle>
-              <PanelActions>
-              <Button 
-                onClick={handleAddPlayers}
-                disabled={!selectionEditState?.canEdit}
-                size="sm"
-              >
-                {t('common.actions.edit')}
-              </Button>
-              </PanelActions>
-            </PanelHeader>
-            {!selectionEditState?.canEdit && <Alert className="team-detail-player-alert">{t('page.teamPlayerSelection.eventPassedWarning')}</Alert>}
-            
-            {selectedPlayers.length === 0 ? (
-              <EmptyState>{t('page.teamDetail.noPlayersSelected')}</EmptyState>
-            ) : (
-              <ListFrame>
-                {selectedPlayers.map(player => {
-                  const shirtAssignment = team.shirtAssignments?.find(a => a.playerId === player.id);
-                  
-                  return (
-                    <div 
-                      key={player.id}
-                      className="team-player-row"
-                    >
-                      {/* Main content */}
-                      <div
-                        className={`team-player-main${swipedPlayerId === player.id ? ' team-player-main--swiped' : ''}`}
-                        onTouchStart={(e) => selectionEditState?.canEdit && handleTouchStart(player.id, e)}
-                      >
-                        <div className="team-player-identity">
-                          {shirtAssignment && shirtSet && (
-                            <span 
-                              className="team-player-shirt"
-                              style={{ 
-                                backgroundColor: shirtSet.color
-                              }}
-                            >
-                              {shirtAssignment.shirtNumber}
-                            </span>
-                          )}
-                          <span className="team-player-name">
-                            {player.firstName} {player.lastName}
-                          </span>
-                          <span className="team-player-year">
-                            {getBirthYear(player.birthDate)}
-                          </span>
-                        </div>
-                        <Level level={player.level} />
-                      </div>
-                      
-                      {/* Delete button that appears on swipe */}
-                      <div 
-                        className={`ui-swipe-action-tray${swipedPlayerId === player.id ? ' ui-swipe-action-tray--visible' : ''}`}
-                      >
-                        <button
-                          type="button"
-                          data-ui-control="composite"
-                          className="team-player-remove-button"
-                          onClick={() => !isCancelled && setPlayerToRemove(player.id)}
-                        >
-                          {t('page.teamDetail.removeAction')}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </ListFrame>
-            )}
-        </Panel>
+        <TeamPropertiesSection
+          activity={event}
+          team={team}
+          responsiblePeople={responsiblePeople}
+          shirtSetSponsor={shirtSet?.sponsor ?? null}
+          formationName={formations.find((formation) => formation.id === team.formationId)?.name ?? null}
+          matchPlanningEnabled={matchPlanningEnabled}
+          isCancelled={isCancelled}
+          onAssignResponsiblePerson={() => setIsResponsibleModalOpen(true)}
+          onAssignShirts={() => setIsAssignShirtsModalOpen(true)}
+          onAssignFormation={() => setIsAssignFormationModalOpen(true)}
+          onPlanLineup={() => navigate(`/activities/${eventId}/teams/${teamId}/lineup/1`)}
+        />
+        <TeamRosterSection
+          team={team}
+          players={selectedPlayers}
+          maxPlayers={event.maxPlayersPerTeam ?? players.length}
+          canEditSelection={Boolean(selectionEditState?.canEdit)}
+          isCancelled={isCancelled}
+          shirtSetColor={shirtSet?.color ?? null}
+          onEditPlayers={handleAddPlayers}
+          onRemovePlayer={setPlayerToRemove}
+        />
       </ContentGrid>
       
       <SelectionRemovalDialog

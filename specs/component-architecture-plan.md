@@ -50,7 +50,7 @@ Review and split these pages in small, independently reviewable changes:
   presentation from client lifecycle, snapshot loading, and import orchestration.
 - [x] [PlayerDetailPage](../src/pages/PlayerDetailPage.tsx): isolate guardian
   management and history/upcoming-event sections from player page coordination.
-- [ ] [TeamDetailPage](../src/pages/TeamDetailPage.tsx): isolate roster and
+- [x] [TeamDetailPage](../src/pages/TeamDetailPage.tsx): isolate roster and
   property sections from team updates and dialog coordination.
 
 **Done when:** each page primarily coordinates data/actions and composes focused

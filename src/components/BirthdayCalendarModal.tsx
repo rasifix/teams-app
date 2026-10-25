@@ -1,88 +1,21 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  createBirthdayCalendarSubscription,
-  getBirthdayCalendarSubscription,
-  revokeBirthdayCalendarSubscription,
-} from '../services/squadService';
 import { Alert, Button, ButtonAnchor, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle, Stack } from './ui';
 
 interface BirthdayCalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
-  squadId: string;
+  subscriptionUrl: string | null;
+  isLoading: boolean;
+  isSaving: boolean;
+  error: string | null;
+  copied: boolean;
+  onCreate: () => void;
+  onCopy: () => void;
+  onRevoke: () => void;
 }
 
-export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: BirthdayCalendarModalProps) {
+export default function BirthdayCalendarModal({ isOpen, onClose, subscriptionUrl, isLoading, isSaving, error, copied, onCreate, onCopy, onRevoke }: BirthdayCalendarModalProps) {
   const { t } = useTranslation();
-  const [subscriptionUrl, setSubscriptionUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let cancelled = false;
-    setIsLoading(true);
-    setError(null);
-    setCopied(false);
-    getBirthdayCalendarSubscription(squadId)
-      .then((result) => {
-        if (!cancelled) setSubscriptionUrl(result.subscriptionUrl);
-      })
-      .catch(() => {
-        if (!cancelled) setError(t('page.members.birthdayCalendar.errors.loadFailed'));
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, squadId, t]);
-
-  const handleCreate = async () => {
-    setIsSaving(true);
-    setError(null);
-    try {
-      const result = await createBirthdayCalendarSubscription(squadId);
-      setSubscriptionUrl(result.subscriptionUrl);
-    } catch {
-      setError(t('page.members.birthdayCalendar.errors.createFailed'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleCopy = async () => {
-    if (!subscriptionUrl) return;
-    try {
-      await navigator.clipboard.writeText(subscriptionUrl);
-      setCopied(true);
-    } catch {
-      setError(t('page.members.birthdayCalendar.errors.copyFailed'));
-    }
-  };
-
-  const handleRevoke = async () => {
-    if (!window.confirm(t('page.members.birthdayCalendar.revokeConfirm'))) return;
-
-    setIsSaving(true);
-    setError(null);
-    try {
-      await revokeBirthdayCalendarSubscription(squadId);
-      setSubscriptionUrl(null);
-      setCopied(false);
-    } catch {
-      setError(t('page.members.birthdayCalendar.errors.revokeFailed'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const webcalUrl = subscriptionUrl?.replace(/^https?:/, 'webcal:');
   const canSubscribeDirectly = subscriptionUrl?.startsWith('https://') ?? false;
 
@@ -108,7 +41,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
                 value={subscriptionUrl}
                 onFocus={(event) => event.currentTarget.select()}
               />
-              <Button type="button" variant="secondary" onClick={handleCopy}>
+              <Button type="button" variant="secondary" onClick={onCopy}>
                 {copied ? t('page.members.birthdayCalendar.copied') : t('page.members.birthdayCalendar.copy')}
               </Button>
             </div>
@@ -129,7 +62,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
         </Button>
         {subscriptionUrl ? (
           <>
-            <Button type="button" variant="danger" disabled={isSaving} onClick={handleRevoke}>
+            <Button type="button" variant="danger" disabled={isSaving} onClick={onRevoke}>
               {isSaving ? t('page.members.birthdayCalendar.revoking') : t('page.members.birthdayCalendar.revoke')}
             </Button>
             {canSubscribeDirectly && (
@@ -139,7 +72,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, squadId }: Birt
             )}
           </>
         ) : (
-          <Button type="button" disabled={isLoading || isSaving} onClick={handleCreate}>
+          <Button type="button" disabled={isLoading || isSaving} onClick={onCreate}>
             {isSaving ? t('page.members.birthdayCalendar.creating') : t('page.members.birthdayCalendar.create')}
           </Button>
         )}

@@ -5,21 +5,17 @@ import MembersList from "../components/MembersList";
 import { Button, ChoiceGroup, Cluster, FilterBar, FilterGroup, FilterLabel, Panel, SectionActions, SectionHeader, SectionHeaderContent, SectionTitle, Switch } from "../components/ui";
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
 import type { MembersOutletContext } from "./MembersPage";
-import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
-import { useSquad } from '../store';
 import { selectFilteredPlayers, selectPlayerBirthYears } from '../store/selectors/memberSelectors';
 import LevelRangeSelector from '../components/LevelRangeSelector';
 
 export default function MembersPlayersPage() {
   const { t } = useTranslation();
-  const { players, openAddPlayerModal, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
-  const squad = useSquad();
+  const { players, openAddPlayerModal, openBirthdayCalendar, canManageBirthdayCalendar, spondLinked, requestDeletePlayer } = useOutletContext<MembersOutletContext>();
 
   const [selectedLevels, setSelectedLevels] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [showTrialPlayers, setShowTrialPlayers] = useState(false);
   const [showInactivePlayers, setShowInactivePlayers] = useState(false);
-  const [isBirthdayCalendarOpen, setIsBirthdayCalendarOpen] = useState(false);
 
   const availableYears = useMemo(() => selectPlayerBirthYears(players), [players]);
 
@@ -44,8 +40,8 @@ export default function MembersPlayersPage() {
               : t("page.members.allPlayersTitle", { count: filteredPlayers.length })}
           </SectionTitle></SectionHeaderContent>
           <SectionActions><Cluster gap="sm">
-            {canManageBirthdayCalendar && squad && (
-              <Button variant="secondary" size="sm" onClick={() => setIsBirthdayCalendarOpen(true)}>
+            {canManageBirthdayCalendar && (
+              <Button variant="secondary" size="sm" onClick={openBirthdayCalendar}>
                 {t('page.members.birthdayCalendar.openAction')}
               </Button>
             )}
@@ -106,13 +102,6 @@ export default function MembersPlayersPage() {
 
         <MembersList members={filteredPlayers} onDelete={spondLinked ? undefined : requestDeletePlayer} memberType="players" />
       </Panel>
-      {squad && (
-        <BirthdayCalendarModal
-          isOpen={isBirthdayCalendarOpen}
-          onClose={() => setIsBirthdayCalendarOpen(false)}
-          squadId={squad.id}
-        />
-      )}
     </>
   );
 }

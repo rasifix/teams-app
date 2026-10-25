@@ -126,8 +126,9 @@ member card variants remain clear and accessible.
 - [x] Move store writes from [StatisticsPeriodModal](../src/components/StatisticsPeriodModal.tsx)
   into [SquadSettingsPage](../src/pages/SquadSettingsPage.tsx); let the modal
   edit values and report submit/cancel.
-- [ ] Separate service, clipboard, and confirmation coordination from
-  [BirthdayCalendarModal](../src/components/BirthdayCalendarModal.tsx)'s view.
+- [x] Separate service, clipboard, and confirmation coordination from
+  [BirthdayCalendarModal](../src/components/BirthdayCalendarModal.tsx)'s view;
+  coordinate these actions in [MembersPage](../src/pages/MembersPage.tsx).
 - [ ] Review router dependencies in `MembersList`, `PlayerStatisticsTable`, and
   the statistics matrices; pass route actions where that improves reuse and
   isolated testing.

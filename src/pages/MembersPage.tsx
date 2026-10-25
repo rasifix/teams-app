@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import AddPlayerModal from "../components/AddPlayerModal";
@@ -16,6 +16,8 @@ import { canManageGuardians } from "../utils/guardians";
 import type { Guardian, Player, Trainer } from "../types";
 import { Alert, Button, Cluster, EmptyState, NavigationTab, NavigationTabs, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "../components/ui";
 import SpondBadge from '../components/SpondBadge';
+import BirthdayCalendarModal from '../components/BirthdayCalendarModal';
+import { createBirthdayCalendarSubscription, getBirthdayCalendarSubscription, revokeBirthdayCalendarSubscription } from '../services/squadService';
 
 export interface MembersOutletContext {
   players: Player[];
@@ -23,6 +25,7 @@ export interface MembersOutletContext {
   guardians: Guardian[];
   openAddPlayerModal: () => void;
   openAddTrainerModal: () => void;
+  openBirthdayCalendar: () => void;
   canImportFromSpond: boolean;
   canManageBirthdayCalendar: boolean;
   spondLinked: boolean;
@@ -53,6 +56,12 @@ export default function MembersPage() {
   const [deletingPlayer, setDeletingPlayer] = useState<Player | null>(null);
   const [deletingTrainer, setDeletingTrainer] = useState<Trainer | null>(null);
   const [deleteActionError, setDeleteActionError] = useState<string | null>(null);
+  const [isBirthdayCalendarOpen, setIsBirthdayCalendarOpen] = useState(false);
+  const [birthdaySubscriptionUrl, setBirthdaySubscriptionUrl] = useState<string | null>(null);
+  const [isBirthdayCalendarLoading, setIsBirthdayCalendarLoading] = useState(false);
+  const [isBirthdayCalendarSaving, setIsBirthdayCalendarSaving] = useState(false);
+  const [birthdayCalendarError, setBirthdayCalendarError] = useState<string | null>(null);
+  const [birthdayCalendarCopied, setBirthdayCalendarCopied] = useState(false);
 
   const guardians = useMemo(
     () => selectMemberGuardians(players).map((row) => row.guardian),
@@ -60,6 +69,60 @@ export default function MembersPage() {
   );
 
   const spondLinked = selectIsSpondLinked(squad);
+
+  useEffect(() => {
+    if (!isBirthdayCalendarOpen || !squad) return;
+
+    let cancelled = false;
+    setIsBirthdayCalendarLoading(true);
+    setBirthdayCalendarError(null);
+    setBirthdayCalendarCopied(false);
+    getBirthdayCalendarSubscription(squad.id)
+      .then((result) => { if (!cancelled) setBirthdaySubscriptionUrl(result.subscriptionUrl); })
+      .catch(() => { if (!cancelled) setBirthdayCalendarError(t('page.members.birthdayCalendar.errors.loadFailed')); })
+      .finally(() => { if (!cancelled) setIsBirthdayCalendarLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [isBirthdayCalendarOpen, squad?.id, t]);
+
+  const handleCreateBirthdayCalendar = async () => {
+    if (!squad) return;
+    setIsBirthdayCalendarSaving(true);
+    setBirthdayCalendarError(null);
+    try {
+      const result = await createBirthdayCalendarSubscription(squad.id);
+      setBirthdaySubscriptionUrl(result.subscriptionUrl);
+    } catch {
+      setBirthdayCalendarError(t('page.members.birthdayCalendar.errors.createFailed'));
+    } finally {
+      setIsBirthdayCalendarSaving(false);
+    }
+  };
+
+  const handleCopyBirthdayCalendar = async () => {
+    if (!birthdaySubscriptionUrl) return;
+    try {
+      await navigator.clipboard.writeText(birthdaySubscriptionUrl);
+      setBirthdayCalendarCopied(true);
+    } catch {
+      setBirthdayCalendarError(t('page.members.birthdayCalendar.errors.copyFailed'));
+    }
+  };
+
+  const handleRevokeBirthdayCalendar = async () => {
+    if (!squad || !window.confirm(t('page.members.birthdayCalendar.revokeConfirm'))) return;
+    setIsBirthdayCalendarSaving(true);
+    setBirthdayCalendarError(null);
+    try {
+      await revokeBirthdayCalendarSubscription(squad.id);
+      setBirthdaySubscriptionUrl(null);
+      setBirthdayCalendarCopied(false);
+    } catch {
+      setBirthdayCalendarError(t('page.members.birthdayCalendar.errors.revokeFailed'));
+    } finally {
+      setIsBirthdayCalendarSaving(false);
+    }
+  };
 
   const isAdmin = useMemo(() => {
     return canManageGuardians(user, squad, trainers);
@@ -148,6 +211,7 @@ export default function MembersPage() {
     guardians,
     openAddPlayerModal: () => setIsPlayerModalOpen(true),
     openAddTrainerModal: () => setIsTrainerModalOpen(true),
+    openBirthdayCalendar: () => setIsBirthdayCalendarOpen(true),
     canImportFromSpond: isAdmin && spondLinked,
     canManageBirthdayCalendar: isAdmin,
     spondLinked,
@@ -192,6 +256,19 @@ export default function MembersPage() {
           {deleteActionError}
         </Alert>
       )}
+
+      {squad && <BirthdayCalendarModal
+        isOpen={isBirthdayCalendarOpen}
+        onClose={() => setIsBirthdayCalendarOpen(false)}
+        subscriptionUrl={birthdaySubscriptionUrl}
+        isLoading={isBirthdayCalendarLoading}
+        isSaving={isBirthdayCalendarSaving}
+        error={birthdayCalendarError}
+        copied={birthdayCalendarCopied}
+        onCreate={() => void handleCreateBirthdayCalendar()}
+        onCopy={() => void handleCopyBirthdayCalendar()}
+        onRevoke={() => void handleRevokeBirthdayCalendar()}
+      />}
 
       {/* Tab Navigation */}
       <NavigationTabs label={t('common.tabs')} mobileFit className="members-tabs">

@@ -6,12 +6,13 @@ import EventsList from '../components/EventsList';
 import AddEventModal from '../components/AddEventModal';
 import { Alert, Button, Cluster, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Stack } from '../components/ui';
 import { selectActivitiesOfKinds, selectPastActivities, selectUpcomingActivities } from '../store/selectors/activitySelectors';
-import { useSquad, useTrainers } from '../store';
+import { usePlayers, useSquad, useTrainers } from '../store';
 import { useAuth } from '../hooks/useAuth';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import SpondBadge from '../components/SpondBadge';
 import SpondSyncResultBanner from '../components/SpondSyncResultBanner';
+import { selectActivityCardSummary } from '../store/selectors/activityViewSelectors';
 
 export default function EventsPage() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ export default function EventsPage() {
   const { activities, loading, error, addActivity } = useActivities();
   const squad = useSquad();
   const { trainers } = useTrainers();
+  const { players } = usePlayers();
   const { user } = useAuth();
   const spondLinked = selectIsSpondLinked(squad);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +28,8 @@ export default function EventsPage() {
   const teamActivities = selectActivitiesOfKinds(activities, ['match', 'tournament']);
   const futureActivities = selectUpcomingActivities(teamActivities);
   const pastActivities = selectPastActivities(teamActivities);
+  const futureSummaries = new Map(futureActivities.map((activity) => [activity.id, selectActivityCardSummary(activity, trainers, players)]));
+  const pastSummaries = new Map(pastActivities.map((activity) => [activity.id, selectActivityCardSummary(activity, trainers, players)]));
 
   if (loading) {
     return <Page><EmptyState><p>{t('page.events.loading')}</p></EmptyState></Page>;
@@ -53,12 +57,12 @@ export default function EventsPage() {
         {error && <Alert>{error}</Alert>}
         <Panel>
           <PanelHeader><PanelTitle>{t('page.events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
-          <EventsList activities={futureActivities} onActivityClick={(activityId) => navigate(`/activities/${activityId}`)} />
+          <EventsList activities={futureActivities} summaries={futureSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
         </Panel>
         {pastActivities.length > 0 && (
           <Panel>
             <PanelHeader><PanelTitle>{t('page.events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
-          <EventsList activities={pastActivities} onActivityClick={(activityId) => navigate(`/activities/${activityId}`)} />
+          <EventsList activities={pastActivities} summaries={pastSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
           </Panel>
         )}
       </Stack>

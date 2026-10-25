@@ -118,10 +118,11 @@ member card variants remain clear and accessible.
 
 <span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
 
-- [ ] Refactor [EventCard](../src/components/EventCard.tsx) to receive its
+- [x] Refactor [ActivityCard](../src/components/ActivityCard.tsx) to receive its
   summary data and navigation callbacks instead of reading the store and
-  navigating internally. Keep detailed and upcoming event card presentations
-  distinct where their density and purpose differ.
+  navigating internally. Keep the simplified upcoming event card on
+  [HomePage](../src/pages/HomePage.tsx) separate from the detailed activity
+  card; upcoming events do not show team details.
 - [ ] Move store writes from [StatisticsPeriodModal](../src/components/StatisticsPeriodModal.tsx)
   into a container or parent; let the modal edit values and report submit/cancel.
 - [ ] Separate service, clipboard, and confirmation coordination from

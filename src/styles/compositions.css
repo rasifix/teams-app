@@ -46,7 +46,7 @@
 .member-card-level { font-size: var(--font-size-micro); letter-spacing: var(--tracking-compact); }
 .member-card-chevron { width: 1rem; height: 1rem; flex: none; color: var(--color-text-disabled); transition: color var(--transition-fast), transform var(--transition-fast); }
 .member-card:hover .member-card-chevron,
-.event-card:hover .event-card-chevron { color: var(--color-brand-text); transform: translateX(0.125rem); }
+.activity-card:hover .activity-card-chevron { color: var(--color-brand-text); transform: translateX(0.125rem); }
 .member-delete-action { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--color-on-action); font-weight: var(--font-weight-medium); }
 .member-detail-alert { margin-bottom: var(--space-5); }
 .member-detail-section { margin-top: var(--space-5); }
@@ -278,7 +278,7 @@
 /* Shirt sets */
 .shirt-set-card { min-height: var(--card-row-height-md); overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-xl); background: rgb(var(--color-surface)); box-shadow: var(--shadow-sm); transition: border-color var(--transition-normal), box-shadow var(--transition-normal); }
 .shirt-set-card:hover,
-.event-card:hover { border-color: var(--color-brand-border); box-shadow: var(--shadow-raised); }
+.activity-card:hover { border-color: var(--color-brand-border); box-shadow: var(--shadow-raised); }
 .shirt-set-header { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); }
 .shirt-set-toggle { display: flex; min-width: 0; flex: 1; align-items: center; gap: var(--space-3); border-radius: var(--radius-md); text-align: left; }
 .shirt-set-icon { border-color: color-mix(in srgb, var(--color-on-action) 50%, transparent); color: var(--color-on-action); }
@@ -336,35 +336,35 @@
 .app-mobile-section { padding: var(--space-2) var(--space-3); }
 
 /* Event detail */
-.event-card { container-type: inline-size; width: 100%; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: rgb(var(--color-surface)); transition: border-color var(--transition-normal), box-shadow var(--transition-normal); }
-.event-card-main { width: 100%; cursor: pointer; padding: var(--space-3); text-align: left; }
-.event-card-main:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
-.event-card-layout { display: flex; align-items: flex-start; gap: var(--space-3); }
-.event-card [data-event-field='location'] { display: inline; }
-.event-card-counts { margin-top: var(--space-2); }
-.event-card-status { display: flex; flex: none; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
-.event-card-ready { color: var(--color-success-text); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
-.event-card-pending { display: none; }
-.event-card-chevron { width: 1rem; height: 1rem; color: var(--color-text-disabled); transition: color var(--transition-fast), transform var(--transition-fast); }
-.event-card-team { border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); padding: var(--space-1) var(--space-3); }
-.event-card-team-meta { display: grid; grid-template-columns: 3.25rem 3.5rem minmax(0, 1fr) 2.5rem; align-items: center; gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--font-size-xs); }
-.event-card-team-time { color: var(--color-text); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
-.event-card-team-strength { overflow: hidden; font-size: var(--font-size-xs); white-space: nowrap; }
-.event-card-team-meta [data-team-field='name'] { min-width: 0; min-height: 1.5rem; justify-content: flex-start; overflow: hidden; padding-inline: var(--space-1); }
-.event-card-team-meta [data-team-field='name'] > span,
-.event-card-team-meta [data-team-field='location'],
-.event-card-team-meta [data-team-field='people'] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.event-card-team-meta [data-team-field='count'] { text-align: right; white-space: nowrap; }
-.event-card-team-meta [data-team-field='location'],
-.event-card-team-meta [data-team-field='people'] { grid-column: 3 / -1; }
+.activity-card { container-type: inline-size; width: 100%; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: rgb(var(--color-surface)); transition: border-color var(--transition-normal), box-shadow var(--transition-normal); }
+.activity-card-main { width: 100%; cursor: pointer; padding: var(--space-3); text-align: left; }
+.activity-card-main:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.activity-card-layout { display: flex; align-items: flex-start; gap: var(--space-3); }
+.activity-card [data-activity-field='location'] { display: inline; }
+.activity-card-counts { margin-top: var(--space-2); }
+.activity-card-status { display: flex; flex: none; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
+.activity-card-ready { color: var(--color-success-text); font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.activity-card-pending { display: none; }
+.activity-card-chevron { width: 1rem; height: 1rem; color: var(--color-text-disabled); transition: color var(--transition-fast), transform var(--transition-fast); }
+.activity-card-team { border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); padding: var(--space-1) var(--space-3); }
+.activity-card-team-meta { display: grid; grid-template-columns: 3.25rem 3.5rem minmax(0, 1fr) 2.5rem; align-items: center; gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--font-size-xs); }
+.activity-card-team-time { color: var(--color-text); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
+.activity-card-team-strength { overflow: hidden; font-size: var(--font-size-xs); white-space: nowrap; }
+.activity-card-team-meta [data-team-field='name'] { min-width: 0; min-height: 1.5rem; justify-content: flex-start; overflow: hidden; padding-inline: var(--space-1); }
+.activity-card-team-meta [data-team-field='name'] > span,
+.activity-card-team-meta [data-team-field='location'],
+.activity-card-team-meta [data-team-field='people'] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.activity-card-team-meta [data-team-field='count'] { text-align: right; white-space: nowrap; }
+.activity-card-team-meta [data-team-field='location'],
+.activity-card-team-meta [data-team-field='people'] { grid-column: 3 / -1; }
 
 @container (min-width: 34rem) {
-  .event-card-team-meta { grid-template-columns: 3.25rem 3.5rem minmax(5rem, 1fr) 2.5rem minmax(4rem, 0.8fr) minmax(5rem, 1.2fr); }
-  .event-card-team-meta [data-team-field='location'] { grid-column: 5; }
-  .event-card-team-meta [data-team-field='people'] { grid-column: 6; }
+  .activity-card-team-meta { grid-template-columns: 3.25rem 3.5rem minmax(5rem, 1fr) 2.5rem minmax(4rem, 0.8fr) minmax(5rem, 1.2fr); }
+  .activity-card-team-meta [data-team-field='location'] { grid-column: 5; }
+  .activity-card-team-meta [data-team-field='people'] { grid-column: 6; }
 }
 @media (max-width: 39.999rem) {
-  .event-card [data-event-field='location'] { display: none; }
+  .activity-card [data-activity-field='location'] { display: none; }
   [data-page-section='events'] > .ui-panel { border: 0; border-radius: 0; background: transparent; padding: 0; box-shadow: none; }
   [data-page-section='events'] > .ui-panel > .ui-panel-header { margin-bottom: var(--space-3); padding-inline: var(--space-1); }
   [data-page-section='events'] > .ui-panel .ui-content-grid { gap: var(--space-4); }
@@ -416,8 +416,8 @@
   .team-detail-switcher { width: auto; min-width: 14rem; }
   .app-brand-title { font-size: var(--font-size-lg); }
   .app-brand-tagline { display: block; }
-  .event-card-main { padding: var(--space-4); }
-  .event-card-pending { display: inline; }
+  .activity-card-main { padding: var(--space-4); }
+  .activity-card-pending { display: inline; }
   .shirt-set-header,
   .shirt-set-content { padding: var(--space-4); }
   .shirt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

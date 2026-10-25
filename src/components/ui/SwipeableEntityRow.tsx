@@ -1,9 +1,10 @@
-import type { ReactNode, TouchEvent } from 'react';
-import { useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EntityActions, EntityRow, type EntityRowProps } from './DataDisplay';
 import IconButton from './IconButton';
 import TrashIcon from './icons/TrashIcon';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 interface SwipeableEntityRowProps extends Omit<EntityRowProps, 'children'> {
   children: ReactNode;
@@ -20,20 +21,8 @@ function PencilIcon() {
 
 export default function SwipeableEntityRow({ children, extraActions, onEdit, onDelete, showDesktopDelete = true, className, ...props }: SwipeableEntityRowProps) {
   const { t } = useTranslation();
-  const touchStartX = useRef<number | null>(null);
   const [isSwiped, setIsSwiped] = useState(false);
-
-  const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = event.touches[0]?.clientX ?? null;
-  };
-
-  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    if (touchStartX.current === null) return;
-    const distance = touchStartX.current - (event.changedTouches[0]?.clientX ?? touchStartX.current);
-    if (distance > 50) setIsSwiped(true);
-    if (distance < -30) setIsSwiped(false);
-    touchStartX.current = null;
-  };
+  const swipeHandlers = useSwipeGesture({ isOpen: isSwiped, onOpenChange: setIsSwiped, disabled: !onDelete });
 
   const handleDelete = () => {
     setIsSwiped(false);
@@ -44,8 +33,8 @@ export default function SwipeableEntityRow({ children, extraActions, onEdit, onD
     <EntityRow
       {...props}
       className={`ui-swipeable-row${isSwiped ? ' ui-swipeable-row--swiped' : ''}${className ? ` ${className}` : ''}`}
-      onTouchStart={onDelete ? handleTouchStart : undefined}
-      onTouchEnd={onDelete ? handleTouchEnd : undefined}
+      onTouchStart={onDelete ? swipeHandlers.onTouchStart : undefined}
+      onTouchEnd={onDelete ? swipeHandlers.onTouchEnd : undefined}
     >
       {children}
       {(extraActions || onEdit || (onDelete && showDesktopDelete)) && (

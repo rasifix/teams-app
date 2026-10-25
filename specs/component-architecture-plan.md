@@ -99,17 +99,17 @@ behavior remains explicit, and fields/validation are straightforward to test.
 
 ### 4. Unify member and swipe presentation
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
-- [ ] Extract the shared member-card shell used by
+- [x] Extract the shared member-card shell used by
   [PlayerCard](../src/components/PlayerCard.tsx) and the trainer rendering in
   [MembersList](../src/components/MembersList.tsx), allowing player-specific
-  metadata to remain optional.
-- [ ] Compare swipe handling in `MembersList`, `TeamDetailPage`, and
-  [SwipeableEntityRow](../src/components/ui/SwipeableEntityRow.tsx); converge on
-  a shared gesture behavior that supports each view's action and dismissal needs.
-- [ ] Verify navigation is suppressed after a swipe and only the intended row
-  remains open.
+  metadata to remain optional in [MemberCardShell](../src/components/MemberCardShell.tsx).
+- [x] Converge swipe thresholds and touch handling in
+  [useSwipeGesture](../src/hooks/useSwipeGesture.ts), used by the member list,
+  team roster, and [SwipeableEntityRow](../src/components/ui/SwipeableEntityRow.tsx).
+- [x] Test navigation suppression and single-active-row behavior in
+  [swipeGesture.test](../src/hooks/swipeGesture.test.ts).
 
 **Done when:** gesture thresholds and dismissal behavior have one source, while
 member card variants remain clear and accessible.

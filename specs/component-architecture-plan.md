@@ -17,6 +17,7 @@ Use these badges when updating progress:
 - <span style="color:#111;background:#facc15;padding:2px 8px;border-radius:999px">IN PROGRESS</span> Active work
 - <span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span> Completed and checked
 - <span style="color:#fff;background:#dc2626;padding:2px 8px;border-radius:999px">BLOCKED</span> Waiting on a decision or dependency
+- <span style="color:#fff;background:#6b7280;padding:2px 8px;border-radius:999px">WON'T DO</span> Reviewed and intentionally excluded
 
 > Some Markdown renderers remove inline colors. The badge text remains useful
 > if that happens.
@@ -45,9 +46,9 @@ Review and split these pages in small, independently reviewable changes:
   and squad deactivation.
 - [x] [TeamLineupPage](../src/pages/TeamLineupPage.tsx): separate lineup editor,
   bench, and summary views from draft persistence and navigation protection.
-- [ ] [SpondImportPage](../src/pages/SpondImportPage.tsx): separate wizard-step
+- [ ] <span style="color:#fff;background:#6b7280;padding:2px 8px;border-radius:999px">WON'T DO</span> [SpondImportPage](../src/pages/SpondImportPage.tsx): separate wizard-step
   presentation from client lifecycle, snapshot loading, and import orchestration.
-- [ ] [PlayerDetailPage](../src/pages/PlayerDetailPage.tsx): isolate guardian
+- [x] [PlayerDetailPage](../src/pages/PlayerDetailPage.tsx): isolate guardian
   management and history/upcoming-event sections from player page coordination.
 - [ ] [TeamDetailPage](../src/pages/TeamDetailPage.tsx): isolate roster and
   property sections from team updates and dialog coordination.

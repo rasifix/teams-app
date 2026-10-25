@@ -5,10 +5,11 @@ import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useActivities, usePlayers, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useSquad, useAppInitialized } from '../store';
 import type { Guardian, Player } from '../types';
 import Level from '../components/Level';
-import { ActionCard, ActionCardTitle, Alert, Badge, Button, Cluster, ContentGrid, DateColumn, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
+import { Alert, Badge, Button, Cluster, ContentGrid, EmptyState, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, PageToolbar } from '../components/ui';
 import AddPlayerModal from '../components/AddPlayerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
-import PlayerEventHistory from '../components/PlayerEventHistory';
+import PlayerGuardiansSection from '../components/playerDetail/PlayerGuardiansSection';
+import PlayerDetailHistorySections from '../components/playerDetail/PlayerDetailHistorySections';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
 import { useAuth } from '../hooks/useAuth';
 import { canManageGuardians, isPlayerUnderage } from '../utils/guardians';
@@ -22,7 +23,6 @@ import {
   selectPlayerEventHistory,
 } from '../store/selectors/playerDetailSelectors';
 import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
-import { getActivityDate } from '../store/selectors/activitySelectors';
 
 export default function PlayerDetailPage() {
   const { t } = useTranslation();
@@ -293,116 +293,24 @@ export default function PlayerDetailPage() {
       )}
 
       <ContentGrid variant="sidebarEnd">
-        <PlayerEventHistory
+        <PlayerDetailHistorySections
           eventHistory={playerEventHistory}
           groupedEventHistory={groupedPlayerEventHistory ?? undefined}
+          futureEventsWithoutInvitation={futureEventsWithoutInvitation}
+          onOpenEvent={(eventId) => navigate(`/activities/${eventId}`)}
         />
 
-        <Panel>
-            <PanelHeader>
-              <PanelTitle>{t('page.playerDetail.guardians.title', { count: guardians.length })}</PanelTitle>
-              <PanelActions>
-              {!spondLinked && <Button
-                size="sm"
-                onClick={() => {
-                  setGuardianActionError(null);
-                  setIsGuardianModalOpen(true);
-                }}
-                disabled={!canManagePlayerGuardians || !underageForGuardianAssignment}
-                title={!canManagePlayerGuardians
-                  ? t('page.playerDetail.guardians.onlyManagers')
-                  : (!underageForGuardianAssignment ? t('page.playerDetail.guardians.onlyUnderage') : t('page.playerDetail.guardians.assignAction'))}
-              >
-                {t('page.playerDetail.guardians.addAction')}
-              </Button>}
-              </PanelActions>
-            </PanelHeader>
-
-            <Stack gap="sm">
-            {!spondLinked && !canManagePlayerGuardians && (
-              <Alert tone="warning">
-                {t('page.playerDetail.guardians.onlyManagersManage')}
-              </Alert>
-            )}
-
-            {!spondLinked && !underageForGuardianAssignment && (
-              <Alert tone="info">
-                {t('page.playerDetail.guardians.onlyUnderage')}
-              </Alert>
-            )}
-
-            {guardianActionError && (
-              <Alert>
-                {guardianActionError}
-              </Alert>
-            )}
-
-            {guardians.length === 0 ? (
-              <EmptyState>{t('page.playerDetail.guardians.empty')}</EmptyState>
-            ) : (
-              <EntityList variant="separated">
-                {guardians.map((guardian) => (
-                  <EntityRow key={guardian.id} align="start">
-                    <EntityContent>
-                      <EntityTitle>
-                        {guardian.firstName} {guardian.lastName}
-                      </EntityTitle>
-                      {guardian.email && (
-                        <EntityMeta>{guardian.email}</EntityMeta>
-                      )}
-                    </EntityContent>
-                    {canManagePlayerGuardians && (
-                      <EntityActions>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setGuardianActionError(null);
-                            setEditingGuardian(guardian);
-                            setIsGuardianModalOpen(true);
-                          }}
-                        >
-                          {t('common.actions.edit')}
-                        </Button>
-                        <Button
-                          variant="dangerGhost"
-                          size="sm"
-                          onClick={() => setGuardianToRemove(guardian)}
-                        >
-                          {t('page.playerDetail.guardians.removeAction')}
-                        </Button>
-                      </EntityActions>
-                    )}
-                  </EntityRow>
-                ))}
-              </EntityList>
-            )}
-            </Stack>
-        </Panel>
+        <PlayerGuardiansSection
+          guardians={guardians}
+          isSpondLinked={spondLinked}
+          canManage={canManagePlayerGuardians}
+          playerIsUnderage={underageForGuardianAssignment}
+          error={guardianActionError}
+          onAdd={() => { setGuardianActionError(null); setIsGuardianModalOpen(true); }}
+          onEdit={(guardian) => { setGuardianActionError(null); setEditingGuardian(guardian); setIsGuardianModalOpen(true); }}
+          onRemove={setGuardianToRemove}
+        />
       </ContentGrid>
-
-      {/* Available Future Events Section */}
-      {futureEventsWithoutInvitation.length > 0 && (
-        <Panel className="member-detail-section">
-              <PanelHeader><PanelTitle>{t('page.playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
-              <Stack gap="sm" className="member-event-list">
-                {futureEventsWithoutInvitation.map((event) => (
-                  <ActionCard
-                    key={event.id}
-                    leading={<DateColumn date={getActivityDate(event)} />}
-                    onClick={() => navigate(`/activities/${event.id}`)}
-                  >
-                          <ActionCardTitle title={event.name}>{event.name}</ActionCardTitle>
-                          <div className="member-event-status">
-                            <Badge>
-                              {t('domain.invitation.status.notInvited')}
-                            </Badge>
-                          </div>
-                  </ActionCard>
-                ))}
-              </Stack>
-        </Panel>
-      )}
 
       <AddPlayerModal
         isOpen={isEditModalOpen}

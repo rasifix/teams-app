@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ActionCard, ActionCardTitle, Badge, Cluster, EmptyState, Panel, PanelHeader, PanelTitle, SectionEyebrow, Stack, type BadgeTone } from './ui';
 import type { PlayerEventHistoryItem } from '../types';
@@ -14,15 +13,16 @@ interface PlayerEventHistoryProps {
   eventHistory: PlayerEventHistoryItem[];
   groupedEventHistory?: PlayerEventHistoryGroup[];
   className?: string;
+  onOpenEvent: (eventId: string) => void;
 }
 
 export default function PlayerEventHistory({
   eventHistory,
   groupedEventHistory,
   className = '',
+  onOpenEvent,
 }: PlayerEventHistoryProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const invitationTone = (status: PlayerEventHistoryItem['invitationStatus']): BadgeTone => {
     if (status === 'accepted') return 'success';
     if (status === 'open' || status === 'sick') return 'warning';
@@ -36,7 +36,7 @@ export default function PlayerEventHistory({
         <ActionCard
           key={item.eventId}
           leading={<DateColumn date={item.eventDate} />}
-          onClick={() => navigate(`/activities/${item.eventId}`)}
+          onClick={() => onOpenEvent(item.eventId)}
         >
                 <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
                 <div className="member-event-status">

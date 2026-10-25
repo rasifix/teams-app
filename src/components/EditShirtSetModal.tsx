@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ShirtSet } from '../types';
-import { Button, Cluster, ColorInput, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Stack } from './ui';
+import { Button, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
+import ShirtSetDetailsFields from './ShirtSetDetailsFields';
 
 interface EditShirtSetModalProps {
   shirtSet: ShirtSet;
@@ -46,38 +47,7 @@ export default function EditShirtSetModal({ shirtSet, onClose, onSubmit }: EditS
         </ModalHeader>
 
         <ModalBody>
-          <Stack>
-            <Field label={t('page.shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
-              <Input
-                id="sponsor"
-                name="sponsor"
-                type="text"
-                required
-                value={formData.sponsor}
-                onChange={handleInputChange}
-                placeholder={t('domain.shirtSet.placeholders.sponsor')}
-              />
-            </Field>
-
-            <Field label={t('page.shirtSetModal.fields.colorRequired')} htmlFor="color" hint={t('page.shirtSetModal.colorHint')}>
-              <Cluster gap="sm" wrap={false}>
-                <ColorInput
-                  id="color"
-                  name="color"
-                  required
-                  value={formData.color}
-                  onChange={handleInputChange}
-                />
-                <Input
-                  type="text"
-                  value={formData.color}
-                  onChange={handleInputChange}
-                  name="color"
-                  placeholder={t('domain.shirtSet.placeholders.color')}
-                />
-              </Cluster>
-            </Field>
-          </Stack>
+          <ShirtSetDetailsFields sponsor={formData.sponsor} color={formData.color} onChange={handleInputChange} colorHint={t('page.shirtSetModal.colorHint')} />
         </ModalBody>
 
         <ModalFooter>

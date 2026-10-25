@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { getActivityDate, getActivityTime, toStartsAt } from '../store/selectors/activitySelectors';
+import { validateActivitySchedule } from '../store/selectors/activityFormValidation';
 import type { Activity, ActivityKind, ActivityPayload } from '../types';
 import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Stack } from './ui';
+import ActivityCoreFields from './ActivityCoreFields';
+import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 
 interface EditEventModalProps {
   isOpen: boolean;
@@ -54,20 +57,13 @@ export default function EditEventModal({ isOpen, onClose, onSave, currentActivit
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!name.trim() || !date || !startTime) return;
-    if (maxPlayersPerTeam < minMaxPlayers || minPlayersPerTeam < 1 || minPlayersPerTeam > maxPlayersPerTeam) {
-      setError(t('page.editEventModal.errors.minGreaterThanMax'));
-      return;
-    }
-    if ((endDate && !endTime) || (!endDate && endTime)) {
-      setError(t('common.validation.endDateTimeTogether'));
+    const validationError = validateActivitySchedule({ minPlayersPerTeam, maxPlayersPerTeam, minimumAllowedPlayers: minMaxPlayers, date, startTime, endDate, endTime });
+    if (validationError) {
+      setError(validationError === 'minMax' ? t('page.editEventModal.errors.minGreaterThanMax') : validationError === 'endDateTimeTogether' ? t('common.validation.endDateTimeTogether') : t('common.validation.endAfterStart'));
       return;
     }
     const startsAt = toStartsAt(date, startTime);
     const endsAt = endDate && endTime ? toStartsAt(endDate, endTime) : undefined;
-    if (endsAt && new Date(endsAt).getTime() <= new Date(startsAt).getTime()) {
-      setError(t('common.validation.endAfterStart'));
-      return;
-    }
     onSave({
       ...(canChangeMatchType ? { kind } : {}),
       ...(isSpondManaged ? {} : {
@@ -92,16 +88,31 @@ export default function EditEventModal({ isOpen, onClose, onSave, currentActivit
           <Stack>
             {isSpondManaged && <Alert tone="info">{t('spondSync.managedFields')}</Alert>}
             {canChangeMatchType && <Field label={t('domain.activity.fields.kind')} htmlFor="edit-event-kind"><Select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as 'match' | 'tournament'; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }}><option value="match">{t('domain.activity.kinds.match')}</option><option value="tournament">{t('domain.activity.kinds.tournament')}</option></Select></Field>}
-            <Field label={t('domain.activity.fields.name')} htmlFor="edit-event-name"><Input id="edit-event-name" value={name} onChange={(event) => setName(event.target.value)} required disabled={isSpondManaged} /></Field>
+            <ActivityCoreFields
+              idPrefix="edit-event" nameLabel={t('domain.activity.fields.name')} dateLabel={t('domain.activity.fields.date')}
+              startTimeLabel={t('domain.activity.fields.startTime')} endDateLabel={t('domain.activity.fields.endDate')}
+              endTimeLabel={t('domain.activity.fields.endTime')} locationLabel={t('domain.activity.fields.location')}
+              name={name} date={date} startTime={startTime} endDate={endDate} endTime={endTime} location={location}
+              showSchedule={false} disabled={isSpondManaged}
+              onNameChange={setName} onDateChange={setDate} onStartTimeChange={setStartTime}
+              onEndDateChange={setEndDate} onEndTimeChange={setEndTime} onLocationChange={setLocation}
+            />
             {config.showOpponent && <Field label={t('domain.activity.fields.opponent')} htmlFor="edit-opponent"><Input id="edit-opponent" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} disabled={isSpondManaged} /></Field>}
             {config.showMatchFormat && <Field label={t('domain.activity.fields.matchFormat')} htmlFor="edit-format"><Select id="edit-format" value={matchFormatId} onChange={(event) => { const nextId = event.target.value; setMatchFormatId(nextId); const nextConfig = selectActivityFormConfiguration(kind, matchFormats, nextId); if (nextConfig.defaultLimits) { setMinPlayersPerTeam(nextConfig.defaultLimits.minPlayersPerTeam); setMaxPlayersPerTeam(nextConfig.defaultLimits.maxPlayersPerTeam); } }}><option value="">{t('domain.activity.fields.noMatchFormat')}</option>{matchFormats.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</Select></Field>}
-            <Field label={t('domain.activity.fields.date')} htmlFor="edit-event-date"><Input id="edit-event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required disabled={isSpondManaged} /></Field>
-            <Field label={t('domain.activity.fields.startTime')} htmlFor="edit-event-time"><Input id="edit-event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required disabled={isSpondManaged} /></Field>
-            <Field label={t('domain.activity.fields.endDate')} htmlFor="edit-event-end-date"><Input id="edit-event-end-date" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} disabled={isSpondManaged} /></Field>
-            <Field label={t('domain.activity.fields.endTime')} htmlFor="edit-event-end-time"><Input id="edit-event-end-time" type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} disabled={isSpondManaged} /></Field>
-            <Field label={t('domain.activity.fields.location')} htmlFor="edit-event-location"><Input id="edit-event-location" value={location} onChange={(event) => setLocation(event.target.value)} disabled={isSpondManaged} /></Field>
-            <Field label={t('domain.activity.fields.maxPlayersPerTeam')} htmlFor="edit-max-players"><Input id="edit-max-players" type="number" min={Math.max(minMaxPlayers, 1)} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
-            <Field label={t('domain.activity.fields.minPlayersPerTeam')} htmlFor="edit-min-players"><Input id="edit-min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required /></Field>
+            <ActivityCoreFields
+              idPrefix="edit-event" nameLabel={t('domain.activity.fields.name')} dateLabel={t('domain.activity.fields.date')}
+              startTimeLabel={t('domain.activity.fields.startTime')} endDateLabel={t('domain.activity.fields.endDate')}
+              endTimeLabel={t('domain.activity.fields.endTime')} locationLabel={t('domain.activity.fields.location')}
+              name={name} date={date} startTime={startTime} endDate={endDate} endTime={endTime} location={location}
+              showName={false} disabled={isSpondManaged}
+              onNameChange={setName} onDateChange={setDate} onStartTimeChange={setStartTime}
+              onEndDateChange={setEndDate} onEndTimeChange={setEndTime} onLocationChange={setLocation}
+            />
+            <ActivityPlayerLimitFields
+              minLabel={t('domain.activity.fields.minPlayersPerTeam')} maxLabel={t('domain.activity.fields.maxPlayersPerTeam')}
+              minPlayers={minPlayersPerTeam} maxPlayers={maxPlayersPerTeam} minimumAllowed={Math.max(minMaxPlayers, 1)} minId="edit-min-players" maxId="edit-max-players"
+              onMinChange={setMinPlayersPerTeam} onMaxChange={setMaxPlayersPerTeam}
+            />
             {error && <Alert>{error}</Alert>}
           </Stack>
         </ModalBody>

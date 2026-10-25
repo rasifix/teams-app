@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Shirt } from '../types';
-import { Alert, Button, Checkbox, ChoiceGroup, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Stack } from './ui';
+import { Button, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from './ui';
+import { validateShirtNumber } from '../store/selectors/shirtNumberValidation';
+import ShirtDetailsFields from './ShirtDetailsFields';
 
 interface AddShirtModalProps {
   onClose: () => void;
@@ -25,11 +27,11 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
     
     // Validation
     const newErrors: {number?: string} = {};
-    const numberValue = parseInt(formData.number);
-    
-    if (!formData.number || isNaN(numberValue) || numberValue < 1 || numberValue > 99) {
+    const numberValue = parseInt(formData.number, 10);
+    const numberError = validateShirtNumber(formData.number, existingNumbers);
+    if (numberError === 'invalid') {
       newErrors.number = t('page.shirtModal.errors.invalidNumber');
-    } else if (existingNumbers.includes(numberValue)) {
+    } else if (numberError === 'exists') {
       newErrors.number = t('page.shirtModal.errors.numberExists', { number: numberValue });
     }
 
@@ -63,15 +65,7 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
 
   // Check if form is valid
   const isFormValid = () => {
-    const numberValue = parseInt(formData.number);
-    return (
-      formData.number.trim() !== '' &&
-      !isNaN(numberValue) &&
-      numberValue >= 1 &&
-      numberValue <= 99 &&
-      !existingNumbers.includes(numberValue) &&
-      formData.size.trim() !== ''
-    );
+    return validateShirtNumber(formData.number, existingNumbers) === null && formData.size.trim() !== '';
   };
 
   return (
@@ -82,79 +76,12 @@ export default function AddShirtModal({ onClose, onSubmit, existingNumbers }: Ad
         </ModalHeader>
 
         <ModalBody>
-          <Stack>
-            <Field label={t('page.shirtModal.fields.numberRequired')} htmlFor="number" error={errors.number}>
-              <Input
-                id="number"
-                name="number"
-                type="number"
-                min="1"
-                max="99"
-                required
-                value={formData.number}
-                onChange={handleInputChange}
-                placeholder={t('domain.shirt.placeholders.number')}
-                aria-invalid={Boolean(errors.number)}
-              />
-            </Field>
-
-            <Field label={t('page.shirtModal.fields.sizeRequired')} htmlFor="size">
-              <Select
-                id="size"
-                name="size"
-                required
-                value={formData.size}
-                onChange={handleInputChange}
-              >
-                <option value="128">128 - {t('domain.shirt.sizes.kids')}</option>
-                <option value="140">140 - {t('domain.shirt.sizes.kids')}</option>
-                <option value="152">152 - {t('domain.shirt.sizes.kids')}</option>
-                <option value="164">164 - {t('domain.shirt.sizes.kids')}</option>
-                <option value="XS">XS - {t('domain.shirt.sizes.extraSmall')}</option>
-                <option value="S">S - {t('domain.shirt.sizes.small')}</option>
-                <option value="M">M - {t('domain.shirt.sizes.medium')}</option>
-                <option value="L">L - {t('domain.shirt.sizes.large')}</option>
-                <option value="XL">XL - {t('domain.shirt.sizes.extraLarge')}</option>
-              </Select>
-            </Field>
-
-            <ChoiceGroup>
-              <Checkbox
-                id="isGoalkeeper"
-                name="isGoalkeeper"
-                checked={formData.isGoalkeeper}
-                onChange={handleInputChange}
-              />
-              <label htmlFor="isGoalkeeper" className="checkbox-label">
-                {t('domain.shirt.fields.isGoalkeeper')}
-              </label>
-            </ChoiceGroup>
-
-            <ChoiceGroup>
-              <Checkbox
-                id="isUnavailable"
-                name="status"
-                checked={formData.status === 'unavailable'}
-                onChange={(e) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    status: e.target.checked ? 'unavailable' : 'available'
-                  }));
-                }}
-              />
-              <label htmlFor="isUnavailable" className="checkbox-label">
-                {t('domain.shirt.fields.isUnavailable')}
-              </label>
-            </ChoiceGroup>
-
-            {existingNumbers.length > 0 && (
-              <Alert tone="info">
-                <p>
-                  <strong>{t('page.shirtModal.existingNumbers')}</strong> {existingNumbers.join(', ')}
-                </p>
-              </Alert>
-            )}
-          </Stack>
+          <ShirtDetailsFields
+            number={formData.number} size={formData.size} isGoalkeeper={formData.isGoalkeeper} status={formData.status}
+            numberError={errors.number} existingNumbers={existingNumbers} existingNumbersLabel="page.shirtModal.existingNumbers"
+            onInputChange={handleInputChange}
+            onUnavailableChange={(event) => setFormData((prev) => ({ ...prev, status: event.target.checked ? 'unavailable' : 'available' }))}
+          />
         </ModalBody>
 
         <ModalFooter>

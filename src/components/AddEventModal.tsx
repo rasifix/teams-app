@@ -4,9 +4,12 @@ import { usePlayers, useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { selectDefaultMatchFormat } from '../store/selectors/matchPlanningSelectors';
 import { toStartsAt } from '../store/selectors/activitySelectors';
+import { validateActivitySchedule } from '../store/selectors/activityFormValidation';
 import type { ActivityKind, ActivityPayload, InvitationResponse, Team } from '../types';
 import InvitePlayersModal from './InvitePlayersModal';
 import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
+import ActivityCoreFields from './ActivityCoreFields';
+import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 
 interface AddEventModalProps {
   isOpen: boolean;
@@ -71,20 +74,13 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    if (minPlayersPerTeam < 1 || minPlayersPerTeam > maxPlayersPerTeam) {
-      setError(t('page.editEventModal.errors.minGreaterThanMax'));
-      return;
-    }
-    if ((endDate && !endTime) || (!endDate && endTime)) {
-      setError(t('common.validation.endDateTimeTogether'));
+    const validationError = validateActivitySchedule({ minPlayersPerTeam, maxPlayersPerTeam, minimumAllowedPlayers: 1, date, startTime, endDate, endTime });
+    if (validationError) {
+      setError(validationError === 'minMax' ? t('page.editEventModal.errors.minGreaterThanMax') : validationError === 'endDateTimeTogether' ? t('common.validation.endDateTimeTogether') : t('common.validation.endAfterStart'));
       return;
     }
     const startsAt = toStartsAt(date, startTime);
     const endsAt = endDate && endTime ? toStartsAt(endDate, endTime) : undefined;
-    if (endsAt && new Date(endsAt).getTime() <= new Date(startsAt).getTime()) {
-      setError(t('common.validation.endAfterStart'));
-      return;
-    }
     const teamCount = config.fixedTeamCount ?? Math.max(1, numberOfTeams);
     const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
       id: crypto.randomUUID(),
@@ -123,9 +119,16 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
                 <option value="tournament">{t('domain.activity.kinds.tournament')}</option>
               </Select>
             </Field>
-            <Field label={t('page.eventModal.fields.eventNameRequired')} htmlFor="event-name">
-              <Input id="event-name" type="text" value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
-            </Field>
+            <ActivityCoreFields
+              idPrefix="event"
+              nameLabel={t('page.eventModal.fields.eventNameRequired')} dateLabel={t('page.eventModal.fields.dateRequired')}
+              startTimeLabel={t('domain.activity.fields.startTime')} endDateLabel={t('domain.activity.fields.endDate')}
+              endTimeLabel={t('domain.activity.fields.endTime')} locationLabel={t('domain.activity.fields.location')}
+              name={name} date={date} startTime={startTime} endDate={endDate} endTime={endTime} location={location}
+              autoFocusName showSchedule={false}
+              onNameChange={setName} onDateChange={setDate} onStartTimeChange={setStartTime}
+              onEndDateChange={setEndDate} onEndTimeChange={setEndTime} onLocationChange={setLocation}
+            />
             {config.showOpponent && <Field label={t('domain.activity.fields.opponent')} htmlFor="activity-opponent">
               <Input id="activity-opponent" type="text" value={opponentName} onChange={(event) => setOpponentName(event.target.value)} />
             </Field>}
@@ -138,27 +141,19 @@ export default function AddEventModal({ isOpen, onClose, onAdd }: AddEventModalP
             {config.showTeamCount && <Field label={t('page.eventModal.fields.numberOfTeamsRequired')} htmlFor="activity-teams">
               <Input id="activity-teams" type="number" min={1} value={numberOfTeams} onChange={(event) => setNumberOfTeams(Math.max(1, Number(event.target.value) || 1))} required />
             </Field>}
-            <Field label={t('page.eventModal.fields.dateRequired')} htmlFor="event-date">
-              <Input id="event-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
-            </Field>
-            <Field label={t('domain.activity.fields.startTime')} htmlFor="event-time">
-              <Input id="event-time" type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} required />
-            </Field>
-            <Field label={t('domain.activity.fields.endDate')} htmlFor="event-end-date">
-              <Input id="event-end-date" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
-            </Field>
-            <Field label={t('domain.activity.fields.endTime')} htmlFor="event-end-time">
-              <Input id="event-end-time" type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} />
-            </Field>
-            <Field label={t('domain.activity.fields.location')} htmlFor="event-location">
-              <Input id="event-location" type="text" value={location} onChange={(event) => setLocation(event.target.value)} />
-            </Field>
-            <Field label={t('page.eventModal.fields.maxPlayersPerTeamRequired')} htmlFor="max-players">
-              <Input id="max-players" type="number" min={1} value={maxPlayersPerTeam} onChange={(event) => setMaxPlayersPerTeam(Number(event.target.value) || 1)} required />
-            </Field>
-            <Field label={t('page.eventModal.fields.minPlayersPerTeamRequired')} htmlFor="min-players">
-              <Input id="min-players" type="number" min={1} max={maxPlayersPerTeam} value={minPlayersPerTeam} onChange={(event) => setMinPlayersPerTeam(Number(event.target.value) || 1)} required />
-            </Field>
+            <ActivityCoreFields
+              idPrefix="event" nameLabel="" dateLabel={t('page.eventModal.fields.dateRequired')}
+              startTimeLabel={t('domain.activity.fields.startTime')} endDateLabel={t('domain.activity.fields.endDate')}
+              endTimeLabel={t('domain.activity.fields.endTime')} locationLabel={t('domain.activity.fields.location')}
+              name={name} date={date} startTime={startTime} endDate={endDate} endTime={endTime} location={location} showName={false}
+              onNameChange={setName} onDateChange={setDate} onStartTimeChange={setStartTime}
+              onEndDateChange={setEndDate} onEndTimeChange={setEndTime} onLocationChange={setLocation}
+            />
+            <ActivityPlayerLimitFields
+              minLabel={t('page.eventModal.fields.minPlayersPerTeamRequired')} maxLabel={t('page.eventModal.fields.maxPlayersPerTeamRequired')}
+              minPlayers={minPlayersPerTeam} maxPlayers={maxPlayersPerTeam} minimumAllowed={1} minId="min-players" maxId="max-players"
+              onMinChange={setMinPlayersPerTeam} onMaxChange={setMaxPlayersPerTeam}
+            />
             <Split gap="sm">
               <span className="body-muted" data-testid="add-event-invited-count">{t('page.invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
               <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('page.eventModal.invitePlayersAction')}</Button>

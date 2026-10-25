@@ -59,32 +59,40 @@ behavior remains intact.
 
 ### 2. Make lineup transitions independently testable
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
-- [ ] Move assignment, slot replacement, bench movement, and period replacement
-  rules out of `TeamLineupPage` handlers into pure transitions or a focused
-  reducer.
-- [ ] Cover movement between slots, moving to/from the bench, keeping other
-  periods unchanged, and cancelled/read-only behavior where applicable.
-- [ ] Keep page handlers responsible for invoking transitions and setting state.
+- [x] Move assignment, slot replacement, bench movement, and period replacement
+  rules out of `TeamLineupPage` handlers into pure transitions in
+  [lineupTransitions](../src/store/selectors/lineupTransitions.ts).
+- [x] Cover movement between slots, moving to/from the bench, keeping other
+  periods unchanged, clearing a slot, and copying a prior period in
+  [lineupTransitions.test](../src/store/selectors/lineupTransitions.test.ts).
+- [x] Keep page handlers responsible for invoking transitions and setting state;
+  cancelled/read-only guards remain at the page boundary.
 
 **Done when:** the lineup rules can be tested without rendering the page, and
 the page no longer duplicates period reconstruction logic.
 
 ### 3. Consolidate repeated create/edit forms
 
-<span style="color:#fff;background:#2563eb;padding:2px 8px;border-radius:999px">PLANNED</span>
+<span style="color:#fff;background:#16a34a;padding:2px 8px;border-radius:999px">DONE</span>
 
-- [ ] Compare [AddShirtModal](../src/components/AddShirtModal.tsx) and
-  [EditShirtModal](../src/components/EditShirtModal.tsx); share fields and
-  validation while preserving the edit rule for the existing number.
-- [ ] Compare [AddEventModal](../src/components/AddEventModal.tsx) and
-  [EditEventModal](../src/components/EditEventModal.tsx); share common fields
-  and validation while keeping creation, invitation, roster, and Spond rules in
-  the coordinating flows.
-- [ ] Compare [AddShirtSetModal](../src/components/AddShirtSetModal.tsx) and
+- [x] Compare [AddShirtModal](../src/components/AddShirtModal.tsx) and
+  [EditShirtModal](../src/components/EditShirtModal.tsx); share fields in
+  [ShirtDetailsFields](../src/components/ShirtDetailsFields.tsx) and number
+  validation in [shirtNumberValidation](../src/store/selectors/shirtNumberValidation.ts),
+  preserving the edit rule for the existing number.
+- [x] Compare [AddEventModal](../src/components/AddEventModal.tsx) and
+  [EditEventModal](../src/components/EditEventModal.tsx); share activity fields
+  and player limits in [ActivityCoreFields](../src/components/ActivityCoreFields.tsx)
+  and [ActivityPlayerLimitFields](../src/components/ActivityPlayerLimitFields.tsx),
+  with schedule validation in
+  [activityFormValidation](../src/store/selectors/activityFormValidation.ts).
+  Creation, invitation, roster, and Spond rules remain in their coordinating flows.
+- [x] Compare [AddShirtSetModal](../src/components/AddShirtSetModal.tsx) and
   [EditShirtSetModal](../src/components/EditShirtSetModal.tsx); share sponsor
-  and color fields while keeping automatic shirt generation creation-only.
+  and color fields in [ShirtSetDetailsFields](../src/components/ShirtSetDetailsFields.tsx)
+  while keeping automatic shirt generation creation-only.
 
 **Done when:** shared form behavior has one implementation, mode-specific
 behavior remains explicit, and fields/validation are straightforward to test.

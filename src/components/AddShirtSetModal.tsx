@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ShirtSet, Shirt } from '../types';
-import { Button, Checkbox, ChoiceGroup, Cluster, ColorInput, ContentGrid, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Split, Stack } from './ui';
+import { Button, Checkbox, ChoiceGroup, Cluster, ContentGrid, Field, Input, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter, Select, Split, Stack } from './ui';
 import { selectGeneratedShirts } from '../store/selectors/shirtSetSelectors';
+import ShirtSetDetailsFields from './ShirtSetDetailsFields';
 
 interface AddShirtSetModalProps {
   onClose: () => void;
@@ -63,36 +64,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
 
         <ModalBody>
           <Stack gap="sm">
-            <Field label={t('page.shirtSetModal.fields.sponsorRequired')} htmlFor="sponsor">
-              <Input
-                id="sponsor"
-                name="sponsor"
-                type="text"
-                required
-                value={formData.sponsor}
-                onChange={handleInputChange}
-                placeholder={t('domain.shirtSet.placeholders.sponsor')}
-              />
-            </Field>
-
-            <Field label={t('page.shirtSetModal.fields.colorRequired')} htmlFor="color">
-              <Cluster gap="sm" wrap={false}>
-                <ColorInput
-                  id="color"
-                  name="color"
-                  required
-                  value={formData.color}
-                  onChange={handleInputChange}
-                />
-                <Input
-                  type="text"
-                  value={formData.color}
-                  onChange={handleInputChange}
-                  name="color"
-                  placeholder={t('domain.shirtSet.placeholders.color')}
-                />
-              </Cluster>
-            </Field>
+            <ShirtSetDetailsFields sponsor={formData.sponsor} color={formData.color} onChange={handleInputChange} />
 
             {/* Shirt creation options */}
             <div className="shirt-generation-options">

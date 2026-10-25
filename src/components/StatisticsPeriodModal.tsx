@@ -2,28 +2,25 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Period } from '../types';
 import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Panel, Stack } from './ui';
-import { useSquad, useStore } from '../store';
 
 interface StatisticsPeriodModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCancel: () => void;
+  onSubmit: (period: Omit<Period, 'id'>, periodId: string | null) => Promise<boolean>;
   periodToEdit?: Period | null;
+  squadName: string;
 }
 
-export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = null }: StatisticsPeriodModalProps) {
+export default function StatisticsPeriodModal({ isOpen, onCancel, onSubmit, periodToEdit = null, squadName }: StatisticsPeriodModalProps) {
   const { t } = useTranslation();
   const [periodNameInput, setPeriodNameInput] = useState('');
   const [startDateInput, setStartDateInput] = useState('');
   const [endDateInput, setEndDateInput] = useState('');
   const [periodError, setPeriodError] = useState<string | null>(null);
   const [isSavingPeriod, setIsSavingPeriod] = useState(false);
-  const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
-
-  const squad = useSquad();
-  const { addSquadPeriod, updateSquadPeriod } = useStore();
+  const editingPeriodId = periodToEdit?.id ?? null;
 
   const resetPeriodForm = () => {
-    setEditingPeriodId(null);
     setPeriodNameInput('');
     setStartDateInput('');
     setEndDateInput('');
@@ -34,7 +31,6 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
     if (!isOpen) return;
 
     if (periodToEdit) {
-      setEditingPeriodId(periodToEdit.id);
       setPeriodNameInput(periodToEdit.name);
       setStartDateInput(periodToEdit.startDate);
       setEndDateInput(periodToEdit.endDate);
@@ -47,12 +43,10 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
 
   const handleClose = () => {
     resetPeriodForm();
-    onClose();
+    onCancel();
   };
 
   const handleSavePeriod = async () => {
-    const isEditing = editingPeriodId !== null;
-
     if (!periodNameInput.trim()) {
       setPeriodError(t('page.statistics.period.errors.nameRequired'));
       return;
@@ -76,9 +70,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
       endDate: endDateInput,
     };
 
-    const wasSaved = isEditing
-      ? await updateSquadPeriod(editingPeriodId, nextPeriod)
-      : await addSquadPeriod(nextPeriod);
+    const wasSaved = await onSubmit(nextPeriod, editingPeriodId);
 
     setIsSavingPeriod(false);
 
@@ -87,12 +79,7 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
       return;
     }
 
-    if (isEditing) {
-      handleClose();
-      return;
-    }
-
-    handleClose();
+    resetPeriodForm();
   };
 
   return (
@@ -105,8 +92,8 @@ export default function StatisticsPeriodModal({ isOpen, onClose, periodToEdit = 
           <Stack>
           <p className="body-muted">
             {editingPeriodId
-              ? t('page.statistics.period.editDescription', { squad: squad?.name ?? t('page.statistics.period.thisSquad') })
-              : t('page.statistics.period.addDescription', { squad: squad?.name ?? t('page.statistics.period.thisSquad') })}
+              ? t('page.statistics.period.editDescription', { squad: squadName || t('page.statistics.period.thisSquad') })
+              : t('page.statistics.period.addDescription', { squad: squadName || t('page.statistics.period.thisSquad') })}
           </p>
           <Panel padding="compact">
             <Stack>

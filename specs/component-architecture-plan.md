@@ -123,8 +123,9 @@ member card variants remain clear and accessible.
   navigating internally. Keep the simplified upcoming event card on
   [HomePage](../src/pages/HomePage.tsx) separate from the detailed activity
   card; upcoming events do not show team details.
-- [ ] Move store writes from [StatisticsPeriodModal](../src/components/StatisticsPeriodModal.tsx)
-  into a container or parent; let the modal edit values and report submit/cancel.
+- [x] Move store writes from [StatisticsPeriodModal](../src/components/StatisticsPeriodModal.tsx)
+  into [SquadSettingsPage](../src/pages/SquadSettingsPage.tsx); let the modal
+  edit values and report submit/cancel.
 - [ ] Separate service, clipboard, and confirmation coordination from
   [BirthdayCalendarModal](../src/components/BirthdayCalendarModal.tsx)'s view.
 - [ ] Review router dependencies in `MembersList`, `PlayerStatisticsTable`, and

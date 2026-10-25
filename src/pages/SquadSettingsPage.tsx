@@ -32,6 +32,8 @@ export default function SquadSettingsPage() {
   const referencedMatchFormatIds = selectReferencedMatchFormatIds(activities);
   const initializeApp = useStore((state) => state.initializeApp);
   const deactivateSquad = useStore((state) => state.deactivateSquad);
+  const addSquadPeriod = useStore((state) => state.addSquadPeriod);
+  const updateSquadPeriod = useStore((state) => state.updateSquadPeriod);
   const deleteSquadPeriod = useStore((state) => state.deleteSquadPeriod);
   const {
     matchPlanningEnabled, matchFormats, formations, setMatchPlanningEnabled,
@@ -144,6 +146,17 @@ export default function SquadSettingsPage() {
     setIsPeriodModalOpen(true);
   };
 
+  const handleSavePeriod = async (data: Omit<Period, 'id'>, periodId: string | null) => {
+    const wasSaved = periodId
+      ? await updateSquadPeriod(periodId, data)
+      : (await addSquadPeriod(data)) !== null;
+    if (wasSaved) {
+      setIsPeriodModalOpen(false);
+      setPeriodToEdit(null);
+    }
+    return wasSaved;
+  };
+
   const handleDeletePeriod = async () => {
     if (!deletingPeriod) return;
     await deleteSquadPeriod(deletingPeriod.id);
@@ -234,6 +247,12 @@ export default function SquadSettingsPage() {
       onConfirm={() => void handleDeactivateSquad()}
       onCancel={() => !isDeactivating && setIsDeactivateDialogOpen(false)}
     />
-    <StatisticsPeriodModal isOpen={isPeriodModalOpen} onClose={() => { setIsPeriodModalOpen(false); setPeriodToEdit(null); }} periodToEdit={periodToEdit} />
+    <StatisticsPeriodModal
+      isOpen={isPeriodModalOpen}
+      onCancel={() => { setIsPeriodModalOpen(false); setPeriodToEdit(null); }}
+      onSubmit={handleSavePeriod}
+      periodToEdit={periodToEdit}
+      squadName={squad?.name ?? ''}
+    />
   </Page>;
 }

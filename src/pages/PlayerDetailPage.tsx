@@ -287,7 +287,7 @@ export default function PlayerDetailPage() {
       </PageHeader>
 
       {deleteActionError && (
-        <Alert className="member-detail-alert">
+        <Alert>
           {deleteActionError}
         </Alert>
       )}

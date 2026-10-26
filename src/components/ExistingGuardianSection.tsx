@@ -26,7 +26,7 @@ export default function ExistingGuardianSection({ availableUsers, selectedMember
     </Select>
     {availableUsers.length === 0 && <p className="field-help">{t('page.guardians.noAvailableUsers')}</p>}
     {isEditMode && <p className="field-help">{t('page.guardians.selectionLocked')}</p>}
-    {isEditMode && <Stack gap="sm" className="guardian-edit-fields">
+    {isEditMode && <Stack gap="sm">
       <div>
         <FieldLabel htmlFor="guardian-existing-first-name">{t('auth.firstName')}<RequiredMark /></FieldLabel>
         <Input id="guardian-existing-first-name" type="text" value={firstName} onChange={(event) => onFirstNameChange(event.target.value)} placeholder={t('auth.firstName')} required />

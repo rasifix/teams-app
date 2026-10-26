@@ -4,7 +4,7 @@ The UI uses three layers. Dependencies flow down this list and never sideways be
 
 1. `src/styles/tokens.css` owns design decisions: semantic colours, type sizes, spacing, radii, shadows, control dimensions, and motion. Theme and density overrides belong here.
 2. `src/styles/base.css` owns element defaults. `src/styles/recipes.css` owns reusable UI and layout recipes such as panels, form controls, page shells, feedback, stacks, and clusters.
-3. `src/styles/compositions.css` and feature CSS Modules own geometry and interaction that are genuinely unique to a feature. They reference tokens and do not copy shared recipes.
+3. Feature CSS Modules own geometry and interaction unique to one component. `src/styles/compositions.css` is the last resort for page-level geometry or interaction spanning components, such as lineup field positioning and print layout. Both reference tokens and do not copy shared recipes.
 
 React UI components are the application-facing API for patterns that carry structure or behaviour. Their shared CSS recipes are implementation details; feature code consumes the components instead of applying recipe classes directly.
 
@@ -22,6 +22,15 @@ The component layer is exported from `src/components/ui`:
 - `SummaryCard` owns compact dashboard metrics and their semantic accent tones.
 
 Use component props for supported variants. `className` is reserved for layout at the call site, not for restyling a component's colour, spacing, radius, type, or shadow. The public UI barrel is the import boundary; pages do not import component implementation files.
+
+## Before adding feature CSS
+
+1. Use existing UI components and their props. Compose spacing with `Page`, `Panel`, `Stack`, `Cluster`, `ContentGrid`, and the other layout primitives.
+2. If the visual choice or pattern applies in more than one place, add a semantic token or extend a shared component and its recipe.
+3. If geometry or interaction is truly unique to one component, use its CSS Module and shared tokens.
+4. Add to `compositions.css` only when a page must coordinate several components and the rule cannot reasonably live in a shared primitive or one component's CSS Module. Explain that reason in the change description.
+
+Do not add rules to `compositions.css` for a particular card, tab bar, alert, or form's margins, font sizes, colours, radii, or shadows. Do not move such a rule to a CSS Module to bypass the shared styling system. Prefer consistent shared spacing and type over preserving a page's old measurements.
 
 Tailwind has been removed. Do not reintroduce its dependencies, directives, configuration, or utility markup.
 

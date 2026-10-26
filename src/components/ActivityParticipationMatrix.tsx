@@ -147,9 +147,9 @@ export default function ActivityParticipationMatrix({ players, events, onOpenPla
                   highlight
                 >
                   <DataTableCell sticky className="statistics-matrix-player-cell">
-                    <button type="button" data-ui-control="composite" className="statistics-player-link" onClick={() => onOpenPlayer(player.id)}>
+                    <button type="button" data-ui-control="composite" className="text-link" onClick={() => onOpenPlayer(player.id)}>
                       <span>{player.firstName} {player.lastName}</span>
-                      <Level level={player.level} className="participation-player-level" />
+                      <Level level={player.level} className="text-caption" />
                     </button>
                   </DataTableCell>
                   {attendance.map(({ status, event }) => {

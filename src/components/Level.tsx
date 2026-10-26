@@ -14,7 +14,7 @@ export default function Level({ level, className = '' }: LevelProps) {
   const stars = '★'.repeat(normalizedLevel);
   
   return (
-    <span className={`level-indicator ${className}`.trim()} title={t('domain.player.levels.title', { level: normalizedLevel })}>
+    <span className={`text-rating ${className}`.trim()} title={t('domain.player.levels.title', { level: normalizedLevel })}>
       {stars}
     </span>
   );

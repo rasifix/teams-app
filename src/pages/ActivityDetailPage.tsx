@@ -176,7 +176,7 @@ export default function ActivityDetailPage() {
             <MetadataItem>🕐 {getActivityStartTime(activity)}</MetadataItem>
             {activity.location && <MetadataItem>📍 {activity.location}</MetadataItem>}
           </MetadataList>
-          {activity.kind === 'match' && activity.opponentName && <p className="event-detail-opponent">{t('domain.activity.fields.opponent')}: {activity.opponentName}</p>}
+          {activity.kind === 'match' && activity.opponentName && <p className="ui-page-description">{t('domain.activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
         <PageActions>
           {ACTIVITY_AUDIT_LOG_ENABLED && <Button type="button" variant="ghost" size="sm" onClick={() => navigate(`/activities/${activity.id}/history`)}>{t('page.eventDetail.viewHistory')}</Button>}
@@ -210,7 +210,7 @@ export default function ActivityDetailPage() {
         </PanelHeader>
         {selectionError && <Alert tone="warning">{selectionError}</Alert>}
         {whatsAppShareError && <Alert tone="warning">{t('page.eventDetail.errors.whatsAppUnavailable')}</Alert>}
-        {activity.selectionSentAt && <Alert tone="success" className="event-detail-selection-alert">
+        {activity.selectionSentAt && <Alert tone="success">
           {t('page.eventDetail.selectionSentAt', { dateTime: formatInstantDateTime(activity.selectionSentAt, i18n.language) })}
         </Alert>}
         {activity.teams.length === 0 && !selectCanAddActivityTeam(activity) && <Alert tone="warning">{t('domain.activity.noTeamsLegacy')}</Alert>}

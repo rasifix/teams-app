@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import type { TeamCardView } from '../store/selectors/teamCardSelectors';
 import PlayerRow from './PlayerRow';
 import Strength from './Strength';
-import { Badge, Card, ChevronRightIcon, Cluster, EntityContent, EntityList, IconButton, MetadataItem, Split } from './ui';
+import { Badge, Card, CardHeader, CardFooter, ChevronRightIcon, Cluster, EntityContent, EntityList, EntityTitle, IconButton, MetadataItem, Split } from './ui';
 
 interface TeamCardProps {
   view: TeamCardView;
@@ -15,13 +15,13 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCard
 
   return (
     <Card className="team-card">
-      <div className="team-card-header">
+      <CardHeader>
         <Split align="center">
           <EntityContent>
             <Cluster gap="sm">
-              <h3 className="team-card-title">{view.teamName}</h3>
-              <Strength level={view.teamStrength} className="team-card-strength" />
-              <MetadataItem><span className="team-card-level-symbol">★</span> {view.averageLevel.toFixed(1)}</MetadataItem>
+              <EntityTitle>{view.teamName}</EntityTitle>
+              <Strength level={view.teamStrength} className="text-caption" />
+              <MetadataItem><span className="text-rating">★</span> {view.averageLevel.toFixed(1)}</MetadataItem>
             </Cluster>
           </EntityContent>
           <Cluster gap="sm">
@@ -33,7 +33,7 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCard
             </IconButton>
           </Cluster>
         </Split>
-      </div>
+      </CardHeader>
 
       {view.playerRows.length > 0 && (
         <EntityList variant="bare" className="team-card-roster">
@@ -48,12 +48,12 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCard
               content={row.hasInactiveFutureEvent ? <Badge tone="danger" size="sm" title={t('page.teamCard.inactiveIndicatorTooltip')}>
                 {t('page.teamCard.inactiveIndicator')}
               </Badge> : undefined}
-              levelClassName="invitation-player-level"
+
             />
           ))}
         </EntityList>
       )}
-      <footer>
+      <CardFooter>
         <span>
           👤 {view.responsiblePeople.length > 0
             ? view.responsiblePeople.map((person) => `${person.firstName} ${person.lastName}`).join(', ')
@@ -62,7 +62,7 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCard
         <span aria-label={t('page.teamCard.playersCount', { selected: view.selectedPlayerCount, max: view.maxPlayersPerTeam })}>
           {t('page.teamCard.playersCount', { selected: view.selectedPlayerCount, max: view.maxPlayersPerTeam })}
         </span>
-      </footer>
+      </CardFooter>
     </Card>
   );
 }

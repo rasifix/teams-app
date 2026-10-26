@@ -26,9 +26,9 @@ export default function CategorySettingsSection({ category, squadCategory, catal
         <p className="field-help">{t('page.matchPlanning.category.description')}</p>
       </EntityContent>
     </Cluster>
-    <div className="settings-category-form">
-      <Field className="settings-category-field" label={t('page.matchPlanning.category.label')} htmlFor="squad-category">
-        <Select id="squad-category" controlSize="sm" className="settings-category-select" value={category} onChange={(event) => onChange(event.target.value as SquadCategory | '')}>
+    <div className="ui-form-row">
+      <Field label={t('page.matchPlanning.category.label')} htmlFor="squad-category">
+        <Select id="squad-category" controlSize="sm" value={category} onChange={(event) => onChange(event.target.value as SquadCategory | '')}>
           <option value="">{t('page.matchPlanning.category.none')}</option>
           {GROUP_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}
         </Select>
@@ -37,9 +37,9 @@ export default function CategorySettingsSection({ category, squadCategory, catal
         {isSaving ? t('page.matchPlanning.category.saving') : t('common.actions.save')}
       </Button>
     </div>
-    {error && <Alert className="settings-category-alert">{error}</Alert>}
-    {category && officialFormat && <Alert tone="warning" className="settings-category-alert">{t('page.matchPlanning.category.officialModeHint', { mode: officialFormat.name })}</Alert>}
-    {category && selectIsTournamentOnlyCategory(catalog, category) && <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.tournamentOnlyHint')}</Alert>}
-    {category === 'FF14' && <Alert tone="info" className="settings-category-alert">{t('page.matchPlanning.category.ff14Hint')}</Alert>}
+    {error && <Alert>{error}</Alert>}
+    {category && officialFormat && <Alert tone="warning">{t('page.matchPlanning.category.officialModeHint', { mode: officialFormat.name })}</Alert>}
+    {category && selectIsTournamentOnlyCategory(catalog, category) && <Alert tone="info">{t('page.matchPlanning.category.tournamentOnlyHint')}</Alert>}
+    {category === 'FF14' && <Alert tone="info">{t('page.matchPlanning.category.ff14Hint')}</Alert>}
   </Panel>;
 }

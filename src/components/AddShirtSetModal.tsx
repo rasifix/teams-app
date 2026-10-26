@@ -140,7 +140,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                     
                     {shirtOptions.includeGoalkeeper && (
                       <Cluster gap="sm" wrap={false}>
-                        <label htmlFor="goalkeeperNumber" className="shirt-goalkeeper-label">
+                        <label htmlFor="goalkeeperNumber" className="text-caption">
                           {t('domain.shirtSet.fields.goalkeeperNumber')}
                         </label>
                         <Input
@@ -157,7 +157,7 @@ export default function AddShirtSetModal({ onClose, onSubmit }: AddShirtSetModal
                     )}
                   </Split>
 
-                  <div className="shirt-generation-preview">
+                  <div className="ui-inset text-caption">
                     {t('page.shirtSetModal.preview.prefix')} {regularShirtCount} {t('page.shirtSetModal.preview.regularShirts')}{shirtOptions.includeGoalkeeper ? ` ${t('page.shirtSetModal.preview.plusGoalkeeper')}` : ''} ({t('page.shirtSetModal.preview.size', { size: shirtOptions.size })})
                   </div>
                 </Stack>

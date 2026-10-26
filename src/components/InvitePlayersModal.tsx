@@ -105,7 +105,7 @@ export default function InvitePlayersModal({
         <ModalHeader>
           <ModalTitle>{t('page.invitePlayers.title')}</ModalTitle>
           <ModalSubtitle>{t('page.invitePlayers.subtitle')}</ModalSubtitle>
-          <Alert tone="warning" className="invite-player-header-alert">{t('page.invitePlayers.inactiveExcludedHint')}</Alert>
+          <Alert tone="warning">{t('page.invitePlayers.inactiveExcludedHint')}</Alert>
         </ModalHeader>
 
         <ModalBody>
@@ -125,7 +125,7 @@ export default function InvitePlayersModal({
               <>
                 <Alert tone="info">
                   <Stack gap="sm">
-                  <p className="invite-player-status-title">{t('page.invitePlayers.defaultStatus')}</p>
+                  <p className="text-label">{t('page.invitePlayers.defaultStatus')}</p>
                   <ChoiceGroup>
                     <label className="checkbox-label">
                       <Radio

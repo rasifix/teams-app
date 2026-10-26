@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { useSquad, useTrainers, useAppLoading, useAppHasErrors, useAppErrors, useSquadPeriods, useAppInitialized } from '../store';
 import type { Trainer } from '../types';
-import { ActionCard, ActionCardTitle, Alert, Button, Cluster, ContentGrid, DateColumn, EmptyState, MetadataItem, MetadataList, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelDescription, PanelHeader, PanelTitle, SectionEyebrow } from '../components/ui';
+import { ActionCard, ActionCardTitle, Alert, Button, Cluster, ContentGrid, DateColumn, EmptyState, MetadataItem, MetadataList, Page, PageDescription, PageHeader, PageHeaderContent, PageTitle, PageToolbar, Panel, PanelDescription, PanelHeader, PanelTitle, SectionEyebrow, Stack } from '../components/ui';
 import AddTrainerModal from '../components/AddTrainerModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Strength from '../components/Strength';
@@ -177,7 +177,7 @@ export default function TrainerDetailPage() {
       </PageHeader>
 
       {deleteActionError && (
-        <Alert className="member-detail-alert">
+        <Alert>
           {deleteActionError}
         </Alert>
       )}
@@ -191,9 +191,9 @@ export default function TrainerDetailPage() {
               </PanelDescription>
               </div></PanelHeader>
               {(groupedTrainerEventHistory ?? [{ id: 'all-events', title: t('page.statistics.period.allEvents'), eventHistory: trainerEventHistory }]).map((group) => (
-                <section key={group.id} className="member-event-group">
+                <Stack key={group.id} gap="sm">
                   {groupedTrainerEventHistory && (
-                    <SectionEyebrow className="member-event-group-title">{group.title}</SectionEyebrow>
+                    <SectionEyebrow>{group.title}</SectionEyebrow>
                   )}
                   <ContentGrid variant="threeColumn">
                     {group.eventHistory.map((item) => (
@@ -203,7 +203,7 @@ export default function TrainerDetailPage() {
                         onClick={() => navigate(`/activities/${item.eventId}`)}
                       >
                               <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
-                              <MetadataList className="member-event-meta-list">
+                              <MetadataList>
                                 {item.startTime && (
                                   <MetadataItem>🕐 {item.startTime}</MetadataItem>
                                 )}
@@ -211,7 +211,7 @@ export default function TrainerDetailPage() {
                                   <MetadataItem>📍 {item.location}</MetadataItem>
                                 )}
                               </MetadataList>
-                              <MetadataList className="member-event-meta-list">
+                              <MetadataList>
                                 <MetadataItem>
                                   👥 {item.teamName || t('domain.team.unknownLabel')}
                                 </MetadataItem>
@@ -220,7 +220,7 @@ export default function TrainerDetailPage() {
                       </ActionCard>
                     ))}
                   </ContentGrid>
-                </section>
+                </Stack>
               ))}
         </Panel>
       )}

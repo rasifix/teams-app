@@ -164,7 +164,7 @@ export default function SquadSettingsPage() {
   };
 
   return <Page>
-    <SpondSyncResultBanner className="settings-banner" />
+    <SpondSyncResultBanner />
     <PageHeader><PageHeaderContent>
       <PageTitle>{t('page.squadSettings.title')}</PageTitle>
       <PageDescription>{t('page.squadSettings.description')}</PageDescription>
@@ -181,7 +181,7 @@ export default function SquadSettingsPage() {
       </Stack>
     </ContentGrid>
 
-    {matchPlanningEnabled && <ContentGrid variant="equal" className="settings-grid--secondary">
+    {matchPlanningEnabled && <ContentGrid variant="equal">
       <MatchFormatsSettingsSection
         formats={matchFormats}
         referencedIds={referencedMatchFormatIds}

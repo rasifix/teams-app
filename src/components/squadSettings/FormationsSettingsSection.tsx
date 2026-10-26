@@ -26,7 +26,7 @@ export default function FormationsSettingsSection({ formations, referencedIds, e
         return <SwipeableEntityRow key={formation.id} align="start" onDelete={canDelete ? () => onDelete(formation) : undefined} showDesktopDelete={false}>
           <EntityContent>
             <EntityTitle>{formation.name}</EntityTitle>
-            <div className="settings-formation-slots">
+            <div className="ui-cluster ui-cluster--wrap ui-cluster--sm">
               {formation.slots.map((slot) => {
                 const displayIndex = displayIndexes.get(slot.id);
                 return <Badge key={slot.id} tone="neutral" size="sm">{t(getPositionLabelKey(slot.positionCode))}{displayIndex !== null && displayIndex !== undefined ? ` ${displayIndex}` : ''}</Badge>;

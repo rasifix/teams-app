@@ -18,7 +18,7 @@ export default function PlayerCard({ player, isSwiped, onSwipeChange, onClick, o
   const birthYear = getBirthYear(player.birthDate);
   return <MemberCardShell
     name={`${player.firstName} ${player.lastName}`}
-    details={<div className="member-card-details">{birthYear && <span className="member-meta-text">{birthYear}</span>}<Level level={player.level} className="member-card-level" /></div>}
+    details={<div className="ui-cluster ui-cluster--sm">{birthYear && <span className="text-caption">{birthYear}</span>}<Level level={player.level} /></div>}
     isSwiped={isSwiped}
     onSwipeChange={onSwipeChange}
     onClick={onClick}

@@ -18,8 +18,8 @@ export default function SpondSettingsSection({ groupUrl, error, onUnlink }: Prop
         <p className="field-help">{t('page.squadSettings.spond.description')}</p>
       </EntityContent>
     </Cluster>
-    {error && <Alert className="settings-panel-alert">{error}</Alert>}
-    <Cluster gap="sm" className="settings-panel-actions">
+    {error && <Alert>{error}</Alert>}
+    <Cluster gap="sm">
       {groupUrl ? <>
         <ButtonAnchor size="sm" href={groupUrl} target="_blank" rel="noreferrer">
           {t('page.squadSettings.spond.openGroup')}

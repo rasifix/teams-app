@@ -141,7 +141,7 @@ export default function FormationModal({ isOpen, onClose, formationToEdit = null
                       </Select>
                       </EntityContent>
                       {displayIndex !== null && displayIndex !== undefined && (
-                        <span className="formation-slot-index">{displayIndex}</span>
+                        <span className="text-caption formation-slot-index">{displayIndex}</span>
                       )}
                       <EntityActions><IconButton
                         variant="danger"

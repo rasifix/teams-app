@@ -27,7 +27,7 @@ export default function SpondImportSummaryStep({
     <>
       <p className="body-muted">{t('spondSync.wizard.summaryHelp')}</p>
       {!decisionSummary.isReady && (
-        <p className="spond-review-error">{t('spondSync.requiredFields.summary')}</p>
+        <p className="ui-field__error">{t('spondSync.requiredFields.summary')}</p>
       )}
       {items.length === 0 ? (
         <EmptyState>

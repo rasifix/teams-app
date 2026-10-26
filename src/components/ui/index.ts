@@ -24,7 +24,7 @@ export { Panel, PanelActions, PanelBody, PanelDescription, PanelHeader, PanelTit
 export type { PanelBodyProps } from './Panel';
 export { NavigationTab, NavigationTabs, Tab, TabList } from './Tabs';
 export { LoadingSpinner, LoadingState, PageLoading } from './Loading';
-export { Card, CardBody, CardTitle, SummaryCard, SummaryCardContent } from './Card';
+export { Card, CardBody, CardHeader, CardFooter, CardTitle, SummaryCard, SummaryCardContent } from './Card';
 export { ActionCard, ActionCardLink, ActionCardTitle, FilterBar, FilterGroup, FilterLabel, ListAction, ListFrame, ListRow, MenuDivider, MenuItem, MenuItemDescription, MenuItemTitle, MenuLabel, MenuSurface, PageToolbar, VisuallyHidden } from './Patterns';
 export type { ActionCardLinkProps } from './Patterns';
 export { Modal, ModalHeader, ModalTitle, ModalSubtitle, ModalBody, ModalFooter } from './Modal';

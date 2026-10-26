@@ -129,7 +129,7 @@ export default function TeamLineupPage() {
     </PageHeader>
     {isCancelled && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}
 
-    <TabList label={t('page.teamLineup.title', { team: team.name })} className="lineup-tabs">
+    <TabList label={t('page.teamLineup.title', { team: team.name })}>
       {Array.from({ length: matchFormat.numberOfPeriods }, (_, index) => index + 1).map((periodNumber) => <Tab key={periodNumber} selected={activeTab === periodNumber} onClick={() => { navigate(`/activities/${eventId}/teams/${teamId}/lineup/${periodNumber}`); setSelectingSlotId(null); }}>
         {t('page.teamLineup.periodLabel', { number: periodNumber })}
       </Tab>)}
@@ -144,7 +144,7 @@ export default function TeamLineupPage() {
       shirtNumberRows={shirtNumberRows}
       violations={minimumPeriodViolations}
     /> : <>
-      {hasMismatch && <Alert tone="warning" className="lineup-alert">{t('page.teamLineup.rosterMismatchWarning')}</Alert>}
+      {hasMismatch && <Alert tone="warning">{t('page.teamLineup.rosterMismatchWarning')}</Alert>}
       <ContentGrid variant="editor">
         <LineupEditorView formationName={formation.name} period={currentPeriodSummary} selectingSlotId={selectingSlotId} assignablePlayers={assignablePlayers} readOnly={isCancelled} onSelectSlot={setSelectingSlotId} onAssign={handleAssignSlot} onDrop={handleDropOnSlot} onCopyPreviousPeriod={activePeriod > 1 ? handleCopyPreviousPeriod : undefined} />
         <LineupBenchView players={benchedPlayers} plannedPeriodCounts={plannedPeriodCounts} totalPeriods={matchFormat.numberOfPeriods} readOnly={isCancelled} onDrop={handleDropOnBench} />
@@ -152,7 +152,7 @@ export default function TeamLineupPage() {
     </>}
 
     <ActionDock><ActionDockContent>
-      {saveError ? <p className="lineup-save-error" role="alert">{saveError}</p> : <span className="lineup-save-status">{hasChanges ? t('page.teamLineup.unsavedChangesTitle') : t('page.teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
+      {saveError ? <p className="ui-field__error" role="alert">{saveError}</p> : <span className="body-muted">{hasChanges ? t('page.teamLineup.unsavedChangesTitle') : t('page.teamLineup.plannedPlayersSummary', { count: plannedPeriodCounts.size, total: matchFormat.numberOfPeriods })}</span>}
       <PageActions>
         <Button variant="secondary" onClick={() => navigate(`/activities/${eventId}/teams/${teamId}`)}>{t('common.actions.cancel')}</Button>
         <Button variant="primary" onClick={handleSave} disabled={isCancelled || !hasChanges || isSaving}>{t('common.actions.save')}</Button>

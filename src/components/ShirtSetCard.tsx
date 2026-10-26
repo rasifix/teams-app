@@ -3,7 +3,7 @@ import type { ShirtSet, Shirt } from '../types';
 import { useTranslation } from 'react-i18next';
 import ShirtCard from './ShirtCard';
 import { selectSortedShirts } from '../store/selectors/shirtSetSelectors';
-import { AddCardButton, ChevronRightIcon, Cluster, EntityContent, EntityMeta, EntityTitle, IconButton, IconTile, ShirtIcon } from './ui';
+import { AddCardButton, CardHeader, ChevronRightIcon, Cluster, EntityContent, EntityMeta, EntityTitle, IconButton, IconTile, ShirtIcon } from './ui';
 
 interface ShirtSetCardProps {
   shirtSet: ShirtSet;
@@ -30,8 +30,8 @@ export default function ShirtSetCard({
   const sortedShirts = selectSortedShirts(shirtSet.shirts);
 
   return (
-    <article className="shirt-set-card">
-      <div className="shirt-set-header">
+    <article className="card card--interactive shirt-set-card">
+      <CardHeader><Cluster gap="sm" wrap={false}>
         <button type="button" data-ui-control="composite" onClick={onToggleExpanded} className="shirt-set-toggle" aria-expanded={isExpanded}>
           <IconTile size="sm" className="shirt-set-icon" style={{ backgroundColor: shirtSet.color }}>
             <ShirtIcon className="icon-sm" />
@@ -40,7 +40,7 @@ export default function ShirtSetCard({
             <EntityTitle>{shirtSet.sponsor}</EntityTitle>
             <EntityMeta><span>{t('page.shirts.shirtCount', { count: shirtSet.shirts.length })}</span></EntityMeta>
           </EntityContent>
-          <ChevronRightIcon className={`shirt-set-chevron${isExpanded ? ' shirt-set-chevron--expanded' : ''}`} />
+          <ChevronRightIcon className={`ui-disclosure-icon${isExpanded ? ' ui-disclosure-icon--expanded' : ''}`} />
         </button>
         <Cluster gap="sm" wrap={false} className="shirt-set-actions">
           <IconButton label={t('page.shirts.editSet')} onClick={onEdit}>
@@ -52,7 +52,7 @@ export default function ShirtSetCard({
             <TrashIcon />
           </IconButton>
         </Cluster>
-      </div>
+      </Cluster></CardHeader>
 
       {isExpanded && (
         <div className="shirt-set-content">

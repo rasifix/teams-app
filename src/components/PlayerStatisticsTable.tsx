@@ -96,7 +96,7 @@ export default function PlayerStatisticsTable({ playerStats, onOpenPlayer }: Pla
                         <button
                           type="button"
                           data-ui-control="composite"
-                          className="player-statistics-link"
+                          className="text-link"
                           onClick={() => onOpenPlayer(statistic.player.id)}
                         >
                           <span>{statistic.player.firstName} {statistic.player.lastName}</span>
@@ -121,15 +121,15 @@ export default function PlayerStatisticsTable({ playerStats, onOpenPlayer }: Pla
                 {visiblePlayerStats.map((statistic) => (
                   <ListAction
                     key={statistic.player.id}
-                    className="player-statistics-mobile-action"
+                    className="ui-stack ui-stack--md player-statistics-mobile-action"
                     onClick={() => onOpenPlayer(statistic.player.id)}
                   >
-                    <span className="player-statistics-mobile-title">
+                    <span className="text-label player-statistics-mobile-title">
                       <span>{statistic.player.firstName} {statistic.player.lastName}</span>
-                      <span className="player-statistics-birth-year">{getBirthYear(statistic.player.birthDate)}</span>
+                      <span className="text-caption">{getBirthYear(statistic.player.birthDate)}</span>
                       <Level level={statistic.player.level} />
                     </span>
-                    <span className="player-statistics-metrics">
+                    <span className="ui-inset text-caption player-statistics-metrics">
                       <span>
                         <strong>{statistic.invitedCount}</strong>
                         <span>{t('page.statistics.playerTable.invited')}</span>
@@ -138,8 +138,8 @@ export default function PlayerStatisticsTable({ playerStats, onOpenPlayer }: Pla
                         <strong>{statistic.acceptedCount} ({statistic.acceptanceRate.toFixed(0)}%)</strong>
                         <span>{t('page.statistics.playerTable.accepted')}</span>
                       </span>
-                      <span className="player-statistics-metric--success">
-                        <strong>{statistic.selectedCount} ({statistic.selectionRate.toFixed(0)}%)</strong>
+                      <span>
+                        <strong className="text-status-success">{statistic.selectedCount} ({statistic.selectionRate.toFixed(0)}%)</strong>
                         <span>{t('page.statistics.playerTable.selected')}</span>
                       </span>
                     </span>

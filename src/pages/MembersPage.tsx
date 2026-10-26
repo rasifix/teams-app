@@ -273,7 +273,7 @@ export default function MembersPage() {
       />}
 
       {/* Tab Navigation */}
-      <NavigationTabs label={t('common.tabs')} mobileFit className="members-tabs">
+      <NavigationTabs label={t('common.tabs')} mobileFit>
           <NavigationTab to="/members/players">
             {t('domain.player.plural')} <span className={'ui-tab-count'}>({players.length})</span>
           </NavigationTab>

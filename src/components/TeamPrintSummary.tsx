@@ -116,7 +116,7 @@ export default function TeamPrintSummary({
                     {playerRows.length === 0 ? (
                       <p className="team-print-empty">{t('page.teamPrint.noPlayers')}</p>
                     ) : (
-                      <div className="team-print-player-list">
+                      <div className="ui-stack ui-stack--sm">
                         {playerRows.map(({ player, shirtNumber }) => {
                           return (
                             <div key={player.id} className="team-print-player-row">

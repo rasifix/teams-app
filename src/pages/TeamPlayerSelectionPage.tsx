@@ -147,7 +147,7 @@ export default function TeamPlayerSelectionPage() {
             <p className="eyebrow">{event.name}</p>
             <PageTitle>{t('page.teamPlayerSelection.addPlayersToTeam', { team: team.name })}</PageTitle>
           </PageHeaderContent>
-          <PageActions><p className="team-selection-context">
+          <PageActions><p className="body-muted">
           {t('page.teamPlayerSelection.slotsSummary', {
             current: currentPlayerCount,
             max: maxPlayersPerTeam,
@@ -194,9 +194,9 @@ export default function TeamPlayerSelectionPage() {
       )}
       
       <div className="team-selection-columns">
-        <Panel className={`team-selection-column team-selection-column--selected${dropTarget === 'selected' ? ` team-selection-column--${canDropOn('selected', draggedPlayerId) ? 'drop-active' : 'drop-invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'selected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'selected', moveToSelected)}>
+        <Panel className={`team-selection-column team-selection-column--selected${dropTarget === 'selected' ? ` ui-drop-target--${canDropOn('selected', draggedPlayerId) ? 'active' : 'invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'selected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'selected', moveToSelected)}>
           <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.selectedPlayers')}</PanelTitle><Badge>{selectedPlayers.length}</Badge></PanelHeader>
-          {dropTarget === 'selected' && <p className="team-selection-drop-hint">{t(canDropOn('selected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToSelected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
+          {dropTarget === 'selected' && <p className="body-muted">{t(canDropOn('selected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToSelected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
           <EntityList variant="bare">
             {selectedPlayers.length === 0 ? <EmptyState>{t('page.teamPlayerSelection.noSelectedPlayers')}</EmptyState> : selectedPlayers.map((player) => (
               <PlayerRow
@@ -217,9 +217,9 @@ export default function TeamPlayerSelectionPage() {
             ))}
           </EntityList>
         </Panel>
-        <Panel className={`team-selection-column${dropTarget === 'unselected' ? ` team-selection-column--${canDropOn('unselected', draggedPlayerId) ? 'drop-active' : 'drop-invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'unselected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'unselected', moveToUnselected)}>
+        <Panel className={`team-selection-column${dropTarget === 'unselected' ? ` ui-drop-target--${canDropOn('unselected', draggedPlayerId) ? 'active' : 'invalid'}` : ''}`} onDragOver={(event) => handleDragOver(event, 'unselected')} onDragLeave={handleDragLeave} onDrop={(event) => handleDrop(event, 'unselected', moveToUnselected)}>
           <PanelHeader><PanelTitle>{t('page.teamPlayerSelection.unselectedPlayers')}</PanelTitle><Badge>{unselectedPlayers.length}</Badge></PanelHeader>
-          {dropTarget === 'unselected' && <p className="team-selection-drop-hint">{t(canDropOn('unselected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToUnselected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
+          {dropTarget === 'unselected' && <p className="body-muted">{t(canDropOn('unselected', draggedPlayerId) ? 'page.teamPlayerSelection.dropToUnselected' : 'page.teamPlayerSelection.dropNotAllowed')}</p>}
           <FilterBar>
             <LevelRangeSelector
               selectedLevels={selectedLevels}

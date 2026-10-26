@@ -18,7 +18,7 @@ interface PlayerRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'
 export default function PlayerRow({ player, fallbackName, leading, content, trailing, actions, shirtNumber, levelClassName, density = 'default', ...rowProps }: PlayerRowProps) {
   return (
     <EntityRow density={density} {...rowProps}>
-      {shirtNumber && shirtNumber > 0 && <strong className="player-row-shirt-number">{shirtNumber}</strong>}
+      {shirtNumber && shirtNumber > 0 && <strong className="text-number player-row-shirt-number">{shirtNumber}</strong>}
       {leading}
       <EntityContent>
         <EntityTitle>{player ? `${player.firstName} ${player.lastName}` : fallbackName}</EntityTitle>

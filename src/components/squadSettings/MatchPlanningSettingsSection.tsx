@@ -21,6 +21,6 @@ export default function MatchPlanningSettingsSection({ enabled, isSaving, onTogg
       </Cluster>
       <Switch checked={enabled} label={t('page.matchPlanning.title')} disabled={isSaving} onClick={onToggle} />
     </Split>
-    {!enabled && <Alert tone="info" className="settings-disabled-alert">{t('page.matchPlanning.disabledState')}</Alert>}
+    {!enabled && <Alert tone="info">{t('page.matchPlanning.disabledState')}</Alert>}
   </Panel>;
 }

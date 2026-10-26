@@ -27,8 +27,8 @@ export default function ShirtCard({
       }`}
     >
       <Cluster gap="sm">
-        <span className="shirt-card-number">#{shirt.number}</span>
-        <span className="shirt-card-size">{shirt.size}</span>
+        <span className="text-number">#{shirt.number}</span>
+        <span className="text-caption">{shirt.size}</span>
         {shirt.status === 'unavailable' && (
           <Badge tone="danger" size="sm">{t('domain.shirt.labels.unavailableShort')}</Badge>
         )}

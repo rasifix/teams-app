@@ -76,12 +76,12 @@ export default function DuplicateMembersModal({
           ) : (
             <div className="duplicate-member-list">
               {duplicateGroups.map((group) => (
-                <section key={group.key} className="duplicate-member-group">
+                <section key={group.key} className="ui-panel ui-panel--compact">
                   <Split gap="sm">
-                    <h3 className="duplicate-member-title">
+                    <h3 className="text-label">
                       {group.firstName} {group.lastName}
                     </h3>
-                    <span className="member-meta-text">
+                    <span className="text-caption">
                       {t('page.members.duplicates.groupCount', {
                         trainerCount: group.trainers.length,
                         guardianCount: group.guardians.length,
@@ -89,7 +89,7 @@ export default function DuplicateMembersModal({
                     </span>
                   </Split>
 
-                  <Field className="duplicate-member-target" label={t('page.members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
+                  <Field label={t('page.members.duplicates.targetTrainerLabel')} htmlFor={`target-trainer-${group.key}`}>
                     <Select
                       id={`target-trainer-${group.key}`}
                       value={selectedTrainerForGroup[group.key]}

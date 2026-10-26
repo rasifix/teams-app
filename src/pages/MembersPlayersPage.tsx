@@ -28,7 +28,7 @@ export default function MembersPlayersPage() {
 
   return (
     <>
-      <SpondSyncResultBanner className="members-banner" />
+      <SpondSyncResultBanner />
       <Panel>
         <SectionHeader>
           <SectionHeaderContent><SectionTitle>

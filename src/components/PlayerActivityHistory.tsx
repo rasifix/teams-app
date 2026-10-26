@@ -39,13 +39,13 @@ export default function PlayerActivityHistory({
           onClick={() => onOpenEvent(item.eventId)}
         >
                 <ActionCardTitle title={item.eventName}>{item.eventName}</ActionCardTitle>
-                <div className="member-event-status">
+                <div>
                   {item.isSelected ? (
                     <Cluster gap="sm">
                       <Badge tone="success">
                         {t('page.statistics.playerTable.selected')}
                       </Badge>
-                      <span className="member-meta-text">
+                      <span className="text-caption">
                         {t('page.playerDetail.assignedTeam', {
                           teamName: item.teamName || t('domain.team.unknownLabel'),
                         })}
@@ -70,14 +70,14 @@ export default function PlayerActivityHistory({
             <p>{t('page.players.eventHistory.empty')}</p>
           </EmptyState>
         ) : (
-          <div className="member-event-history-content">
+          <div>
             {groupedEventHistory && groupedEventHistory.length > 0 ? (
               <Stack gap="lg">
                 {groupedEventHistory.map((group) => (
-                  <section key={group.id}>
-                    <SectionEyebrow className="member-event-group-title">{group.title}</SectionEyebrow>
+                  <Stack key={group.id} gap="sm">
+                    <SectionEyebrow>{group.title}</SectionEyebrow>
                     {renderEventCards(group.eventHistory)}
-                  </section>
+                  </Stack>
                 ))}
               </Stack>
             ) : renderEventCards(eventHistory)}

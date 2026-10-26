@@ -129,7 +129,7 @@ export default function AddSquadModal({
               </Select>
               <p className="field-help">{t('page.squadModal.categoryHint')}</p>
               {selectedOption?.matchFormat && (
-                <p className="squad-format-hint squad-format-hint--official">
+                <p className="text-caption">
                   {t('page.squadModal.officialFormatHint', {
                     format: selectedOption.matchFormat.name,
                     min: selectedOption.matchFormat.minPlayersPerTeam ?? '-',
@@ -138,7 +138,7 @@ export default function AddSquadModal({
                 </p>
               )}
               {selectedOption?.activityType === 'tournament' && !selectedOption.matchFormat && (
-                <p className="squad-format-hint">{t('page.squadModal.tournamentOnlyHint')}</p>
+                <p className="text-caption">{t('page.squadModal.tournamentOnlyHint')}</p>
               )}
             </Field>
 

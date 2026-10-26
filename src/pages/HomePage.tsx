@@ -107,7 +107,7 @@ export default function HomePage() {
       </PageHeader>
 
       {!isAuthenticated ? (
-        <ContentGrid variant="threeColumn" className="home-feature-grid" aria-label={t('page.home.featuresLabel')}>
+        <ContentGrid variant="threeColumn" aria-label={t('page.home.featuresLabel')}>
           {features.map((feature, index) => (
             <Panel key={feature.title}>
               <Stack>
@@ -118,7 +118,7 @@ export default function HomePage() {
           ))}
         </ContentGrid>
       ) : (
-        <ContentGrid variant="dashboard" className="home-dashboard-grid">
+        <ContentGrid variant="dashboard">
           <section>
             <SectionHeader>
               <SectionHeaderContent>
@@ -147,7 +147,7 @@ export default function HomePage() {
               </SectionHeaderContent>
             </SectionHeader>
 
-            {squadsLoading && <div className="home-loading-card">{t('page.squads.loading')}</div>}
+            {squadsLoading && <div className="ui-panel body-muted">{t('page.squads.loading')}</div>}
             {!squadsLoading && squadsError && <Alert>{t('page.squads.errors.loadFailedWithReason', { error: squadsError })}</Alert>}
             {!squadsLoading && !squadsError && (
               <Stack gap="sm">

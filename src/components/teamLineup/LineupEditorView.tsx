@@ -44,7 +44,7 @@ export default function LineupEditorView({ formationName, period, selectingSlotI
           onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDragOverSlotId(assignment.slotId); }}
           onDragLeave={() => setDragOverSlotId((current) => current === assignment.slotId ? null : current)}
           onDrop={(event) => { event.preventDefault(); const playerId = event.dataTransfer.getData('lineupPlayerId'); if (playerId) onDrop(assignment.slotId, playerId); setDragOverSlotId(null); }}
-          className={`lineup-slot lineup-slot--editor ${dragOverSlotId === assignment.slotId ? 'lineup-slot--drag-over' : selectingSlotId === assignment.slotId ? 'lineup-slot--selecting' : assignment.playerId ? 'lineup-slot--assigned' : 'lineup-slot--empty'}`}
+          className={`lineup-slot lineup-slot--editor ${dragOverSlotId === assignment.slotId ? 'lineup-slot--drag-over ui-drop-target--active' : selectingSlotId === assignment.slotId ? 'lineup-slot--selecting' : assignment.playerId ? 'lineup-slot--assigned' : 'lineup-slot--empty'}`}
           style={{ left: `${assignment.pitchX}%`, top: `${assignment.pitchY}%` }}
         >
           <span className="lineup-slot-position">{t(getPositionLabelKey(assignment.positionCode))}{assignment.displayIndex ? ` ${assignment.displayIndex}` : ''}</span>

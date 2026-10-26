@@ -13,6 +13,14 @@ export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>
   return <div className={classNames('card-body', className)} {...props} />;
 }
 
+export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={classNames('card-header', className)} {...props} />;
+}
+
+export function CardFooter({ className, ...props }: HTMLAttributes<HTMLElement>) {
+  return <footer className={classNames('card-footer', className)} {...props} />;
+}
+
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return <h2 className={classNames('card-title', className)} {...props} />;
 }

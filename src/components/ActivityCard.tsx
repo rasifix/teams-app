@@ -14,7 +14,7 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity, summary, onOpenActivity, onOpenTeam }: ActivityCardProps) {
   const { t } = useTranslation();
 
-  return <article className="activity-card">
+  return <article className="card card--interactive activity-card">
     <button type="button" data-ui-control="composite" onClick={() => onOpenActivity(activity.id)} className="activity-card-main">
       <div className="activity-card-layout">
         <DateColumn date={summary.date} />
@@ -27,7 +27,7 @@ export default function ActivityCard({ activity, summary, onOpenActivity, onOpen
             {activity.location && <span data-activity-field="location">{activity.location}</span>}
             {activity.kind === 'match' && activity.opponentName && <span>{t('domain.activity.fields.opponent')}: {activity.opponentName}</span>}
           </EntityMeta>
-          <Cluster gap="sm" className="activity-card-counts" aria-label={t('page.events.invitationCounts')}>
+          <Cluster gap="sm" aria-label={t('page.events.invitationCounts')}>
             <Badge tone="success" size="sm" title={t('domain.invitation.status.accepted')}>✓ {summary.invitationCounts.accepted}</Badge>
             <Badge tone="warning" size="sm" title={t('domain.invitation.status.open')}>? {summary.invitationCounts.open}</Badge>
             <Badge tone="danger" size="sm" title={t('domain.invitation.status.declined')}>× {summary.invitationCounts.declined}</Badge>
@@ -36,9 +36,9 @@ export default function ActivityCard({ activity, summary, onOpenActivity, onOpen
         </EntityContent>
         <div className="activity-card-status">
           {summary.allTeamsMeetMinimum
-            ? <span className="activity-card-ready" title={t('page.events.teamsReady')}>✓</span>
+            ? <span className="text-status-success" title={t('page.events.teamsReady')}>✓</span>
             : <span className="activity-card-pending"><Badge tone="warning" size="sm">{t('common.states.pending')}</Badge></span>}
-          <ChevronRightIcon className="activity-card-chevron" />
+          <ChevronRightIcon className="ui-action-card__chevron" />
         </div>
       </div>
     </button>
@@ -46,7 +46,7 @@ export default function ActivityCard({ activity, summary, onOpenActivity, onOpen
       const hasDifferentLocation = team.location && team.location !== activity.location;
       return <section key={team.id} aria-label={t('page.events.teamCardLabel', { team: team.name })} className="activity-card-team">
         <EntityMeta className="activity-card-team-meta">
-          <span className="activity-card-team-time">{team.startTime || summary.startTime}</span>
+          <span className="text-number">{team.startTime || summary.startTime}</span>
           <Strength level={team.strength} className="activity-card-team-strength" />
           <Button
             type="button" variant="ghost" size="sm" data-team-field="name"

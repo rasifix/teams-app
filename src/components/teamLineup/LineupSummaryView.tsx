@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Card, CardBody, CardTitle, IconButton, PanelTitle } from '../ui';
+import { Alert, Card, CardBody, CardTitle, IconButton, PanelTitle, Stack } from '../ui';
 import { getPositionLabelKey, type LineupShirtNumberRow, type LineupSummaryPeriod, type MinimumPeriodViolation } from '../../store/selectors/matchPlanningSelectors';
 
 interface Props {
@@ -16,14 +16,14 @@ export default function LineupSummaryView({ teamName, matchFormatName, formation
   const { t } = useTranslation();
   const [hoveredPlayerId, setHoveredPlayerId] = useState<string | null>(null);
 
-  return <div className="lineup-print-content">
+  return <Stack className="lineup-print-content">
     <div className="lineup-print-actions">
       <PanelTitle>{t('page.teamLineup.summaryTitle')}</PanelTitle>
       <IconButton label={t('page.teamLineup.printSummary')} onClick={() => window.print()}>
         <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M6 9V4h12v5M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v6H6z" /></svg>
       </IconButton>
     </div>
-    {violations.length > 0 && <Alert className="lineup-alert">
+    {violations.length > 0 && <Alert>
       <div className="lineup-violation-title">{t('page.teamLineup.minimumPeriodsViolationTitle')}</div>
       <ul className="lineup-violation-list">{violations.map((violation) => <li key={violation.playerId}>
         {t('page.teamLineup.minimumPeriodsViolation', { player: violation.playerName ?? t('page.teamLineup.unknownPlayer'), count: violation.plannedPeriods, minimum: violation.minimumPeriods })}
@@ -70,5 +70,5 @@ export default function LineupSummaryView({ teamName, matchFormatName, formation
         <span className="lineup-shirt-name">{row.playerName ?? t('page.teamLineup.unknownPlayer')}</span>
       </div>)}</div>
     </section>
-  </div>;
+  </Stack>;
 }

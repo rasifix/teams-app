@@ -37,7 +37,7 @@ function TeamRosterPlayerRow({ player, shirtNumber, isSwiped, canSwipe, isCancel
       fallbackName=""
       shirtNumber={shirtNumber}
       density="compact"
-      levelClassName="invitation-player-level"
+
     />
     <div className={`ui-swipe-action-tray${isSwiped ? ' ui-swipe-action-tray--visible' : ''}`}>
       <button type="button" data-ui-control="composite" className="team-player-remove-button" onClick={() => { if (!isCancelled) onRemove(); onSwipeChange(false); }}>
@@ -56,7 +56,7 @@ export default function TeamRosterSection({ team, players, maxPlayers, canEditSe
       <PanelTitle>{t('domain.player.plural')} ({players.length}/{maxPlayers})</PanelTitle>
       <PanelActions><Button onClick={onEditPlayers} disabled={!canEditSelection} size="sm">{t('common.actions.edit')}</Button></PanelActions>
     </PanelHeader>
-    {!canEditSelection && <Alert className="team-detail-player-alert">{t('page.teamPlayerSelection.eventPassedWarning')}</Alert>}
+    {!canEditSelection && <Alert>{t('page.teamPlayerSelection.eventPassedWarning')}</Alert>}
     {players.length === 0 ? <EmptyState>{t('page.teamDetail.noPlayersSelected')}</EmptyState> : <EntityList variant="bare" onClick={(event) => {
       const target = event.target as HTMLElement;
       if (swipedPlayerId && !target.closest('.team-player-row')) setSwipedPlayerId(null);

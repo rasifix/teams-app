@@ -50,7 +50,7 @@ export default function UserPreferencesMenu({ userName, mobile = false }: UserPr
   ];
 
   return (
-    <div ref={containerRef} className={`app-preferences${mobile ? ' app-preferences--mobile' : ''}`}>
+    <div ref={containerRef} className={`ui-menu-anchor${mobile ? ' app-preferences--mobile' : ''}`}>
       <Button
         type="button"
         variant="inverse"

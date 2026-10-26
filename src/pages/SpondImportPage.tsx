@@ -370,9 +370,9 @@ export default function SpondImportPage() {
           />
         ))}
       </div>
-      {error && <Alert className="spond-wizard-error">{error}</Alert>}
+      {error && <Alert>{error}</Alert>}
       <Card>
-        <CardBody className="spond-wizard-body">
+        <CardBody>
           <Stack>
           <CardTitle>{stepTitle}</CardTitle>
           {step === "credentials" && (

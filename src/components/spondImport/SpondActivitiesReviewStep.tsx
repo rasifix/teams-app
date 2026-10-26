@@ -95,7 +95,7 @@ export default function SpondActivitiesReviewStep({
                   </EntityContent>
                 </label>
                 {selected && draft && !row.linkedActivity && (
-                  <ContentGrid variant="equal" className="spond-review-fields">
+                  <ContentGrid variant="equal">
                     <Select
                       value={draft.action}
                       onChange={(event) => onDraftChange(row.source.id, {
@@ -143,7 +143,7 @@ export default function SpondActivitiesReviewStep({
                   </ContentGrid>
                 )}
                 {rowIssues.map((field) => (
-                  <p key={field} className="spond-review-error">
+                  <p key={field} className="ui-field__error">
                     {t(`spondSync.requiredFields.${field}`)}
                   </p>
                 ))}

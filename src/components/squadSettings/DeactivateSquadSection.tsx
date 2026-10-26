@@ -9,10 +9,10 @@ interface Props {
 export default function DeactivateSquadSection({ error, onDeactivate }: Props) {
   const { t } = useTranslation();
 
-  return <Panel tone="danger" className="settings-danger-panel">
+  return <Panel tone="danger">
     <PanelTitle>{t('page.squadSettings.deactivate.title')}</PanelTitle>
     <PanelDescription>{t('page.squadSettings.deactivate.description')}</PanelDescription>
-    {error && <Alert className="settings-danger-alert">{error}</Alert>}
-    <Button className="settings-danger-action" variant="danger" size="sm" onClick={onDeactivate}>{t('page.squadSettings.deactivate.action')}</Button>
+    {error && <Alert>{error}</Alert>}
+    <Button variant="danger" size="sm" onClick={onDeactivate}>{t('page.squadSettings.deactivate.action')}</Button>
   </Panel>;
 }

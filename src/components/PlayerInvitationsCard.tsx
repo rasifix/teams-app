@@ -64,7 +64,7 @@ export default function PlayerInvitationsCard({
           fallbackName={invitation.playerId}
           density="compact"
           data-testid="invitation-row"
-          levelClassName="invitation-player-level"
+
           content={invitation.response === 'declined' && readOnly && !allowDeclineReasonEdit
             ? <EntityMeta><span>{t('domain.activity.declineReasons.' + (invitation.declineReason ?? 'unspecified'))}</span></EntityMeta>
             : undefined}

@@ -73,7 +73,7 @@ export default function SquadSelectionPage() {
   if (error && (!squads || squads.length === 0)) {
     return (
       <div className="auth-shell">
-        <PageStateContent className="squad-selection-error">
+        <PageStateContent>
           <Alert>
             <strong>{t('page.squads.errors.failedToLoadTitle')}</strong>
             <p>{error}</p>

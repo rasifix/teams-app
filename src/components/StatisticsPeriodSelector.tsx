@@ -28,7 +28,7 @@ export default function StatisticsPeriodSelector() {
   }, [isOpen]);
 
   return (
-    <div className="statistics-period-selector" ref={containerRef}>
+    <div className="ui-menu-anchor" ref={containerRef}>
       <Button
         type="button"
         variant="secondary"
@@ -37,13 +37,13 @@ export default function StatisticsPeriodSelector() {
         aria-expanded={isOpen}
       >
         <span>{t('page.statistics.period.selectorLabel', { period: getStatisticsPeriodLabel(selectedPeriod) })}</span>
-        <svg className={`statistics-period-chevron${isOpen ? ' statistics-period-chevron--open' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className={`ui-disclosure-icon${isOpen ? ' ui-disclosure-icon--open' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
       </Button>
 
       {isOpen && (
-        <MenuSurface className="statistics-period-menu">
+        <MenuSurface>
             <MenuLabel>{t('page.statistics.period.selectPeriod')}</MenuLabel>
 
             <MenuItem
@@ -59,7 +59,7 @@ export default function StatisticsPeriodSelector() {
 
             <MenuDivider />
 
-            <div className="statistics-period-options">
+            <div className="ui-stack ui-stack--sm">
               {periods.map((period) => (
                 <MenuItem
                   key={period.id}
@@ -75,7 +75,7 @@ export default function StatisticsPeriodSelector() {
               ))}
 
               {periods.length === 0 && (
-                <p className="statistics-period-empty">{t('page.statistics.period.noSquadPeriods')}</p>
+                <p className="ui-menu__empty">{t('page.statistics.period.noSquadPeriods')}</p>
               )}
             </div>
         </MenuSurface>

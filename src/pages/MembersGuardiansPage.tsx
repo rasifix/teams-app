@@ -96,18 +96,18 @@ export default function MembersGuardiansPage() {
         </PanelHeader>
 
         {!spondLinked && duplicateGuardianGroups.length > 0 && (
-          <Alert tone="warning" className="guardian-duplicates">
+          <Alert tone="warning">
             <p><strong>{t('page.members.guardianDuplicates.detected', { count: duplicateGuardianGroups.length })}</strong></p>
-            <div className="guardian-duplicate-list">
+            <div className="ui-stack ui-stack--sm">
               {duplicateGuardianGroups.map((group) => {
                 const isResolving = resolvingDuplicateKey === group.key;
                 return (
                   <div key={group.key} className="guardian-duplicate-row">
-                    <div className="guardian-duplicate-content">
-                      <p className="guardian-duplicate-name">
+                    <div className="ui-entity-content">
+                      <p className="ui-entity-title">
                         {group.firstName} {group.lastName} ({group.email})
                       </p>
-                      <p className="member-meta-text">
+                      <p className="text-caption">
                         {t('page.members.guardianDuplicates.groupMeta', {
                           guardianCount: group.guardians.length,
                           playerCount: group.linkedPlayerCount,
@@ -162,7 +162,7 @@ export default function MembersGuardiansPage() {
                       <span key={playerRef.playerId}>
                         <Link
                           to={`/players/${playerRef.playerId}`}
-                          className="guardian-player-link"
+                          className="text-link"
                         >
                           {playerRef.playerFirstName} {playerRef.playerLastName}
                         </Link>
@@ -218,7 +218,7 @@ export default function MembersGuardiansPage() {
                             <Link
                               key={playerRef.playerId}
                               to={`/players/${playerRef.playerId}`}
-                              className="guardian-player-link"
+                              className="text-link"
                             >
                               {playerRef.playerFirstName} {playerRef.playerLastName}
                             </Link>

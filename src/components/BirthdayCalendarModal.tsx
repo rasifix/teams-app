@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Alert, Button, ButtonAnchor, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle, Stack } from './ui';
+import { Alert, Button, ButtonAnchor, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalSubtitle, ModalTitle, Split, Stack } from './ui';
 
 interface BirthdayCalendarModalProps {
   isOpen: boolean;
@@ -26,14 +26,14 @@ export default function BirthdayCalendarModal({ isOpen, onClose, subscriptionUrl
         <ModalSubtitle>{t('page.members.birthdayCalendar.description')}</ModalSubtitle>
       </ModalHeader>
       <ModalBody>
-        {error && <Alert className="birthday-calendar-error">{error}</Alert>}
+        {error && <Alert>{error}</Alert>}
 
         {isLoading ? (
           <p className="body-muted">{t('page.members.birthdayCalendar.loading')}</p>
         ) : subscriptionUrl ? (
           <Stack>
             <p>{t('page.members.birthdayCalendar.subscriptionHelp')}</p>
-            <div className="birthday-subscription-actions">
+            <Split gap="sm" className="ui-responsive-action-row">
               <Input
                 className="birthday-subscription-input"
                 aria-label={t('page.members.birthdayCalendar.subscriptionUrl')}
@@ -44,7 +44,7 @@ export default function BirthdayCalendarModal({ isOpen, onClose, subscriptionUrl
               <Button type="button" variant="secondary" onClick={onCopy}>
                 {copied ? t('page.members.birthdayCalendar.copied') : t('page.members.birthdayCalendar.copy')}
               </Button>
-            </div>
+            </Split>
             <p className="field-help">{t('page.members.birthdayCalendar.privacyNote')}</p>
             {!canSubscribeDirectly && (
               <Alert tone="warning">

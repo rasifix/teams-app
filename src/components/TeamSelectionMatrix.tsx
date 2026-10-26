@@ -159,11 +159,11 @@ export default function TeamSelectionMatrix({ players, events, onOpenPlayer, onO
                           type="button"
                           data-ui-control="composite"
                           onClick={() => onOpenPlayer(player.id)}
-                          className="selection-matrix-player-button"
+                          className="text-link selection-matrix-player-button"
                         >
                           <span>{player.firstName} {player.lastName}</span>
-                          <Level level={player.level} className="selection-matrix-player-level" />
-                          <span className="selection-matrix-player-count">
+                          <Level level={player.level} className="text-caption" />
+                          <span className="text-caption selection-matrix-player-count">
                             {selectedCount} / {acceptedCount}
                           </span>
                         </button>

@@ -17,12 +17,12 @@ export default function PlayerDetailHistorySections({ eventHistory, groupedEvent
 
   return <>
     <PlayerActivityHistory eventHistory={eventHistory} groupedEventHistory={groupedEventHistory} onOpenEvent={onOpenEvent} />
-    {futureEventsWithoutInvitation.length > 0 && <Panel className="member-detail-section">
+    {futureEventsWithoutInvitation.length > 0 && <Panel>
       <PanelHeader><PanelTitle>{t('page.playerDetail.eventsWithoutInvitation')}</PanelTitle></PanelHeader>
       <Stack gap="sm" className="member-event-list">
         {futureEventsWithoutInvitation.map((event) => <ActionCard key={event.id} leading={<DateColumn date={getActivityDate(event)} />} onClick={() => onOpenEvent(event.id)}>
           <ActionCardTitle title={event.name}>{event.name}</ActionCardTitle>
-          <div className="member-event-status"><Badge>{t('domain.invitation.status.notInvited')}</Badge></div>
+          <div><Badge>{t('domain.invitation.status.notInvited')}</Badge></div>
         </ActionCard>)}
       </Stack>
     </Panel>}

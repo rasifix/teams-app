@@ -67,23 +67,17 @@
 
 /* Residual cards and feedback */
 .team-card { overflow: hidden; }
-.team-card--drop-valid { border-color: var(--color-success-border); background: var(--color-success-subtle); }
-.team-card--drop-invalid { border-color: var(--color-danger-border); background: var(--color-danger-subtle); box-shadow: inset 0 0 0 1px var(--color-danger-border); }
 .team-card-header { background: var(--color-surface-subtle); padding: var(--space-4); }
 .team-card-title { overflow: hidden; min-width: 0; color: var(--color-text-strong); font-size: var(--font-size-md); font-weight: var(--font-weight-bold); text-overflow: ellipsis; white-space: nowrap; }
 .team-card-strength { font-size: var(--font-size-xs); }
 .team-card-level-symbol { color: var(--color-warning-strong); }
-.team-card-responsible { color: var(--color-info-text); }
 .team-card > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); padding: var(--space-3) var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-sm); }
 .team-card > footer > :first-child { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .team-card > footer > :last-child { flex: none; font-variant-numeric: tabular-nums; text-align: right; }
 .team-card-roster { border-top: 1px solid var(--color-border); padding: var(--space-3) var(--space-4); }
 .team-card-player { cursor: move; }
-.team-card-player--read-only { cursor: default; }
-.team-card-player--drag-over { border: 1px solid var(--color-info-border); background: var(--color-info-subtle); }
 .team-card-player--missing { cursor: default; color: var(--color-text-disabled); font-style: italic; }
 .player-row-shirt-number { width: 1.5rem; flex: none; color: var(--color-text-strong); font-size: var(--font-size-xs); font-weight: var(--font-weight-extrabold); text-align: center; }
-.team-card-player-statistics { color: var(--color-text-subtle); font-family: var(--font-family-mono); font-size: var(--font-size-xs); font-style: normal; }
 .squad-format-hint { margin-top: var(--space-1); color: var(--color-text-muted); font-size: var(--font-size-xs); }
 .squad-format-hint--official { color: var(--color-brand-text); }
 .initialization-error-list { margin-top: var(--space-2); text-align: left; }
@@ -121,7 +115,6 @@
 .player-statistics-birth-year { color: var(--color-text-disabled); font-size: var(--font-size-xs); font-weight: var(--font-weight-normal); }
 .player-statistics-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface-subtle); padding: var(--space-3); }
 .player-statistics-metrics > span { display: flex; flex-direction: column; gap: 0.125rem; color: var(--color-text-subtle); font-size: var(--font-size-xs); text-align: center; }
-.player-statistics-metric strong { color: var(--color-text-strong); }
 .player-statistics-metric--success strong { color: var(--color-success-strong); }
 
 /* Shared statistics controls */
@@ -133,10 +126,6 @@
 .statistics-period-chevron,
 .shirt-set-chevron { width: 1rem; height: 1rem; flex: none; color: var(--color-text-disabled); transition: transform var(--transition-fast); }
 .statistics-period-chevron--open { transform: rotate(180deg); }
-.level-range-filter { margin-bottom: 0; }
-.level-range-label { margin-right: auto; }
-.level-range-bound-label { color: var(--color-text-subtle); font-size: var(--font-size-eyebrow); font-weight: var(--font-weight-semibold); line-height: 1; }
-.level-range-select { width: auto; }
 .level-indicator { color: var(--color-warning-strong); font-size: var(--font-size-xs); }
 
 /* Squad settings */
@@ -174,8 +163,6 @@
 .lineup-context { color: var(--color-text-subtle); font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
 .team-selection-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 .team-selection-column { min-width: 0; }
-.team-selection-column--drop-active { border-color: var(--color-brand-border); background: var(--color-brand-subtle); box-shadow: var(--shadow-selected); }
-.team-selection-column--drop-invalid { border-color: var(--color-danger-border); background: rgb(var(--color-danger-subtle) / 0.45); box-shadow: inset 0 0 0 2px var(--color-danger-border); }
 .team-selection-column .ui-panel-header { margin-bottom: var(--space-3); }
 .team-selection-drop-hint { margin: calc(var(--space-2) * -1) 0 var(--space-3); color: var(--color-text-muted); font-size: var(--font-size-xs); font-weight: var(--font-weight-semibold); }
 .team-selection-player-row { min-height: 2.75rem; cursor: grab; padding-block: var(--space-2); }
@@ -184,14 +171,6 @@
 .team-selection-player-row--disabled { cursor: default; opacity: 0.5; }
 .team-selection-drag-handle { display: grid; width: 1rem; flex: none; gap: 0.125rem; padding-block: 0.125rem; color: var(--color-text-disabled); }
 .team-selection-drag-handle span { width: 0.25rem; height: 0.25rem; border-radius: var(--radius-round); background: currentColor; box-shadow: 0.375rem 0 currentColor; }
-.team-selection-current-row--removed { background: var(--color-danger-subtle); }
-.team-selection-current-row--removed .ui-entity-title { color: var(--color-text-subtle); text-decoration: line-through; }
-.team-selection-option { align-items: center; }
-.team-selection-option:disabled { opacity: 0.5; }
-.team-selection-check { display: flex; width: 1.25rem; height: 1.25rem; flex: none; align-items: center; justify-content: center; border: 2px solid var(--color-border-strong); border-radius: var(--radius-sm); }
-.team-selection-check--selected { border-color: var(--color-brand-strong); background: var(--color-brand-strong); color: var(--color-on-action); }
-.team-selection-dock-summary { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); }
-.team-selection-dock-error { margin-top: var(--space-1); color: var(--color-danger-text); font-size: var(--font-size-xs); }
 .team-selection-dock-actions { margin-left: auto; }
 @media (max-width: 44rem) {
   .team-selection-columns { grid-template-columns: 1fr; }

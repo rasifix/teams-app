@@ -2,15 +2,19 @@ import type { HTMLAttributes } from 'react';
 import { classNames } from './classNames';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'interactive' | 'selected' | 'print';
+  variant?: 'default' | 'interactive' | 'flat-interactive' | 'selected' | 'print';
 }
 
 export function Card({ variant = 'default', className, ...props }: CardProps) {
   return <div className={classNames('card', variant !== 'default' && `card--${variant}`, className)} {...props} />;
 }
 
-export function CardBody({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={classNames('card-body', className)} {...props} />;
+export interface CardBodyProps extends HTMLAttributes<HTMLDivElement> {
+  compact?: boolean;
+}
+
+export function CardBody({ compact = false, className, ...props }: CardBodyProps) {
+  return <div className={classNames('card-body', compact && 'card-body--compact', className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

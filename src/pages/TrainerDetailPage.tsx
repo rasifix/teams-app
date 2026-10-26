@@ -195,7 +195,7 @@ export default function TrainerDetailPage() {
                   {groupedTrainerEventHistory && (
                     <SectionEyebrow>{group.title}</SectionEyebrow>
                   )}
-                  <ContentGrid variant="threeColumn">
+                  <ContentGrid variant="equal">
                     {group.eventHistory.map((item) => (
                       <ActionCard
                         key={item.eventId}

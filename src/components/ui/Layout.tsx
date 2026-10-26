@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from 'react';
 import { classNames } from './classNames';
 
-type Gap = 'sm' | 'md' | 'lg' | 'card';
+type Gap = 'sm' | 'base' | 'md' | 'lg' | 'card';
 
 interface LayoutProps extends HTMLAttributes<HTMLDivElement> {
   gap?: Gap;

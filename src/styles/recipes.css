@@ -243,6 +243,7 @@
 }
 .card-body,
 .summary-card { padding: var(--panel-padding); }
+.card-body--compact { padding: var(--space-3); }
 .card-header { background: var(--color-surface-subtle); padding: var(--space-4); }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); padding: var(--space-3) var(--space-4); color: var(--color-text-muted); font-size: var(--font-size-sm); }
 .card-title { margin: 0 0 var(--space-4); color: var(--color-text-strong); font-size: var(--font-size-lg); font-weight: var(--font-weight-semibold); }
@@ -364,6 +365,7 @@
 .ui-entity-content { display: flex; flex-direction: column; gap: var(--space-1); }
 .ui-stack { display: flex; flex-direction: column; align-items: stretch; }
 .ui-stack--sm { gap: var(--space-2); }
+.ui-stack--base { gap: var(--space-3); }
 .ui-stack--md { gap: var(--space-4); }
 .ui-stack--lg { gap: var(--space-6); }
 .ui-stack--card { gap: var(--card-gap); }
@@ -379,10 +381,12 @@
 .ui-cluster--end { align-items: flex-end; }
 .ui-cluster--wrap { flex-wrap: wrap; }
 .ui-cluster--sm { gap: var(--space-2); }
+.ui-cluster--base { gap: var(--space-3); }
 .ui-cluster--md { gap: var(--space-4); }
 .ui-cluster--lg { gap: var(--space-6); }
 .ui-split { display: flex; justify-content: space-between; }
 .ui-split--sm { gap: var(--space-2); }
+.ui-split--base { gap: var(--space-3); }
 .ui-split--md { gap: var(--space-4); }
 .ui-split--lg { gap: var(--space-6); }
 .ui-split--center { align-items: center; }
@@ -491,8 +495,11 @@
 .ui-menu__item-description { color: var(--color-text-subtle); font-size: var(--font-size-xs); line-height: var(--leading-normal); }
 .ui-menu__divider { margin-block: var(--space-2); border: 0; border-top: 1px solid var(--color-border); }
 
-.card--interactive { transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal); }
+.card--interactive,
+.card--flat-interactive { transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal); }
+.card--flat-interactive { box-shadow: none; }
 .card--interactive:hover,
+.card--flat-interactive:hover,
 .lineup-bench-player:hover { transform: translateY(-0.125rem); border-color: var(--color-border-strong); box-shadow: var(--shadow-raised); }
 .card--selected,
 .ui-choice-card--selected { border-color: var(--color-brand-border); background: var(--color-brand-subtle); }

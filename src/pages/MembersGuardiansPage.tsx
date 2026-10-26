@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ManageGuardiansModal from '../components/ManageGuardiansModal';
-import { Alert, Button, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeaderCell, DataTableRow, EmptyState, EntityActions, EntityContent, EntityList, EntityMeta, EntityRow, EntityTitle, Panel, PanelHeader, PanelTitle, ResponsiveView } from '../components/ui';
+import { Alert, Button, Card, CardBody, CardFooter, Cluster, EmptyState, EntityContent, EntityMeta, EntityTitle, IconTile, Panel, PanelHeader, PanelTitle } from '../components/ui';
 import { usePlayers, useTrainers } from '../store';
 import { selectUniqueMemberGuardians, type MemberGuardianCard } from '../store/selectors/memberGuardiansSelectors';
 import { selectExistingGuardianUsers } from '../store/selectors/guardianAssignmentSelectors';
@@ -144,100 +144,41 @@ export default function MembersGuardiansPage() {
             <p>{t('page.members.list.emptyGuardians')}</p>
           </EmptyState>
         ) : (
-          <>
-            <ResponsiveView show="mobile">
-              <EntityList variant="separated">
-              {guardians.map((row) => (
-                <EntityRow key={row.guardian.id}>
-                  <EntityContent>
-                  <EntityTitle>
-                    {row.guardian.firstName} {row.guardian.lastName}
-                  </EntityTitle>
-                  <EntityMeta>
-                    {row.guardian.email || t('page.members.guardians.noEmail')}
-                  </EntityMeta>
-                  <EntityMeta>
-                    <strong>{t('page.members.guardians.tablePlayers')}:</strong>{' '}
-                    {row.playerRefs.map((playerRef, index) => (
-                      <span key={playerRef.playerId}>
-                        <Link
-                          to={`/players/${playerRef.playerId}`}
-                          className="text-link"
-                        >
-                          {playerRef.playerFirstName} {playerRef.playerLastName}
-                        </Link>
-                        {index < row.playerRefs.length - 1 ? ', ' : ''}
-                      </span>
-                    ))}
-                  </EntityMeta>
-                  </EntityContent>
-                  {!spondLinked && (
-                    <EntityActions>
-                      <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
-                        {t('common.actions.edit')}
-                      </Button>
-                    </EntityActions>
-                  )}
-                </EntityRow>
-              ))}
-              </EntityList>
-            </ResponsiveView>
-
-            <ResponsiveView show="desktop" className="guardian-table-container">
-              <DataTable>
-                <DataTableHead>
-                  <DataTableRow>
-                    <DataTableHeaderCell scope="col">
-                      {t('page.members.guardians.tableGuardian')}
-                    </DataTableHeaderCell>
-                    <DataTableHeaderCell scope="col">
-                      {t('page.members.guardians.tableEmail')}
-                    </DataTableHeaderCell>
-                    <DataTableHeaderCell scope="col">
-                      {t('page.members.guardians.tablePlayers')}
-                    </DataTableHeaderCell>
-                    {!spondLinked && (
-                      <DataTableHeaderCell scope="col">
-                        {t('page.members.guardians.tableActions')}
-                      </DataTableHeaderCell>
-                    )}
-                  </DataTableRow>
-                </DataTableHead>
-                <DataTableBody>
-                  {guardians.map((row) => (
-                    <DataTableRow key={row.guardian.id} highlight>
-                      <DataTableCell strong>
-                        {row.guardian.firstName} {row.guardian.lastName}
-                      </DataTableCell>
-                      <DataTableCell>
-                        {row.guardian.email || t('page.members.guardians.noEmail')}
-                      </DataTableCell>
-                      <DataTableCell>
-                        <div className="guardian-player-links">
-                          {row.playerRefs.map((playerRef) => (
-                            <Link
-                              key={playerRef.playerId}
-                              to={`/players/${playerRef.playerId}`}
-                              className="text-link"
-                            >
-                              {playerRef.playerFirstName} {playerRef.playerLastName}
-                            </Link>
-                          ))}
-                        </div>
-                      </DataTableCell>
-                      {!spondLinked && (
-                        <DataTableCell>
-                          <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
-                            {t('common.actions.edit')}
-                          </Button>
-                        </DataTableCell>
-                      )}
-                    </DataTableRow>
-                  ))}
-                </DataTableBody>
-              </DataTable>
-            </ResponsiveView>
-          </>
+          <div className="member-grid">
+            {guardians.map((row) => (
+              <Card key={row.guardian.id} variant="flat-interactive">
+                <CardBody compact>
+                  <Cluster gap="base" wrap={false}>
+                    <IconTile size="sm">
+                      <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 2 19 5v6c0 4.5-2.7 8-7 10-4.3-2-7-5.5-7-10V5l7-3Z" />
+                        <circle cx="12" cy="9" r="2" />
+                        <path strokeLinecap="round" d="M8.5 16c0-2.2 1.4-3.5 3.5-3.5s3.5 1.3 3.5 3.5" />
+                      </svg>
+                    </IconTile>
+                    <EntityContent>
+                      <EntityTitle>{row.guardian.firstName} {row.guardian.lastName}</EntityTitle>
+                      <EntityMeta>{row.guardian.email || t('page.members.guardians.noEmail')}</EntityMeta>
+                      {row.playerRefs.map((playerRef) => (
+                        <EntityMeta key={playerRef.playerId}>
+                          <Link to={`/players/${playerRef.playerId}`} className="text-link">
+                            {playerRef.playerFirstName} {playerRef.playerLastName}
+                          </Link>
+                        </EntityMeta>
+                      ))}
+                    </EntityContent>
+                  </Cluster>
+                </CardBody>
+                {!spondLinked && (
+                  <CardFooter>
+                    <Button variant="secondary" size="sm" onClick={() => setEditingRow(row)}>
+                      {t('common.actions.edit')}
+                    </Button>
+                  </CardFooter>
+                )}
+              </Card>
+            ))}
+          </div>
         )}
       <ManageGuardiansModal
         isOpen={Boolean(editingRow)}

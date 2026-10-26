@@ -312,7 +312,18 @@
 .ui-choice { flex: none; }
 .ui-input,
 .ui-select,
-.ui-textarea { width: 100%; }
+.ui-textarea { width: 100%; min-width: 0; }
+/* iOS WebKit adds host padding to the rendered width of native date/time controls. */
+.ui-input:is([type='date'], [type='time'], [type='datetime-local']) {
+  appearance: none;
+  height: var(--control-height-lg);
+  padding: 0;
+}
+.ui-input:is([type='date'], [type='time'], [type='datetime-local'])::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  padding-inline: var(--field-padding-inline);
+  text-align: left;
+}
 .ui-textarea--tall { min-height: 6rem; }
 .ui-select--sm { width: auto; min-height: var(--control-height-sm); height: var(--control-height-sm); border-radius: var(--radius-sm); padding-block: 0; padding-left: var(--space-2); padding-right: var(--space-8); font-size: var(--font-size-xs); }
 
@@ -331,6 +342,7 @@
 .modal-content {
   display: flex;
   width: 100%;
+  min-width: 0;
   max-width: 42rem;
   max-height: 92dvh;
   min-height: 0;

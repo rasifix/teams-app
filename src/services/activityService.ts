@@ -74,6 +74,13 @@ export async function updateActivityInvitation(
   );
 }
 
+export async function setActivityInvitations(squadId: string, id: string, invitations: ActivityInvitation[]): Promise<Activity> {
+  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/invitations')), {
+    method: 'PUT',
+    body: JSON.stringify({ invitations }),
+  });
+}
+
 /** The backend answers `PUT /teams` with the saved teams, not the whole activity. */
 export async function updateActivityTeams(squadId: string, id: string, teams: Team[]): Promise<Team[]> {
   return apiClient.request<Team[]>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/teams')), {

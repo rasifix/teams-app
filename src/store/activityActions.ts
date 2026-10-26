@@ -1,4 +1,4 @@
-import type { Activity, ActivityAttendance, ActivityPayload, Squad, Team } from '../types';
+import type { Activity, ActivityAttendance, ActivityInvitation, ActivityPayload, Squad, Team } from '../types';
 import {
   createActivity,
   cancelActivity,
@@ -10,6 +10,7 @@ import {
   updateActivityAttendance,
   updateActivityTeams,
   restoreActivity,
+  setActivityInvitations,
   type InvitationUpdate,
 } from '../services/activityService';
 import { sortActivities } from './selectors/activitySelectors';
@@ -31,6 +32,7 @@ export interface ActivityActions {
   addActivity: (payload: ActivityPayload) => Promise<boolean>;
   updateActivity: (id: string, payload: Partial<ActivityPayload>) => Promise<boolean>;
   updateActivityInvitation: (activityId: string, playerId: string, update: InvitationUpdate) => Promise<boolean>;
+  setActivityInvitations: (activityId: string, invitations: ActivityInvitation[]) => Promise<boolean>;
   updateActivityTeams: (activityId: string, teams: Team[]) => Promise<boolean>;
   updateActivitySelection: (activityId: string, teams: Team[]) => Promise<boolean>;
   markActivitySelectionSent: (activityId: string) => Promise<boolean>;
@@ -84,6 +86,11 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
     updateActivityInvitation: (activityId, playerId, update) => run('update invitation', async (squadId) => {
       requireActiveActivity(activityId);
       replace(normalizeActivity(await updateActivityInvitation(squadId, activityId, playerId, update)));
+    }),
+
+    setActivityInvitations: (activityId, invitations) => run('set invitations', async (squadId) => {
+      requireActiveActivity(activityId);
+      replace(normalizeActivity(await setActivityInvitations(squadId, activityId, invitations)));
     }),
 
     updateActivityTeams: (activityId, teams) => run('update teams', async (squadId) => {

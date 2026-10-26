@@ -29,7 +29,7 @@ export default function ActivityDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activities, getActivityById, updateActivity, updateActivityInvitation, updateActivityTeams, updateActivitySelection, markActivitySelectionSent, updateActivityAttendance, deleteActivity, cancelActivity, restoreActivity } = useActivities();
+  const { activities, getActivityById, updateActivity, updateActivityInvitation, setActivityInvitations, updateActivityTeams, updateActivitySelection, markActivitySelectionSent, updateActivityAttendance, deleteActivity, cancelActivity, restoreActivity } = useActivities();
   const { players } = usePlayers();
   const { shirtSets } = useShirtSets();
   const { user } = useAuth();
@@ -63,7 +63,7 @@ export default function ActivityDetailPage() {
       ...activity.invitations,
       ...playerIds.map((playerId) => ({ id: crypto.randomUUID(), playerId, response })),
     ];
-    await updateActivity(activity.id, { invitations });
+    await setActivityInvitations(activity.id, invitations);
   };
 
   const handleInvitationStatusChange = async (invitationId: string, response: InvitationResponse, declineReason?: InvitationDeclineReason) => {
@@ -77,7 +77,7 @@ export default function ActivityDetailPage() {
 
   const handleRemoveInvitation = async (invitationId: string) => {
     if (!activity) return;
-    await updateActivity(activity.id, { invitations: activity.invitations.filter((entry) => entry.id !== invitationId) });
+    await setActivityInvitations(activity.id, activity.invitations.filter((entry) => entry.id !== invitationId));
   };
 
   const handleAddTeam = async () => {

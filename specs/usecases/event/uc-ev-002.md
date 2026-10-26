@@ -87,7 +87,7 @@ Changes are rejected while the Activity is cancelled.
    - playerId,
    - selected response and optional declineReason.
 10. System appends these Invitations to the Activity's existing invitations.
-11. System persists the updated invitations by updating the Activity.
+11. System persists the updated invitations through the dedicated Activity invitations endpoint.
 12. Modal closes and invitation lists/tabs reflect the new records.
 
 ## Alternative Flows
@@ -153,21 +153,14 @@ For each newly invited Player, the Activity contains an Invitation object with:
 - response
 - declineReason (optional)
 
-Activity persistence is performed via full Activity update with updated invitations
-array.
+Activity invitations are persisted by replacing the invitations array through the
+dedicated endpoint.
 
 ## API Contract Used By Current Frontend
 
-Planned persistence path:
-- PUT /api/squads/{squadId}/activities/{id}
-- Request includes updated invitations array in Activity payload.
-
-Note:
-- OpenAPI also defines invitation-specific endpoints under
-  /api/squads/{squadId}/activities/{id}/players and
-  /api/squads/{squadId}/activities/{id}/players/{player_id}/response.
-- The manual Invitation entry flow does not call those invitation-specific
-  endpoints.
+Persistence path:
+- PUT /api/squads/{squadId}/activities/{id}/invitations
+- Request includes the complete updated invitations array.
 
 ## Acceptance Criteria
 

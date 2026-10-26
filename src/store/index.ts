@@ -58,6 +58,7 @@ export const useActivities = () => {
   const addActivity = useStore((state) => state.addActivity);
   const updateActivity = useStore((state) => state.updateActivity);
   const updateActivityInvitation = useStore((state) => state.updateActivityInvitation);
+  const setActivityInvitations = useStore((state) => state.setActivityInvitations);
   const updateActivityTeams = useStore((state) => state.updateActivityTeams);
   const updateActivitySelection = useStore((state) => state.updateActivitySelection);
   const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
@@ -72,6 +73,7 @@ export const useActivities = () => {
     addActivity,
     updateActivity,
     updateActivityInvitation,
+    setActivityInvitations,
     updateActivityTeams,
     updateActivitySelection,
     markActivitySelectionSent,

@@ -425,6 +425,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/activities/{id}/invitations:
+    put:
+      operationId: setSquadActivityInvitations
+      summary: Set the complete activity invitation list
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invitations]
+              properties:
+                invitations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ActivityInvitation'
+      responses:
+        '200':
+          description: Updated activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          description: Invalid invitation list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/activities/{id}/invitations/{playerId}:
     put:
       operationId: updateSquadActivityInvitation

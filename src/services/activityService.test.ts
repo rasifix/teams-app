@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { cancelActivity, createActivity, restoreActivity, updateActivityInvitation } from './activityService';
+import { cancelActivity, createActivity, restoreActivity, setActivityInvitations, updateActivityInvitation } from './activityService';
 import type { ActivityPayload } from '../types';
 
 const activityPayload: ActivityPayload = {
@@ -48,6 +48,18 @@ describe('activityService lifecycle', () => {
     expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/invitations/player-1', {
       method: 'PUT',
       body: JSON.stringify({ response: 'declined', declineReason: 'injured' }),
+    });
+  });
+
+  it('sets invitations through the dedicated endpoint', async () => {
+    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ id: 'a1' });
+    const invitations = [{ id: 'invite-1', playerId: 'player-1', response: 'open' as const }];
+
+    await setActivityInvitations('squad-1', 'a1', invitations);
+
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/invitations', {
+      method: 'PUT',
+      body: JSON.stringify({ invitations }),
     });
   });
 });

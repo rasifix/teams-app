@@ -79,6 +79,9 @@
 .date-tile-month { color: var(--color-brand-text); font-size: var(--font-size-micro); font-weight: var(--font-weight-semibold); letter-spacing: var(--tracking-wide); line-height: 1; }
 .date-tile-day { margin-top: 0.125rem; color: var(--color-text-strong); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); line-height: 1; }
 .ui-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
   border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-lg);
   background: var(--color-danger-subtle);
@@ -86,6 +89,7 @@
   color: var(--color-danger-text);
   font-size: var(--font-size-sm);
 }
+.ui-alert__icon { width: 1.25rem; height: 1.25rem; flex: none; margin-top: 0.0625rem; }
 .ui-alert--success { border-color: var(--color-success-border); background: var(--color-success-subtle); color: var(--color-success-text); }
 .ui-alert--warning { border-color: var(--color-warning-border); background: var(--color-warning-subtle); color: var(--color-warning-text); }
 .ui-alert--info { border-color: var(--color-border); background: var(--color-surface-subtle); color: var(--color-text-muted); }
@@ -158,6 +162,7 @@
 .ui-add-card.ui-add-card--sm { min-height: var(--card-row-height-sm); }
 .ui-add-card.ui-add-card--md { min-height: var(--card-row-height-md); }
 .ui-add-card.ui-add-card--lg { min-height: var(--card-row-height-lg); }
+.ui-alert__content,
 .ui-action-card__content,
 .ui-entity-content { min-width: 0; flex: 1; }
 .ui-action-card__title,

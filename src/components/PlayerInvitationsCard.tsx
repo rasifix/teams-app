@@ -4,8 +4,23 @@ import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
 import { selectAvailableInvitations, selectInvitationCounts } from '../store/selectors/activitySelectors';
 import { selectInvitationViewRows } from '../store/selectors/activityViewSelectors';
+import { useSwipeGesture } from '../hooks/useSwipeGesture';
 import PlayerRow from './PlayerRow';
+import styles from './PlayerInvitationsCard.module.css';
 import { Button, EmptyState, EntityList, EntityMeta, IconButton, Panel, PanelActions, PanelHeader, PanelTitle, Select, Stack, Tab, TabList } from './ui';
+import type { ReactNode } from 'react';
+
+function SwipeableInvitationRow({ children, onRemove, removeLabel }: { children: ReactNode; onRemove?: () => void; removeLabel: string }) {
+  const [isSwiped, setIsSwiped] = useState(false);
+  const swipeHandlers = useSwipeGesture({ isOpen: isSwiped, onOpenChange: setIsSwiped, disabled: !onRemove });
+
+  return <div className={`ui-swipeable-row${isSwiped ? ' ui-swipeable-row--swiped' : ''}`} {...swipeHandlers}>
+    {children}
+    {onRemove && <div className={`ui-swipe-action-tray${isSwiped ? ' ui-swipe-action-tray--visible' : ''}`}>
+      <IconButton label={removeLabel} variant="inverse" onClick={() => { setIsSwiped(false); onRemove(); }}><TrashIcon /></IconButton>
+    </div>}
+  </div>;
+}
 
 interface PlayerInvitationsCardProps {
   invitations: ActivityInvitation[];
@@ -58,11 +73,14 @@ export default function PlayerInvitationsCard({
     </TabList>
     {visibleRows.length === 0 ? <EmptyState>{t('page.playerInvitations.empty.noneWithStatus', { status: t(`domain.invitation.status.${activeResponse}`) })}</EmptyState> : <EntityList variant="bare">
       {visibleRows.map(({ invitation, player, assigned, managed }) => {
-        return <PlayerRow
-          key={invitation.id}
+        const onRemove = !assigned && !managed ? () => onRemoveInvitation(invitation.id) : undefined;
+        const removeLabel = t('page.playerInvitations.remove');
+        return <SwipeableInvitationRow key={invitation.id} onRemove={onRemove} removeLabel={removeLabel}>
+          <PlayerRow
           player={player ?? null}
           fallbackName={invitation.playerId}
           density="compact"
+          levelClassName={styles.level}
           data-testid="invitation-row"
 
           content={invitation.response === 'declined' && readOnly && !allowDeclineReasonEdit
@@ -84,14 +102,15 @@ export default function PlayerInvitationsCard({
             {(['injured', 'sick', 'unavailable'] as const).map((reason) => <option key={reason} value={reason}>{t(`domain.activity.declineReasons.${reason}`)}</option>)}
             </Select>}
           </>}
-          actions={!assigned && !managed ? <IconButton
-            label={t('page.playerInvitations.remove')}
+          actions={onRemove ? <IconButton
+            label={removeLabel}
             variant="danger"
-            onClick={() => onRemoveInvitation(invitation.id)}
+            onClick={onRemove}
           >
             <TrashIcon />
           </IconButton> : undefined}
-        />;
+          />
+        </SwipeableInvitationRow>;
       })}
     </EntityList>}
     </Stack>

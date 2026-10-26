@@ -195,7 +195,8 @@
 .icon-button--inverse:hover,
 .btn-inverse:hover:not(:disabled) { background: var(--color-inverse-control-hover); color: var(--color-on-action); }
 @media (max-width: 39.999rem) {
-  .ui-swipeable-row > .ui-entity-actions .icon-button--danger { display: none; }
+  .ui-swipeable-row > .ui-entity-actions .icon-button--danger,
+  .ui-swipeable-row > .ui-entity-row > .ui-entity-actions { display: none; }
   .ui-swipeable-row > .ui-swipe-action-tray { display: flex; }
 }
 .ui-switch {

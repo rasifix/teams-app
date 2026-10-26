@@ -580,7 +580,6 @@
     "invitePlayers": {
       "title": "Invite Players",
       "subtitle": "Select players to invite to this activity",
-      "inactiveExcludedHint": "Inactive players are excluded from invitations.",
       "noPlayers": "No players available",
       "noPlayersDetail": "Add players in Members first.",
       "defaultStatus": "Default status",
@@ -737,6 +736,8 @@
       "notFound": "Activity not found.",
       "viewHistory": "View change history",
       "navigationLabel": "Activity navigation",
+      "previousActivity": "Previous activity: {{name}}",
+      "nextActivity": "Next activity: {{name}}",
       "teamsTitle": "Teams",
       "addTeam": "Add team",
       "cancelled": "Cancelled",
@@ -1027,7 +1028,7 @@
     }
   },
   "filters": {
-    "playerLevel": "Player Level:",
+    "playerLevel": "Level:",
     "from": "From:",
     "to": "To:"
   },
@@ -1191,7 +1192,7 @@
       "selection": "Choose whether to import, link, or skip this item.",
       "member": "Select an existing player.",
       "birthDate": "Birth date is required.",
-      "level": "Select a valid player level.",
+      "level": "Select a valid level.",
       "activity": "Select an existing activity.",
       "trainer": "Select a trainer.",
       "team": "Team name is required.",

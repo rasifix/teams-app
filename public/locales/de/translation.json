@@ -581,7 +581,6 @@
     "invitePlayers": {
       "title": "Spieler einladen",
       "subtitle": "Wähle Spieler aus, die zu dieser Aktivität eingeladen werden sollen",
-      "inactiveExcludedHint": "Inaktive Spieler sind von Einladungen ausgeschlossen.",
       "noPlayers": "Keine Spieler verfügbar",
       "noPlayersDetail": "Füge zuerst Spieler unter Mitglieder hinzu.",
       "defaultStatus": "Standardstatus",
@@ -738,6 +737,8 @@
       "notFound": "Aktivität nicht gefunden.",
       "viewHistory": "Änderungsverlauf anzeigen",
       "navigationLabel": "Aktivität wechseln",
+      "previousActivity": "Vorherige Aktivität: {{name}}",
+      "nextActivity": "Nächste Aktivität: {{name}}",
       "teamsTitle": "Teams",
       "addTeam": "Team hinzufügen",
       "cancelled": "Abgesagt",
@@ -1027,7 +1028,7 @@
     }
   },
   "filters": {
-    "playerLevel": "Spielerlevel:",
+    "playerLevel": "Level:",
     "from": "Von:",
     "to": "Bis:"
   },
@@ -1191,7 +1192,7 @@
       "selection": "Wähle, ob dieser Eintrag importiert, verknüpft oder übersprungen werden soll.",
       "member": "Wähle einen bestehenden Spieler aus.",
       "birthDate": "Das Geburtsdatum ist erforderlich.",
-      "level": "Wähle ein gültiges Spielerlevel.",
+      "level": "Wähle ein gültiges Level.",
       "activity": "Wähle eine bestehende Aktivität aus.",
       "trainer": "Wähle einen Trainer aus.",
       "team": "Der Teamname ist erforderlich.",

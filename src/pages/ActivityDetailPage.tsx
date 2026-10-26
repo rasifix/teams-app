@@ -23,7 +23,7 @@ import { selectActivityPhase, selectActivityPhaseSections } from '../store/selec
 import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
 import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
 import { selectTeamWhatsAppMessage } from '../store/selectors/teamCardSelectors';
-import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, Cluster, ContentGrid, EmptyState, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
+import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, ChevronRightIcon, Cluster, ContentGrid, EmptyState, IconButton, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
 export default function ActivityDetailPage() {
   const { t, i18n } = useTranslation();
@@ -159,9 +159,9 @@ export default function ActivityDetailPage() {
   const assignedIds = Array.from(assignedPlayerIds);
   return <Page>
     <AdjacentNavigation aria-label={t('page.eventDetail.navigationLabel')}>
-        {previous ? <Button variant="ghost" size="sm" onClick={() => navigate(`/activities/${previous.id}`)} className="event-detail-navigation-button">← {previous.name}</Button> : <span />}
+        {previous ? <IconButton label={t('page.eventDetail.previousActivity', { name: previous.name })} onClick={() => navigate(`/activities/${previous.id}`)}><svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" focusable="false"><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 4.5-7.5 7.5 7.5 7.5" /></svg></IconButton> : <span />}
         <AdjacentNavigationLabel>{t('page.eventDetail.navigationLabel')}</AdjacentNavigationLabel>
-        {next ? <Button variant="ghost" size="sm" onClick={() => navigate(`/activities/${next.id}`)} className="event-detail-navigation-button">{next.name} →</Button> : <span />}
+        {next ? <IconButton label={t('page.eventDetail.nextActivity', { name: next.name })} onClick={() => navigate(`/activities/${next.id}`)}><ChevronRightIcon /></IconButton> : <span />}
     </AdjacentNavigation>
     <PageHeader align="start">
         <PageHeaderContent>

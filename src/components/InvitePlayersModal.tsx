@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Player, InvitationResponse } from '../types';
-import Level from './Level';
 import LevelRangeSelector from './LevelRangeSelector';
+import PlayerRow from './PlayerRow';
 import { selectAvailableInvitePlayers } from '../store/selectors/eventInactivePlayerSelectors';
-import { getBirthYear } from '../utils/birthDate';
 import {
   Alert,
   Button,
@@ -12,11 +11,7 @@ import {
   ChoiceGroup,
   Cluster,
   EmptyState,
-  EntityContent,
   EntityList,
-  EntityMeta,
-  EntityRow,
-  EntityTitle,
   Modal,
   ModalBody,
   ModalFooter,
@@ -105,7 +100,6 @@ export default function InvitePlayersModal({
         <ModalHeader>
           <ModalTitle>{t('page.invitePlayers.title')}</ModalTitle>
           <ModalSubtitle>{t('page.invitePlayers.subtitle')}</ModalSubtitle>
-          <Alert tone="warning">{t('page.invitePlayers.inactiveExcludedHint')}</Alert>
         </ModalHeader>
 
         <ModalBody>
@@ -183,13 +177,7 @@ export default function InvitePlayersModal({
                         checked={selectedPlayerIds.has(player.id)}
                         onChange={() => handleTogglePlayer(player.id)}
                       />
-                      <EntityRow>
-                        <EntityContent>
-                          <EntityTitle>{player.firstName} {player.lastName}</EntityTitle>
-                          <EntityMeta><span>{getBirthYear(player.birthDate)}</span></EntityMeta>
-                        </EntityContent>
-                        <Level level={player.level} />
-                      </EntityRow>
+                      <PlayerRow player={player} fallbackName="" />
                     </label>
                   ))}
                 </EntityList>

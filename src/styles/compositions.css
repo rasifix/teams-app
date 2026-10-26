@@ -239,7 +239,6 @@
 .responsible-person-option:hover { background: var(--color-surface-subtle); }
 .invite-player-option > .ui-entity-row,
 .responsible-person-option > .ui-entity-row { flex: 1; }
-.event-detail-navigation-button { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .event-detail-content-grid > * { min-width: 0; }
 
 /* Team print summary */

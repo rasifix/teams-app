@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePlayers, useSquadMatchFormats } from '../store';
+import { useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { selectDefaultMatchFormat } from '../store/selectors/matchPlanningSelectors';
 import { toStartsAt } from '../store/selectors/activitySelectors';
 import { validateActivitySchedule } from '../store/selectors/activityFormValidation';
-import type { ActivityKind, ActivityPayload, InvitationResponse, Team } from '../types';
-import InvitePlayersModal from './InvitePlayersModal';
-import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Split, Stack } from './ui';
+import type { ActivityKind, ActivityPayload, Team } from '../types';
+import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Stack } from './ui';
 import ActivityCoreFields from './ActivityCoreFields';
 import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 
@@ -22,7 +21,6 @@ const initialKind: ActivityKind = 'match';
 export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivityModalProps) {
   const { t } = useTranslation();
   const matchFormats = useSquadMatchFormats();
-  const { players } = usePlayers();
   const defaultMatchFormat = selectDefaultMatchFormat(matchFormats);
   const defaultLimits = selectActivityFormConfiguration('match', matchFormats, defaultMatchFormat?.id).defaultLimits;
   const [kind, setKind] = useState<ActivityKind>(initialKind);
@@ -37,9 +35,6 @@ export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivity
   const [maxPlayersPerTeam, setMaxPlayersPerTeam] = useState(9);
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(6);
   const [matchFormatId, setMatchFormatId] = useState(defaultMatchFormat?.id ?? '');
-  const [invitedPlayerIds, setInvitedPlayerIds] = useState<string[]>([]);
-  const [invitationResponse, setInvitationResponse] = useState<InvitationResponse>('accepted');
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const config = selectActivityFormConfiguration(kind, matchFormats, matchFormatId);
 
@@ -67,8 +62,6 @@ export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivity
     setMinPlayersPerTeam(defaultLimits?.minPlayersPerTeam ?? 6);
     setMaxPlayersPerTeam(defaultLimits?.maxPlayersPerTeam ?? 9);
     setMatchFormatId(defaultMatchFormat?.id ?? '');
-    setInvitedPlayerIds([]);
-    setIsInviteOpen(false);
   }, [isOpen, defaultMatchFormat, defaultLimits?.minPlayersPerTeam, defaultLimits?.maxPlayersPerTeam]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -102,7 +95,7 @@ export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivity
       minPlayersPerTeam,
       maxPlayersPerTeam,
       teams,
-      invitations: invitedPlayerIds.map((playerId) => ({ id: crypto.randomUUID(), playerId, response: invitationResponse })),
+      invitations: [],
     });
     onClose();
   };
@@ -154,10 +147,6 @@ export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivity
               minPlayers={minPlayersPerTeam} maxPlayers={maxPlayersPerTeam} minimumAllowed={1} minId="min-players" maxId="max-players"
               onMinChange={setMinPlayersPerTeam} onMaxChange={setMaxPlayersPerTeam}
             />
-            <Split gap="sm">
-              <span className="body-muted" data-testid="add-event-invited-count">{t('page.invitePlayers.selectedCount', { count: invitedPlayerIds.length })}</span>
-              <Button type="button" variant="secondary" size="sm" onClick={() => setIsInviteOpen(true)}>{t('page.eventModal.invitePlayersAction')}</Button>
-            </Split>
             {error && <Alert>{error}</Alert>}
           </Stack>
         </ModalBody>
@@ -166,13 +155,6 @@ export default function AddActivityModal({ isOpen, onClose, onAdd }: AddActivity
           <Button type="submit" variant="primary">{t('common.actions.add')}</Button>
         </ModalFooter>
       </form>
-      <InvitePlayersModal
-        isOpen={isInviteOpen}
-        onClose={() => setIsInviteOpen(false)}
-        onInvite={(playerIds, response) => { setInvitedPlayerIds(playerIds); setInvitationResponse(response); }}
-        alreadyInvitedPlayerIds={[]}
-        players={players}
-      />
     </Modal>
   );
 }

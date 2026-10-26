@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Cluster, EntityContent, IconTile, Modal, ModalBody, ModalFooter, ModalTitle } from './ui';
+import { Alert, Button, Cluster, EntityContent, IconTile, Modal, ModalBody, ModalFooter, ModalTitle } from './ui';
 import type { ButtonVariant } from './ui';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
   message: string;
+  error?: string | null;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
@@ -17,6 +18,7 @@ export default function ConfirmDialog({
   isOpen,
   title,
   message,
+  error,
   confirmText,
   cancelText,
   onConfirm,
@@ -68,6 +70,7 @@ export default function ConfirmDialog({
             </p>
           </EntityContent>
         </Cluster>
+        {error && <Alert>{error}</Alert>}
       </ModalBody>
 
       <ModalFooter>

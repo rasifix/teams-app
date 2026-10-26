@@ -172,7 +172,7 @@ export default function SquadSettingsPage() {
 
     <ContentGrid variant="equal">
       <Stack>
-        <SpondSettingsSection groupUrl={spondGroupUrl} error={unlinkSpondError} onUnlink={() => setIsUnlinkSpondDialogOpen(true)} />
+        <SpondSettingsSection groupUrl={spondGroupUrl} error={unlinkSpondError} onUnlink={() => { setUnlinkSpondError(null); setIsUnlinkSpondDialogOpen(true); }} />
         <PeriodsSettingsSection periods={periods} onAdd={() => openPeriod(null)} onEdit={openPeriod} onDelete={setDeletingPeriod} />
       </Stack>
       <Stack>
@@ -235,6 +235,7 @@ export default function SquadSettingsPage() {
       isOpen={isUnlinkSpondDialogOpen}
       title={t('page.squadSettings.spond.unlinkTitle')}
       message={t('page.squadSettings.spond.unlinkMessage')}
+      error={unlinkSpondError}
       confirmText={isUnlinkingSpond ? t('common.states.processing') : t('page.squadSettings.spond.unlinkGroup')}
       onConfirm={() => void handleUnlinkSpond()}
       onCancel={() => setIsUnlinkSpondDialogOpen(false)}

@@ -78,6 +78,14 @@ describe('squadService', () => {
     });
   });
 
+  it('rejects an unlink response that still contains the Spond link', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      id: 'squad-1', name: 'Juniors', spondId: 'group-1', periods: [],
+    });
+
+    await expect(unlinkSquadFromSpond('squad-1', 'Juniors')).rejects.toThrow('Spond link was not cleared');
+  });
+
   it('links Spond without importing any records', async () => {
     const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({
       id: 'squad-1',

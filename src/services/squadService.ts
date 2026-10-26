@@ -82,6 +82,7 @@ export async function unlinkSquadFromSpond(squadId: string, name: string): Promi
     body: JSON.stringify({ name, spondId: null }),
   });
 
+  if (!squad || squad.spondId?.trim()) throw new Error('Spond link was not cleared');
   return normalizeSquad(squad);
 }
 

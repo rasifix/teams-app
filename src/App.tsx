@@ -32,7 +32,6 @@ import ShirtSetsPage from './pages/ShirtSetsPage';
 import SquadSettingsPage from './pages/SquadSettingsPage';
 import SquadSelectionPage from './pages/SquadSelectionPage';
 import ActivityHistoryPage from './pages/ActivityHistoryPage';
-import { ACTIVITY_AUDIT_LOG_ENABLED } from './config/features';
 
 const UiKitPage = import.meta.env.DEV ? lazy(() => import('./pages/UiKitPage')) : null;
 
@@ -67,7 +66,7 @@ function AppRoutes() {
                       {/* Trainer detail route */}
                       <Route path="/trainers/:id" element={<TrainerDetailPage />} />
                       <Route path="/activities" element={<ActivitiesPage />} />
-                      {ACTIVITY_AUDIT_LOG_ENABLED && <Route path="/activities/:id/history" element={<ActivityHistoryPage />} />}
+                      <Route path="/activities/:id/history" element={<ActivityHistoryPage />} />
                       <Route path="/spond-import" element={<SpondImportPage />} />
                       <Route path="/activities/:id" element={<ActivityDetailPage />} />
                       <Route path="/activities/:eventId/teams/:teamId" element={<TeamDetailPage />} />

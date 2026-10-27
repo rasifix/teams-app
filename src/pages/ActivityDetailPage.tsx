@@ -16,7 +16,6 @@ import { selectTeamCardView } from '../store/selectors/teamCardSelectors';
 import ConfirmDialog from '../components/ConfirmDialog';
 import TeamPrintSummary from '../components/TeamPrintSummary';
 import styles from './ActivityDetailPage.module.css';
-import { ACTIVITY_AUDIT_LOG_ENABLED } from '../config/features';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
 import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, shouldRemovePlayerFromSelection } from '../store/selectors/activitySelectors';
@@ -208,7 +207,6 @@ export default function ActivityDetailPage() {
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const showManageActions = canManage && !spondLinked;
-  const showActionsMenu = ACTIVITY_AUDIT_LOG_ENABLED || activity.status === 'active' || showManageActions;
   return <Page>
     <AdjacentNavigation aria-label={t('page.eventDetail.navigationLabel')}>
         {previous ? <IconButton label={t('page.eventDetail.previousActivity', { name: previous.name })} onClick={() => navigate(`/activities/${previous.id}`)}><svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" focusable="false"><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 4.5-7.5 7.5 7.5 7.5" /></svg></IconButton> : <span />}
@@ -217,7 +215,7 @@ export default function ActivityDetailPage() {
     </AdjacentNavigation>
     <PageHeader align="start" className={styles.header}>
         <PageHeaderContent>
-          <Cluster gap="sm" className={showActionsMenu ? styles.titleCluster : undefined}>
+          <Cluster gap="sm" className={styles.titleCluster}>
             <PageTitle>{activity.name}</PageTitle>
             <Badge tone="brand" size="sm">{t(`domain.activity.kinds.${activity.kind}`)}</Badge>
             {activity.status === 'cancelled' && <Badge tone="danger" size="sm">{t('page.eventDetail.cancelled')}</Badge>}
@@ -230,7 +228,7 @@ export default function ActivityDetailPage() {
           </MetadataList>
           {activity.kind === 'match' && activity.opponentName && <p className="ui-page-description">{t('domain.activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
-        {showActionsMenu && <PageActions className={styles.actions}>
+        <PageActions className={styles.actions}>
           <div className={`ui-menu-anchor ${styles.anchor}`} ref={actionsMenuRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setIsActionsMenuOpen(false); }}>
             <IconButton
               label={t('page.eventDetail.actionsMenu')}
@@ -265,7 +263,7 @@ export default function ActivityDetailPage() {
               >
               <div className={styles.sheetHandle} aria-hidden="true" />
               <MenuLabel className={styles.sheetTitle}>{t('page.eventDetail.actionsMenu')}</MenuLabel>
-              {ACTIVITY_AUDIT_LOG_ENABLED && <MenuItem onClick={() => { setIsActionsMenuOpen(false); navigate(`/activities/${activity.id}/history`); }}><MenuItemTitle>{t('page.eventDetail.viewHistory')}</MenuItemTitle></MenuItem>}
+              <MenuItem onClick={() => { setIsActionsMenuOpen(false); navigate(`/activities/${activity.id}/history`); }}><MenuItemTitle>{t('page.eventDetail.viewHistory')}</MenuItemTitle></MenuItem>
               {activity.status === 'active' && <MenuItem onClick={() => { setIsActionsMenuOpen(false); setIsEditOpen(true); }}><MenuItemTitle>{t('common.actions.edit')}</MenuItemTitle></MenuItem>}
               {showManageActions && activity.status === 'cancelled' && <MenuItem onClick={() => { setIsActionsMenuOpen(false); setIsRestoreOpen(true); }}><MenuItemTitle>{t('page.eventDetail.restoreActivity')}</MenuItemTitle></MenuItem>}
               {showManageActions && <MenuDivider />}
@@ -276,7 +274,7 @@ export default function ActivityDetailPage() {
               </MenuSurface>
             </>}
           </div>
-        </PageActions>}
+        </PageActions>
     </PageHeader>
 
     {activity.status === 'cancelled' && <Alert tone="warning">{t('page.eventDetail.cancelledReadOnly')}</Alert>}

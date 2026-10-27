@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Team } from '../../types';
-import { removePlayerFromSelection, selectActivitySelectionChanges, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
+import type { Player, Team, Trainer } from '../../types';
+import { removePlayerFromSelection, selectActivitySelectionChanges, selectAllTeamsHaveResponsiblePeople, selectCanMarkSelectionSent, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
 
 const team = (overrides: Partial<Team> = {}): Team => ({
   id: 'team-1', name: 'Team', strength: 2, selectedPlayers: ['p1', 'p2'], ...overrides,
@@ -69,6 +69,42 @@ describe('selectAllTeamsHaveResponsiblePeople', () => {
     { teams: [team({ responsiblePersonId: '   ' })] },
   ])('returns false for incomplete responsible-person data (%j)', ({ teams }) => {
     expect(selectAllTeamsHaveResponsiblePeople({ teams })).toBe(false);
+  });
+});
+
+describe('selectCanMarkSelectionSent', () => {
+  const now = new Date(2029, 0, 1);
+  const trainer: Trainer = { id: 'trainer-1', firstName: 'Ada', lastName: 'Coach' };
+  const player: Player = {
+    id: 'p1', firstName: 'Ben', lastName: 'Player', birthDate: '2015-01-01', level: 3, status: 'active',
+    guardians: [{ id: 'guardian-1', firstName: 'Gina', lastName: 'Guardian' }],
+  };
+  const activity = (overrides: Partial<Parameters<typeof selectCanMarkSelectionSent>[0]> = {}): Parameters<typeof selectCanMarkSelectionSent>[0] => ({
+    startsAt: '2030-06-01T10:00:00.000Z', status: 'active', minPlayersPerTeam: 1, maxPlayersPerTeam: 3,
+    teams: [team({ responsiblePersonId: trainer.id }), team({ id: 'team-2', responsiblePersonId: 'guardian-1' })],
+    ...overrides,
+  });
+
+  it('allows valid trainers and guardians when every roster meets its limits', () => {
+    expect(selectCanMarkSelectionSent(activity(), [trainer], [player], now)).toBe(true);
+  });
+
+  it('rejects missing or unresolved responsible people', () => {
+    expect(selectCanMarkSelectionSent(activity({ teams: [team()] }), [trainer], [player], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity(), [trainer], [], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity(), [], [player], now)).toBe(false);
+  });
+
+  it('rejects teams outside player limits and empty team lists', () => {
+    expect(selectCanMarkSelectionSent(activity({ teams: [team({ responsiblePersonId: trainer.id, selectedPlayers: [] })] }), [trainer], [player], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity({ teams: [team({ responsiblePersonId: trainer.id, selectedPlayers: ['p1', 'p2', 'p3', 'p4'] })] }), [trainer], [player], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity({ teams: [] }), [trainer], [player], now)).toBe(false);
+  });
+
+  it('rejects sent, cancelled, and past activities', () => {
+    expect(selectCanMarkSelectionSent(activity({ selectionSentAt: '2029-01-01T12:00:00.000Z' }), [trainer], [player], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity({ status: 'cancelled' }), [trainer], [player], now)).toBe(false);
+    expect(selectCanMarkSelectionSent(activity({ startsAt: '2028-01-01T10:00:00.000Z' }), [trainer], [player], now)).toBe(false);
   });
 });
 

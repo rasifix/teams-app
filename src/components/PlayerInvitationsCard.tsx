@@ -1,4 +1,5 @@
-import { TrashIcon } from './ui';
+import { DragHandleIcon, TrashIcon } from './ui';
+import type { DragEvent } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Activity, ActivityInvitation, InvitationDeclineReason, InvitationResponse, Player } from '../types';
@@ -32,6 +33,13 @@ interface PlayerInvitationsCardProps {
   assignedPlayerIds?: string[];
   readOnly?: boolean;
   allowDeclineReasonEdit?: boolean;
+  onPlayerDragStart?: (event: DragEvent<HTMLElement>, playerId: string) => void;
+  onPlayerDragEnd?: () => void;
+  onPlayersDragOver?: (event: DragEvent<HTMLElement>) => void;
+  onPlayersDragLeave?: (event: DragEvent<HTMLElement>) => void;
+  onPlayersDrop?: (event: DragEvent<HTMLElement>) => void;
+  dropState?: 'active' | 'invalid' | null;
+  allowPlayerDrag?: boolean;
 }
 
 export default function PlayerInvitationsCard({
@@ -44,6 +52,13 @@ export default function PlayerInvitationsCard({
   assignedPlayerIds = [],
   readOnly = false,
   allowDeclineReasonEdit = false,
+  onPlayerDragStart,
+  onPlayerDragEnd,
+  onPlayersDragOver,
+  onPlayersDragLeave,
+  onPlayersDrop,
+  dropState,
+  allowPlayerDrag = false,
 }: PlayerInvitationsCardProps) {
   const { t } = useTranslation();
   const [declineReasons, setDeclineReasons] = useState<Record<string, InvitationDeclineReason | ''>>({});
@@ -52,7 +67,7 @@ export default function PlayerInvitationsCard({
   const visibleRows = selectInvitationViewRows(currentActivity, players, assignedPlayerIds, activeResponse, readOnly);
   const availableCount = selectAvailableInvitations(invitations, assignedPlayerIds).length;
 
-  return <Panel>
+  return <Panel className={dropState ? `ui-drop-target--${dropState}` : undefined} onDragOver={onPlayersDragOver} onDragLeave={onPlayersDragLeave} onDrop={onPlayersDrop}>
     <PanelHeader>
       <PanelTitle>{t('domain.player.plural')}</PanelTitle>
       {!readOnly && <PanelActions><Button type="button" size="sm" onClick={onInviteClick}>{t('page.playerInvitations.invite')}</Button></PanelActions>}
@@ -82,6 +97,10 @@ export default function PlayerInvitationsCard({
           density="compact"
           levelClassName={styles.level}
           data-testid="invitation-row"
+          leading={allowPlayerDrag && !assigned && invitation.response === 'accepted' ? <DragHandleIcon /> : undefined}
+          draggable={allowPlayerDrag && !assigned && invitation.response === 'accepted' && Boolean(onPlayerDragStart)}
+          onDragStart={(event) => onPlayerDragStart?.(event, invitation.playerId)}
+          onDragEnd={onPlayerDragEnd}
 
           content={invitation.response === 'declined' && readOnly && !allowDeclineReasonEdit
             ? <EntityMeta><span>{t('domain.activity.declineReasons.' + (invitation.declineReason ?? 'unspecified'))}</span></EntityMeta>

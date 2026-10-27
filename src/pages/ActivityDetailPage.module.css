@@ -1,5 +1,28 @@
 .page { gap: var(--space-4); padding-top: var(--space-4); }
 .navigation { margin-bottom: 0; border-bottom: 0; padding-bottom: 0; }
+.previousChevron { transform: rotate(180deg); }
+.teamStack { display: flex; flex-direction: column; gap: var(--card-gap); transition: gap var(--transition-stack); }
+.teamStacked { position: relative; gap: 0; }
+.teamFrame { position: relative; display: grid; min-height: 0; grid-template-rows: 1fr; opacity: 1; transform: translateY(0) scale(1); transition: grid-template-rows var(--transition-stack), opacity var(--transition-stack), transform var(--transition-stack); }
+.teamFrameHidden { grid-template-rows: 0fr; opacity: 0; transform: translateY(calc(-1 * var(--space-4))) scale(0.97); pointer-events: none; }
+.teamFrameContent { position: relative; z-index: 2; min-height: 0; overflow: hidden; }
+.teamFrameTop { z-index: 1; }
+.teamFrame::before,
+.teamFrame::after { position: absolute; inset: 0; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: rgb(var(--color-surface)); content: ''; opacity: 0; pointer-events: none; transform: translateY(0) scale(1); transition: opacity var(--transition-stack), transform var(--transition-stack); }
+.teamFrameTop::before,
+.teamFrameTop::after { opacity: 1; }
+.teamFrameTop::before { transform: translateY(var(--space-2)) scale(0.98); }
+.teamFrameTop::after { transform: translateY(var(--space-1)) scale(0.99); }
+.teamStacked:not(.teamStackAnimating) .teamFrame,
+.teamStacked:not(.teamStackAnimating) .teamFrame::before,
+.teamStacked:not(.teamStackAnimating) .teamFrame::after { transition: none; }
+.teamFrameTop :global(.team-card-roster) { max-height: min(48vh, 32rem); overflow-y: auto; overscroll-behavior: contain; }
+.teamFrameExitLeft,
+.teamFrameExitRight { position: absolute; inset: 0 0 auto; width: 100%; transition: none; }
+.teamFrameExitLeft { animation: team-slide-left var(--transition-stack) both; }
+.teamFrameExitRight { animation: team-slide-right var(--transition-stack) both; }
+.teamFrameEnterRight { transition: none; animation: team-slide-right var(--transition-stack) reverse both; }
+.teamFrameEnterLeft { transition: none; animation: team-slide-left var(--transition-stack) reverse both; }
 
 .backdrop,
 .sheetHandle,
@@ -55,6 +78,16 @@
   to { transform: translateY(0); }
 }
 
+@keyframes team-slide-left {
+  to { opacity: 0; transform: translateX(-18%) scale(0.96); }
+}
+
+@keyframes team-slide-right {
+  to { opacity: 0; transform: translateX(18%) scale(0.96); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .anchor :global(.ui-menu) { animation: none; }
+  .teamStack, .teamFrame, .teamFrame::before, .teamFrame::after { transition: none; }
+  .teamFrameExitLeft, .teamFrameExitRight, .teamFrameEnterRight, .teamFrameEnterLeft { animation: none; }
 }

@@ -1,20 +1,28 @@
 import { useTranslation } from 'react-i18next';
+import type { DragEvent } from 'react';
 import type { TeamCardView } from '../store/selectors/teamCardSelectors';
 import PlayerRow from './PlayerRow';
 import Strength from './Strength';
-import { Badge, Card, CardHeader, CardFooter, ChevronRightIcon, Cluster, EntityContent, EntityList, EntityTitle, IconButton, MetadataItem, Split } from './ui';
+import { Badge, Card, CardHeader, CardFooter, ChevronRightIcon, Cluster, DragHandleIcon, EntityContent, EntityList, EntityTitle, IconButton, MetadataItem, Split } from './ui';
 
 interface TeamCardProps {
   view: TeamCardView;
   onOpenTeam: () => void;
   onShareWhatsApp?: () => void;
+  dragEnabled?: boolean;
+  dropState?: 'active' | 'invalid' | null;
+  onPlayerDragStart?: (event: DragEvent<HTMLElement>, playerId: string) => void;
+  onPlayerDragEnd?: () => void;
+  onDragOver?: (event: DragEvent<HTMLElement>) => void;
+  onDragLeave?: (event: DragEvent<HTMLElement>) => void;
+  onDrop?: (event: DragEvent<HTMLElement>) => void;
 }
 
-export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCardProps) {
+export default function TeamCard({ view, onOpenTeam, onShareWhatsApp, dragEnabled = false, dropState, onPlayerDragStart, onPlayerDragEnd, onDragOver, onDragLeave, onDrop }: TeamCardProps) {
   const { t } = useTranslation();
 
   return (
-    <Card className="team-card">
+    <Card className={`team-card${dropState ? ` ui-drop-target--${dropState}` : ''}`} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
       <CardHeader>
         <Split align="center">
           <EntityContent>
@@ -45,6 +53,10 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp }: TeamCard
               shirtNumber={row.shirtNumber}
               density="compact"
               className={`team-card-player${!row.player ? ' team-card-player--missing' : ''}`}
+              leading={dragEnabled ? <DragHandleIcon /> : undefined}
+              draggable={dragEnabled && Boolean(row.player)}
+              onDragStart={(event) => onPlayerDragStart?.(event, row.playerId)}
+              onDragEnd={onPlayerDragEnd}
               content={row.hasInactiveFutureEvent ? <Badge tone="danger" size="sm" title={t('page.teamCard.inactiveIndicatorTooltip')}>
                 {t('page.teamCard.inactiveIndicator')}
               </Badge> : undefined}

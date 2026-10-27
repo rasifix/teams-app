@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Player, Team, Trainer } from '../../types';
+import { formatInstantDateTime } from '../../utils/dateFormatter';
 import { selectTeamCardView, selectTeamWhatsAppMessage } from './teamCardSelectors';
 
 const player = (id: string, firstName: string, lastName: string, level: number): Player => ({
@@ -88,6 +89,25 @@ describe('selectTeamWhatsAppMessage', () => {
     const fallbackMessage = selectTeamWhatsAppMessage(activity, withoutMeetingDetails, 'en', labels);
     expect(fallbackMessage).not.toContain('Meeting time:');
     expect(fallbackMessage).not.toContain('Meeting location:');
+  });
+
+  it('uses a tournament team’s start time and location, with activity fallbacks', () => {
+    const selectedTeam = team({ selectedPlayers: ['p1'], startTime: '11:30', location: 'Field B' });
+    const view = selectTeamCardView(selectedTeam, [player('p1', 'Ada', 'Zulu', 4)], [], new Set(), 5);
+    const tournament = { ...activity, kind: 'tournament' as const, teams: [selectedTeam] };
+
+    const message = selectTeamWhatsAppMessage(tournament, view, 'en', { ...labels, activityTitle: 'Autumn tournament' });
+    expect(message).toContain('Autumn tournament');
+    expect(message).toContain('11:30');
+    expect(message).toContain('📍 Field B');
+    expect(message).not.toContain('Main pitch');
+
+    const fallbackTeam = { ...selectedTeam, startTime: 'invalid', location: ' ' };
+    const fallbackView = selectTeamCardView(fallbackTeam, [player('p1', 'Ada', 'Zulu', 4)], [], new Set(), 5);
+    const fallbackMessage = selectTeamWhatsAppMessage({ ...tournament, teams: [fallbackTeam] }, fallbackView, 'en', labels);
+    expect(fallbackMessage).toContain(formatInstantDateTime(tournament.startsAt, 'en'));
+    expect(fallbackMessage).toContain('📍 Main pitch');
+    expect(fallbackMessage).not.toContain('📍 Field B');
   });
 
   it('omits optional details when unavailable and returns null for an empty team', () => {

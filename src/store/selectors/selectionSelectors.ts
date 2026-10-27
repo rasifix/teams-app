@@ -1,5 +1,6 @@
-import type { Activity, SelectionRemovalReason, Team } from '../../types';
+import type { Activity, Player, SelectionRemovalReason, Team, Trainer } from '../../types';
 import { isActivityCompleted, isSelectionSent } from './activitySelectors';
+import { selectTeamAssigneeMap } from './teamTrainerSelectors';
 
 export interface SelectionEditState {
   canEdit: boolean;
@@ -70,6 +71,18 @@ export function selectSelectionEditState(
     isSent: sent,
     requiresRemovalReason: sent,
   };
+}
+
+export function selectCanMarkSelectionSent(
+  activity: Pick<Activity, 'teams' | 'minPlayersPerTeam' | 'maxPlayersPerTeam' | 'startsAt' | 'selectionSentAt' | 'status'>,
+  trainers: Trainer[],
+  players: Player[],
+  now: Date = new Date(),
+): boolean {
+  const editState = selectSelectionEditState(activity, now);
+  if (!editState.canEdit || editState.isSent || !selectSelectionValidation(activity).canSend || !selectAllTeamsHaveResponsiblePeople(activity)) return false;
+  const assignees = selectTeamAssigneeMap(trainers, players);
+  return activity.teams.every((team) => Boolean(team.responsiblePersonId && assignees.has(team.responsiblePersonId)));
 }
 
 export function selectTeamsWithSelectionChanges(

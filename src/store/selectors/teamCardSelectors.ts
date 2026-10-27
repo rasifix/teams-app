@@ -1,5 +1,6 @@
 import type { Activity, Player, Team, Trainer } from '../../types';
 import { formatInstantDateTime } from '../../utils/dateFormatter';
+import { getActivityDate, toStartsAt } from './activitySelectors';
 import { selectTeamResponsiblePeople, type TeamAssignee } from './teamTrainerSelectors';
 
 export interface TeamCardPlayerRow {
@@ -43,12 +44,19 @@ export function selectTeamWhatsAppMessage(
     : labels.unknownPlayer);
   if (playerNames.length === 0) return null;
 
+  const team = activity.teams.find((entry) => entry.id === view.teamId);
+  const teamStartTime = activity.kind === 'tournament' ? team?.startTime?.trim() : undefined;
+  const startsAt = teamStartTime && /^\d{2}:\d{2}$/.test(teamStartTime)
+    ? toStartsAt(getActivityDate(activity), teamStartTime)
+    : activity.startsAt;
+  const location = activity.kind === 'tournament' ? team?.location?.trim() || activity.location : activity.location;
+
   const lines = [
     `⚽ *${labels.activityTitle}*`,
     '━━━━━━━━━━━━━━━━━━',
-    `📅 ${formatInstantDateTime(activity.startsAt, locale)}`,
+    `📅 ${formatInstantDateTime(startsAt, locale)}`,
   ];
-  if (activity.location) lines.push(`📍 ${activity.location}`);
+  if (location) lines.push(`📍 ${location}`);
   lines.push('', `👥 *${view.teamName}*`);
   if (view.meetingTime) lines.push(`🕐 ${labels.meetingTime}: ${view.meetingTime}`);
   if (view.meetingLocation) lines.push(`📍 ${labels.meetingLocation}: ${view.meetingLocation}`);

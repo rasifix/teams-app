@@ -569,6 +569,7 @@
     "playerInvitations": {
       "invite": "Invite",
       "remove": "Remove",
+      "dropToReturn": "Drop a team player here to return them to invitations",
       "empty": {
         "noneWithStatus": "No players have {{status}} invitations."
       }
@@ -748,6 +749,13 @@
       "previousActivity": "Previous activity: {{name}}",
       "nextActivity": "Next activity: {{name}}",
       "teamsTitle": "Teams",
+      "focusTeam": "Focus on a team",
+      "previousTeam": "Previous",
+      "nextTeam": "Next",
+      "teamPosition": "{{current}} / {{total}}",
+      "stackTeams": "Stack teams",
+      "showAllTeams": "Show all teams",
+      "removePlayerTitle": "Why is this player leaving the team?",
       "addTeam": "Add team",
       "cancelled": "Cancelled",
       "cancelledReadOnly": "This Activity is cancelled and read-only.",
@@ -769,6 +777,8 @@
       "deleteEventTitle": "Delete Activity",
       "deleteEventMessage": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
       "errors": {
+        "teamFull": "This team is full.",
+        "movePlayerFailed": "Could not move the player. Please try again.",
         "noEventId": "No activity ID provided",
         "whatsAppUnavailable": "WhatsApp could not be opened. Please allow pop-ups and try again."
       }

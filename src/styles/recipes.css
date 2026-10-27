@@ -321,15 +321,13 @@
 .ui-input,
 .ui-select,
 .ui-textarea { width: 100%; min-width: 0; }
-/* iOS WebKit adds host padding to the rendered width of native date/time controls. */
 .ui-input:is([type='date'], [type='time'], [type='datetime-local']) {
   appearance: none;
   height: var(--control-height-lg);
-  padding: 0;
+  padding: 0 var(--field-padding-inline);
 }
 .ui-input:is([type='date'], [type='time'], [type='datetime-local'])::-webkit-date-and-time-value {
   min-height: 1.5em;
-  padding-inline: var(--field-padding-inline);
   text-align: left;
 }
 .ui-textarea--tall { min-height: 6rem; }

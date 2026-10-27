@@ -10,6 +10,12 @@ export interface ActivityFormConfiguration {
   defaultLimits: ActivityLimits | null;
 }
 
+export function selectEditableActivityKinds(activity: { kind: ActivityKind; teams: readonly unknown[] }): ActivityKind[] {
+  if (activity.kind === 'match') return ['match', 'tournament'];
+  if (activity.kind === 'tournament' && activity.teams.length === 1) return ['match', 'tournament'];
+  return [activity.kind];
+}
+
 /** Derives the fields and defaults that belong to an activity kind and selected squad format. */
 export function selectActivityFormConfiguration(
   kind: ActivityKind,

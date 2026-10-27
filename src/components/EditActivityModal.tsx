@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSquadMatchFormats } from '../store';
-import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
+import { selectActivityFormConfiguration, selectEditableActivityKinds } from '../store/selectors/activityFormSelectors';
 import { getActivityDate, getActivityTime, toStartsAt } from '../store/selectors/activitySelectors';
 import { validateActivitySchedule } from '../store/selectors/activityFormValidation';
 import type { Activity, ActivityKind } from '../types';
@@ -13,7 +13,7 @@ import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 interface EditActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: ActivityDetailsPatch) => void;
+  onSave: (data: ActivityDetailsPatch) => Promise<boolean>;
   currentActivity: Activity;
   minMaxPlayers: number;
 }
@@ -33,11 +33,11 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
   const [minPlayersPerTeam, setMinPlayersPerTeam] = useState(currentActivity.minPlayersPerTeam ?? 6);
   const [matchFormatId, setMatchFormatId] = useState(currentActivity.matchFormatId ?? '');
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const config = selectActivityFormConfiguration(kind, matchFormats, matchFormatId);
   const isSpondManaged = Boolean(currentActivity.spondId);
-  const canChangeMatchType = !isSpondManaged
-    && currentActivity.teams.length === 1
-    && (currentActivity.kind === 'match' || currentActivity.kind === 'tournament');
+  const editableKinds = selectEditableActivityKinds(currentActivity);
+  const canChangeMatchType = editableKinds.length > 1;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -53,10 +53,12 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
     setMinPlayersPerTeam(currentActivity.minPlayersPerTeam ?? 6);
     setMatchFormatId(currentActivity.matchFormatId ?? '');
     setError(null);
+    setIsSaving(false);
   }, [isOpen, currentActivity]);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSaving) return;
     if (!name.trim() || !date || !startTime) return;
     const validationError = validateActivitySchedule({ minPlayersPerTeam, maxPlayersPerTeam, minimumAllowedPlayers: minMaxPlayers, date, startTime, endDate, endTime });
     if (validationError) {
@@ -65,22 +67,29 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
     }
     const startsAt = toStartsAt(date, startTime);
     const endsAt = endDate && endTime ? toStartsAt(endDate, endTime) : undefined;
-    onSave({
-      ...(canChangeMatchType ? { kind } : {}),
+    setIsSaving(true);
+    const saved = await onSave({
+      ...(canChangeMatchType && kind !== currentActivity.kind ? { kind } : {}),
       ...(isSpondManaged ? {} : {
         name: name.trim(),
         startsAt,
         endsAt: endsAt ?? null,
         location: location.trim() || null,
       }),
-      ...(!isSpondManaged ? {
-        opponentName: kind === 'match' ? opponentName.trim() || null : null,
-        matchFormatId: kind === 'match' ? matchFormatId || null : null,
-      } : {}),
+      ...(kind === 'tournament' && currentActivity.kind === 'match'
+        ? {}
+        : !isSpondManaged ? {
+          opponentName: kind === 'match' ? opponentName.trim() || null : null,
+          matchFormatId: kind === 'match' ? matchFormatId || null : null,
+        } : kind === 'match' && currentActivity.kind === 'tournament'
+          ? { matchFormatId: matchFormatId || null }
+          : {}),
       minPlayersPerTeam,
       maxPlayersPerTeam,
     });
-    onClose();
+    setIsSaving(false);
+    if (saved) onClose();
+    else setError(t('page.editEventModal.errors.saveFailed'));
   };
 
   return (
@@ -90,7 +99,7 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
         <ModalBody>
           <Stack>
             {isSpondManaged && <Alert tone="info">{t('spondSync.managedFields')}</Alert>}
-            {canChangeMatchType && <Field label={t('domain.activity.fields.kind')} htmlFor="edit-event-kind"><Select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as 'match' | 'tournament'; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }}><option value="match">{t('domain.activity.kinds.match')}</option><option value="tournament">{t('domain.activity.kinds.tournament')}</option></Select></Field>}
+            {canChangeMatchType && <Field label={t('domain.activity.fields.kind')} htmlFor="edit-event-kind"><Select id="edit-event-kind" value={kind} onChange={(event) => { const nextKind = event.target.value as ActivityKind; setKind(nextKind); if (nextKind === 'tournament') { setOpponentName(''); setMatchFormatId(''); } }}>{editableKinds.map((option) => <option key={option} value={option}>{t(`domain.activity.kinds.${option}`)}</option>)}</Select></Field>}
             <ActivityCoreFields
               idPrefix="edit-event" nameLabel={t('domain.activity.fields.name')} dateLabel={t('domain.activity.fields.date')}
               startTimeLabel={t('domain.activity.fields.startTime')} endDateLabel={t('domain.activity.fields.endDate')}
@@ -119,7 +128,7 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
             {error && <Alert>{error}</Alert>}
           </Stack>
         </ModalBody>
-        <ModalFooter><Button type="button" variant="secondary" onClick={onClose}>{t('common.actions.cancel')}</Button><Button type="submit" variant="primary">{t('common.actions.save')}</Button></ModalFooter>
+        <ModalFooter><Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>{t('common.actions.cancel')}</Button><Button type="submit" variant="primary" disabled={isSaving}>{t('common.actions.save')}</Button></ModalFooter>
       </form>
     </Modal>
   );

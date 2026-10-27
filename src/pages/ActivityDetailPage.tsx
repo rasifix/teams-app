@@ -308,9 +308,9 @@ export default function ActivityDetailPage() {
     </AdjacentNavigation>
     <PageHeader align="start" className={styles.header}>
         <PageHeaderContent>
+          <span className={styles.activityType}>{t(`domain.activity.kinds.${activity.kind}`)}</span>
           <Cluster gap="sm" className={styles.titleCluster}>
             <PageTitle>{activity.name}</PageTitle>
-            <Badge tone="brand" size="sm">{t(`domain.activity.kinds.${activity.kind}`)}</Badge>
             {activity.status === 'cancelled' && <Badge tone="danger" size="sm">{t('page.eventDetail.cancelled')}</Badge>}
             <Badge tone="info" size="sm" data-testid="activity-phase">{t(`page.eventDetail.phases.${phase}`)}</Badge>
           </Cluster>
@@ -481,7 +481,7 @@ export default function ActivityDetailPage() {
     </Modal>
 
     {!spondLinked && activity.status === 'active' && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
-    {activity.status === 'active' && <EditActivityModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: ActivityDetailsPatch) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
+    {activity.status === 'active' && <EditActivityModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: ActivityDetailsPatch) => updateActivity(activity.id, data)} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
     <ConfirmDialog isOpen={isCancelOpen} title={t('page.eventDetail.cancelActivityTitle')} message={t('page.eventDetail.cancelActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.cancelActivity')} cancelText={t('common.actions.back')} onConfirm={handleCancelActivity} onCancel={() => setIsCancelOpen(false)} confirmButtonColor="red" />
     <ConfirmDialog isOpen={isRestoreOpen} title={t('page.eventDetail.restoreActivityTitle')} message={t('page.eventDetail.restoreActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.restoreActivity')} cancelText={t('common.actions.cancel')} onConfirm={handleRestoreActivity} onCancel={() => setIsRestoreOpen(false)} confirmButtonColor="green" />
     <ConfirmDialog isOpen={isDeleteOpen} title={t('page.eventDetail.deleteEventTitle')} message={t('page.eventDetail.deleteEventMessage', { name: activity.name })} confirmText={t('common.actions.delete')} cancelText={t('common.actions.cancel')} onConfirm={handleDeleteActivity} onCancel={() => setIsDeleteOpen(false)} confirmButtonColor="red" />

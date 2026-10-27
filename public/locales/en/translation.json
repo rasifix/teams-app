@@ -1,7 +1,11 @@
 {
   "app": {
     "name": "My Team",
-    "tagline": "Team operations"
+    "tagline": "Team operations",
+    "documentTitle": {
+      "matchWithOpponent": "{{name}} {{opponent}}",
+      "activityHistory": "{{activity}} · Change history"
+    }
   },
   "common": {
     "required": "Required",
@@ -453,7 +457,8 @@
     "editEventModal": {
       "title": "Edit Activity",
       "errors": {
-        "minGreaterThanMax": "Min players cannot be greater than max players"
+        "minGreaterThanMax": "Min players cannot be greater than max players",
+        "saveFailed": "Could not save the activity. Please try again."
       }
     },
     "home": {

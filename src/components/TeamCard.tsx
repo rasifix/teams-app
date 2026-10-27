@@ -3,7 +3,8 @@ import type { DragEvent } from 'react';
 import type { TeamCardView } from '../store/selectors/teamCardSelectors';
 import PlayerRow from './PlayerRow';
 import Strength from './Strength';
-import { Badge, Card, CardHeader, CardFooter, ChevronRightIcon, Cluster, DragHandleIcon, EntityContent, EntityList, EntityTitle, IconButton, MetadataItem, Split } from './ui';
+import styles from './TeamCard.module.css';
+import { Badge, Card, CardHeader, CardFooter, ChevronRightIcon, Cluster, DragHandleIcon, EmptyState, EntityContent, EntityList, EntityTitle, IconButton, MetadataItem, Split } from './ui';
 
 interface TeamCardProps {
   view: TeamCardView;
@@ -43,7 +44,9 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp, dragEnable
         </Split>
       </CardHeader>
 
-      {view.playerRows.length > 0 && (
+      {view.playerRows.length === 0 ? (
+        <EmptyState className={styles.emptyState}>{t('page.teamDetail.noPlayersSelected')}</EmptyState>
+      ) : (
         <EntityList variant="bare" className="team-card-roster">
           {view.playerRows.map((row) => (
             <PlayerRow

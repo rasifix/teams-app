@@ -1,5 +1,6 @@
-import { createBrowserRouter, Navigate, Route, RouterProvider, Routes } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Route, RouterProvider, Routes, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiErrorBoundary from './components/ApiErrorBoundary';
 import AppInitializer from './components/AppInitializer';
@@ -32,12 +33,33 @@ import ShirtSetsPage from './pages/ShirtSetsPage';
 import SquadSettingsPage from './pages/SquadSettingsPage';
 import SquadSelectionPage from './pages/SquadSelectionPage';
 import ActivityHistoryPage from './pages/ActivityHistoryPage';
+import { useActivities, usePlayers, useSquad } from './store';
+import { useTrainers } from './store/useStore';
+import { selectDocumentTitle } from './store/selectors/navigationSelectors';
 
 const UiKitPage = import.meta.env.DEV ? lazy(() => import('./pages/UiKitPage')) : null;
 
+function DocumentTitle() {
+  const { t } = useTranslation();
+  const { pathname, search } = useLocation();
+  const squad = useSquad();
+  const { activities } = useActivities();
+  const { players } = usePlayers();
+  const trainers = useTrainers();
+  const title = selectDocumentTitle(pathname, search, squad, activities, players, trainers, t);
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
+  return null;
+}
+
 function AppRoutes() {
   return (
-    <AppInitializer>
+    <>
+      <DocumentTitle />
+      <AppInitializer>
       <div className="app-shell">
         <Header />
         <ApiStatus />
@@ -86,7 +108,8 @@ function AppRoutes() {
           </main>
         </ApiErrorBoundary>
       </div>
-    </AppInitializer>
+      </AppInitializer>
+    </>
   );
 }
 

@@ -1,7 +1,11 @@
 {
   "app": {
     "name": "Mein Team",
-    "tagline": "Teamorganisation"
+    "tagline": "Teamorganisation",
+    "documentTitle": {
+      "matchWithOpponent": "{{name}} {{opponent}}",
+      "activityHistory": "{{activity}} · Änderungsverlauf"
+    }
   },
   "common": {
     "required": "Erforderlich",
@@ -454,7 +458,8 @@
     "editEventModal": {
       "title": "Aktivität bearbeiten",
       "errors": {
-        "minGreaterThanMax": "Min. Spieler darf nicht grösser als Max. Spieler sein"
+        "minGreaterThanMax": "Min. Spieler darf nicht grösser als Max. Spieler sein",
+        "saveFailed": "Die Aktivität konnte nicht gespeichert werden. Bitte versuche es erneut."
       }
     },
     "home": {

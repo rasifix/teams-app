@@ -93,8 +93,8 @@ export interface MenuItemProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean;
 }
 
-export function MenuItem({ selected = false, className, type = 'button', ...props }: MenuItemProps) {
-  return <button type={type} role="menuitemradio" aria-checked={selected} className={classNames('ui-menu__item', selected && 'ui-menu__item--selected', className)} {...props} />;
+export function MenuItem({ selected, className, type = 'button', ...props }: MenuItemProps) {
+  return <button type={type} role={selected === undefined ? 'menuitem' : 'menuitemradio'} aria-checked={selected} className={classNames('ui-menu__item', selected && 'ui-menu__item--selected', className)} {...props} />;
 }
 
 export function MenuItemTitle({ className, ...props }: HTMLAttributes<HTMLSpanElement>) {

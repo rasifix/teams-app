@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePlayers, useTrainers, useSquad, useActivities, useShirtSets, useMatchPlanning } from '../store';
 import { getActivityHistory } from '../services/activityHistoryService';
@@ -75,25 +75,46 @@ export default function ActivityHistoryPage() {
   const renderChange = (change: (typeof rows)[number]['changes'][number]) => {
     const params = change.params;
     const subject = params.subject || t('page.activityHistory.values.unknown');
+    const message = (key: string, values: Record<string, string | number>) => (
+      <Trans
+        i18nKey={`page.activityHistory.changes.${key}`}
+        values={values}
+        components={{
+          subject: <span className={styles.variable} />,
+          field: <span className={styles.variable} />,
+          previous: <span className={styles.variable} />,
+          current: <span className={styles.variable} />,
+          player: <span className={styles.variable} />,
+          response: <span className={styles.variable} />,
+          team: <span className={styles.variable} />,
+          reason: <span className={styles.variable} />,
+          periods: <span className={styles.variable} />,
+          count: <span className={styles.variable} />,
+          dateTime: <span className={styles.variable} />,
+          person: <span className={styles.variable} />,
+          status: <span className={styles.variable} />,
+        }}
+      />
+    );
     switch (change.key) {
       case 'fieldChanged':
-        return t('page.activityHistory.changes.fieldChanged', {
+        return message('fieldChanged', {
           subject,
           field: t(`page.activityHistory.fields.${params.subjectType === 'team' && params.field === 'status' ? 'teamSelectionStatus' : params.field}`, { defaultValue: t('page.activityHistory.fields.unknown') }),
           previous: displayValue(params.field, params.previous, params.subjectType),
           current: displayValue(params.field, params.current, params.subjectType),
         });
-      case 'teamAdded': return t('page.activityHistory.changes.teamAdded', { team: params.team || t('page.activityHistory.values.unknown') });
-      case 'teamRemoved': return t('page.activityHistory.changes.teamRemoved', { team: params.team || t('page.activityHistory.values.unknown') });
-      case 'invitationAdded': return t('page.activityHistory.changes.invitationAdded', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
-      case 'invitationRemoved': return t('page.activityHistory.changes.invitationRemoved', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
-      case 'playerSelected': return t('page.activityHistory.changes.playerSelected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
+      case 'teamAdded': return message('teamAdded', { team: params.team || t('page.activityHistory.values.unknown') });
+      case 'teamRemoved': return message('teamRemoved', { team: params.team || t('page.activityHistory.values.unknown') });
+      case 'invitationAdded': return message('invitationAdded', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
+      case 'invitationRemoved': return message('invitationRemoved', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
+      case 'playerSelected': return message('playerSelected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
       case 'playerUnselected': return params.reason
-        ? t('page.activityHistory.changes.playerUnselectedWithReason', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown'), reason: t(`page.activityHistory.reasons.${params.reason}`, { defaultValue: params.reason }) })
-        : t('page.activityHistory.changes.playerUnselected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
-      case 'selectionMarkedSent': return t('page.activityHistory.changes.selectionMarkedSent', { dateTime: displayValue('selectionSentAt', params.dateTime) });
-      case 'lineupChanged': return t('page.activityHistory.changes.lineupChanged', { team: params.team || t('page.activityHistory.values.unknown'), periods: params.periods, count: params.assignmentChanges });
-      case 'attendanceRemoved': return t('page.activityHistory.changes.attendanceRemoved', { person: params.person || t('page.activityHistory.values.unknown'), status: displayValue('status', params.status) });
+        ? message('playerUnselectedWithReason', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown'), reason: t(`page.activityHistory.reasons.${params.reason}`, { defaultValue: params.reason }) })
+        : message('playerUnselected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
+      case 'selectionMarkedSent': return message('selectionMarkedSent', { dateTime: displayValue('selectionSentAt', params.dateTime) });
+      case 'lineupChanged': return message('lineupChanged', { team: params.team || t('page.activityHistory.values.unknown'), periods: params.periods, count: params.assignmentChanges });
+      case 'attendanceRemoved': return message('attendanceRemoved', { person: params.person || t('page.activityHistory.values.unknown'), status: displayValue('status', params.status) });
       case 'activityCreated': return t('page.activityHistory.changes.activityCreated');
       case 'activityImported': return t('page.activityHistory.changes.activityImported');
       case 'activityDeleted': return t('page.activityHistory.changes.activityDeleted');

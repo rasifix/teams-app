@@ -52,6 +52,7 @@
     "language": "Language",
     "theme": "Theme",
     "density": "Density",
+    "font": "Font",
     "system": "System default",
     "languages": {
       "en": "English",
@@ -64,6 +65,13 @@
     "densities": {
       "default": "Normal",
       "compact": "Compact"
+    },
+    "fonts": {
+      "inter": "Inter",
+      "jakarta": "Plus Jakarta Sans",
+      "barlowCondensed": "Barlow Condensed",
+      "robotoCondensed": "Roboto Condensed",
+      "oswald": "Oswald"
     }
   },
   "domain": {

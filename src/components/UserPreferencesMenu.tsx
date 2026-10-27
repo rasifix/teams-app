@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { DensityPreference, LanguagePreference, ThemePreference } from '../contexts/preferencesContextValue';
+import type { DensityPreference, FontPreference, LanguagePreference, ThemePreference } from '../contexts/preferencesContextValue';
 import { usePreferences } from '../hooks/usePreferences';
 import { Button, MenuDivider, MenuItem, MenuItemTitle, MenuLabel, MenuSurface } from './ui';
 
@@ -11,7 +11,7 @@ interface UserPreferencesMenuProps {
 
 export default function UserPreferencesMenu({ userName, mobile = false }: UserPreferencesMenuProps) {
   const { t } = useTranslation();
-  const { language, theme, density, setLanguage, setTheme, setDensity } = usePreferences();
+  const { language, theme, density, font, setLanguage, setTheme, setDensity, setFont } = usePreferences();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -47,6 +47,13 @@ export default function UserPreferencesMenu({ userName, mobile = false }: UserPr
   const densityOptions: Array<{ value: DensityPreference; label: string }> = [
     { value: 'default', label: t('preferences.densities.default') },
     { value: 'compact', label: t('preferences.densities.compact') },
+  ];
+  const fontOptions: Array<{ value: FontPreference; label: string }> = [
+    { value: 'inter', label: t('preferences.fonts.inter') },
+    { value: 'jakarta', label: t('preferences.fonts.jakarta') },
+    { value: 'barlow-condensed', label: t('preferences.fonts.barlowCondensed') },
+    { value: 'roboto-condensed', label: t('preferences.fonts.robotoCondensed') },
+    { value: 'oswald', label: t('preferences.fonts.oswald') },
   ];
 
   return (
@@ -92,6 +99,15 @@ export default function UserPreferencesMenu({ userName, mobile = false }: UserPr
           <div role="group" aria-label={t('preferences.density')}>
             {densityOptions.map((option) => (
               <MenuItem key={option.value} selected={density === option.value} onClick={() => setDensity(option.value)}>
+                <MenuItemTitle>{option.label}</MenuItemTitle>
+              </MenuItem>
+            ))}
+          </div>
+          <MenuDivider />
+          <MenuLabel>{t('preferences.font')}</MenuLabel>
+          <div role="group" aria-label={t('preferences.font')}>
+            {fontOptions.map((option) => (
+              <MenuItem key={option.value} selected={font === option.value} onClick={() => setFont(option.value)}>
                 <MenuItemTitle>{option.label}</MenuItemTitle>
               </MenuItem>
             ))}

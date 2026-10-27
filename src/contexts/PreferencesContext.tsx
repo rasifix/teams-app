@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import i18n, { detectSystemLanguage, LANGUAGE_STORAGE_KEY } from '../i18n/config';
-import { PreferencesContext, type DensityPreference, type LanguagePreference, type ThemePreference } from './preferencesContextValue';
+import { PreferencesContext, type DensityPreference, type FontPreference, type LanguagePreference, type ThemePreference } from './preferencesContextValue';
 
 const THEME_STORAGE_KEY = 'my-teams-theme';
 const DENSITY_STORAGE_KEY = 'my-teams-density';
+const FONT_STORAGE_KEY = 'my-teams-font';
 
 function readPreference<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -20,6 +21,9 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   );
   const [density, setDensity] = useState<DensityPreference>(() =>
     readPreference(DENSITY_STORAGE_KEY, ['default', 'compact'], 'default')
+  );
+  const [font, setFont] = useState<FontPreference>(() =>
+    readPreference(FONT_STORAGE_KEY, ['inter', 'jakarta', 'barlow-condensed', 'roboto-condensed', 'oswald'], 'inter')
   );
 
   useEffect(() => {
@@ -51,16 +55,25 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       window.localStorage.setItem(DENSITY_STORAGE_KEY, density);
       document.documentElement.dataset.density = density;
     }
-  }, [theme, density]);
+    if (font === 'inter') {
+      window.localStorage.removeItem(FONT_STORAGE_KEY);
+      delete document.documentElement.dataset.font;
+    } else {
+      window.localStorage.setItem(FONT_STORAGE_KEY, font);
+      document.documentElement.dataset.font = font;
+    }
+  }, [theme, density, font]);
 
   const value = useMemo(() => ({
     language,
     theme,
     density,
+    font,
     setLanguage,
     setTheme,
     setDensity,
-  }), [language, theme, density]);
+    setFont,
+  }), [language, theme, density, font]);
 
   return <PreferencesContext.Provider value={value}>{children}</PreferencesContext.Provider>;
 }

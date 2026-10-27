@@ -1,5 +1,6 @@
 import type { ActivityEvent } from '../../types/activityEvents';
 import type { User } from '../../services/authService';
+import type { ActivityHistoryItem } from '../../types/activityHistory';
 
 export interface ActivityAuditPerson {
   id: string;
@@ -36,6 +37,18 @@ export interface ActivityHistoryRow {
   actorName: string;
   recordedAt: string;
   changes: ActivityHistoryChange[];
+}
+
+export interface EnrichedActivityHistoryChange {
+  key: string;
+  params: Record<string, string>;
+}
+
+export interface EnrichedActivityHistoryRow {
+  id: string;
+  actorName: string;
+  recordedAt: string;
+  changes: EnrichedActivityHistoryChange[];
 }
 
 function selectActorName(event: ActivityEvent, people: ActivityAuditPerson[], authenticatedUser?: User | null): string {
@@ -108,6 +121,58 @@ export function selectActivityHistoryRows(
         case 'AttendanceRemoved': return { key: 'attendanceRemoved', params: { person: nameForId(data.personId, people, fallback) } };
         case 'LineupChanged': return { key: 'lineupChanged', params: { team: nameForId(data.teamId, teams, fallback) } };
         default: return { key: 'otherChange', params: {} };
+      }
+    }),
+  }));
+}
+
+const historyValue = (value: unknown): string => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
+};
+
+export function selectEnrichedActivityHistoryRows(items: ActivityHistoryItem[]): EnrichedActivityHistoryRow[] {
+  return items.map((item) => ({
+    id: item.id,
+    actorName: item.actor.displayName ?? item.actor.type,
+    recordedAt: item.recordedAt,
+    changes: item.changes.map((change): EnrichedActivityHistoryChange => {
+      const subject = change.subject.displayName ?? '';
+      switch (change.type) {
+        case 'activity.created': return { key: 'activityCreated', params: {} };
+        case 'activity.imported': return { key: 'activityImported', params: {} };
+        case 'activity.deleted': return { key: 'activityDeleted', params: {} };
+        case 'activity.detailsChanged':
+        case 'team.detailsChanged':
+        case 'invitation.responseChanged':
+        case 'attendance.changed':
+          return { key: 'fieldChanged', params: {
+            subject,
+            subjectType: change.subject.type,
+            field: change.field ?? 'unknown',
+            previous: historyValue(change.previous),
+            current: historyValue(change.current),
+          } };
+        case 'team.added': return { key: 'teamAdded', params: { team: subject } };
+        case 'team.removed': return { key: 'teamRemoved', params: { team: subject } };
+        case 'invitation.added': return { key: 'invitationAdded', params: { player: subject, response: historyValue(change.current) } };
+        case 'invitation.removed': return { key: 'invitationRemoved', params: { player: subject, response: historyValue(change.previous) } };
+        case 'selection.playerAdded': return { key: 'playerSelected', params: { player: subject, team: historyValue(change.context?.teamName) } };
+        case 'selection.playerRemoved': return { key: 'playerUnselected', params: {
+          player: subject,
+          team: historyValue(change.context?.teamName),
+          reason: historyValue(change.context?.reason),
+        } };
+        case 'selection.markedSent': return { key: 'selectionMarkedSent', params: { dateTime: historyValue(change.current) } };
+        case 'lineup.changed': return { key: 'lineupChanged', params: {
+          team: subject,
+          periods: Array.isArray(change.context?.periods) ? change.context.periods.join(', ') : '',
+          assignmentChanges: historyValue(change.context?.assignmentChanges),
+        } };
+        case 'attendance.removed': return { key: 'attendanceRemoved', params: { person: subject, status: historyValue(change.previous) } };
+        case 'event.unsupported': return { key: 'unsupportedChange', params: {} };
+        default: return { key: 'unsupportedChange', params: {} };
       }
     }),
   }));

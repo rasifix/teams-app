@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityEvent } from '../../types/activityEvents';
-import { selectActivityAuditRows, selectActivityHistoryRows } from './activityAuditSelectors';
+import { selectActivityAuditRows, selectActivityHistoryRows, selectEnrichedActivityHistoryRows } from './activityAuditSelectors';
 
 const event = (overrides: Partial<ActivityEvent> = {}): ActivityEvent => ({
   _id: 'commit-1', streamId: 'stream-1', aggregateType: 'activity', aggregateId: 'a1', squadId: 's1',
@@ -36,5 +36,38 @@ describe('selectActivityAuditRows', () => {
   it('creates readable history parameters without exposing ids', () => {
     const rows = selectActivityHistoryRows([event({ events: [{ ordinal: 1, type: 'InvitationResponseChanged', schemaVersion: 1, data: { playerId: 'p1', response: 'declined' } }] })], [{ id: 'p1', firstName: 'Roman', lastName: 'Varosic' }]);
     expect(rows[0].changes).toEqual([{ key: 'invitationResponseChanged', params: { player: 'Roman Varosic', response: 'declined' } }]);
+  });
+});
+
+describe('selectEnrichedActivityHistoryRows', () => {
+  it('keeps old and current values and readable subjects for field changes', () => {
+    const rows = selectEnrichedActivityHistoryRows([{
+      id: 'commit-2', revision: 2, recordedAt: '2026-10-09T12:00:00.000Z',
+      actor: { type: 'user', memberId: 'm1', displayName: 'Alex Coach' },
+      changes: [{
+        type: 'invitation.responseChanged',
+        subject: { type: 'player', id: 'p1', displayName: 'Sam Player' },
+        field: 'response', previous: 'open', current: 'accepted',
+      }],
+    }]);
+    expect(rows[0]).toMatchObject({
+      actorName: 'Alex Coach',
+      changes: [{ key: 'fieldChanged', params: { subject: 'Sam Player', field: 'response', previous: 'open', current: 'accepted' } }],
+    });
+  });
+
+  it('handles null names, null values, unsupported event types, and empty history', () => {
+    expect(selectEnrichedActivityHistoryRows([{
+      id: 'commit-3', revision: 3, recordedAt: '2026-10-09T12:00:00.000Z',
+      actor: { type: 'system', memberId: null, displayName: null },
+      changes: [
+        { type: 'team.detailsChanged', subject: { type: 'team', id: 't1', displayName: null }, field: 'location', previous: null, current: 'Field' },
+        { type: 'event.unsupported', subject: { type: 'activity', id: 'a1', displayName: null }, context: { eventType: 'Unknown', schemaVersion: 9 } },
+      ],
+    }])).toMatchObject({ 0: { actorName: 'system', changes: [
+      { key: 'fieldChanged', params: { subject: '', previous: '', current: 'Field' } },
+      { key: 'unsupportedChange' },
+    ] } });
+    expect(selectEnrichedActivityHistoryRows([])).toEqual([]);
   });
 });

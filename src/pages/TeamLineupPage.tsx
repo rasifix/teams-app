@@ -21,7 +21,7 @@ export default function TeamLineupPage() {
   const { t } = useTranslation();
   const { eventId, teamId, lineupTab } = useParams<{ eventId: string; teamId: string; lineupTab?: string }>();
   const navigate = useNavigate();
-  const { getActivityById, updateActivityTeams } = useActivities();
+  const { getActivityById, executeActivityIntent } = useActivities();
   const { players } = usePlayers();
   const { matchFormats, formations } = useMatchPlanning();
   const isInitialized = useAppInitialized();
@@ -103,8 +103,7 @@ export default function TeamLineupPage() {
     if (isCancelled || !eventId || !hasChanges) return false;
     setIsSaving(true);
     setSaveError(null);
-    const updatedTeams = event.teams.map((item) => item.id === teamId ? { ...item, lineup: draftLineup } : item);
-    const wasSaved = await updateActivityTeams(eventId, updatedTeams);
+    const wasSaved = await executeActivityIntent(eventId, { type: 'lineup', teamId: team.id, periods: draftLineup });
     setIsSaving(false);
     if (!wasSaved) {
       setSaveError(t('page.teamLineup.saveFailed'));

@@ -1,9 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import type { Team } from '../../types';
-import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
+import { removePlayerFromSelection, selectActivitySelectionChanges, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation, selectTeamsWithSelectionChanges } from './selectionSelectors';
 
 const team = (overrides: Partial<Team> = {}): Team => ({
   id: 'team-1', name: 'Team', strength: 2, selectedPlayers: ['p1', 'p2'], ...overrides,
+});
+
+describe('selectActivitySelectionChanges', () => {
+  it('returns only additions and removals with post-send reasons', () => {
+    expect(selectActivitySelectionChanges(['p1', 'p2'], ['p2', 'p3'], { p1: 'injured' }, true)).toEqual({
+      add: ['p3'], remove: [{ playerId: 'p1', reason: 'injured' }],
+    });
+  });
+
+  it('omits removal reasons before selection is marked sent and handles no changes', () => {
+    expect(selectActivitySelectionChanges(['p1'], [], { p1: 'sick' }, false)).toEqual({
+      add: [], remove: [{ playerId: 'p1' }],
+    });
+    expect(selectActivitySelectionChanges(['p1'], ['p1'])).toEqual({ add: [], remove: [] });
+  });
 });
 
 describe('selectSelectionEditState', () => {

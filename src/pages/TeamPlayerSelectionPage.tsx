@@ -4,7 +4,7 @@ import type { DragEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useActivities, usePlayers } from '../store';
 import { selectAvailablePlayersForTeamSelection, selectTeamPlayersInRosterOrder, selectTeamSelectionCapacity, selectTeamSelectionColumns } from '../store/selectors/teamPlayerSelectors';
-import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
+import { selectActivitySelectionChanges, selectSelectionEditState } from '../store/selectors/selectionSelectors';
 import { ActionDock, ActionDockContent, Alert, Badge, Button, Cluster, DragHandleIcon, EmptyState, EntityList, FilterBar, IconButton, MovePlayerIcon, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelHeader, PanelTitle, Select, Split, Stack, TrashIcon } from '../components/ui';
 import PlayerRow from '../components/PlayerRow';
 import LevelRangeSelector from '../components/LevelRangeSelector';
@@ -16,7 +16,7 @@ export default function TeamPlayerSelectionPage() {
   const { eventId, teamId } = useParams<{ eventId: string; teamId: string }>();
   const navigate = useNavigate();
   
-  const { getActivityById, updateActivitySelection } = useActivities();
+  const { getActivityById, executeActivityIntent } = useActivities();
   const { players } = usePlayers();
   
   const event = eventId ? getActivityById(eventId) : null;
@@ -113,12 +113,12 @@ export default function TeamPlayerSelectionPage() {
     const reasons = Object.fromEntries(
       Object.entries(removalReasons).filter((entry): entry is [string, SelectionRemovalReason] => Boolean(entry[1])),
     );
-    const updatedTeams = selectTeamsWithSelectionChanges(
-      event.teams, team.id, updatedPlayers, editState.requiresRemovalReason ? reasons : {}, new Date().toISOString(),
+    const changes = selectActivitySelectionChanges(
+      team.selectedPlayers ?? [], updatedPlayers, editState.requiresRemovalReason ? reasons : {}, editState.requiresRemovalReason,
     );
 
     try {
-      if (await updateActivitySelection(eventId, updatedTeams)) {
+      if (await executeActivityIntent(eventId, { type: 'selection', teamId: team.id, ...changes })) {
         navigate(`/activities/${eventId}/teams/${teamId}`);
       } else {
         setSaveError(true);

@@ -17,6 +17,13 @@ export function formatInstantDateTime(value: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(instant);
 }
 
+/** Formats the time portion of an ISO timestamp in the browser's local timezone. */
+export function formatInstantTime(value: string, locale: string): string {
+  const instant = new Date(value);
+  if (Number.isNaN(instant.getTime())) return value;
+  return new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(instant);
+}
+
 const dateTimeParts = (value: Date, timeZone: string): Record<string, string> => Object.fromEntries(
   new Intl.DateTimeFormat('en-CA', {
     timeZone,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Activity, Player } from '../../types';
-import { hasActivityStarted, selectActivityAttendance, selectAttendanceDialogRows, selectAttendanceSummary, toAttendanceRecords } from './attendanceSelectors';
+import { hasActivityStarted, selectActivityAttendance, selectAttendanceDialogRows, selectAttendanceSummary, selectChangedAttendanceRecords, toAttendanceRecords } from './attendanceSelectors';
 
 const player = (id: string, firstName: string): Player => ({ id, firstName, lastName: 'X', birthDate: '2012-01-01', level: 2, status: 'active' });
 const players = [player('p1', 'Zoe'), player('p2', 'Ada'), player('p3', 'Ben'), player('p4', 'Cy')];
@@ -76,6 +76,20 @@ describe('attendance dialog selectors', () => {
     expect(toAttendanceRecords([
       { playerId: 'p1', name: 'Zoe X', status: 'absent', reason: '' },
     ])).toEqual([{ personId: 'p1', status: 'absent' }]);
+  });
+
+  it('returns only changed attendance rows and preserves a changed reason', () => {
+    expect(selectChangedAttendanceRecords([
+      { personId: 'p1', status: 'present' },
+      { personId: 'p2', status: 'excused', reason: 'sick' },
+    ], [
+      { personId: 'p1', status: 'present' },
+      { personId: 'p2', status: 'excused', reason: 'injured' },
+      { personId: 'p3', status: 'absent' },
+    ])).toEqual([
+      { personId: 'p2', status: 'excused', reason: 'injured' },
+      { personId: 'p3', status: 'absent' },
+    ]);
   });
 
   it('summarizes recorded attendance of selected players only', () => {

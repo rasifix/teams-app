@@ -57,12 +57,9 @@ export const useActivities = () => {
   const getActivityById = useStore((state) => state.getActivityById);
   const addActivity = useStore((state) => state.addActivity);
   const updateActivity = useStore((state) => state.updateActivity);
+  const executeActivityIntent = useStore((state) => state.executeActivityIntent);
   const updateActivityInvitation = useStore((state) => state.updateActivityInvitation);
-  const setActivityInvitations = useStore((state) => state.setActivityInvitations);
-  const updateActivityTeams = useStore((state) => state.updateActivityTeams);
-  const updateActivitySelection = useStore((state) => state.updateActivitySelection);
   const markActivitySelectionSent = useStore((state) => state.markActivitySelectionSent);
-  const updateActivityAttendance = useStore((state) => state.updateActivityAttendance);
   const deleteActivity = useStore((state) => state.deleteActivity);
   const cancelActivity = useStore((state) => state.cancelActivity);
   const restoreActivity = useStore((state) => state.restoreActivity);
@@ -72,12 +69,9 @@ export const useActivities = () => {
     getActivityById,
     addActivity,
     updateActivity,
+    executeActivityIntent,
     updateActivityInvitation,
-    setActivityInvitations,
-    updateActivityTeams,
-    updateActivitySelection,
     markActivitySelectionSent,
-    updateActivityAttendance,
     deleteActivity,
     cancelActivity,
     restoreActivity,

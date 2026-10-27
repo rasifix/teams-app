@@ -18,6 +18,21 @@ interface ApiErrorBody {
   message?: unknown;
 }
 
+export interface ApiResponse<T> {
+  data: T;
+  headers: Headers;
+}
+
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number, statusText: string) {
+    super(`API Error: ${status} - ${statusText}`);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -26,6 +41,10 @@ class ApiClient {
   }
 
   async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return (await this.requestWithMetadata<T>(endpoint, options)).data;
+  }
+
+  async requestWithMetadata<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     
     // Get token from localStorage
@@ -74,26 +93,26 @@ class ApiClient {
         throw new Error(errorCode);
       }
 
-      throw new Error(`API Error: ${response.status} - ${response.statusText}`);
+      throw new ApiError(response.status, response.statusText);
     }
 
     // Handle empty responses (common for DELETE requests)
     const contentType = response.headers.get('content-type');
     if (response.status === 204 || !contentType?.includes('application/json')) {
-      return undefined as T;
+      return { data: undefined as T, headers: response.headers };
     }
 
     // Check if response has content
     const text = await response.text();
     if (!text) {
-      return undefined as T;
+      return { data: undefined as T, headers: response.headers };
     }
 
     try {
-      return JSON.parse(text);
+      return { data: JSON.parse(text) as T, headers: response.headers };
     } catch (error) {
       console.warn('Failed to parse JSON response:', error);
-      return undefined as T;
+      return { data: undefined as T, headers: response.headers };
     }
   }
 

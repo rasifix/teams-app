@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { usePlayers, useTrainers, useSquad, useActivities } from '../store';
-import { getActivityAuditEvents } from '../services/activityEventService';
-import { selectActivityHistoryRows } from '../store/selectors/activityAuditSelectors';
-import type { ActivityEvent } from '../types/activityEvents';
-import { Alert, Button, EmptyState, LoadingState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, Stack } from '../components/ui';
-import { formatInstantDateTime } from '../utils/dateFormatter';
+import { usePlayers, useTrainers, useSquad, useActivities, useShirtSets, useMatchPlanning } from '../store';
+import { getActivityHistory } from '../services/activityHistoryService';
+import { selectEnrichedActivityHistoryRows } from '../store/selectors/activityAuditSelectors';
+import type { ActivityHistoryItem } from '../types/activityHistory';
+import { Alert, Button, DateColumn, EmptyState, LoadingState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, Stack } from '../components/ui';
+import { formatInstantDateTime, formatInstantTime } from '../utils/dateFormatter';
 import styles from './ActivityHistoryPage.module.css';
 
 const PAGE_SIZE = 50;
@@ -17,39 +16,89 @@ export default function ActivityHistoryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const squad = useSquad();
-  const squadId = squad?.id;
-  const { user } = useAuth();
+  const { getActivityById } = useActivities();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
-  const { getActivityById } = useActivities();
+  const { shirtSets } = useShirtSets();
+  const { matchFormats, formations } = useMatchPlanning();
   const activity = id ? getActivityById(id) : undefined;
-  const people = useMemo(() => [...players, ...trainers], [players, trainers]);
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
-  const [nextCursor, setNextCursor] = useState<string>();
+  const [items, setItems] = useState<ActivityHistoryItem[]>([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const rows = useMemo(() => selectActivityHistoryRows(events, people, user, activity?.teams), [activity?.teams, events, people, user]);
+  const rows = useMemo(() => selectEnrichedActivityHistoryRows(items.slice(0, visibleCount)), [items, visibleCount]);
+  const peopleById = useMemo(() => new Map([...players, ...trainers].map((person) => [person.id, `${person.firstName} ${person.lastName}`])), [players, trainers]);
+  const formatsById = useMemo(() => new Map(matchFormats.map((format) => [format.id, format.name])), [matchFormats]);
+  const formationsById = useMemo(() => new Map(formations.map((formation) => [formation.id, formation.name])), [formations]);
+  const shirtsById = useMemo(() => new Map(shirtSets.map((shirtSet) => [shirtSet.id, shirtSet.sponsor])), [shirtSets]);
 
   useEffect(() => {
-    if (!squadId || !id) return;
+    if (!squad?.id || !id) return;
     let cancelled = false;
     setLoading(true);
-    getActivityAuditEvents(squadId, { activityId: id, limit: PAGE_SIZE })
-      .then((page) => { if (!cancelled) { setEvents(page.items); setNextCursor(page.nextCursor); } })
+    setHasError(false);
+    setItems([]);
+    setVisibleCount(PAGE_SIZE);
+    getActivityHistory(squad.id, id)
+      .then((page) => { if (!cancelled) setItems(page.items); })
       .catch(() => { if (!cancelled) setHasError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [id, squadId]);
+  }, [id, squad?.id]);
 
-  const loadMore = async () => {
-    if (!squad || !id || !nextCursor || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const page = await getActivityAuditEvents(squad.id, { activityId: id, limit: PAGE_SIZE, cursor: nextCursor });
-      setEvents((current) => [...current, ...page.items]);
-      setNextCursor(page.nextCursor);
-    } catch { setHasError(true); } finally { setLoadingMore(false); }
+  const displayValue = (field: string, value: string, subjectType?: string): string => {
+    if (!value) return t('page.activityHistory.values.empty');
+    if (field === 'response') return t(`page.activityHistory.responses.${value}`, { defaultValue: value });
+    if (field === 'status' && ['present', 'absent', 'excused'].includes(value)) return t(`page.activityHistory.statuses.${value}`);
+    if (field === 'status' && ['active', 'cancelled'].includes(value)) return t(`page.activityHistory.activityStatuses.${value}`);
+    if (field === 'status' && subjectType === 'team' && ['new', 'selected'].includes(value)) return t(`page.activityHistory.teamStatuses.${value}`);
+    if (field === 'reason' || field === 'declineReason') return t(`page.activityHistory.reasons.${value}`, { defaultValue: value });
+    if (field === 'kind') return t(`domain.activity.kinds.${value}`, { defaultValue: value });
+    if (field === 'strength') return t(`domain.team.strength.${value === '1' ? 'highest' : value === '2' ? 'medium' : 'lowest'}`);
+    if (field === 'matchFormatId') return formatsById.get(value) ?? t('page.activityHistory.values.unknown');
+    if (field === 'formationId') return formationsById.get(value) ?? t('page.activityHistory.values.unknown');
+    if (field === 'shirtSetId') return shirtsById.get(value) ?? t('page.activityHistory.values.unknown');
+    if (field === 'responsiblePersonId') return peopleById.get(value) ?? t('page.activityHistory.values.unknown');
+    if (field === 'startsAt' || field === 'endsAt' || field === 'selectionSentAt' || field === 'removedAt') {
+      const timestamp = Date.parse(value);
+      return Number.isNaN(timestamp) ? value : formatInstantDateTime(value, i18n.language);
+    }
+    if (field === 'shirtAssignments') {
+      try {
+        const assignments = JSON.parse(value) as Array<{ playerId: string; shirtNumber: number }>;
+        return assignments.map((assignment) => `${peopleById.get(assignment.playerId) ?? t('page.activityHistory.values.unknown')} #${assignment.shirtNumber}`).join(', ') || t('page.activityHistory.values.empty');
+      } catch { return t('page.activityHistory.values.changed'); }
+    }
+    return value;
+  };
+
+  const renderChange = (change: (typeof rows)[number]['changes'][number]) => {
+    const params = change.params;
+    const subject = params.subject || t('page.activityHistory.values.unknown');
+    switch (change.key) {
+      case 'fieldChanged':
+        return t('page.activityHistory.changes.fieldChanged', {
+          subject,
+          field: t(`page.activityHistory.fields.${params.subjectType === 'team' && params.field === 'status' ? 'teamSelectionStatus' : params.field}`, { defaultValue: t('page.activityHistory.fields.unknown') }),
+          previous: displayValue(params.field, params.previous, params.subjectType),
+          current: displayValue(params.field, params.current, params.subjectType),
+        });
+      case 'teamAdded': return t('page.activityHistory.changes.teamAdded', { team: params.team || t('page.activityHistory.values.unknown') });
+      case 'teamRemoved': return t('page.activityHistory.changes.teamRemoved', { team: params.team || t('page.activityHistory.values.unknown') });
+      case 'invitationAdded': return t('page.activityHistory.changes.invitationAdded', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
+      case 'invitationRemoved': return t('page.activityHistory.changes.invitationRemoved', { player: params.player || t('page.activityHistory.values.unknown'), response: displayValue('response', params.response) });
+      case 'playerSelected': return t('page.activityHistory.changes.playerSelected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
+      case 'playerUnselected': return params.reason
+        ? t('page.activityHistory.changes.playerUnselectedWithReason', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown'), reason: t(`page.activityHistory.reasons.${params.reason}`, { defaultValue: params.reason }) })
+        : t('page.activityHistory.changes.playerUnselected', { player: params.player || t('page.activityHistory.values.unknown'), team: params.team || t('page.activityHistory.values.unknown') });
+      case 'selectionMarkedSent': return t('page.activityHistory.changes.selectionMarkedSent', { dateTime: displayValue('selectionSentAt', params.dateTime) });
+      case 'lineupChanged': return t('page.activityHistory.changes.lineupChanged', { team: params.team || t('page.activityHistory.values.unknown'), periods: params.periods, count: params.assignmentChanges });
+      case 'attendanceRemoved': return t('page.activityHistory.changes.attendanceRemoved', { person: params.person || t('page.activityHistory.values.unknown'), status: displayValue('status', params.status) });
+      case 'activityCreated': return t('page.activityHistory.changes.activityCreated');
+      case 'activityImported': return t('page.activityHistory.changes.activityImported');
+      case 'activityDeleted': return t('page.activityHistory.changes.activityDeleted');
+      default: return t('page.activityHistory.changes.unsupportedChange');
+    }
   };
 
   if (!activity) return <Page><EmptyState><Alert>{t('page.eventDetail.notFound')}</Alert></EmptyState></Page>;
@@ -69,18 +118,19 @@ export default function ActivityHistoryPage() {
           {rows.map((row) => <li key={row.id} className={styles.entry}>
             <Panel padding="compact">
               <div className={styles.entryHeader}>
-                <strong className={styles.actor}>{row.actorName}</strong>
-                <time className={styles.timestamp} dateTime={row.recordedAt}>{formatInstantDateTime(row.recordedAt, i18n.language)}</time>
+                <DateColumn date={row.recordedAt} />
+                <div className={styles.entryMeta}>
+                  <strong className={styles.actor}>{row.actorName}</strong>
+                  <time className={styles.timestamp} dateTime={row.recordedAt}>{formatInstantTime(row.recordedAt, i18n.language)}</time>
+                </div>
               </div>
               <ul className={styles.changeList}>
-                {row.changes.map((change, index) => <li key={`${row.id}-${index}`} className={styles.change}>
-                  {t(`page.activityHistory.changes.${change.key}`, { ...change.params, fields: change.params.fields?.split(', ').map((field) => t(`page.activityHistory.fields.${field}`)).join(', '), response: t(`page.activityHistory.responses.${change.params.response}`), status: t(`page.activityHistory.statuses.${change.params.status}`) })}
-                </li>)}
+                {row.changes.map((change, index) => <li key={`${row.id}-${index}`} className={styles.change}>{renderChange(change)}</li>)}
               </ul>
             </Panel>
           </li>)}
         </ol>
-        {nextCursor && <PanelActions className={styles.pagination}><Button variant="secondary" onClick={loadMore} loading={loadingMore}>{t('page.activityHistory.loadMore')}</Button></PanelActions>}
+        {visibleCount < items.length && <PanelActions className={styles.pagination}><Button variant="secondary" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>{t('page.activityHistory.loadMore')}</Button></PanelActions>}
       </Stack>
     )}
   </Page>;

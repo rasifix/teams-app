@@ -17,7 +17,8 @@ import {
   MEMBER_ROLE_GUARDIAN,
   MEMBER_ROLE_TRAINER,
 } from '../services/memberService';
-import { getActivities, updateActivity as updateActivityService } from '../services/activityService';
+import { getActivities } from '../services/activityService';
+import { writeActivityIntent } from '../services/activityIntentService';
 import { createActivityActions, type ActivityActions } from './activityActions';
 import { getActivityDate, getActivityStartTime, sortActivities } from './selectors/activitySelectors';
 import { getShirtSets, addShirtSet as addShirtSetService, updateShirtSet as updateShirtSetService, deleteShirtSet as deleteShirtSetService, addShirtToSet as addShirtToSetService, removeShirtFromSet as removeShirtFromSetService, updateShirt as updateShirtService } from '../services/shirtService';
@@ -26,10 +27,7 @@ import { authService } from '../services/authService';
 import { setSelectedSquadId, clearSelectedSquadId, setSelectedStatisticsPeriodId, clearSelectedStatisticsPeriodId, getSelectedStatisticsPeriodId } from '../utils/localStorage';
 import { canAccessRestrictedManagement, withResolvedSquadPermissions } from '../utils/permissions';
 import { mergeMembersFromCollections, selectPlayersFromMembers, selectTrainersFromMembers, type SquadMember } from './selectors/memberSelectors';
-import {
-  selectActivityWithoutActiveInvitations,
-  selectPlayerDeletionImpact,
-} from './selectors/playerDeletionSelectors';
+import { selectPlayerDeletionImpact } from './selectors/playerDeletionSelectors';
 import { selectMatchingMatchFormat } from './selectors/squadCategorySelectors';
 import { selectActiveSquads } from './selectors/squadSelectors';
 import { selectOfficialMatchFormatForCategory } from './selectors/sfvCatalogSelectors';
@@ -707,10 +705,7 @@ export const useStore = create<AppState>()(
 
           let updatedActivities = get().activities;
           for (const activity of deletionImpact.activitiesWithActiveInvitations) {
-            const sanitizedActivity = selectActivityWithoutActiveInvitations(activity, id);
-            const persistedActivity = await updateActivityService(currentSquad.id, activity.id, {
-              invitations: sanitizedActivity.invitations,
-            });
+            const persistedActivity = await writeActivityIntent(currentSquad.id, activity.id, { type: 'removeInvitation', playerId: id });
 
             updatedActivities = updatedActivities.map((entry) => (
               entry.id === persistedActivity.id ? persistedActivity : entry

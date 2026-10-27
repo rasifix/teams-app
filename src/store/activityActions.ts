@@ -1,4 +1,7 @@
-import type { Activity, ActivityAttendance, ActivityInvitation, ActivityPayload, Squad, Team } from '../types';
+import type { Activity, ActivityPayload, Squad } from '../types';
+import { ApiError } from '../services/apiClient';
+import { getActivityById as getActivityByIdService } from '../services/activityService';
+import { writeActivityIntent, type ActivityDetailsPatch, type ActivityIntent } from '../services/activityIntentService';
 import {
   createActivity,
   cancelActivity,
@@ -6,11 +9,7 @@ import {
   markActivitySelectionSent,
   updateActivity,
   updateActivityInvitation,
-  updateActivitySelection,
-  updateActivityAttendance,
-  updateActivityTeams,
   restoreActivity,
-  setActivityInvitations,
   type InvitationUpdate,
 } from '../services/activityService';
 import { sortActivities } from './selectors/activitySelectors';
@@ -30,13 +29,10 @@ export interface ActivitiesSliceAccess {
 
 export interface ActivityActions {
   addActivity: (payload: ActivityPayload) => Promise<boolean>;
-  updateActivity: (id: string, payload: Partial<ActivityPayload>) => Promise<boolean>;
+  updateActivity: (id: string, payload: ActivityDetailsPatch) => Promise<boolean>;
+  executeActivityIntent: (id: string, intent: ActivityIntent) => Promise<boolean>;
   updateActivityInvitation: (activityId: string, playerId: string, update: InvitationUpdate) => Promise<boolean>;
-  setActivityInvitations: (activityId: string, invitations: ActivityInvitation[]) => Promise<boolean>;
-  updateActivityTeams: (activityId: string, teams: Team[]) => Promise<boolean>;
-  updateActivitySelection: (activityId: string, teams: Team[]) => Promise<boolean>;
   markActivitySelectionSent: (activityId: string) => Promise<boolean>;
-  updateActivityAttendance: (activityId: string, attendance: ActivityAttendance[]) => Promise<boolean>;
   deleteActivity: (id: string) => Promise<boolean>;
   cancelActivity: (id: string) => Promise<boolean>;
   restoreActivity: (id: string) => Promise<boolean>;
@@ -61,13 +57,21 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
     return activity;
   };
 
-  const run = async (label: string, action: (squadId: string) => Promise<void>): Promise<boolean> => {
+  const run = async (label: string, action: (squadId: string) => Promise<void>, refreshActivityId?: string): Promise<boolean> => {
     const squad = requireSquad();
     try {
       await action(squad.id);
       return true;
     } catch (error) {
       console.error(`Failed to ${label}:`, error);
+      if (refreshActivityId && error instanceof ApiError && error.status === 409) {
+        try {
+          const latest = await getActivityByIdService(squad.id, refreshActivityId);
+          if (latest) replace(normalizeActivity(latest));
+        } catch (refreshError) {
+          console.error('Failed to refresh conflicting activity:', refreshError);
+        }
+      }
       return false;
     }
   };
@@ -81,45 +85,26 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
     updateActivity: (id, payload) => run('update activity', async (squadId) => {
       requireActiveActivity(id);
       replace(normalizeActivity(await updateActivity(squadId, id, payload)));
-    }),
+    }, id),
+
+    executeActivityIntent: (id, intent) => run(`execute ${intent.type}`, async (squadId) => {
+      requireActiveActivity(id);
+      replace(normalizeActivity(await writeActivityIntent(squadId, id, intent)));
+    }, id),
 
     updateActivityInvitation: (activityId, playerId, update) => run('update invitation', async (squadId) => {
       requireActiveActivity(activityId);
       replace(normalizeActivity(await updateActivityInvitation(squadId, activityId, playerId, update)));
-    }),
+    }, activityId),
 
-    setActivityInvitations: (activityId, invitations) => run('set invitations', async (squadId) => {
-      requireActiveActivity(activityId);
-      replace(normalizeActivity(await setActivityInvitations(squadId, activityId, invitations)));
-    }),
-
-    updateActivityTeams: (activityId, teams) => run('update teams', async (squadId) => {
-      requireActiveActivity(activityId);
-      const savedTeams = await updateActivityTeams(squadId, activityId, teams);
-      const current = get().activities.find((entry) => entry.id === activityId);
-      if (current) replace({ ...current, teams: savedTeams });
-    }),
-
-    updateActivityAttendance: (activityId, attendance) => run('update attendance', async (squadId) => {
-      requireActiveActivity(activityId);
-      const saved = await updateActivityAttendance(squadId, activityId, attendance);
-      const current = get().activities.find((entry) => entry.id === activityId);
-      if (current) replace({ ...current, attendance: saved });
-    }),
-
-    updateActivitySelection: (activityId, teams) => run('update selection', async (squadId) => {
-      requireActiveActivity(activityId);
-      replace(normalizeActivity(await updateActivitySelection(squadId, activityId, teams)));
-    }),
-
-    markActivitySelectionSent: (activityId) => run('send selection', async (squadId) => {
+    markActivitySelectionSent: (activityId) => run('mark selection sent', async (squadId) => {
       const current = get().activities.find((entry) => entry.id === activityId);
       requireActiveActivity(activityId);
       if (!current || !selectSelectionValidation(current).canSend) {
         throw new Error('Selection does not meet the send requirements');
       }
       replace(normalizeActivity(await markActivitySelectionSent(squadId, activityId)));
-    }),
+    }, activityId),
 
     deleteActivity: (id) => run('delete activity', async (squadId) => {
       await deleteActivity(squadId, id);
@@ -130,13 +115,13 @@ export function createActivityActions({ get, set }: ActivitiesSliceAccess): Acti
       const current = requireActiveActivity(id);
       if (current.spondId) throw new Error('Spond-linked activities cannot be cancelled locally');
       replace(normalizeActivity(await cancelActivity(squadId, id)));
-    }),
+    }, id),
 
     restoreActivity: (id) => run('restore activity', async (squadId) => {
       const current = get().activities.find((entry) => entry.id === id);
       if (!current) throw new Error('Activity not found');
       if (current.spondId) throw new Error('Spond-linked activities cannot be restored locally');
       replace(normalizeActivity(await restoreActivity(squadId, id)));
-    }),
+    }, id),
   };
 }

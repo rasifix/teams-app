@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiClient } from './apiClient';
-import { cancelActivity, createActivity, restoreActivity, setActivityInvitations, updateActivityInvitation } from './activityService';
+import { cancelActivity, createActivity, restoreActivity, updateActivityInvitation } from './activityService';
+import { rememberActivityRevision } from './activityIntentService';
 import type { ActivityPayload } from '../types';
 
 const activityPayload: ActivityPayload = {
@@ -16,52 +17,47 @@ describe('activityService lifecycle', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('cancels an activity through the activity lifecycle endpoint', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ id: 'a1', status: 'cancelled' });
+    rememberActivityRevision('squad-1', 'a1', '"activity-revision-4"');
+    const requestSpy = vi.spyOn(apiClient, 'requestWithMetadata').mockResolvedValue({ data: { id: 'a1', status: 'cancelled' } as never, headers: new Headers({ ETag: '"activity-revision-5"' }) });
 
     await cancelActivity('squad-1', 'a1');
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/status', {
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/status', expect.objectContaining({
       method: 'PUT',
+      headers: expect.objectContaining({ 'If-Match': '"activity-revision-4"' }),
       body: JSON.stringify({ status: 'cancelled' }),
-    });
+    }));
   });
 
   it('restores an activity through the activity lifecycle endpoint', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ id: 'a1', status: 'active' });
+    rememberActivityRevision('squad-1', 'a1', '"activity-revision-8"');
+    const requestSpy = vi.spyOn(apiClient, 'requestWithMetadata').mockResolvedValue({ data: { id: 'a1', status: 'active' } as never, headers: new Headers({ ETag: '"activity-revision-9"' }) });
 
     await restoreActivity('squad-1', 'a1');
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/status', {
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/status', expect.objectContaining({
       method: 'PUT',
+      headers: expect.objectContaining({ 'If-Match': '"activity-revision-8"' }),
       body: JSON.stringify({ status: 'active' }),
-    });
+    }));
   });
 
   it('persists a local decline reason without changing the invitation response', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ id: 'a1' });
+    rememberActivityRevision('squad-1', 'a1', '"activity-revision-2"');
+    const requestSpy = vi.spyOn(apiClient, 'requestWithMetadata').mockResolvedValue({ data: { id: 'a1' } as never, headers: new Headers({ ETag: '"activity-revision-3"' }) });
 
     await updateActivityInvitation('squad-1', 'a1', 'player-1', {
       response: 'declined',
       declineReason: 'injured',
     });
 
-    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/invitations/player-1', {
+    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/invitations/player-1', expect.objectContaining({
       method: 'PUT',
+      headers: expect.objectContaining({ 'If-Match': '"activity-revision-2"' }),
       body: JSON.stringify({ response: 'declined', declineReason: 'injured' }),
-    });
+    }));
   });
 
-  it('sets invitations through the dedicated endpoint', async () => {
-    const requestSpy = vi.spyOn(apiClient, 'request').mockResolvedValue({ id: 'a1' });
-    const invitations = [{ id: 'invite-1', playerId: 'player-1', response: 'open' as const }];
-
-    await setActivityInvitations('squad-1', 'a1', invitations);
-
-    expect(requestSpy).toHaveBeenCalledWith('/api/squads/squad-1/activities/a1/invitations', {
-      method: 'PUT',
-      body: JSON.stringify({ invitations }),
-    });
-  });
 });
 
 describe('activityService creation', () => {

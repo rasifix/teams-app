@@ -6,7 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useSquad, useTrainers } from '../store/useStore';
 import { canAccessRestrictedManagement } from '../utils/permissions';
 import { usePlayers, useAppLoading, useAppHasErrors, useAppErrors, useShirtSets } from '../store';
-import type { ActivityAttendance, ActivityInvitation, ActivityPayload, InvitationDeclineReason, InvitationResponse, Team } from '../types';
+import type { ActivityAttendance, InvitationDeclineReason, InvitationResponse, Team } from '../types';
+import type { ActivityDetailsPatch } from '../services/activityIntentService';
 import InvitePlayersModal from '../components/InvitePlayersModal';
 import PlayerInvitationsCard from '../components/PlayerInvitationsCard';
 import EditActivityModal from '../components/EditActivityModal';
@@ -18,10 +19,11 @@ import TeamPrintSummary from '../components/TeamPrintSummary';
 import styles from './ActivityDetailPage.module.css';
 import { selectIsSpondLinked } from '../store/selectors/squadSettingsSelectors';
 import { formatDate, formatInstantDateTime } from '../utils/dateFormatter';
-import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds, shouldRemovePlayerFromSelection } from '../store/selectors/activitySelectors';
+import { getActivityDate, getActivityStartTime, selectSelectedPlayerIds } from '../store/selectors/activitySelectors';
 import { selectActivityPhase, selectActivityPhaseSections } from '../store/selectors/activityLifecycleSelectors';
 import { selectAdjacentActivities, selectCanAddActivityTeam, selectMinimumActivityMaxPlayers } from '../store/selectors/activityViewSelectors';
-import { removePlayerFromSelection, selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
+import { selectAllTeamsHaveResponsiblePeople, selectSelectionEditState, selectSelectionValidation } from '../store/selectors/selectionSelectors';
+import { selectChangedAttendanceRecords } from '../store/selectors/attendanceSelectors';
 import { selectTeamWhatsAppMessage } from '../store/selectors/teamCardSelectors';
 import { AddCardButton, AdjacentNavigation, AdjacentNavigationLabel, Alert, Badge, Button, ChevronRightIcon, Cluster, ContentGrid, EmptyState, IconButton, MenuDivider, MenuItem, MenuItemTitle, MenuLabel, MenuSurface, MetadataItem, MetadataList, Page, PageActions, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
 
@@ -29,7 +31,7 @@ export default function ActivityDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activities, getActivityById, updateActivity, updateActivityInvitation, setActivityInvitations, updateActivityTeams, updateActivitySelection, markActivitySelectionSent, updateActivityAttendance, deleteActivity, cancelActivity, restoreActivity } = useActivities();
+  const { activities, getActivityById, updateActivity, updateActivityInvitation, executeActivityIntent, markActivitySelectionSent, deleteActivity, cancelActivity, restoreActivity } = useActivities();
   const { players } = usePlayers();
   const { shirtSets } = useShirtSets();
   const { user } = useAuth();
@@ -102,46 +104,38 @@ export default function ActivityDetailPage() {
     };
   }, [isActionsMenuOpen]);
 
-  const persistTeams = async (teams: Team[]) => {
-    if (activity) await updateActivityTeams(activity.id, teams);
-  };
-
   const handleInvite = async (playerIds: string[], response: InvitationResponse) => {
     if (!activity) return;
-    const invitations: ActivityInvitation[] = [
-      ...activity.invitations,
-      ...playerIds.map((playerId) => ({ id: crypto.randomUUID(), playerId, response })),
-    ];
-    await setActivityInvitations(activity.id, invitations);
+    await executeActivityIntent(activity.id, { type: 'addInvitations', players: playerIds.map((playerId) => ({ playerId, response })) });
   };
 
   const handleInvitationStatusChange = async (invitationId: string, response: InvitationResponse, declineReason?: InvitationDeclineReason) => {
     const invitation = activity?.invitations.find((entry) => entry.id === invitationId);
     if (!activity || !invitation) return;
-    const saved = await updateActivityInvitation(activity.id, invitation.playerId, { response, declineReason: response === 'declined' ? declineReason : undefined });
-    if (saved && shouldRemovePlayerFromSelection(invitation.response, response)) {
-      await updateActivitySelection(activity.id, removePlayerFromSelection(activity.teams, invitation.playerId));
-    }
+    await updateActivityInvitation(activity.id, invitation.playerId, { response, declineReason: response === 'declined' ? declineReason : undefined });
   };
 
   const handleRemoveInvitation = async (invitationId: string) => {
     if (!activity) return;
-    await setActivityInvitations(activity.id, activity.invitations.filter((entry) => entry.id !== invitationId));
+    const invitation = activity.invitations.find((entry) => entry.id === invitationId);
+    if (invitation) await executeActivityIntent(activity.id, { type: 'removeInvitation', playerId: invitation.playerId });
   };
 
   const handleAddTeam = async () => {
     if (!activity || !selectCanAddActivityTeam(activity)) return;
-    await persistTeams([...activity.teams, {
+    await executeActivityIntent(activity.id, { type: 'addTeam', team: {
       id: crypto.randomUUID(),
       name: `${t('domain.team.label')} ${activity.teams.length + 1}`,
       strength: 2,
       startTime: getActivityStartTime(activity),
-      selectedPlayers: [],
-    }]);
+    } });
   };
 
   const handleRecordAttendance = async (attendance: ActivityAttendance[]) => {
-    if (activity) await updateActivityAttendance(activity.id, attendance);
+    if (activity) {
+      const changes = selectChangedAttendanceRecords(activity.attendance, attendance);
+      if (changes.length > 0) await executeActivityIntent(activity.id, { type: 'attendance', changes });
+    }
   };
 
   const handleMarkSelectionSent = async () => {
@@ -333,7 +327,7 @@ export default function ActivityDetailPage() {
     </ContentGrid>
 
     {!spondLinked && activity.status === 'active' && <InvitePlayersModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} onInvite={handleInvite} alreadyInvitedPlayerIds={activity.invitations.map((invitation) => invitation.playerId)} players={players} />}
-    {activity.status === 'active' && <EditActivityModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: Partial<ActivityPayload>) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
+    {activity.status === 'active' && <EditActivityModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onSave={(data: ActivityDetailsPatch) => { void updateActivity(activity.id, data); }} currentActivity={activity} minMaxPlayers={selectMinimumActivityMaxPlayers(activity)} />}
     <ConfirmDialog isOpen={isCancelOpen} title={t('page.eventDetail.cancelActivityTitle')} message={t('page.eventDetail.cancelActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.cancelActivity')} cancelText={t('common.actions.back')} onConfirm={handleCancelActivity} onCancel={() => setIsCancelOpen(false)} confirmButtonColor="red" />
     <ConfirmDialog isOpen={isRestoreOpen} title={t('page.eventDetail.restoreActivityTitle')} message={t('page.eventDetail.restoreActivityMessage', { name: activity.name })} confirmText={t('page.eventDetail.restoreActivity')} cancelText={t('common.actions.cancel')} onConfirm={handleRestoreActivity} onCancel={() => setIsRestoreOpen(false)} confirmButtonColor="green" />
     <ConfirmDialog isOpen={isDeleteOpen} title={t('page.eventDetail.deleteEventTitle')} message={t('page.eventDetail.deleteEventMessage', { name: activity.name })} confirmText={t('common.actions.delete')} cancelText={t('common.actions.cancel')} onConfirm={handleDeleteActivity} onCancel={() => setIsDeleteOpen(false)} confirmButtonColor="red" />

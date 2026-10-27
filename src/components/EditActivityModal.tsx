@@ -4,7 +4,8 @@ import { useSquadMatchFormats } from '../store';
 import { selectActivityFormConfiguration } from '../store/selectors/activityFormSelectors';
 import { getActivityDate, getActivityTime, toStartsAt } from '../store/selectors/activitySelectors';
 import { validateActivitySchedule } from '../store/selectors/activityFormValidation';
-import type { Activity, ActivityKind, ActivityPayload } from '../types';
+import type { Activity, ActivityKind } from '../types';
+import type { ActivityDetailsPatch } from '../services/activityIntentService';
 import { Alert, Button, Field, Input, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Select, Stack } from './ui';
 import ActivityCoreFields from './ActivityCoreFields';
 import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
@@ -12,7 +13,7 @@ import ActivityPlayerLimitFields from './ActivityPlayerLimitFields';
 interface EditActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Partial<ActivityPayload>) => void;
+  onSave: (data: ActivityDetailsPatch) => void;
   currentActivity: Activity;
   minMaxPlayers: number;
 }
@@ -69,11 +70,13 @@ export default function EditActivityModal({ isOpen, onClose, onSave, currentActi
       ...(isSpondManaged ? {} : {
         name: name.trim(),
         startsAt,
-        endsAt,
-        location: location.trim() || undefined,
+        endsAt: endsAt ?? null,
+        location: location.trim() || null,
       }),
-      opponentName: kind === 'match' ? opponentName.trim() || undefined : undefined,
-      matchFormatId: kind === 'match' ? matchFormatId || null : undefined,
+      ...(!isSpondManaged ? {
+        opponentName: kind === 'match' ? opponentName.trim() || null : null,
+        matchFormatId: kind === 'match' ? matchFormatId || null : null,
+      } : {}),
       minPlayersPerTeam,
       maxPlayersPerTeam,
     });

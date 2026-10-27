@@ -13,7 +13,7 @@ import AssignTeamPropertyModal from '../components/AssignTeamPropertyModal';
 import { getUsedShirtNumbersBySetId } from '../utils/shirtAssignments';
 import { selectTeamResponsiblePeople, selectTrainerForUser } from '../store/selectors/teamTrainerSelectors';
 import { selectTeamPlayersByName } from '../store/selectors/teamPlayerSelectors';
-import { selectSelectionEditState, selectTeamsWithSelectionChanges } from '../store/selectors/selectionSelectors';
+import { selectActivitySelectionChanges, selectSelectionEditState } from '../store/selectors/selectionSelectors';
 import type { SelectionRemovalReason } from '../types';
 import TeamPropertiesSection from '../components/teamDetail/TeamPropertiesSection';
 import TeamRosterSection from '../components/teamDetail/TeamRosterSection';
@@ -24,7 +24,7 @@ export default function TeamDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const { getActivityById, updateActivityTeams, updateActivitySelection } = useActivities();
+  const { getActivityById, executeActivityIntent } = useActivities();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
   const { shirtSets } = useShirtSets();
@@ -63,15 +63,13 @@ export default function TeamDetailPage() {
     if (!event || !eventId || !team || !playerToRemove || !selectionEditState?.canEdit) return;
     if (selectionEditState.requiresRemovalReason && !removalReason) return;
 
-    const updatedTeams = selectTeamsWithSelectionChanges(
-      event.teams,
-      team.id,
+    const changes = selectActivitySelectionChanges(
+      team.selectedPlayers,
       team.selectedPlayers.filter((id) => id !== playerToRemove),
       removalReason ? { [playerToRemove]: removalReason } : {},
-      new Date().toISOString(),
+      selectionEditState.requiresRemovalReason,
     );
-
-    await updateActivitySelection(eventId, updatedTeams);
+    await executeActivityIntent(eventId, { type: 'selection', teamId: team.id, ...changes });
     setPlayerToRemove(null);
     setRemovalReason('');
   };
@@ -79,11 +77,7 @@ export default function TeamDetailPage() {
   const handleChangeFormation = async (formationId: string | undefined) => {
     if (!event || !eventId || !team) return;
 
-    const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, formationId: formationId || null } : t
-    );
-
-    await updateActivityTeams(eventId, updatedTeams);
+    await executeActivityIntent(eventId, { type: 'formation', teamId: team.id, formationId: formationId ?? null });
   };
 
   const handleAddPlayers = () => {
@@ -93,32 +87,23 @@ export default function TeamDetailPage() {
   const handleEditTeam = async (name: string, strength: number, startTime: string | undefined, location?: string, meetingTime?: string, meetingLocation?: string) => {
     if (!event || !eventId || !team) return;
     
-    const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, name, strength, startTime, location, meetingTime, meetingLocation } : t
-    );
-    
-    await updateActivityTeams(eventId, updatedTeams);
+    await executeActivityIntent(eventId, { type: 'teamDetails', teamId: team.id, changes: {
+      name, strength, startTime: startTime ?? null, location: location ?? null,
+      meetingTime: meetingTime ?? null, meetingLocation: meetingLocation ?? null,
+    } });
     setIsEditTeamModalOpen(false);
   };
   
   const handleAssignResponsiblePerson = async (responsiblePersonId: string | undefined) => {
     if (!event || !eventId || !team) return;
 
-    const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, responsiblePersonId } : t
-    );
-
-    await updateActivityTeams(eventId, updatedTeams);
+    await executeActivityIntent(eventId, { type: 'responsiblePerson', teamId: team.id, responsiblePersonId: responsiblePersonId ?? null });
   };
 
   const handleAssignShirts = async (shirtSetId: string, assignments: Array<{ playerId: string; shirtNumber: number }>) => {
     if (!event || !eventId || !team) return;
     
-    const updatedTeams = event.teams.map(t =>
-      t.id === teamId ? { ...t, shirtSetId, shirtAssignments: assignments } : t
-    );
-    
-    await updateActivityTeams(eventId, updatedTeams);
+    await executeActivityIntent(eventId, { type: 'shirts', teamId: team.id, shirtSetId, assignments });
     setIsAssignShirtsModalOpen(false);
   };
   

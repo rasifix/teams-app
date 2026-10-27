@@ -13,6 +13,27 @@ export interface SelectionValidation {
   canSend: boolean;
 }
 
+export interface ActivitySelectionChanges {
+  add: string[];
+  remove: Array<{ playerId: string; reason?: SelectionRemovalReason }>;
+}
+
+export function selectActivitySelectionChanges(
+  currentPlayerIds: string[],
+  nextPlayerIds: string[],
+  reasons: Record<string, SelectionRemovalReason | ''> = {},
+  requiresReason = false,
+): ActivitySelectionChanges {
+  const current = new Set(currentPlayerIds);
+  const next = new Set(nextPlayerIds);
+  return {
+    add: nextPlayerIds.filter((id) => !current.has(id)),
+    remove: currentPlayerIds
+      .filter((id) => !next.has(id))
+      .map((playerId) => ({ playerId, ...(requiresReason && reasons[playerId] ? { reason: reasons[playerId] as SelectionRemovalReason } : {}) })),
+  };
+}
+
 export function selectAllTeamsHaveResponsiblePeople(
   activity: Pick<Activity, 'teams'>,
 ): boolean {

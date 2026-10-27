@@ -70,6 +70,17 @@ export function toAttendanceRecords(rows: AttendanceDialogRow[]): ActivityAttend
   ));
 }
 
+export function selectChangedAttendanceRecords(
+  current: ActivityAttendance[] = [],
+  next: ActivityAttendance[],
+): Array<{ personId: string; status: AttendanceStatus | null; reason?: AttendanceReason }> {
+  const previousById = new Map(current.map((record) => [record.personId, record]));
+  return next.filter((record) => {
+    const previous = previousById.get(record.personId);
+    return !previous || previous.status !== record.status || previous.reason !== record.reason;
+  }).map((record) => ({ personId: record.personId, status: record.status, ...(record.reason ? { reason: record.reason } : {}) }));
+}
+
 export interface AttendanceSummary {
   isRecorded: boolean;
   present: number;

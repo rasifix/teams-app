@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
-import type { Activity, ActivityAttendance, ActivityPayload, ActivityInvitation, Team } from '../types';
+import type { Activity, ActivityInvitation, ActivityPayload } from '../types';
+import { writeActivityIntent, rememberActivityRevision, type ActivityDetailsPatch } from './activityIntentService';
 
 const activitiesPath = (activityId?: string, suffix = '') => `/activities${activityId ? `/${activityId}` : ''}${suffix}`;
 
@@ -11,7 +12,9 @@ export async function getActivities(squadId: string): Promise<Activity[]> {
 
 export async function getActivityById(squadId: string, id: string): Promise<Activity | null> {
   try {
-    return await apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id)));
+    const response = await apiClient.requestWithMetadata<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id)));
+    rememberActivityRevision(squadId, id, response.headers.get('ETag'));
+    return response.data;
   } catch (error) {
     if (error instanceof Error && error.message.includes('404')) {
       return null;
@@ -32,11 +35,8 @@ export async function createActivity(
   });
 }
 
-export async function updateActivity(squadId: string, id: string, payload: Partial<ActivityPayload>): Promise<Activity> {
-  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id)), {
-    method: 'PUT',
-    body: JSON.stringify(payload),
-  });
+export async function updateActivity(squadId: string, id: string, payload: ActivityDetailsPatch): Promise<Activity> {
+  return writeActivityIntent(squadId, id, { type: 'details', changes: payload });
 }
 
 export async function deleteActivity(squadId: string, id: string): Promise<void> {
@@ -48,10 +48,7 @@ export async function updateActivityStatus(
   id: string,
   status: Activity['status'],
 ): Promise<Activity> {
-  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/status')), {
-    method: 'PUT',
-    body: JSON.stringify({ status }),
-  });
+  return writeActivityIntent(squadId, id, { type: 'status', status });
 }
 
 export async function cancelActivity(squadId: string, id: string): Promise<Activity> {
@@ -68,43 +65,9 @@ export async function updateActivityInvitation(
   playerId: string,
   update: InvitationUpdate,
 ): Promise<Activity> {
-  return apiClient.request<Activity>(
-    apiClient.getSquadEndpoint(squadId, activitiesPath(id, `/invitations/${playerId}`)),
-    { method: 'PUT', body: JSON.stringify(update) },
-  );
-}
-
-export async function setActivityInvitations(squadId: string, id: string, invitations: ActivityInvitation[]): Promise<Activity> {
-  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/invitations')), {
-    method: 'PUT',
-    body: JSON.stringify({ invitations }),
-  });
-}
-
-/** The backend answers `PUT /teams` with the saved teams, not the whole activity. */
-export async function updateActivityTeams(squadId: string, id: string, teams: Team[]): Promise<Team[]> {
-  return apiClient.request<Team[]>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/teams')), {
-    method: 'PUT',
-    body: JSON.stringify({ teams }),
-  });
-}
-
-export async function updateActivitySelection(squadId: string, id: string, teams: Team[]): Promise<Activity> {
-  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/selection')), {
-    method: 'PUT',
-    body: JSON.stringify({ teams }),
-  });
+  return writeActivityIntent(squadId, id, { type: 'invitationResponse', playerId, update });
 }
 
 export async function markActivitySelectionSent(squadId: string, id: string): Promise<Activity> {
-  return apiClient.request<Activity>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/selection/sent')), {
-    method: 'PUT',
-  });
-}
-
-export async function updateActivityAttendance(squadId: string, id: string, attendance: ActivityAttendance[]): Promise<ActivityAttendance[]> {
-  return apiClient.request<ActivityAttendance[]>(apiClient.getSquadEndpoint(squadId, activitiesPath(id, '/attendance')), {
-    method: 'PUT',
-    body: JSON.stringify({ attendance }),
-  });
+  return writeActivityIntent(squadId, id, { type: 'selectionSent' });
 }

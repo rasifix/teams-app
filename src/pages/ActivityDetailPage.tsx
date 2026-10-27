@@ -207,8 +207,8 @@ export default function ActivityDetailPage() {
   const assignedPlayerIds = selectSelectedPlayerIds(activity);
   const assignedIds = Array.from(assignedPlayerIds);
   const showManageActions = canManage && !spondLinked;
-  return <Page>
-    <AdjacentNavigation aria-label={t('page.eventDetail.navigationLabel')}>
+  return <Page className={styles.page}>
+    <AdjacentNavigation className={styles.navigation} aria-label={t('page.eventDetail.navigationLabel')}>
         {previous ? <IconButton label={t('page.eventDetail.previousActivity', { name: previous.name })} onClick={() => navigate(`/activities/${previous.id}`)}><svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" focusable="false"><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 4.5-7.5 7.5 7.5 7.5" /></svg></IconButton> : <span />}
         <AdjacentNavigationLabel>{t('page.eventDetail.navigationLabel')}</AdjacentNavigationLabel>
         {next ? <IconButton label={t('page.eventDetail.nextActivity', { name: next.name })} onClick={() => navigate(`/activities/${next.id}`)}><ChevronRightIcon /></IconButton> : <span />}

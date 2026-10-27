@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useActivities } from '../hooks/useActivities';
 import { useAuth } from '../hooks/useAuth';
@@ -229,7 +229,7 @@ export default function ActivityDetailPage() {
           {activity.kind === 'match' && activity.opponentName && <p className="ui-page-description">{t('domain.activity.fields.opponent')}: {activity.opponentName}</p>}
         </PageHeaderContent>
         <PageActions className={styles.actions}>
-          <div className={`ui-menu-anchor ${styles.anchor}`} ref={actionsMenuRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setIsActionsMenuOpen(false); }}>
+          <div className={`ui-menu-anchor ${styles.anchor}`} ref={actionsMenuRef}>
             <IconButton
               label={t('page.eventDetail.actionsMenu')}
               aria-haspopup="menu"
@@ -263,7 +263,7 @@ export default function ActivityDetailPage() {
               >
               <div className={styles.sheetHandle} aria-hidden="true" />
               <MenuLabel className={styles.sheetTitle}>{t('page.eventDetail.actionsMenu')}</MenuLabel>
-              <MenuItem onClick={() => { setIsActionsMenuOpen(false); navigate(`/activities/${activity.id}/history`); }}><MenuItemTitle>{t('page.eventDetail.viewHistory')}</MenuItemTitle></MenuItem>
+              <Link to={`/activities/${activity.id}/history`} role="menuitem" className="ui-menu__item"><MenuItemTitle>{t('page.eventDetail.viewHistory')}</MenuItemTitle></Link>
               {activity.status === 'active' && <MenuItem onClick={() => { setIsActionsMenuOpen(false); setIsEditOpen(true); }}><MenuItemTitle>{t('common.actions.edit')}</MenuItemTitle></MenuItem>}
               {showManageActions && activity.status === 'cancelled' && <MenuItem onClick={() => { setIsActionsMenuOpen(false); setIsRestoreOpen(true); }}><MenuItemTitle>{t('page.eventDetail.restoreActivity')}</MenuItemTitle></MenuItem>}
               {showManageActions && <MenuDivider />}

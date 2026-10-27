@@ -6,9 +6,9 @@ import { usePlayers, useTrainers, useSquad, useActivities } from '../store';
 import { getActivityAuditEvents } from '../services/activityEventService';
 import { selectActivityHistoryRows } from '../store/selectors/activityAuditSelectors';
 import type { ActivityEvent } from '../types/activityEvents';
-import { Alert, Button, EmptyState, LoadingState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, PanelHeader, PanelTitle, Stack } from '../components/ui';
+import { Alert, Button, EmptyState, LoadingState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Panel, PanelActions, Stack } from '../components/ui';
 import { formatInstantDateTime } from '../utils/dateFormatter';
-import { classNames } from '../components/ui/classNames';
+import styles from './ActivityHistoryPage.module.css';
 
 const PAGE_SIZE = 50;
 
@@ -17,6 +17,7 @@ export default function ActivityHistoryPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const squad = useSquad();
+  const squadId = squad?.id;
   const { user } = useAuth();
   const { players } = usePlayers();
   const { trainers } = useTrainers();
@@ -31,15 +32,15 @@ export default function ActivityHistoryPage() {
   const rows = useMemo(() => selectActivityHistoryRows(events, people, user, activity?.teams), [activity?.teams, events, people, user]);
 
   useEffect(() => {
-    if (!squad || !id) return;
+    if (!squadId || !id) return;
     let cancelled = false;
     setLoading(true);
-    getActivityAuditEvents(squad.id, { activityId: id, limit: PAGE_SIZE })
+    getActivityAuditEvents(squadId, { activityId: id, limit: PAGE_SIZE })
       .then((page) => { if (!cancelled) { setEvents(page.items); setNextCursor(page.nextCursor); } })
       .catch(() => { if (!cancelled) setHasError(true); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [id, squad?.id]);
+  }, [id, squadId]);
 
   const loadMore = async () => {
     if (!squad || !id || !nextCursor || loadingMore) return;
@@ -53,7 +54,7 @@ export default function ActivityHistoryPage() {
 
   if (!activity) return <Page><EmptyState><Alert>{t('page.eventDetail.notFound')}</Alert></EmptyState></Page>;
 
-  return <Page>
+  return <Page width="medium">
     <PageHeader align="start">
       <PageHeaderContent>
         <PageTitle>{t('page.activityHistory.title')}</PageTitle>
@@ -62,24 +63,25 @@ export default function ActivityHistoryPage() {
       <PageActions><Button variant="ghost" onClick={() => navigate(`/activities/${activity.id}`)}>{t('common.actions.back')}</Button></PageActions>
     </PageHeader>
     {hasError && <Alert>{t('page.activityHistory.loadFailed')}</Alert>}
-    <Panel>
-      <PanelHeader><PanelTitle>{t('page.activityHistory.panelTitle')}</PanelTitle></PanelHeader>
-      {loading ? <LoadingState message={t('page.activityHistory.loading')} /> : rows.length === 0 ? <EmptyState>{t('page.activityHistory.empty')}</EmptyState> : (
-        <Stack gap="sm">
-          {rows.map((row) => <Panel key={row.id} padding="compact">
-            <Stack gap="sm">
-              <div className={classNames('ui-metadata-list')}>
-                <span className={classNames('ui-metadata-item')}><strong>{row.actorName}</strong></span>
-                <span className={classNames('ui-metadata-item')}>{formatInstantDateTime(row.recordedAt, i18n.language)}</span>
+    {loading ? <Panel><LoadingState message={t('page.activityHistory.loading')} /></Panel> : rows.length === 0 ? <Panel><EmptyState>{t('page.activityHistory.empty')}</EmptyState></Panel> : (
+      <Stack gap="md">
+        <ol className={styles.timeline}>
+          {rows.map((row) => <li key={row.id} className={styles.entry}>
+            <Panel padding="compact">
+              <div className={styles.entryHeader}>
+                <strong className={styles.actor}>{row.actorName}</strong>
+                <time className={styles.timestamp} dateTime={row.recordedAt}>{formatInstantDateTime(row.recordedAt, i18n.language)}</time>
               </div>
-              {row.changes.map((change, index) => <p key={`${row.id}-${index}`} className={classNames('supporting-text')}>
-                {t(`page.activityHistory.changes.${change.key}`, { ...change.params, actor: row.actorName, fields: change.params.fields?.split(', ').map((field) => t(`page.activityHistory.fields.${field}`)).join(', '), response: t(`page.activityHistory.responses.${change.params.response}`), status: t(`page.activityHistory.statuses.${change.params.status}`) })}
-              </p>)}
-            </Stack>
-          </Panel>)}
-          {nextCursor && <PanelActions><Button variant="secondary" onClick={loadMore} loading={loadingMore}>{t('page.activityHistory.loadMore')}</Button></PanelActions>}
-        </Stack>
-      )}
-    </Panel>
+              <ul className={styles.changeList}>
+                {row.changes.map((change, index) => <li key={`${row.id}-${index}`} className={styles.change}>
+                  {t(`page.activityHistory.changes.${change.key}`, { ...change.params, fields: change.params.fields?.split(', ').map((field) => t(`page.activityHistory.fields.${field}`)).join(', '), response: t(`page.activityHistory.responses.${change.params.response}`), status: t(`page.activityHistory.statuses.${change.params.status}`) })}
+                </li>)}
+              </ul>
+            </Panel>
+          </li>)}
+        </ol>
+        {nextCursor && <PanelActions className={styles.pagination}><Button variant="secondary" onClick={loadMore} loading={loadingMore}>{t('page.activityHistory.loadMore')}</Button></PanelActions>}
+      </Stack>
+    )}
   </Page>;
 }

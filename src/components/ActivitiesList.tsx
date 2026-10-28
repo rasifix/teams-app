@@ -15,7 +15,7 @@ export default function ActivitiesList({ activities, summaries, onOpenActivity, 
   const { t } = useTranslation();
 
   if (activities.length === 0) {
-    return <EmptyState><p>{t('page.events.list.emptyState')}</p></EmptyState>;
+    return <EmptyState><p>{t('page.activities.list.emptyState')}</p></EmptyState>;
   }
 
   return <ContentGrid variant="equal">

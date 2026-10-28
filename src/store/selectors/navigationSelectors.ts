@@ -50,7 +50,7 @@ export const selectDocumentTitle = (
   const segments = pathname.split('/').filter(Boolean);
   if (segments[0] === 'activities') {
     const activity = activities.find((item) => item.id === segments[1]);
-    if (!activity) return t('page.events.title');
+    if (!activity) return t('page.activities.title');
     const activityTitle = activity.kind === 'match' && activity.opponentName
       ? t('app.documentTitle.matchWithOpponent', { name: activity.name, opponent: activity.opponentName })
       : activity.name;

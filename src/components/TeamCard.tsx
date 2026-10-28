@@ -37,7 +37,7 @@ export default function TeamCard({ view, onOpenTeam, onShareWhatsApp, dragEnable
             {onShareWhatsApp && <IconButton label={t('page.eventDetail.shareWhatsApp')} disabled={view.selectedPlayerCount === 0} onClick={onShareWhatsApp}>
               <img className="icon-sm" src="/whatsapp.svg" alt="" aria-hidden="true" />
             </IconButton>}
-            <IconButton label={t('page.events.openTeamDetails', { team: view.teamName })} onClick={onOpenTeam}>
+            <IconButton label={t('page.activities.openTeamDetails', { team: view.teamName })} onClick={onOpenTeam}>
               <ChevronRightIcon className="icon-sm" />
             </IconButton>
           </Cluster>

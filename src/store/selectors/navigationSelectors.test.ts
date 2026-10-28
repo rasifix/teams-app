@@ -42,9 +42,9 @@ describe('navigation selectors', () => {
 
   it('falls back when entity data has not loaded or is missing', () => {
     expect(title('/', { currentSquad: null })).toBe('page.home.publicTitle');
-    expect(title('/activities/missing')).toBe('page.events.title');
+    expect(title('/activities/missing')).toBe('page.activities.title');
     expect(title('/activities/activity-1/teams/missing')).toBe('Match SC Grafenried');
-    expect(title('/activities/activity-1', { activities: [] })).toBe('page.events.title');
+    expect(title('/activities/activity-1', { activities: [] })).toBe('page.activities.title');
     expect(title('/players/missing')).toBe('nav.members');
   });
 

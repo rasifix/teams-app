@@ -195,6 +195,7 @@
 .ui-swipe-action-tray--visible { opacity: 1; pointer-events: auto; }
 .ui-swipeable-row > .ui-swipe-action-tray { display: none; }
 .icon-button { border-radius: var(--radius-round); padding: var(--space-2); color: var(--color-text-subtle); transition: background var(--transition-fast), color var(--transition-fast); }
+.icon-button--sm { padding: var(--space-1); }
 .icon-button:hover,
 .btn-ghost:hover:not(:disabled) { background: var(--color-surface-subtle); color: var(--color-text); }
 .icon-button--inverse { border: 1px solid var(--color-inverse-border); background: var(--color-inverse-control); color: var(--color-inverse-control-text); }

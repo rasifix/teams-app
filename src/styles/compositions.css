@@ -211,20 +211,21 @@
 .activity-card-status { display: flex; flex: none; align-items: center; gap: var(--space-3); padding-top: var(--space-1); }
 .activity-card-pending { display: none; }
 .activity-card-team { border-top: 1px solid var(--color-border); background: var(--color-surface-subtle); padding: var(--space-1) var(--space-3); }
-.activity-card-team-meta { display: grid; grid-template-columns: 3.25rem 3.5rem minmax(0, 1fr) 2.5rem; align-items: center; gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--font-size-xs); }
+.activity-card-team-meta { display: grid; grid-template-columns: 3.25rem 3.5rem minmax(0, 1fr) 2.5rem 2.25rem; align-items: center; gap: var(--space-1) var(--space-2); margin-top: 0; font-size: var(--font-size-xs); }
 .activity-card-team-strength { overflow: hidden; white-space: nowrap; }
-.activity-card-team-meta [data-team-field='name'] { min-width: 0; min-height: 1.5rem; justify-content: flex-start; overflow: hidden; padding-inline: var(--space-1); }
-.activity-card-team-meta [data-team-field='name'] > span,
+.activity-card-team-meta [data-team-field='name'],
 .activity-card-team-meta [data-team-field='location'],
 .activity-card-team-meta [data-team-field='people'] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .activity-card-team-meta [data-team-field='count'] { text-align: right; white-space: nowrap; }
+.activity-card-team-meta .icon-button { grid-column: 5; grid-row: 1; justify-self: end; }
 .activity-card-team-meta [data-team-field='location'],
 .activity-card-team-meta [data-team-field='people'] { grid-column: 3 / -1; }
 
 @container (min-width: 34rem) {
-  .activity-card-team-meta { grid-template-columns: 3.25rem 3.5rem minmax(5rem, 1fr) 2.5rem minmax(4rem, 0.8fr) minmax(5rem, 1.2fr); }
+  .activity-card-team-meta { grid-template-columns: 3.25rem 3.5rem minmax(5rem, 1fr) 2.5rem minmax(4rem, 0.8fr) minmax(5rem, 1.2fr) 2.25rem; }
   .activity-card-team-meta [data-team-field='location'] { grid-column: 5; }
   .activity-card-team-meta [data-team-field='people'] { grid-column: 6; }
+  .activity-card-team-meta .icon-button { grid-column: 7; }
 }
 @media (max-width: 39.999rem) {
   .activity-card [data-activity-field='location'] { display: none; }

@@ -317,7 +317,7 @@
       "columns": { "when": "Wann", "who": "Wer", "what": "Was", "activity": "Aktivität" },
       "eventTypes": { "ActivityCreated": "Aktivität erstellt", "ActivityImported": "Aktivität importiert", "ActivityDetailsChanged": "Aktivitätsdetails geändert", "ActivityDeleted": "Aktivität gelöscht", "InvitationAdded": "Einladung hinzugefügt", "InvitationRemoved": "Einladung entfernt", "InvitationResponseChanged": "Antwort geändert", "TeamAdded": "Team hinzugefügt", "TeamChanged": "Team geändert", "TeamRemoved": "Team entfernt", "PlayerSelected": "Spieler ausgewählt", "PlayerUnselected": "Spieler abgewählt", "LineupChanged": "Aufstellung geändert", "SelectionPublished": "Auswahl veröffentlicht", "AttendanceRecorded": "Anwesenheit erfasst", "AttendanceRemoved": "Anwesenheit entfernt", "TaskCreated": "Aufgabe erstellt", "TaskChanged": "Aufgabe geändert", "TaskDeleted": "Aufgabe gelöscht", "TaskSignupAdded": "Aufgabenanmeldung hinzugefügt", "TaskSignupRemoved": "Aufgabenanmeldung entfernt", "TrainingPlanChanged": "Trainingsplan geändert" }
     },
-    "events": {
+    "activities": {
       "title": "Aktivitäten",
       "subtitle": "Spiele und Turniere planen, Teilnahmen und Teams verwalten.",
       "loading": "Aktivitäten werden geladen...",
@@ -331,7 +331,8 @@
       "playersAssignedToTeams": "Spieler, die Teams zugewiesen wurden",
       "teamsReady": "Alle Teams erfüllen die Mindestanzahl an Spielern",
       "invitationCounts": "Einladungszahlen",
-      "teamCardLabel": "Details zu {{team}}"
+      "teamCardLabel": "Details zu {{team}}",
+      "openTeamDetails": "Details zu {{team}} öffnen"
     },
     "players": {
       "eventHistory": {

@@ -32,15 +32,15 @@ export default function ActivitiesPage() {
   const pastSummaries = new Map(pastActivities.map((activity) => [activity.id, selectActivityCardSummary(activity, trainers, players)]));
 
   if (loading) {
-    return <Page><EmptyState><p>{t('page.events.loading')}</p></EmptyState></Page>;
+    return <Page><EmptyState><p>{t('page.activities.loading')}</p></EmptyState></Page>;
   }
 
   return (
     <Page>
       <PageHeader align="start">
         <PageHeaderContent>
-          <PageTitle>{t('page.events.title')}</PageTitle>
-          <PageDescription>{t('page.events.subtitle')}</PageDescription>
+          <PageTitle>{t('page.activities.title')}</PageTitle>
+          <PageDescription>{t('page.activities.subtitle')}</PageDescription>
         </PageHeaderContent>
         <PageActions>
           {canSyncSpond && spondLinked && (
@@ -56,12 +56,12 @@ export default function ActivitiesPage() {
         <SpondSyncResultBanner />
         {error && <Alert>{error}</Alert>}
         <Panel>
-          <PanelHeader><PanelTitle>{t('page.events.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
+          <PanelHeader><PanelTitle>{t('page.activities.futureTitle', { count: futureActivities.length })}</PanelTitle></PanelHeader>
           <ActivitiesList activities={futureActivities} summaries={futureSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
         </Panel>
         {pastActivities.length > 0 && (
           <Panel>
-            <PanelHeader><PanelTitle>{t('page.events.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
+            <PanelHeader><PanelTitle>{t('page.activities.pastTitle', { count: pastActivities.length })}</PanelTitle></PanelHeader>
           <ActivitiesList activities={pastActivities} summaries={pastSummaries} onOpenActivity={(activityId) => navigate(`/activities/${activityId}`)} onOpenTeam={(activityId, teamId) => navigate(`/activities/${activityId}/teams/${teamId}`)} />
           </Panel>
         )}

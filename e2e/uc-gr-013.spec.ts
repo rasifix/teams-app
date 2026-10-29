@@ -70,9 +70,10 @@ for (const locale of ['en', 'de'] as const) {
     await expect(page.getByText('Pat Coach')).toBeVisible();
     await expect(page.getByText('Rae Player')).toBeVisible();
     await expect(page.getByText('Alex Admin')).toHaveCount(0);
+    await expect(page.getByRole('checkbox')).toHaveCount(0);
     await page.getByRole('button', { name: locale === 'en' ? 'Sync all data' : 'Alle Daten synchronisieren' }).click();
     await expect(page).toHaveURL(/\/members\/trainers$/);
-    await expect(page.getByText(locale === 'en' ? /2 created/ : /2 erstellt/)).toBeVisible();
+    await expect(page.getByText(locale === 'en' ? /1 created/ : /1 erstellt/)).toBeVisible();
     expect(importPayload?.trainers).toEqual([{ action: 'create-trainer', spondMemberId: 'spond-trainer-1' }]);
     expect(importPayload?.members).toEqual([{
       action: 'create-player', spondMemberId: 'spond-player-1', birthDate: '2015-04-12', level: 1, status: 'active', guardianIds: [],

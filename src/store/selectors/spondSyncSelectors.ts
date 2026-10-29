@@ -60,6 +60,18 @@ export interface SpondMemberRow {
   suggestedPlayers: Player[];
 }
 
+export function selectSpondPlayerChanges(
+  source: SpondMemberSnapshot,
+  player: Player | undefined,
+): Array<'name' | 'birthDate'> {
+  if (!player) return [];
+  const changes: Array<'name' | 'birthDate'> = [];
+  if (normalized(player.firstName) !== normalized(source.firstName)
+    || normalized(player.lastName) !== normalized(source.lastName)) changes.push('name');
+  if (source.birthDate && player.birthDate !== source.birthDate) changes.push('birthDate');
+  return changes;
+}
+
 export interface SpondTrainerRow {
   source: SpondMemberSnapshot;
   linkedTrainer?: Trainer;

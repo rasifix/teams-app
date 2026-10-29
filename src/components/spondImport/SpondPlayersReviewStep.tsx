@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import type { Player } from '../../types';
 import type { SpondMemberDraft, SpondMemberRequiredField, SpondMemberRow } from '../../store/selectors/spondSyncSelectors';
-import { Button, Checkbox, Cluster, ContentGrid, EntityContent, EntityMeta, EntityTitle, Panel, Select, Split, Stack, Input } from '../ui';
+import { selectSpondPlayerChanges } from '../../store/selectors/spondSyncSelectors';
+import { ContentGrid, EntityContent, EntityMeta, EntityTitle, Panel, Select, Stack, Input } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
 interface SpondPlayersReviewStepProps {
@@ -9,8 +10,6 @@ interface SpondPlayersReviewStepProps {
   drafts: Record<string, SpondMemberDraft>;
   players: Player[];
   issues: Record<string, SpondMemberRequiredField[]>;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
   onDraftChange: (id: string, update: Partial<SpondMemberDraft>) => void;
   onBack: () => void;
   onNext: () => void;
@@ -22,8 +21,6 @@ export default function SpondPlayersReviewStep({
   drafts,
   players,
   issues,
-  onSelectAll,
-  onSelectNone,
   onDraftChange,
   onBack,
   onNext,
@@ -33,44 +30,29 @@ export default function SpondPlayersReviewStep({
 
   return (
     <>
-      <Split align="start">
-        <p className="body-muted">{t('spondSync.wizard.playersHelp')}</p>
-        {rows.length > 0 && (
-          <Cluster gap="sm">
-            <Button variant="secondary" size="sm" onClick={onSelectAll}>{t('common.actions.selectAll')}</Button>
-            <Button variant="secondary" size="sm" onClick={onSelectNone}>{t('common.actions.selectNone')}</Button>
-          </Cluster>
-        )}
-      </Split>
+      <p className="body-muted">{t('spondSync.wizard.playersHelp')}</p>
       <Stack gap="sm">
         {rows.map((row) => {
           const draft = drafts[row.source.id];
-          const selected = Boolean(draft && draft.action !== 'skip');
-          const match = row.linkedPlayer ?? row.suggestedPlayers[0];
           const rowIssues = issues[row.source.id] ?? [];
+          const changes = selectSpondPlayerChanges(row.source, row.linkedPlayer);
 
           return (
             <Panel key={row.source.id} padding="compact">
-              <label className="spond-review-option">
-                <Checkbox
-                  checked={selected}
-                  onChange={(event) => onDraftChange(row.source.id, {
-                    action: event.target.checked ? (match ? 'link' : 'create-player') : 'skip',
-                    memberId: event.target.checked ? match?.id ?? '' : '',
-                  })}
-                />
-                <EntityContent>
-                  <EntityTitle>{row.source.firstName} {row.source.lastName}</EntityTitle>
-                  {row.linkedPlayer && (
-                    <EntityMeta><span>
-                      {t('spondSync.wizard.alreadyLinked', {
-                        name: `${row.linkedPlayer.firstName} ${row.linkedPlayer.lastName}`,
-                      })}
-                    </span></EntityMeta>
-                  )}
-                </EntityContent>
-              </label>
-              {selected && draft && !row.linkedPlayer && (
+              <EntityContent>
+                <EntityTitle>{row.source.firstName} {row.source.lastName}</EntityTitle>
+                {row.linkedPlayer && (
+                  <EntityMeta><span>
+                    {t('spondSync.wizard.alreadyLinked', {
+                      name: `${row.linkedPlayer.firstName} ${row.linkedPlayer.lastName}`,
+                    })}
+                  </span></EntityMeta>
+                )}
+                {changes.length > 0 && <EntityMeta>{t('spondSync.wizard.changeList', {
+                  changes: changes.map((change) => t(`spondSync.wizard.changedFields.${change}`)).join(', '),
+                })}</EntityMeta>}
+              </EntityContent>
+              {draft && !row.linkedPlayer && (
                 <ContentGrid variant="equal">
                   <Select
                     value={draft.action}

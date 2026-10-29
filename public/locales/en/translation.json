@@ -1148,6 +1148,7 @@
       "eventsHelp": "Existing activities on the same day are selected automatically. Missing activities are selected for import.",
       "noEventsToSync": "No activities matching this filter need to be synchronized.",
       "summaryHelp": "Review every change that will be made before starting the import.",
+      "changeList": "Will change: {{changes}}",
       "noChanges": "There are no changes to sync.",
       "actions": {
         "create": "Create",

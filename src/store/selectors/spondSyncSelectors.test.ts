@@ -18,6 +18,7 @@ import {
   selectSpondImportPreview,
   selectSpondActivityChanges,
   selectSpondMemberRows,
+  selectSpondPlayerChanges,
   selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
   selectNextSpondReviewStep,
@@ -68,6 +69,17 @@ describe('Spond linked group selector', () => {
 });
 
 describe('Spond member selectors', () => {
+  it('reports only source fields that differ from a linked player', () => {
+    expect(selectSpondPlayerChanges(member(), player())).toEqual([]);
+    expect(selectSpondPlayerChanges(member({ firstName: 'Ada', lastName: 'Byron', birthDate: '2014-01-02' }), player()))
+      .toEqual(['name']);
+    expect(selectSpondPlayerChanges(member({ birthDate: '2015-03-04' }), player()))
+      .toEqual(['birthDate']);
+    expect(selectSpondPlayerChanges(member({ firstName: 'Ada', lastName: 'Byron', birthDate: '2015-03-04' }), player()))
+      .toEqual(['name', 'birthDate']);
+    expect(selectSpondPlayerChanges(member(), undefined)).toEqual([]);
+  });
+
   it('prefers an existing Spond link over suggestions', () => {
     const rows = selectSpondMemberRows([member()], [player({ spondId: 'sm1' })]);
     expect(rows[0].linkedPlayer?.id).toBe('p1');

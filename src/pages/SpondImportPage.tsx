@@ -21,13 +21,11 @@ import {
   selectInitialSpondGuardianSelection,
   selectInitialSpondMemberDrafts,
   selectInitialSpondTrainerDrafts,
-  selectFilteredSpondEventRows,
   selectSpondActionableEventRows,
   selectSpondActionableGuardianRows,
   selectSpondActionableMemberRows,
   selectSpondActivityDecisions,
   selectSpondLinkedGroup,
-  selectSpondActivityDraftsWithSelection,
   selectCurrentSpondPeriodId,
   selectSpondDateRangeError,
   selectSpondDecisionSummary,
@@ -37,13 +35,10 @@ import {
   selectSpondTrainerRows,
   selectActionableSpondTrainerRows,
   selectSpondTrainerDecisions,
-  selectSpondTrainerDraftsWithSelection,
   selectSpondMemberDecisions,
-  selectSpondMemberDraftsWithSelection,
   selectSpondWizardProgressSteps,
   selectSpondSyncRange,
   type SpondActivityDraft,
-  type SpondEventFilter,
   type SpondMemberDraft,
   type SpondTrainerDraft,
 } from '../store/selectors/spondSyncSelectors';
@@ -96,11 +91,9 @@ export default function SpondImportPage() {
   const [trainerRows, setTrainerRows] = useState<ReturnType<typeof selectSpondTrainerRows>>([]);
   const [trainerDrafts, setTrainerDrafts] = useState<Record<string, SpondTrainerDraft>>({});
   const [activityDrafts, setActivityDrafts] = useState<Record<string, SpondActivityDraft>>({});
-  const [eventFilter, setEventFilter] = useState<SpondEventFilter>('all');
   const [guardianSelection, setGuardianSelection] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [syncResult, setSyncResult] = useState<SpondSyncResult | null>(null);
   const [noChanges, setNoChanges] = useState(false);
 
   useEffect(() => () => {
@@ -125,10 +118,6 @@ export default function SpondImportPage() {
     [snapshot, activities, players],
   );
   const eventRows = useMemo(() => selectSpondActionableEventRows(allEventRows), [allEventRows]);
-  const visibleEventRows = useMemo(
-    () => selectFilteredSpondEventRows(eventRows, activityDrafts, eventFilter),
-    [eventRows, activityDrafts, eventFilter],
-  );
   const dateRangeError = selectSpondDateRangeError(from, to);
   const canImport = Boolean(squad && canAccessRestrictedManagement(user, { squad, trainers }));
   const progressSteps = selectSpondWizardProgressSteps(
@@ -178,7 +167,6 @@ export default function SpondImportPage() {
       const hasChanges = nextMemberRows.length > 0 || nextTrainerRows.length > 0
         || nextGuardianRows.length > 0 || nextEventRows.length > 0;
       if (!hasChanges) {
-        setSyncResult(null);
         setNoChanges(true);
         setStep('results');
       } else {
@@ -246,17 +234,6 @@ export default function SpondImportPage() {
     const nextRange = selectSpondSyncRange(periods, nextPeriodId, { from, to });
     setFrom(nextRange.from);
     setTo(nextRange.to);
-  };
-
-  const setVisibleEventSelection = (selected: boolean) => {
-    setActivityDrafts((current) => selectSpondActivityDraftsWithSelection(current, visibleEventRows, selected));
-  };
-
-  const setPlayerSelection = (selected: boolean) => {
-    setMemberDrafts((current) => selectSpondMemberDraftsWithSelection(current, memberRows, selected));
-  };
-  const setTrainerSelection = (selected: boolean) => {
-    setTrainerDrafts((current) => selectSpondTrainerDraftsWithSelection(current, actionableTrainerRows, selected));
   };
 
   const previousStep = () => {
@@ -331,8 +308,7 @@ export default function SpondImportPage() {
         updated: imported.updated,
         linked: imported.linked,
       };
-      setSyncResult(syncResult);
-      setStep('results');
+      navigate(closePath, { replace: true, state: { spondSyncResult: syncResult } });
     } catch (caught) {
       setError(errorMessage(caught));
     } finally {
@@ -371,7 +347,9 @@ export default function SpondImportPage() {
           <PageDescription>{stepTitle}</PageDescription>
         </PageHeaderContent>
         <PageActions>
-        <Button variant="secondary" onClick={() => navigate(closePath)}>{t("common.actions.close")}</Button>
+        <Button variant="secondary" onClick={() => navigate(closePath)}>
+          {step === 'diff' ? t('common.actions.cancel') : t('common.actions.close')}
+        </Button>
         </PageActions>
       </PageHeader>
       <div className="spond-wizard-progress" aria-label={t("spondSync.wizard.progress")}>
@@ -432,8 +410,6 @@ export default function SpondImportPage() {
                     drafts={memberDrafts}
                     players={players}
                     issues={decisionSummary.memberIssues}
-                    onSelectAll={() => setPlayerSelection(true)}
-                    onSelectNone={() => setPlayerSelection(false)}
                     onDraftChange={updateMember}
                     onBack={previousStep}
                     onNext={() => void apply()}
@@ -445,21 +421,15 @@ export default function SpondImportPage() {
                     drafts={trainerDrafts}
                     trainers={trainers}
                     issues={decisionSummary.trainerIssues}
-                    onSelectAll={() => setTrainerSelection(true)}
-                    onSelectNone={() => setTrainerSelection(false)}
                     onDraftChange={(id, update) => setTrainerDrafts((current) => ({
                       ...current, [id]: { ...current[id], ...update },
                     }))}
                   />
                   <SpondActivitiesReviewStep
-                    rows={visibleEventRows}
+                    rows={eventRows}
                     drafts={activityDrafts}
                     activities={activities}
-                    eventFilter={eventFilter}
                     issues={decisionSummary.activityIssues}
-                    onFilterChange={setEventFilter}
-                    onSelectAll={() => setVisibleEventSelection(true)}
-                    onSelectNone={() => setVisibleEventSelection(false)}
                     onDraftChange={updateActivity}
                     onBack={() => undefined}
                     onNext={() => undefined}
@@ -480,17 +450,6 @@ export default function SpondImportPage() {
           )}
           {step === "results" && noChanges && (
             <EmptyState>{t('spondSync.wizard.nothingToImport')}</EmptyState>
-          )}
-          {step === "results" && !noChanges && syncResult && (
-            <>
-              <p className="body-muted">{t('spondSync.wizard.resultsHelp')}</p>
-              <Stack gap="sm">
-                <p>{t('spondSync.wizard.results.created', { count: syncResult.created })}</p>
-                <p>{t('spondSync.wizard.results.updated', { count: syncResult.updated })}</p>
-                <p>{t('spondSync.wizard.results.linked', { count: syncResult.linked })}</p>
-              </Stack>
-              <Button onClick={() => navigate(closePath, { replace: true, state: { spondSyncResult: syncResult } })}>{t('common.actions.done')}</Button>
-            </>
           )}
           </Stack>
         </CardBody>

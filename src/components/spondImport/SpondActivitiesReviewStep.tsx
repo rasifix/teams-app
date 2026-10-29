@@ -3,22 +3,17 @@ import type { Activity, ActivityKind } from '../../types';
 import {
   type SpondActivityDraft,
   type SpondActivityRequiredField,
-  type SpondEventFilter,
   type SpondEventRow,
 } from '../../store/selectors/spondSyncSelectors';
 import { formatInstantDateTime } from '../../utils/dateFormatter';
-import { Button, Checkbox, Cluster, ContentGrid, EmptyState, EntityContent, EntityMeta, EntityTitle, Field, Input, Panel, Select, Split, Stack } from '../ui';
+import { ContentGrid, EntityContent, EntityMeta, EntityTitle, Field, Input, Panel, Select, Stack } from '../ui';
 import SpondWizardActions from './SpondWizardActions';
 
 interface SpondActivitiesReviewStepProps {
   rows: SpondEventRow[];
   drafts: Record<string, SpondActivityDraft>;
   activities: Activity[];
-  eventFilter: SpondEventFilter;
   issues: Record<string, SpondActivityRequiredField[]>;
-  onFilterChange: (filter: SpondEventFilter) => void;
-  onSelectAll: () => void;
-  onSelectNone: () => void;
   onDraftChange: (id: string, update: Partial<SpondActivityDraft>) => void;
   onBack: () => void;
   onNext: () => void;
@@ -29,11 +24,7 @@ export default function SpondActivitiesReviewStep({
   rows,
   drafts,
   activities,
-  eventFilter,
   issues,
-  onFilterChange,
-  onSelectAll,
-  onSelectNone,
   onDraftChange,
   onBack,
   onNext,
@@ -44,57 +35,25 @@ export default function SpondActivitiesReviewStep({
   return (
     <>
       <p className="body-muted">{t('spondSync.wizard.eventsHelp')}</p>
-      <Split align="end">
-        <Field label={t('spondSync.eventFilter.label')} htmlFor="spond-event-filter">
-          <Select
-            id="spond-event-filter"
-            value={eventFilter}
-            onChange={(event) => onFilterChange(event.target.value as SpondEventFilter)}
-          >
-            <option value="all">{t('spondSync.eventFilter.all')}</option>
-            <option value="match">{t('spondSync.eventFilter.match')}</option>
-            <option value="tournament">{t('spondSync.eventFilter.tournament')}</option>
-          </Select>
-        </Field>
-        {rows.length > 0 && (
-          <Cluster gap="sm">
-            <Button variant="secondary" size="sm" onClick={onSelectAll}>{t('common.actions.selectAll')}</Button>
-            <Button variant="secondary" size="sm" onClick={onSelectNone}>{t('common.actions.selectNone')}</Button>
-          </Cluster>
-        )}
-      </Split>
-      {rows.length === 0 ? (
-        <EmptyState>
-          {t('spondSync.wizard.noChanges')}
-        </EmptyState>
-      ) : (
+      {rows.length > 0 && (
         <Stack gap="sm">
           {rows.map((row) => {
             const draft = drafts[row.source.id];
-            const selected = Boolean(draft && draft.action !== 'skip');
-            const match = row.linkedActivity ?? (
-              row.suggestedActivities.length === 1 ? row.suggestedActivities[0] : undefined
-            );
             const rowIssues = issues[row.source.id] ?? [];
 
             return (
               <Panel key={row.source.id} padding="compact">
-                <label className="spond-review-option">
-                  <Checkbox
-                    checked={selected}
-                    onChange={(event) => onDraftChange(row.source.id, {
-                      action: event.target.checked ? (match ? 'link' : 'create') : 'skip',
-                      activityId: event.target.checked ? match?.id ?? '' : '',
-                    })}
-                  />
-                  <EntityContent>
-                    <EntityTitle>{row.source.name}</EntityTitle>
-                    <EntityMeta><span>
-                      {formatInstantDateTime(row.source.startsAt, i18n.language)}
-                    </span></EntityMeta>
-                  </EntityContent>
-                </label>
-                {selected && draft && !row.linkedActivity && (
+                <EntityContent>
+                  <EntityTitle>{row.source.name}</EntityTitle>
+                  <EntityMeta>
+                    <span>{formatInstantDateTime(row.source.startsAt, i18n.language)}</span>
+                    {row.changes.length > 0 && <span>{t('spondSync.wizard.changeList', {
+                      changes: row.changes.map((change) => t(`spondSync.wizard.changedFields.${change}`)).join(', '),
+                    })}</span>}
+                    {row.source.status === 'deleted' && <span>{t('spondSync.wizard.actions.delete')}</span>}
+                  </EntityMeta>
+                </EntityContent>
+                {draft && !row.linkedActivity && row.source.status !== 'deleted' && (
                   <ContentGrid variant="equal">
                     <Select
                       value={draft.action}

@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Button, Card, CardBody, CardTitle, EmptyState, Page, PageActions, PageDescription, PageHeader, PageHeaderContent, PageTitle, Stack } from '../components/ui';
 import {
-  SpondImportTypesStep,
+  SpondSyncRangeStep,
   SpondCredentialsStep,
   SpondGroupStep,
 } from '../components/spondImport/SpondConnectionSteps';
 import SpondActivitiesReviewStep from '../components/spondImport/SpondActivitiesReviewStep';
 import SpondGuardiansReviewStep from '../components/spondImport/SpondGuardiansReviewStep';
 import SpondPlayersReviewStep from '../components/spondImport/SpondPlayersReviewStep';
+import SpondTrainersReviewStep from '../components/spondImport/SpondTrainersReviewStep';
 import type { SpondSyncResult } from '../components/SpondSyncResultBanner';
 import { useAuth } from '../hooks/useAuth';
 import { createSpondReadClient, importSpondSnapshot } from '../services/spondService';
@@ -19,6 +20,7 @@ import {
   selectInitialSpondActivityDrafts,
   selectInitialSpondGuardianSelection,
   selectInitialSpondMemberDrafts,
+  selectInitialSpondTrainerDrafts,
   selectFilteredSpondEventRows,
   selectSpondActionableEventRows,
   selectSpondActionableGuardianRows,
@@ -32,6 +34,10 @@ import {
   selectSpondEventRows,
   selectSpondGuardianRows,
   selectSpondMemberRows,
+  selectSpondTrainerRows,
+  selectActionableSpondTrainerRows,
+  selectSpondTrainerDecisions,
+  selectSpondTrainerDraftsWithSelection,
   selectSpondMemberDecisions,
   selectSpondMemberDraftsWithSelection,
   selectSpondWizardProgressSteps,
@@ -39,6 +45,7 @@ import {
   type SpondActivityDraft,
   type SpondEventFilter,
   type SpondMemberDraft,
+  type SpondTrainerDraft,
 } from '../store/selectors/spondSyncSelectors';
 import { selectDefaultActivityLimitsForCategory } from '../store/selectors/sfvCatalogSelectors';
 import type { SpondGroupSnapshot, SpondSnapshot } from '../types/spond';
@@ -57,13 +64,11 @@ const shiftedDate = (days: number): string => {
 export default function SpondImportPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const isEventOnly = searchParams.get('scope') === 'events';
-  const isPlayerOnly = searchParams.get('scope') === 'players';
-  const isScopedSync = isEventOnly || isPlayerOnly;
-  const closePath = isPlayerOnly ? '/members/players' : isEventOnly ? '/activities' : '/squad-settings';
+  const location = useLocation();
+  const closePath = (location.state as { returnTo?: string } | null)?.returnTo ?? '/squad-settings';
   const { user } = useAuth();
   const squad = useSquad();
+  const isLinkedSync = Boolean(squad?.spondId?.trim());
   const sfvCatalog = useSfvCatalog();
   const { players, addGuardianToPlayer } = usePlayers();
   const { trainers } = useTrainers();
@@ -76,7 +81,6 @@ export default function SpondImportPage() {
   const [groups, setGroups] = useState<SpondGroupSnapshot[]>([]);
   const [groupId, setGroupId] = useState(squad?.spondId ?? '');
   const [selectedSubGroupId, setSelectedSubGroupId] = useState('');
-  const types = isEventOnly ? ['events'] : ['players', 'guardians'];
   const periods = useSquadPeriods();
   const fallbackRange = useMemo(() => ({ from: shiftedDate(-30), to: shiftedDate(180) }), []);
   const defaultPeriodId = useMemo(() => selectCurrentSpondPeriodId(periods), [periods]);
@@ -89,6 +93,8 @@ export default function SpondImportPage() {
   const [to, setTo] = useState(initialRange.to);
   const [snapshot, setSnapshot] = useState<SpondSnapshot | null>(null);
   const [memberDrafts, setMemberDrafts] = useState<Record<string, SpondMemberDraft>>({});
+  const [trainerRows, setTrainerRows] = useState<ReturnType<typeof selectSpondTrainerRows>>([]);
+  const [trainerDrafts, setTrainerDrafts] = useState<Record<string, SpondTrainerDraft>>({});
   const [activityDrafts, setActivityDrafts] = useState<Record<string, SpondActivityDraft>>({});
   const [eventFilter, setEventFilter] = useState<SpondEventFilter>('all');
   const [guardianSelection, setGuardianSelection] = useState<Record<string, boolean>>({});
@@ -106,6 +112,10 @@ export default function SpondImportPage() {
     () => selectSpondActionableMemberRows(selectSpondMemberRows(snapshot?.group.members ?? [], players)),
     [snapshot, players],
   );
+  const actionableTrainerRows = useMemo(
+    () => selectActionableSpondTrainerRows(trainerRows),
+    [trainerRows],
+  );
   const guardianRows = useMemo(
     () => selectSpondActionableGuardianRows(selectSpondGuardianRows(snapshot?.group.members ?? [], players)),
     [snapshot, players],
@@ -122,13 +132,12 @@ export default function SpondImportPage() {
   const dateRangeError = selectSpondDateRangeError(from, to);
   const canImport = Boolean(squad && canAccessRestrictedManagement(user, { squad, trainers }));
   const progressSteps = selectSpondWizardProgressSteps(
-    !isScopedSync ? 'link' : isPlayerOnly ? 'players' : 'events',
+    isLinkedSync ? 'events' : 'link',
   ) as Step[];
   const defaultActivityLimits = selectDefaultActivityLimitsForCategory(sfvCatalog, squad?.category);
 
   if (!squad) return <Navigate to="/squads" replace />;
   if (!canImport) return <Navigate to={closePath} replace />;
-  if (isScopedSync && !squad.spondId?.trim()) return <Navigate to={closePath} replace />;
 
   const errorMessage = (caught: unknown): string => {
     const code = caught instanceof Error ? caught.message : 'SPOND_REQUEST_FAILED';
@@ -145,7 +154,7 @@ export default function SpondImportPage() {
   const loadSnapshot = async (groupIdOverride?: string, selectedSubGroupIdOverride?: string) => {
     const selectedGroupId = groupIdOverride ?? groupId;
     const selectedSubGroup = selectedSubGroupIdOverride ?? selectedSubGroupId;
-    if (!clientRef.current || !selectedGroupId || types.length === 0 || (types.includes('events') && dateRangeError)) return;
+    if (!clientRef.current || !selectedGroupId || dateRangeError) return;
     setBusy(true);
     setError(null);
     try {
@@ -156,16 +165,18 @@ export default function SpondImportPage() {
         selectedSubGroup || undefined,
       );
       const nextMemberRows = selectSpondActionableMemberRows(selectSpondMemberRows(nextSnapshot.group.members, players));
+      const nextTrainerRows = selectActionableSpondTrainerRows(selectSpondTrainerRows(nextSnapshot.group.members, trainers));
       const nextGuardianRows = selectSpondActionableGuardianRows(selectSpondGuardianRows(nextSnapshot.group.members, players));
       const nextEventRows = selectSpondActionableEventRows(selectSpondEventRows(nextSnapshot.activities, activities, players));
       setSnapshot(nextSnapshot);
       setMemberDrafts(selectInitialSpondMemberDrafts(nextMemberRows));
+      setTrainerRows(nextTrainerRows);
+      setTrainerDrafts(selectInitialSpondTrainerDrafts(nextTrainerRows));
       setActivityDrafts(selectInitialSpondActivityDrafts(nextEventRows));
       setGuardianSelection(selectInitialSpondGuardianSelection(nextGuardianRows));
       setPassword('');
-      const hasChanges = isPlayerOnly
-        ? nextMemberRows.length > 0 || nextGuardianRows.length > 0
-        : nextEventRows.length > 0;
+      const hasChanges = nextMemberRows.length > 0 || nextTrainerRows.length > 0
+        || nextGuardianRows.length > 0 || nextEventRows.length > 0;
       if (!hasChanges) {
         setSyncResult(null);
         setNoChanges(true);
@@ -191,7 +202,7 @@ export default function SpondImportPage() {
       await client.login(email.trim(), password);
       const available = await client.getGroups();
       setGroups(available);
-      if (isScopedSync) {
+      if (isLinkedSync) {
         const linkedGroupId = squad.spondId?.trim();
         const linkedGroup = selectSpondLinkedGroup(available, linkedGroupId);
         if (!linkedGroup) {
@@ -244,26 +255,27 @@ export default function SpondImportPage() {
   const setPlayerSelection = (selected: boolean) => {
     setMemberDrafts((current) => selectSpondMemberDraftsWithSelection(current, memberRows, selected));
   };
+  const setTrainerSelection = (selected: boolean) => {
+    setTrainerDrafts((current) => selectSpondTrainerDraftsWithSelection(current, actionableTrainerRows, selected));
+  };
 
   const previousStep = () => {
     if (step === 'group') setStep('credentials');
     else if (step === 'range') setStep('credentials');
-    else if (step === 'diff') setStep('credentials');
+    else if (step === 'diff') setStep(isLinkedSync ? 'range' : 'credentials');
   };
 
-  const memberDecisions = selectSpondMemberDecisions(
-    memberRows,
-    memberDrafts,
-    types.includes('players'),
-    types.includes('guardians'),
-    guardianSelection,
-  );
+  const memberDecisions = selectSpondMemberDecisions(memberRows, memberDrafts, true, true, guardianSelection);
+  const trainerDecisions = selectSpondTrainerDecisions(actionableTrainerRows, trainerDrafts, true);
   const activityDecisions = selectSpondActivityDecisions(
     allEventRows,
     activityDrafts,
-    types.includes('events'),
+    true,
   );
-  const decisionSummary = selectSpondDecisionSummary(memberRows, eventRows, memberDecisions, activityDecisions);
+  const decisionSummary = selectSpondDecisionSummary(
+    memberRows, eventRows, memberDecisions, activityDecisions,
+    actionableTrainerRows, trainerDecisions,
+  );
   const apply = async () => {
     if (!snapshot || !decisionSummary.isReady) return;
     setBusy(true);
@@ -273,7 +285,7 @@ export default function SpondImportPage() {
       const imported = await importSpondSnapshot(squad.id, {
         importId: crypto.randomUUID(), spondGroupId: snapshot.group.id, from, to,
         squadUpdatedAt: squad.updatedAt, snapshot,
-        members: memberDecisions, activities: activityDecisions,
+        members: memberDecisions, trainers: trainerDecisions, activities: activityDecisions,
       });
       await initializeApp();
       const refreshedPlayers = useStore.getState();
@@ -354,7 +366,7 @@ export default function SpondImportPage() {
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>
-            {t(isEventOnly ? "spondSync.eventsTitle" : isPlayerOnly ? "spondSync.playersTitle" : "spondSync.title")}
+            {t("spondSync.title")}
           </PageTitle>
           <PageDescription>{stepTitle}</PageDescription>
         </PageHeaderContent>
@@ -394,22 +406,14 @@ export default function SpondImportPage() {
               onNext={() => void linkGroup()}
             />
           )}
-          {step === "range" && isEventOnly && (
-            <SpondImportTypesStep
-              scope="events"
-              groups={groups}
-              groupId={groupId}
-              selectedSubGroupId={selectedSubGroupId}
-              subGroupSelectionLocked
-              onSubGroupSelectionChange={setSelectedSubGroupId}
-              types={['events']}
+          {step === "range" && isLinkedSync && (
+            <SpondSyncRangeStep
               periods={periods}
               periodId={periodId}
               from={from}
               to={to}
               dateRangeError={dateRangeError}
               busy={busy}
-              onToggleType={() => undefined}
               onPeriodChange={updatePeriod}
               onFromChange={(nextFrom) => { setPeriodId(''); setFrom(nextFrom); }}
               onToChange={(nextTo) => { setPeriodId(''); setTo(nextTo); }}
@@ -417,9 +421,9 @@ export default function SpondImportPage() {
               onNext={() => void loadSnapshot()}
             />
           )}
-          {step === "diff" && isPlayerOnly && (
+          {step === "diff" && isLinkedSync && (
             <Stack gap="lg">
-              {memberRows.length === 0 && guardianRows.length === 0 ? (
+              {memberRows.length === 0 && guardianRows.length === 0 && actionableTrainerRows.length === 0 && eventRows.length === 0 ? (
                 <EmptyState>{t('spondSync.wizard.noChanges')}</EmptyState>
               ) : (
                 <>
@@ -436,27 +440,37 @@ export default function SpondImportPage() {
                     showActions={false}
                   />
                   <SpondGuardiansReviewStep rows={guardianRows} onBack={() => undefined} onNext={() => undefined} showActions={false} />
+                  <SpondTrainersReviewStep
+                    rows={actionableTrainerRows}
+                    drafts={trainerDrafts}
+                    trainers={trainers}
+                    issues={decisionSummary.trainerIssues}
+                    onSelectAll={() => setTrainerSelection(true)}
+                    onSelectNone={() => setTrainerSelection(false)}
+                    onDraftChange={(id, update) => setTrainerDrafts((current) => ({
+                      ...current, [id]: { ...current[id], ...update },
+                    }))}
+                  />
+                  <SpondActivitiesReviewStep
+                    rows={visibleEventRows}
+                    drafts={activityDrafts}
+                    activities={activities}
+                    eventFilter={eventFilter}
+                    issues={decisionSummary.activityIssues}
+                    onFilterChange={setEventFilter}
+                    onSelectAll={() => setVisibleEventSelection(true)}
+                    onSelectNone={() => setVisibleEventSelection(false)}
+                    onDraftChange={updateActivity}
+                    onBack={() => undefined}
+                    onNext={() => undefined}
+                    showActions={false}
+                  />
                 </>
               )}
               <Button disabled={busy || !decisionSummary.isReady} onClick={() => void apply()}>
                 {busy ? t('common.states.processing') : t('spondSync.apply')}
               </Button>
             </Stack>
-          )}
-          {step === "diff" && isEventOnly && (
-            <SpondActivitiesReviewStep
-              rows={visibleEventRows}
-              drafts={activityDrafts}
-              activities={activities}
-              eventFilter={eventFilter}
-              issues={decisionSummary.activityIssues}
-              onFilterChange={setEventFilter}
-              onSelectAll={() => setVisibleEventSelection(true)}
-              onSelectNone={() => setVisibleEventSelection(false)}
-              onDraftChange={updateActivity}
-              onBack={previousStep}
-              onNext={() => void apply()}
-            />
           )}
           {step === "linked" && (
             <>

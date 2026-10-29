@@ -3,8 +3,7 @@
 ## Goal
 
 Allow an authorized Squad Manager to link the active Squad to one Spond group,
-review an optional initial import, open the linked group in Spond, or remove the
-link later.
+open the linked group in Spond, or remove the link later.
 
 ## Scope
 
@@ -13,17 +12,12 @@ This use case covers:
 - showing Spond integration status in Group Settings,
 - authenticating temporarily with Spond,
 - selecting a Spond group during initial linking,
-- optionally importing Players, Guardians, and Activities as part of the link
-  flow,
-- selecting a predefined Squad period or a custom range when Activities are
-  included,
 - opening the linked group in Spond,
 - unlinking the Spond group.
 
-This use case does not cover later scoped synchronization from the Players page
-(UC-GR-012), later Activity synchronization from the Activities page
-(UC-EV-012), or
-editing data in Spond.
+This use case does not cover later full-group synchronization from Members,
+Trainers, or Activities (UC-GR-012, UC-GR-013, UC-EV-012), or editing data in
+Spond.
 
 ## Primary Actor
 
@@ -48,26 +42,14 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
    resulting token are not stored.
 4. System authenticates through the read-only proxy and lists accessible Spond
    groups.
-5. Actor selects one group. If only one group is available, the system may
-   preselect it and continue.
-6. Actor selects whether to review Players (including their Guardians),
-   Activities,
-   or both.
-7. If Activities are selected, the system offers configured Squad periods and a
-   custom date range. Selecting a period copies its start and end dates into
-   the range.
-8. System loads a normalized snapshot and presents the applicable player,
-   guardian, and event review steps.
-9. Actor reviews an exact summary of creates, links, and updates and applies
-   the import.
-10. System validates permissions, Squad revision, link uniqueness, required
-    fields, snapshot completeness, and all decisions.
-11. System applies the import atomically and stores the selected group id as
-    `Squad.spondId`.
-12. System clears the Spond credentials, reloads local data, returns to Group
-    Settings, and shows a one-time success message with created, updated, and
-    linked counts.
-13. Group Settings now offers Open Spond Group and Unlink Spond.
+5. Actor selects one group and continues.
+6. System stores the selected group id as `Squad.spondId`.
+7. System clears the Spond credentials and shows a confirmation with a Done
+   action.
+8. Group Settings now offers Open Spond Group and Unlink Spond.
+
+No members or activities are imported during linking. Later full-group
+synchronization is covered by UC-GR-012, UC-GR-013, and UC-EV-012.
 
 ## Main Success Scenario - Open Linked Group
 
@@ -90,28 +72,9 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
 
 1. Spond rejects the credentials, rate-limits the request, or denies access.
 2. System shows the mapped error and keeps the actor in the wizard.
-3. No group link or import is persisted.
+3. No group link is persisted.
 
-### A2 - Selected Group Is No Longer Available
-
-1. The group disappears or the account loses access before snapshot load.
-2. System reports that the group is unavailable.
-3. No changes are applied.
-
-### A3 - Invalid Activity Range
-
-1. The range is incomplete, the end is not after the start, or the range
-   exceeds 365 days.
-2. System shows the range validation error and disables continuation.
-
-### A4 - Stale Or Conflicting Apply
-
-1. The Squad changes after preview, an external id is already linked, or an
-   import with conflicting state is running.
-2. API returns conflict.
-3. No partial changes are committed; the actor must reload the preview.
-
-### A5 - Unlink Fails
+### A2 - Link Or Unlink Fails
 
 1. The Squad update fails.
 2. System leaves the existing link intact and displays an error.
@@ -120,10 +83,8 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
 
 - A Squad links to at most one Spond group.
 - The group selector appears only during initial linking.
-- Players and Activities scoped syncs never permit changing the linked group.
-- Guardians are not an independent import type; they accompany imported
-  Players.
-- Predefined periods are owned and managed in Group Settings, not Statistics.
+- Players, Guardians, Trainers, and Activities synchronize together after
+  linking; Sync never permits changing the linked group.
 - Unlinking is non-destructive and does not clear local record links or delete
   imported data.
 - The integration is read-only toward Spond.
@@ -133,9 +94,8 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
 ## API Contract
 
 - `POST /api/integrations/spond/groups`
-- `POST /api/integrations/spond/snapshot`
-- `POST /api/squads/{squadId}/spond/import`
-- `PUT /api/squads/{squadId}` with `spondId: null` for unlinking
+- `PUT /api/squads/{squadId}` with the selected `spondId` for linking or
+  `spondId: null` for unlinking
 
 ## Acceptance Criteria
 
@@ -143,13 +103,11 @@ The actor opens Group Settings and chooses Link Spond Group or Unlink Spond.
    then Link Spond Group is available.
 2. Given valid Spond credentials, when linking starts, then only groups visible
    to that Spond account are selectable.
-3. Given configured Squad periods and Activities selected, then those periods can
-   populate the event date range.
-4. Given a reviewed valid import, when Apply succeeds, then the Squad stores
-   the selected Spond group id and all selected changes are committed atomically.
-5. Given a successful link/import, then the actor returns to Group Settings and
-   sees a one-time translated result message.
-6. Given a linked Squad, then Group Settings shows a link to the corresponding
+3. Given a selected Spond group, when the actor continues, then the Squad stores
+   the selected group id without importing members or activities.
+4. Given a successful link, then the actor sees a translated confirmation and
+   can return to Group Settings.
+5. Given a linked Squad, then Group Settings shows a link to the corresponding
    Spond group and an unlink action.
-7. Given unlink confirmation, when the update succeeds, then `Squad.spondId`
+6. Given unlink confirmation, when the update succeeds, then `Squad.spondId`
    is cleared without deleting imported local records.

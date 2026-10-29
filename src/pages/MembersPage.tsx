@@ -240,7 +240,7 @@ export default function MembersPage() {
         </PageHeaderContent>
         <PageActions>
           {isAdmin && spondLinked && (
-            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=players')}>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import', { state: { returnTo: '/members/players' } })}>
               <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
             </Button>
           )}

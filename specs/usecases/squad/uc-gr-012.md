@@ -2,24 +2,26 @@
 
 ## Goal
 
-Allow an authorized Squad Manager to review and synchronize Players from the
-Squad's linked Spond group while automatically importing their Guardians.
+Allow an authorized Squad Manager to synchronize all supported data from the
+Squad's linked Spond group in one run, including Players and their Guardians.
 
 ## Scope
 
 This use case covers:
 
-- starting Sync from Members > Players,
+- starting the full Sync from Members, Trainers, or Activities,
 - reading members only from the Squad's linked Spond group,
 - excluding Spond trainers from player candidates,
 - matching, linking, creating, and updating Players,
 - automatically including Guardians for selected new Players,
 - selecting all or none of the player candidates,
 - validating mandatory fields before apply,
-- returning to Players with a completion message.
+- returning to the page that started Sync with a completion message.
 
-This use case does not cover choosing or changing the linked Spond group
-(UC-GR-011), event synchronization (UC-EV-012), or writing to Spond.
+Trainer and activity decisions are reviewed in the same synchronization run
+(UC-GR-013 and UC-EV-012). The actor does not select which data categories to
+sync. This use case does not cover choosing or changing the linked Spond group
+(UC-GR-011) or writing to Spond.
 
 ## Primary Actor
 
@@ -34,7 +36,8 @@ Squad Manager (admin or trainer with restricted-management permission)
 
 ## Trigger
 
-The actor chooses the Spond-logo Sync action on Members > Players.
+The actor chooses the Spond-logo Sync action from Members, Trainers, or
+Activities.
 
 ## Main Success Scenario
 
@@ -43,7 +46,8 @@ The actor chooses the Spond-logo Sync action on Members > Players.
 2. Actor starts Sync and enters Spond credentials.
 3. System authenticates and verifies that the account can access the group in
    `Squad.spondId`; no group selector is shown.
-4. System loads the linked group's members.
+4. System loads the linked group's members and activities for the selected
+   activity date range.
 5. System includes members whose normalized role is Player and excludes
    explicit trainer-only members.
 6. System matches each Spond Player as follows:
@@ -63,16 +67,17 @@ The actor chooses the Spond-logo Sync action on Members > Players.
     birth date and level, and reviews the final summary.
 12. Actor applies the synchronization.
 13. System applies all decisions atomically, reloads local data, returns to
-    Members > Players, and shows a one-time success message with created,
-    updated, and linked counts.
+    the page that started Sync, and shows a one-time success message with
+    created, updated, and linked counts.
 
 ## Alternative Flows
 
 ### A1 - Squad Is Not Linked
 
 1. The Squad has no `spondId`.
-2. System does not show the Spond Sync action on Players.
-3. Direct navigation to the scoped sync route returns to Players.
+2. System does not show the Spond Sync action on Members, Trainers, or
+   Activities.
+3. Direct navigation to the sync route returns to the page that started it.
 
 ### A2 - Linked Group Is Inaccessible
 
@@ -101,8 +106,8 @@ The actor chooses the Spond-logo Sync action on Members > Players.
 
 ### A6 - Nothing Selected
 
-1. Actor uses Select none or skips every candidate.
-2. Summary states that nothing is selected and Apply remains disabled.
+1. There are no actionable differences or the actor skips every candidate.
+2. Summary states that there is nothing to sync and Apply remains disabled.
 
 ### A7 - Apply Fails
 
@@ -124,7 +129,8 @@ The actor chooses the Spond-logo Sync action on Members > Players.
 - Guardians are imported automatically with selected new Players.
 - Guardian identity is deduplicated by Spond id first and normalized name as a
   fallback. One Guardian may be associated with multiple imported children.
-- The operation never creates Trainer records.
+- The full synchronization always processes Players, Guardians, Trainers, and
+  supported Activities together. The entry page does not limit the data types.
 
 ## API Contract
 
@@ -133,15 +139,15 @@ The actor chooses the Spond-logo Sync action on Members > Players.
 - `POST /api/integrations/spond/snapshot`
 - `POST /api/squads/{squadId}/spond/import`
 
-The apply request contains Player decisions, automatic Guardian ids, and skip
-decisions for Activities so this scoped flow changes only member data.
+The apply request contains Player, Trainer, and Activity decisions plus
+automatic Guardian ids for the full linked-group snapshot.
 
 ## Acceptance Criteria
 
 1. Given an authorized actor and linked Squad, then Players shows a Sync action
    with the Spond logo.
-2. Given player sync, then no Spond group selector is displayed and the request
-   uses `Squad.spondId`.
+2. Given Sync from any entry page, then no Spond group selector is displayed
+   and the request uses `Squad.spondId`.
 3. Given an explicit trainer-only Spond member, then it is absent from the
    Player review.
 4. Given equivalent apostrophe encodings in a linked Player name, then no name
@@ -153,5 +159,5 @@ decisions for Activities so this scoped flow changes only member data.
 7. Given a Guardian review row, then it shows the Guardian email and associated
    child name or names.
 8. Given a selected new Player without a birth date, then Apply is blocked.
-9. Given a successful apply, then the actor returns to Players and sees a
-   one-time translated completion message.
+9. Given a successful apply, then the actor returns to the page that started
+   Sync and sees a one-time translated completion message.

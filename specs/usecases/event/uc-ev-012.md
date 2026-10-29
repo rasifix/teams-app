@@ -2,18 +2,17 @@
 
 ## Goal
 
-Allow an authorized Squad Manager to review and synchronize only supported
-Match and Tournament Activities from the Squad's linked Spond group for a
-selected date range.
+Allow an authorized Squad Manager to synchronize supported Match and
+Tournament Activities from the Squad's linked Spond group for a selected date
+range as part of a full-group sync.
 
 ## Scope
 
 This use case covers:
 
-- starting Sync from the Activities page,
+- starting the full Sync from Members, Trainers, or Activities,
 - using a predefined Squad period or custom date range,
 - reading Activities only from the linked Spond group,
-- selecting one subgroup of that linked group for synchronization,
 - hiding unchanged Activities,
 - hiding unsupported Spond activity types,
 - selecting all or none of the visible Activities,
@@ -22,9 +21,10 @@ This use case covers:
 - preserving Europe/Zurich wall-clock time,
 - returning to Activities with a completion message.
 
-This use case does not import Players or Guardians, permit choosing another
-Spond group, write changes back to Spond, or allow guardians or players to
-respond in this application.
+Players, Guardians, and Trainers are processed in the same synchronization run.
+The actor does not select which data categories to sync. This use case does not
+permit choosing another Spond group, write changes back to Spond, or allow
+guardians or players to respond in this application.
 
 ## Primary Actor
 
@@ -39,7 +39,8 @@ Squad Manager (admin or trainer with restricted-management permission)
 
 ## Trigger
 
-The actor chooses the Spond-logo Sync action on Activities.
+The actor chooses the Spond-logo Sync action from Members, Trainers, or
+Activities.
 
 ## Main Success Scenario
 
@@ -50,9 +51,8 @@ The actor chooses the Spond-logo Sync action on Activities.
    selector is shown.
 4. System offers configured Squad periods when at least one exists, plus a
    custom date range. Selecting a period sets the range to its start/end dates.
-5. System lists the linked group's subgroups and selects the first subgroup by
-   default. The actor selects exactly one subgroup; when no subgroups are
-   returned, the whole group is synchronized.
+5. System uses the linked Spond group without offering another group or
+   subgroup selector.
 6. System validates the range and converts its Europe/Zurich calendar
    boundaries to UTC instants before loading the Spond snapshot.
 7. System converts returned Spond Activity instants exactly once into the
@@ -69,9 +69,9 @@ The actor chooses the Spond-logo Sync action on Activities.
     required Match/Tournament fields, including at least one Team for a
     Tournament and exactly one Team for a Match.
 13. Actor reviews the exact final change summary and applies the sync.
-14. System applies Activity decisions atomically, reloads local data, returns
-    to Activities, and shows a one-time success message with created, updated,
-    linked counts.
+14. System applies Activity, Player, Trainer, and Guardian decisions together,
+    reloads local data, returns to the page that started Sync, and shows a
+    one-time success message with created, updated, and linked counts.
 
 ## Alternative Flows
 
@@ -79,7 +79,7 @@ The actor chooses the Spond-logo Sync action on Activities.
 
 1. The Squad has no `spondId`.
 2. Activities does not show the Spond Sync action.
-3. Direct navigation to the scoped route returns to Activities.
+3. Direct navigation to the Sync route returns to the page that started it.
 
 ### A2 - Linked Group Is Inaccessible
 
@@ -122,10 +122,9 @@ The actor chooses the Spond-logo Sync action on Activities.
 ## Business Rules
 
 - Activity sync uses only `Squad.spondId` and never displays a group selector.
-- Subgroup selection is local to each synchronization run; all returned
-  subgroups are selected by default.
-- The scoped flow submits skip decisions for member data and changes Activities
-  only.
+- The linked group is the source for every synchronization category.
+- The full sync request includes Player, Trainer, and Activity decisions, plus
+  automatic Guardian ids.
 - An Activity is actionable when it is unlinked or when supported metadata or a
   mapped Player invitation response differs.
 - Supported comparison fields are kind, name, start, end, location, and invitation
@@ -148,8 +147,8 @@ The actor chooses the Spond-logo Sync action on Activities.
 
 1. Given an authorized actor and linked Squad, then Activities shows a Sync action
    with the Spond logo.
-2. Given Activity sync, then no group selector appears and the linked group id is
-   used.
+2. Given Sync from any entry page, then no group selector appears and the
+   linked group id is used.
 3. Given configured periods, then choosing one sets the Activity synchronization
    date range.
 4. Given a Spond record with a supported activity type, then it is mapped to a

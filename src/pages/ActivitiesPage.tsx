@@ -44,7 +44,7 @@ export default function ActivitiesPage() {
         </PageHeaderContent>
         <PageActions>
           {canSyncSpond && spondLinked && (
-            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import?scope=events')}>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/spond-import', { state: { returnTo: '/activities' } })}>
               <Cluster gap="sm" wrap={false}><SpondBadge />{t('spondSync.syncAction')}</Cluster>
             </Button>
           )}

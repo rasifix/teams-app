@@ -26,6 +26,11 @@ import {
   selectSpondWizardProgressSteps,
   selectSpondLinkedGroup,
   selectSpondReviewSteps,
+  selectSpondTrainerRows,
+  selectActionableSpondTrainerRows,
+  selectInitialSpondTrainerDrafts,
+  selectSpondTrainerDraftsWithSelection,
+  selectSpondTrainerDecisions,
 } from './spondSyncSelectors';
 
 const player = (overrides: Partial<Player> = {}): Player => ({
@@ -39,6 +44,9 @@ const activity = (overrides: Partial<Activity> = {}): Activity => ({
 });
 const event = (overrides: Partial<SpondEventSnapshot> = {}): SpondEventSnapshot => ({
   id: 'se1', groupId: 'sg1', name: 'Activity', type: 'event', status: 'active', startsAt: '2026-10-10T10:00:00.000Z', responses: [], ...overrides,
+});
+const trainer = (overrides: Partial<import('../../types').Trainer> = {}): import('../../types').Trainer => ({
+  id: 't1', firstName: 'Maya', lastName: 'Coach', ...overrides,
 });
 
 describe('Spond linked group selector', () => {
@@ -106,6 +114,70 @@ describe('Spond member selectors', () => {
   });
 });
 
+describe('Spond trainer selectors', () => {
+  it('selects coaches and trainer-role members, matching linked and same-name trainers', () => {
+    const rows = selectSpondTrainerRows([
+      member({ id: 'new', firstName: 'Nina', lastName: 'Coach', roles: ['trainer'] }),
+      member({ id: 'linked', firstName: 'Maya', lastName: 'Coach', roles: ['coach'] }),
+      member({ id: 'player-coach', roles: ['player', 'trainer'] }),
+      member({ id: 'player', roles: ['player'] }),
+      member({ id: 'admin', roles: ['administrator'] }),
+    ], [trainer({ id: 't1', spondId: 'linked' }), trainer({ id: 't2', firstName: 'Nina', lastName: 'Coach' })]);
+
+    expect(rows.map((row) => row.source.id)).toEqual(['new', 'linked', 'player-coach']);
+    expect(rows[0].suggestedTrainers.map((item) => item.id)).toEqual(['t2']);
+    expect(rows[1].linkedTrainer?.id).toBe('t1');
+    expect(selectActionableSpondTrainerRows(rows).map((row) => row.source.id)).toEqual(['new', 'player-coach']);
+  });
+
+  it('defaults to link for a unique name match and create otherwise, and supports bulk skip', () => {
+    const rows = selectSpondTrainerRows([
+      member({ id: 'matched', firstName: 'Maya', lastName: 'Coach', roles: ['trainer'] }),
+      member({ id: 'new', firstName: 'Nina', lastName: 'Coach', roles: ['trainer'] }),
+    ], [trainer({ id: 't1' })]);
+    const drafts = selectInitialSpondTrainerDrafts(rows);
+
+    expect(drafts).toEqual({
+      matched: { action: 'link', memberId: 't1' },
+      new: { action: 'create-trainer', memberId: '' },
+    });
+    expect(selectSpondTrainerDecisions(rows, drafts, true)).toEqual([
+      { action: 'link', spondMemberId: 'matched', memberId: 't1' },
+      { action: 'create-trainer', spondMemberId: 'new' },
+    ]);
+    const skipped = selectSpondTrainerDraftsWithSelection(drafts, rows, false);
+    expect(selectSpondTrainerDecisions(rows, skipped, true)).toEqual([
+      { action: 'skip', spondMemberId: 'matched' },
+      { action: 'skip', spondMemberId: 'new' },
+    ]);
+    expect(selectSpondTrainerDecisions(rows, drafts, false)).toEqual([
+      { action: 'skip', spondMemberId: 'matched' },
+      { action: 'skip', spondMemberId: 'new' },
+    ]);
+  });
+
+  it('does not guess between multiple same-name trainers', () => {
+    const rows = selectSpondTrainerRows([member({ roles: ['trainer'] })], [
+      trainer({ id: 't1' }), trainer({ id: 't2' }),
+    ]);
+    expect(selectInitialSpondTrainerDrafts(rows).sm1).toEqual({ action: 'create-trainer', memberId: '' });
+  });
+
+  it('blocks an incomplete trainer link and accepts a create or a valid trainer target', () => {
+    const rows = selectSpondTrainerRows([member({ roles: ['trainer'] })], []);
+    expect(selectSpondDecisionSummary([], [], [], [], rows, []).trainerIssues.sm1).toEqual(['trainer']);
+    expect(selectSpondDecisionSummary([], [], [], [], rows, [
+      { action: 'link', spondMemberId: 'sm1', memberId: '' },
+    ]).isReady).toBe(false);
+    expect(selectSpondDecisionSummary([], [], [], [], rows, [
+      { action: 'link', spondMemberId: 'sm1', memberId: 't1' },
+    ]).isReady).toBe(true);
+    expect(selectSpondDecisionSummary([], [], [], [], rows, [
+      { action: 'create-trainer', spondMemberId: 'sm1' },
+    ]).isReady).toBe(true);
+  });
+});
+
 describe('Spond wizard progress', () => {
   it('keeps guardians only when player import is selected', () => {
     expect(selectSpondReviewSteps(['players', 'guardians', 'events'])).toEqual(['players', 'guardians', 'events']);
@@ -116,6 +188,7 @@ describe('Spond wizard progress', () => {
   it('uses separate progress flows for linking, player sync, and event sync', () => {
     expect(selectSpondWizardProgressSteps('link')).toEqual(['credentials', 'group', 'linked']);
     expect(selectSpondWizardProgressSteps('players')).toEqual(['credentials', 'diff', 'results']);
+    expect(selectSpondWizardProgressSteps('trainers')).toEqual(['credentials', 'diff', 'results']);
     expect(selectSpondWizardProgressSteps('events')).toEqual(['credentials', 'range', 'diff', 'results']);
   });
 });

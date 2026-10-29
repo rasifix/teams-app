@@ -11,6 +11,7 @@ export interface SpondMemberSnapshot {
   id: string;
   firstName: string;
   lastName: string;
+  email?: string;
   birthDate?: string;
   guardians: SpondGuardianSnapshot[];
   roles?: string[];
@@ -70,6 +71,11 @@ export type SpondMemberDecision =
     }
   | { action: 'skip'; spondMemberId: string };
 
+export type SpondTrainerDecision =
+  | { action: 'link'; spondMemberId: string; memberId: string }
+  | { action: 'create-trainer'; spondMemberId: string }
+  | { action: 'skip'; spondMemberId: string };
+
 export type SpondActivityDecision =
   | { action: 'link'; spondEventId: string; activityId: string }
   | {
@@ -89,6 +95,7 @@ export interface SpondImportRequest {
   squadUpdatedAt?: string;
   snapshot: SpondSnapshot;
   members: SpondMemberDecision[];
+  trainers: SpondTrainerDecision[];
   activities: SpondActivityDecision[];
 }
 

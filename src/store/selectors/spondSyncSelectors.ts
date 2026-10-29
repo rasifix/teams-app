@@ -1,10 +1,11 @@
-import type { Activity, Guardian, Period, Player } from '../../types';
+import type { Activity, Guardian, Period, Player, Trainer } from '../../types';
 import type {
   SpondActivityDecision,
   SpondEventSnapshot,
   SpondMemberDecision,
   SpondMemberSnapshot,
   SpondGroupSnapshot,
+  SpondTrainerDecision,
 } from '../../types/spond';
 
 const normalized = (value: string | undefined): string =>
@@ -37,7 +38,7 @@ export function selectSpondLinkedGroup(
 }
 
 export function selectSpondWizardProgressSteps(
-  mode: 'link' | 'players' | 'events',
+  mode: 'link' | 'players' | 'trainers' | 'events',
 ): SpondWizardStep[] {
   if (mode === 'link') return ['credentials', 'group', 'linked'];
   if (mode === 'events') return ['credentials', 'range', 'diff', 'results'];
@@ -57,6 +58,17 @@ export interface SpondMemberRow {
   source: SpondMemberSnapshot;
   linkedPlayer?: Player;
   suggestedPlayers: Player[];
+}
+
+export interface SpondTrainerRow {
+  source: SpondMemberSnapshot;
+  linkedTrainer?: Trainer;
+  suggestedTrainers: Trainer[];
+}
+
+export interface SpondTrainerDraft {
+  action: 'link' | 'create-trainer' | 'skip';
+  memberId: string;
 }
 
 export interface SpondEventRow {
@@ -120,6 +132,69 @@ export function selectSpondMemberRows(members: SpondMemberSnapshot[], players: P
       return namesMatch && (!source.birthDate || !player.birthDate || source.birthDate === player.birthDate);
     });
     return { source, linkedPlayer, suggestedPlayers };
+  });
+}
+
+const isTrainerMember = (member: SpondMemberSnapshot): boolean => {
+  const roles = member.roles?.map((role) => role.trim().toLocaleLowerCase()) ?? [];
+  return !roles.some((role) => role === 'admin' || role === 'administrator')
+    && roles.some((role) => /(^|\s)(coach|trainer)(\s|$)/.test(role));
+};
+
+export function selectSpondTrainerRows(members: SpondMemberSnapshot[], trainers: Trainer[]): SpondTrainerRow[] {
+  return members.filter(isTrainerMember).map((source) => {
+    const linkedTrainer = trainers.find((trainer) => trainer.spondId === source.id);
+    const suggestedTrainers = linkedTrainer ? [] : trainers.filter((trainer) => (
+      normalized(trainer.firstName) === normalized(source.firstName)
+      && normalized(trainer.lastName) === normalized(source.lastName)
+    ));
+    return { source, linkedTrainer, suggestedTrainers };
+  });
+}
+
+export function selectActionableSpondTrainerRows(rows: SpondTrainerRow[]): SpondTrainerRow[] {
+  return rows.filter((row) => !row.linkedTrainer
+    || normalized(row.linkedTrainer.firstName) !== normalized(row.source.firstName)
+    || normalized(row.linkedTrainer.lastName) !== normalized(row.source.lastName));
+}
+
+export function selectInitialSpondTrainerDrafts(rows: SpondTrainerRow[]): Record<string, SpondTrainerDraft> {
+  return Object.fromEntries(rows.map((row) => {
+    const match = row.linkedTrainer ?? (row.suggestedTrainers.length === 1 ? row.suggestedTrainers[0] : undefined);
+    return [row.source.id, { action: match ? 'link' : 'create-trainer', memberId: match?.id ?? '' }];
+  }));
+}
+
+export function selectSpondTrainerDraftsWithSelection(
+  drafts: Record<string, SpondTrainerDraft>,
+  rows: SpondTrainerRow[],
+  selected: boolean,
+): Record<string, SpondTrainerDraft> {
+  const next = { ...drafts };
+  rows.forEach((row) => {
+    const current = next[row.source.id] ?? selectInitialSpondTrainerDrafts([row])[row.source.id];
+    const match = row.linkedTrainer ?? (row.suggestedTrainers.length === 1 ? row.suggestedTrainers[0] : undefined);
+    next[row.source.id] = selected
+      ? { ...current, action: match ? 'link' : 'create-trainer', memberId: match?.id ?? '' }
+      : { ...current, action: 'skip', memberId: '' };
+  });
+  return next;
+}
+
+export function selectSpondTrainerDecisions(
+  rows: SpondTrainerRow[],
+  drafts: Record<string, SpondTrainerDraft>,
+  includeTrainers: boolean,
+): SpondTrainerDecision[] {
+  return rows.map((row) => {
+    const draft = drafts[row.source.id];
+    if (!includeTrainers || !draft || draft.action === 'skip') {
+      return { action: 'skip', spondMemberId: row.source.id };
+    }
+    if (draft.action === 'link') {
+      return { action: 'link', spondMemberId: row.source.id, memberId: draft.memberId };
+    }
+    return { action: 'create-trainer', spondMemberId: row.source.id };
   });
 }
 
@@ -349,11 +424,13 @@ export interface SpondDecisionSummary {
   createdActivities: number;
   skippedActivities: number;
   memberIssues: Record<string, SpondMemberRequiredField[]>;
+  trainerIssues: Record<string, SpondTrainerRequiredField[]>;
   activityIssues: Record<string, SpondActivityRequiredField[]>;
   isReady: boolean;
 }
 
 export type SpondMemberRequiredField = 'selection' | 'member' | 'birthDate' | 'level';
+export type SpondTrainerRequiredField = 'trainer';
 export type SpondActivityRequiredField = 'selection' | 'activity' | 'team';
 
 export type SpondImportPreviewItem = {
@@ -478,11 +555,15 @@ export function selectSpondDecisionSummary(
   eventRows: SpondEventRow[],
   memberDecisions: SpondMemberDecision[],
   activityDecisions: SpondActivityDecision[],
+  trainerRows: SpondTrainerRow[] = [],
+  trainerDecisions: SpondTrainerDecision[] = [],
 ): SpondDecisionSummary {
   const membersById = new Map(memberDecisions.map((decision) => [decision.spondMemberId, decision]));
   const activitiesById = new Map(activityDecisions.map((decision) => [decision.spondEventId, decision]));
   const memberIssues: Record<string, SpondMemberRequiredField[]> = {};
   const activityIssues: Record<string, SpondActivityRequiredField[]> = {};
+  const trainersById = new Map(trainerDecisions.map((decision) => [decision.spondMemberId, decision]));
+  const trainerIssues: Record<string, SpondTrainerRequiredField[]> = {};
 
   for (const row of memberRows) {
     const decision = membersById.get(row.source.id);
@@ -494,6 +575,12 @@ export function selectSpondDecisionSummary(
       if (!Number.isInteger(decision.level) || decision.level < 1 || decision.level > 5) issues.push('level');
     }
     if (issues.length) memberIssues[row.source.id] = issues;
+  }
+
+  for (const row of trainerRows) {
+    const decision = trainersById.get(row.source.id);
+    if (!decision && !row.linkedTrainer) trainerIssues[row.source.id] = ['trainer'];
+    else if (decision?.action === 'link' && !decision.memberId) trainerIssues[row.source.id] = ['trainer'];
   }
 
   for (const row of eventRows) {
@@ -516,7 +603,10 @@ export function selectSpondDecisionSummary(
     createdActivities: activityDecisions.filter((entry) => entry.action === 'create').length,
     skippedActivities: activityDecisions.filter((entry) => entry.action === 'skip').length,
     memberIssues,
+    trainerIssues,
     activityIssues,
-    isReady: Object.keys(memberIssues).length === 0 && Object.keys(activityIssues).length === 0,
+    isReady: Object.keys(memberIssues).length === 0
+      && Object.keys(trainerIssues).length === 0
+      && Object.keys(activityIssues).length === 0,
   };
 }

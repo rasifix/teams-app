@@ -30,7 +30,7 @@ Erstelle eine Mannschaft und füge die ersten Spieler und Trainer hinzu. Wenn du
 
 ## Quelle für Mitgliederdaten wählen
 
-Wenn du deine Mitglieder in Spond verwaltest, folge zuerst der separaten Anleitung **Spond-Gruppe verbinden**. Nach der Verknüpfung liefert Spond die Stammdaten der Mitglieder; das manuelle Erstellen und Löschen von Mitgliedern ist ausgeblendet. Die Synchronisierung erfolgt separat und mit einer Vorschau. Die Spond-Anleitung erklärt auch, welche weiteren Daten aus Spond stammen und welche Planungsdaten in Mein Team bleiben.
+Wenn du deine Mitglieder in Spond verwaltest, folge zuerst der Anleitung [Spond-Gruppe verbinden]({{ '/de/spond-gruppe-verbinden.html' | relative_url }}). Nach der Verknüpfung liefert Spond die Stammdaten der Mitglieder; das manuelle Erstellen und Löschen von Mitgliedern ist ausgeblendet. Die Synchronisierung erfolgt separat und mit einer Vorschau. Die Spond-Anleitung erklärt auch, welche weiteren Daten aus Spond stammen und welche Planungsdaten in Mein Team bleiben.
 
 Wenn du die Mitglieder in Mein Team verwaltest, helfen dir diese Anleitungen beim Hinzufügen:
 

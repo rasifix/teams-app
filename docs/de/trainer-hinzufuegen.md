@@ -5,7 +5,7 @@ title: Trainer hinzufügen
 
 # Trainer hinzufügen
 
-Du brauchst zuerst eine Mannschaft in Mein Team. Wenn du Mitglieder in Spond verwaltest, verbinde Spond und synchronisiere die Mitglieder, anstatt sie manuell hinzuzufügen.
+Füge Trainer manuell hinzu oder synchronisiere sie aus einer verknüpften Spond-Gruppe. Wähle bei einer Verbindung **Sync** unter **Mitglieder → Trainer**, um Spieler, Bezugspersonen, Trainer und Aktivitäten gemeinsam zu synchronisieren. Das manuelle Hinzufügen ist ausgeblendet, solange Spond verbunden ist.
 
 1. Öffne **Mitglieder → Trainer** und wähle **Hinzufügen**.
 2. Gib **Vorname** und **Nachname** des Trainers ein. Die **E-Mail-Adresse** ist optional.

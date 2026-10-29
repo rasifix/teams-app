@@ -8,7 +8,6 @@ be described in files grouped in subfolders per category.
 * UC-US-001 - user registration
 * UC-US-002 - password reset
 * UC-US-003 - login
-* UC-US-004 - send squad invitation
 
 ## Squad
 
@@ -23,6 +22,7 @@ be described in files grouped in subfolders per category.
 * UC-GR-010 - manage formations
 * UC-GR-011 - link or unlink a Spond group
 * UC-GR-012 - synchronize players and guardians from Spond
+* UC-GR-013 - synchronize trainers from Spond
 * UC-GR-014 - manage squad periods
 * UC-GR-015 - deactivate a squad
 

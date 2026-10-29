@@ -6,6 +6,8 @@ type Language = 'en' | 'de';
 
 const labels = {
   en: {
+    settings: 'Settings', spondSection: 'Spond Group', linkSpond: 'Link Spond group',
+    spondEmail: 'Spond email', spondPassword: 'Spond password', continue: 'Continue',
     publicHomeTitle: 'Team management', register: 'Register', createAccount: 'Create your account',
     overview: 'Overview', selectSquad: 'Select Your Squad', createNew: 'Create a new squad',
     createTitle: 'Create New Squad', createAction: 'Create Squad', squadName: 'Squad name',
@@ -15,6 +17,8 @@ const labels = {
     birthDate: 'Birth Date', email: 'Email',
   },
   de: {
+    settings: 'Einstellungen', spondSection: 'Spond-Gruppe', linkSpond: 'Spond-Gruppe verknüpfen',
+    spondEmail: 'Spond-E-Mail', spondPassword: 'Spond-Passwort', continue: 'Weiter',
     publicHomeTitle: 'Teamverwaltung', register: 'Registrieren', createAccount: 'Erstelle dein Konto',
     overview: 'Übersicht', selectSquad: 'Mannschaft auswählen', createNew: 'Neue Mannschaft erstellen',
     createTitle: 'Neue Mannschaft erstellen', createAction: 'Mannschaft erstellen', squadName: 'Mannschaftsname',
@@ -32,6 +36,58 @@ async function screenshot(page: Page, language: Language, name: string) {
 }
 
 for (const language of ['en', 'de'] as const) {
+  test(`capture Spond connection guide in ${language}`, async ({ page }) => {
+    const text = labels[language];
+    const squad = {
+      id: 'squad-1', name: 'Harbor U12', periods: [], trainers: [{ id: 'manager-1', email: 'coach@example.test' }],
+      members: [{ id: 'manager-1', email: 'coach@example.test', roles: ['admin'] }], matchPlanningEnabled: false,
+    };
+    const currentSquad = squad;
+
+    await page.addInitScript((locale) => {
+      localStorage.setItem('token', 'docs-screenshot-token');
+      localStorage.setItem('selectedGroupId', 'squad-1');
+      localStorage.setItem('my-teams-language-preference', locale);
+    }, language);
+    await page.route('**/health', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok"}' }));
+    await page.route('**/auth/me', (route) => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 'manager-1', firstName: 'Alex', lastName: 'Coach', email: 'coach@example.test' }),
+    }));
+    await page.route('**/api/**', async (route) => {
+      const { pathname } = new URL(route.request().url());
+      const method = route.request().method();
+      if (pathname === '/api/integrations/spond/groups' && method === 'POST') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'spond-group-1', name: 'Harbor FC U12', members: [] }]) });
+      } else if (pathname === '/api/squads' && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([currentSquad]) });
+      } else if (pathname === '/api/squads/squad-1') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currentSquad) });
+      } else if (pathname === '/api/squads/squad-1/members') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ players: [], trainers: [] }) });
+      } else if (pathname === '/api/squads/squad-1/activities' || pathname === '/api/sfv-categories') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(pathname === '/api/sfv-categories' ? { categories: {} } : []) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      }
+    });
+
+    await page.goto('/squad-settings');
+    await expect(page.getByRole('heading', { name: text.settings })).toBeVisible();
+    await expect(page.getByRole('heading', { name: text.spondSection })).toBeVisible();
+    await screenshot(page, language, 'spond-settings');
+
+    await page.getByRole('link', { name: text.linkSpond }).click();
+    await expect(page.getByRole('heading', { name: /Spond/i })).toBeVisible();
+    await page.getByLabel(text.spondEmail).fill('coach@example.test');
+    await page.getByLabel(text.spondPassword).fill('example-password');
+    await screenshot(page, language, 'spond-credentials');
+    await page.getByRole('button', { name: text.continue }).click();
+
+    await expect(page.getByText('Harbor FC U12')).toBeVisible();
+    await screenshot(page, language, 'spond-group');
+  });
+
   test(`capture registration guide in ${language}`, async ({ page }) => {
     const text = labels[language];
     await page.addInitScript((locale) => {

@@ -30,7 +30,7 @@ Create a squad, then add its first players and trainers. If Spond holds your ros
 
 ## Choose where member data comes from
 
-If you keep your roster in Spond, follow the separate **Connect a Spond group** guide before entering members. Once linked, Spond supplies member identity data; manual member creation and deletion are hidden. Synchronization is a separate, reviewed action. The Spond guide explains which other data comes from Spond and which planning details stay in My Team.
+If you keep your roster in Spond, follow the [Connect a Spond group]({{ '/en/connect-a-spond-group.html' | relative_url }}) guide before entering members. Once linked, Spond supplies member identity data; manual member creation and deletion are hidden. Synchronization is a separate, reviewed action. The Spond guide explains which other data comes from Spond and which planning details stay in My Team.
 
 If you manage members in My Team, use these guides to add them:
 

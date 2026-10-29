@@ -1126,18 +1126,21 @@
     "title": "Synchronize with Spond",
     "eventsTitle": "Synchronize activities with Spond",
     "playersTitle": "Import players from Spond",
+    "trainersTitle": "Import trainers from Spond",
     "description": "Sign in to Spond to load a temporary preview. Your credentials and access token are not saved.",
     "wizard": {
       "next": "Continue",
-      "progress": "Import progress",
+      "progress": "Sync progress",
       "subgroups": {
         "title": "Spond subgroups",
         "help": "Select the subgroups to include in this synchronization."
       },
       "typesHelp": "Choose the data you want to review and import.",
+      "fullSyncHelp": "Sync all players, guardians, trainers, and activities from the linked Spond group. Activities are included for the selected date range.",
       "periodHelp": "Choose a configured period or enter the date range for the activities to synchronize.",
       "playerImportHelp": "Load the Spond group members to review which players should be linked or created.",
       "playersHelp": "Name matches are linked automatically. Missing players are selected for import by default.",
+      "trainersHelp": "Review Spond coaches and trainers. Name matches are linked automatically; other trainers are selected for import.",
       "guardiansHelp": "Name matches are recognized automatically. Missing guardians are selected by default and attached to newly imported players.",
       "guardianChildren_one": "Child: {{names}}",
       "guardianChildren_other": "Children: {{names}}",
@@ -1171,6 +1174,11 @@
           "create": "Create as guardian for {{target}}",
           "link": "Link guardian with {{target}}"
         },
+        "trainer": {
+          "create": "Create a new trainer",
+          "link": "Link with existing trainer {{target}}",
+          "update": "Update trainer details from Spond"
+        },
         "event": {
           "create": "Create a new activity",
           "link": "Link with existing activity {{target}}",
@@ -1199,8 +1207,8 @@
         "summary": "Review import",
         "done": "Import complete"
       },
-      "linkedHelp": "The Spond group is linked. Member and activity synchronization is a separate action from the Members and Activities pages.",
-      "resultsHelp": "The synchronization finished successfully.",
+      "linkedHelp": "The Spond group is linked. Player, trainer, and activity synchronization are separate actions from the Members and Activities pages.",
+      "resultsHelp": "The full Spond synchronization finished successfully.",
       "nothingToImport": "There is nothing new or changed to import.",
       "results": {
         "created": "Created: {{count}}",
@@ -1210,6 +1218,7 @@
       "importTypes": {
         "players": "Players",
         "guardians": "Guardians",
+        "trainers": "Trainers",
         "events": "Activities"
       }
     },
@@ -1222,6 +1231,7 @@
     "requiredFields": {
       "selection": "Choose whether to import, link, or skip this item.",
       "member": "Select an existing player.",
+    "trainer": "Select an existing trainer.",
       "birthDate": "Birth date is required.",
       "level": "Select a valid level.",
       "activity": "Select an existing activity.",
@@ -1259,10 +1269,10 @@
       "too-long": "The synchronization period cannot exceed one year."
     },
     "summary": "Players: {{createdMembers}} new, {{linkedMembers}} linked. Activities: {{createdActivities}} new, {{linkedActivities}} linked.",
-    "apply": "Apply import",
+    "apply": "Sync all data",
     "managedFields": "Name, date, time, and location are managed by Spond.",
     "managedResponse": "This response is managed by Spond.",
-    "result": "Spond import completed: {{created}} created, {{updated}} updated, {{linked}} linked.",
+    "result": "Spond sync completed: {{created}} created, {{updated}} updated, {{linked}} linked.",
     "errors": {
       "SPOND_AUTH_FAILED": "The Spond credentials were rejected.",
       "SPOND_ACCESS_DENIED": "The Spond account cannot access this data.",
@@ -1270,6 +1280,10 @@
       "SPOND_GROUP_NOT_FOUND": "The selected Spond group is no longer available.",
       "SPOND_LINKED_GROUP_NOT_FOUND": "The Spond account cannot access the group linked to this squad.",
       "SPOND_GROUP_MISMATCH": "Spond returned an activity from a different group.",
+      "SPOND_MEMBER_NOT_IN_SNAPSHOT": "The selected member is no longer in the Spond snapshot. Refresh and try again.",
+      "SPOND_MEMBER_NOT_TRAINER": "The selected Spond member does not have a trainer role.",
+      "SPOND_LINK_TARGET_INVALID": "Choose a valid local trainer to link.",
+      "SPOND_MEMBER_ALREADY_LINKED": "This Spond member is already linked to another local member.",
       "SPOND_CONFLICTING_RESPONSES": "Spond returned conflicting responses for a member.",
       "SPOND_UNKNOWN_RESPONSE_LIST": "Spond returned an unknown response status.",
       "SPOND_INVALID_TIMESTAMP": "Spond returned an invalid activity time.",

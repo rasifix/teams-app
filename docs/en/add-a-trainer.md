@@ -5,7 +5,7 @@ title: Add a trainer
 
 # Add a trainer
 
-You need a squad in My Team before adding trainers. For Spond-managed rosters, connect Spond and sync members instead of adding them manually.
+Add trainers manually or synchronize them from a linked Spond group. When connected, select **Sync** from **Members → Trainers** to synchronize players, guardians, trainers, and activities together. Manual trainer creation is hidden while Spond is linked.
 
 1. Open **Members → Trainers** and select **Add**.
 2. Enter the trainer's **First name** and **Last name**. **Email** is optional.

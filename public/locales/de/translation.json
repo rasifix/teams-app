@@ -1126,18 +1126,21 @@
     "title": "Mit Spond synchronisieren",
     "eventsTitle": "Aktivitäten mit Spond synchronisieren",
     "playersTitle": "Spieler aus Spond importieren",
+    "trainersTitle": "Trainer aus Spond importieren",
     "description": "Melde dich bei Spond an, um eine temporäre Vorschau zu laden. Zugangsdaten und Zugriffstoken werden nicht gespeichert.",
     "wizard": {
       "next": "Weiter",
-      "progress": "Importfortschritt",
+      "progress": "Synchronisierungsfortschritt",
       "subgroups": {
         "title": "Spond-Untergruppen",
         "help": "Wähle die Untergruppen aus, die in diese Synchronisierung einbezogen werden sollen."
       },
       "typesHelp": "Wähle die Daten aus, die du prüfen und importieren möchtest.",
+      "fullSyncHelp": "Synchronisiere alle Spieler, Bezugspersonen, Trainer und Aktivitäten aus der verknüpften Spond-Gruppe. Aktivitäten werden für den ausgewählten Zeitraum berücksichtigt.",
       "periodHelp": "Wähle einen konfigurierten Zeitraum oder gib den Datumsbereich für die zu synchronisierenden Aktivitäten ein.",
       "playerImportHelp": "Lade die Mitglieder der Spond-Gruppe, um zu prüfen, welche Spieler verknüpft oder erstellt werden sollen.",
       "playersHelp": "Namensübereinstimmungen werden automatisch verknüpft. Fehlende Spieler sind standardmässig für den Import ausgewählt.",
+      "trainersHelp": "Prüfe die Coaches und Trainer aus Spond. Namensübereinstimmungen werden automatisch verknüpft; andere Trainer sind standardmässig für den Import ausgewählt.",
       "guardiansHelp": "Namensübereinstimmungen werden automatisch erkannt. Fehlende Bezugspersonen sind standardmässig ausgewählt und werden neuen Spielern zugeordnet.",
       "guardianChildren_one": "Kind: {{names}}",
       "guardianChildren_other": "Kinder: {{names}}",
@@ -1171,6 +1174,11 @@
           "create": "Als Bezugsperson für {{target}} erstellen",
           "link": "Bezugsperson mit {{target}} verknüpfen"
         },
+        "trainer": {
+          "create": "Neuen Trainer erstellen",
+          "link": "Mit bestehendem Trainer {{target}} verknüpfen",
+          "update": "Trainerdaten aus Spond aktualisieren"
+        },
         "event": {
           "create": "Neue Aktivität erstellen",
           "link": "Mit bestehender Aktivität {{target}} verknüpfen",
@@ -1199,8 +1207,8 @@
         "summary": "Import prüfen",
         "done": "Import abgeschlossen"
       },
-      "linkedHelp": "Die Spond-Gruppe ist verknüpft. Die Synchronisierung von Mitgliedern und Aktivitäten erfolgt separat auf den Seiten Mitglieder und Aktivitäten.",
-      "resultsHelp": "Die Synchronisierung wurde erfolgreich abgeschlossen.",
+      "linkedHelp": "Die Spond-Gruppe ist verknüpft. Spieler, Trainer und Aktivitäten werden separat auf den Seiten Mitglieder und Aktivitäten synchronisiert.",
+      "resultsHelp": "Die vollständige Spond-Synchronisierung wurde erfolgreich abgeschlossen.",
       "nothingToImport": "Es gibt nichts Neues oder Geändertes zu importieren.",
       "results": {
         "created": "Erstellt: {{count}}",
@@ -1210,6 +1218,7 @@
       "importTypes": {
         "players": "Spieler",
         "guardians": "Bezugspersonen",
+        "trainers": "Trainer",
         "events": "Aktivitäten"
       }
     },
@@ -1222,6 +1231,7 @@
     "requiredFields": {
       "selection": "Wähle, ob dieser Eintrag importiert, verknüpft oder übersprungen werden soll.",
       "member": "Wähle einen bestehenden Spieler aus.",
+    "trainer": "Wähle einen bestehenden Trainer aus.",
       "birthDate": "Das Geburtsdatum ist erforderlich.",
       "level": "Wähle ein gültiges Level.",
       "activity": "Wähle eine bestehende Aktivität aus.",
@@ -1259,10 +1269,10 @@
       "too-long": "Der Synchronisationszeitraum darf höchstens ein Jahr betragen."
     },
     "summary": "Spieler: {{createdMembers}} neu, {{linkedMembers}} verknüpft. Aktivitäten: {{createdActivities}} neu, {{linkedActivities}} verknüpft.",
-    "apply": "Import übernehmen",
+    "apply": "Alle Daten synchronisieren",
     "managedFields": "Name, Datum, Zeit und Ort werden von Spond verwaltet.",
     "managedResponse": "Diese Antwort wird von Spond verwaltet.",
-    "result": "Spond-Import abgeschlossen: {{created}} erstellt, {{updated}} aktualisiert, {{linked}} verknüpft.",
+    "result": "Spond-Synchronisierung abgeschlossen: {{created}} erstellt, {{updated}} aktualisiert, {{linked}} verknüpft.",
     "errors": {
       "SPOND_AUTH_FAILED": "Die Spond-Zugangsdaten wurden abgelehnt.",
       "SPOND_ACCESS_DENIED": "Das Spond-Konto hat keinen Zugriff auf diese Daten.",
@@ -1270,6 +1280,10 @@
       "SPOND_GROUP_NOT_FOUND": "Die ausgewählte Spond-Gruppe ist nicht mehr verfügbar.",
       "SPOND_LINKED_GROUP_NOT_FOUND": "Das Spond-Konto hat keinen Zugriff auf die mit dieser Gruppe verknüpfte Spond-Gruppe.",
       "SPOND_GROUP_MISMATCH": "Spond hat eine Aktivität aus einer anderen Gruppe geliefert.",
+      "SPOND_MEMBER_NOT_IN_SNAPSHOT": "Das ausgewählte Mitglied ist nicht mehr im Spond-Snapshot. Aktualisiere die Vorschau und versuche es erneut.",
+      "SPOND_MEMBER_NOT_TRAINER": "Das ausgewählte Spond-Mitglied hat keine Trainerrolle.",
+      "SPOND_LINK_TARGET_INVALID": "Wähle einen gültigen lokalen Trainer zum Verknüpfen aus.",
+      "SPOND_MEMBER_ALREADY_LINKED": "Dieses Spond-Mitglied ist bereits mit einem anderen lokalen Mitglied verknüpft.",
       "SPOND_CONFLICTING_RESPONSES": "Spond hat widersprüchliche Antworten für ein Mitglied geliefert.",
       "SPOND_UNKNOWN_RESPONSE_LIST": "Spond hat einen unbekannten Antwortstatus geliefert.",
       "SPOND_INVALID_TIMESTAMP": "Spond hat eine ungültige Aktivitätszeit geliefert.",

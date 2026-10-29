@@ -67,12 +67,18 @@ export default function ActivityDetailPage() {
   const [switchingTeam, setSwitchingTeam] = useState<{ from: number; to: number; direction: 'next' | 'previous' } | null>(null);
   const [stackAnimating, setStackAnimating] = useState(false);
   const stackAnimationTimerRef = useRef<number | null>(null);
+  const teamStackRef = useRef<HTMLDivElement>(null);
+  const teamContentRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const switchHeightFrameRef = useRef<number | null>(null);
   const { previous, next } = selectAdjacentActivities(activities, activity?.id ?? '');
   const error = !id ? t('page.eventDetail.errors.noEventId') : errors.activities || (hasErrors ? t('common.errors.failedToLoadData') : null);
 
   useLayoutEffect(() => {
     if (stackAnimationTimerRef.current !== null) window.clearTimeout(stackAnimationTimerRef.current);
+    if (switchHeightFrameRef.current !== null) window.cancelAnimationFrame(switchHeightFrameRef.current);
+    if (teamStackRef.current) teamStackRef.current.style.height = '';
     stackAnimationTimerRef.current = null;
+    switchHeightFrameRef.current = null;
     setTeamsStacked(true);
     setActiveTeamIndex(0);
     setSwitchingTeam(null);
@@ -81,6 +87,7 @@ export default function ActivityDetailPage() {
 
   useEffect(() => () => {
     if (stackAnimationTimerRef.current !== null) window.clearTimeout(stackAnimationTimerRef.current);
+    if (switchHeightFrameRef.current !== null) window.cancelAnimationFrame(switchHeightFrameRef.current);
   }, []);
 
   useEffect(() => {
@@ -282,6 +289,15 @@ export default function ActivityDetailPage() {
     const nextIndex = visibleTeamIndex + (direction === 'next' ? 1 : -1);
     if (nextIndex < 0 || nextIndex >= activity.teams.length) return;
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const stack = teamStackRef.current;
+      const nextContent = teamContentRefs.current[activity.teams[nextIndex].id];
+      if (stack && nextContent) {
+        stack.style.height = `${stack.getBoundingClientRect().height}px`;
+        switchHeightFrameRef.current = window.requestAnimationFrame(() => {
+          stack.style.height = `${nextContent.scrollHeight}px`;
+          switchHeightFrameRef.current = null;
+        });
+      }
       setSwitchingTeam({ from: visibleTeamIndex, to: nextIndex, direction });
     }
     setActiveTeamIndex(nextIndex);
@@ -411,7 +427,7 @@ export default function ActivityDetailPage() {
         </Alert>}
         {activity.teams.length === 0 && !selectCanAddActivityTeam(activity) && <Alert tone="warning">{t('domain.activity.noTeamsLegacy')}</Alert>}
         <Stack gap="card">
-          <div className={`${styles.teamStack}${isStacked ? ` ${styles.teamStacked}` : ''}${stackAnimating ? ` ${styles.teamStackAnimating}` : ''}`}>
+          <div ref={teamStackRef} className={`${styles.teamStack}${isStacked ? ` ${styles.teamStacked}` : ''}${stackAnimating ? ` ${styles.teamStackAnimating}` : ''}${switchingTeam ? ` ${styles.teamStackSwitching}` : ''}`}>
           {(activity.kind === 'match' ? activity.teams.slice(0, 1) : activity.teams).map((team, index) => {
             const isSwitchOutgoing = Boolean(isStacked && switchingTeam?.from === index);
             const isSwitchIncoming = Boolean(isStacked && switchingTeam?.to === index);
@@ -422,8 +438,8 @@ export default function ActivityDetailPage() {
               : isSwitchIncoming
                 ? (switchingTeam?.direction === 'next' ? styles.teamFrameEnterRight : styles.teamFrameEnterLeft)
                 : '';
-            return <div key={team.id} className={`${styles.teamFrame}${isHiddenInStack ? ` ${styles.teamFrameHidden}` : ''}${isStacked && !isHiddenInStack ? ` ${styles.teamFrameTop}` : ''}${switchClass ? ` ${switchClass}` : ''}`} aria-hidden={isInactive} inert={isInactive} onAnimationEnd={(event) => { if (isSwitchIncoming && event.target === event.currentTarget) setSwitchingTeam(null); }}>
-            <div className={styles.teamFrameContent}>
+            return <div key={team.id} className={`${styles.teamFrame}${isHiddenInStack ? ` ${styles.teamFrameHidden}` : ''}${isStacked && !isHiddenInStack ? ` ${styles.teamFrameTop}` : ''}${switchClass ? ` ${switchClass}` : ''}`} aria-hidden={isInactive} inert={isInactive} onAnimationEnd={(event) => { if (isSwitchIncoming && event.target === event.currentTarget) { if (teamStackRef.current) teamStackRef.current.style.height = ''; setSwitchingTeam(null); } }}>
+            <div ref={(element) => { teamContentRefs.current[team.id] = element; }} className={styles.teamFrameContent}>
             <TeamCard
               view={selectTeamCardView(team, players, trainers, new Set(), activity.maxPlayersPerTeam ?? players.length)}
               onOpenTeam={() => navigate(`/activities/${activity.id}/teams/${team.id}`)}

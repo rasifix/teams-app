@@ -4,6 +4,7 @@
 .previousChevron { transform: rotate(180deg); }
 .teamStack { display: flex; flex-direction: column; gap: var(--card-gap); transition: gap var(--transition-stack); }
 .teamStacked { position: relative; gap: 0; }
+.teamStackSwitching { transition: height var(--transition-stack); }
 .teamFrame { position: relative; display: grid; min-height: 0; grid-template-rows: 1fr; opacity: 1; transform: translateY(0) scale(1); transition: grid-template-rows var(--transition-stack), opacity var(--transition-stack), transform var(--transition-stack); }
 .teamFrameHidden { grid-template-rows: 0fr; opacity: 0; transform: translateY(calc(-1 * var(--space-4))) scale(0.97); pointer-events: none; }
 .teamFrameContent { position: relative; z-index: 2; min-height: 0; overflow: hidden; }
@@ -19,11 +20,15 @@
 .teamStacked:not(.teamStackAnimating) .teamFrame::after { transition: none; }
 .teamFrameTop :global(.team-card-roster) { max-height: min(48vh, 32rem); overflow-y: auto; overscroll-behavior: contain; }
 .teamFrameExitLeft,
-.teamFrameExitRight { position: absolute; inset: 0 0 auto; width: 100%; transition: none; }
-.teamFrameExitLeft { animation: team-slide-left var(--transition-stack) both; }
-.teamFrameExitRight { animation: team-slide-right var(--transition-stack) both; }
-.teamFrameEnterRight { transition: none; animation: team-slide-right var(--transition-stack) reverse both; }
-.teamFrameEnterLeft { transition: none; animation: team-slide-left var(--transition-stack) reverse both; }
+.teamFrameExitRight { position: absolute; inset: 0 0 auto; z-index: 2; width: 100%; transition: none; }
+.teamFrameExitLeft,
+.teamFrameExitRight,
+.teamFrameEnterRight,
+.teamFrameEnterLeft { animation: team-switch var(--transition-stack) both; }
+.teamFrameExitLeft,
+.teamFrameExitRight { --team-switch-from-opacity: 1; --team-switch-to-opacity: 0; }
+.teamFrameEnterRight,
+.teamFrameEnterLeft { --team-switch-from-opacity: 0; --team-switch-to-opacity: 1; transition: none; }
 
 .backdrop,
 .sheetHandle,
@@ -79,12 +84,9 @@
   to { transform: translateY(0); }
 }
 
-@keyframes team-slide-left {
-  to { opacity: 0; transform: translateX(-18%) scale(0.96); }
-}
-
-@keyframes team-slide-right {
-  to { opacity: 0; transform: translateX(18%) scale(0.96); }
+@keyframes team-switch {
+  from { opacity: var(--team-switch-from-opacity); }
+  to { opacity: var(--team-switch-to-opacity); }
 }
 
 @media (prefers-reduced-motion: reduce) {

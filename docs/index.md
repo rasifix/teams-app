@@ -15,6 +15,7 @@ Choose a language to get started. / Wähle eine Sprache, um zu beginnen.
 - [Add a player]({{ '/en/add-a-player.html' | relative_url }})
 - [Add a trainer]({{ '/en/add-a-trainer.html' | relative_url }})
 - [Manage shirt sets]({{ '/en/manage-shirt-sets.html' | relative_url }})
+- [Create an activity]({{ '/en/create-an-activity.html' | relative_url }})
 
 ## Deutsch
 
@@ -24,3 +25,4 @@ Choose a language to get started. / Wähle eine Sprache, um zu beginnen.
 - [Spieler hinzufügen]({{ '/de/spieler-hinzufuegen.html' | relative_url }})
 - [Trainer hinzufügen]({{ '/de/trainer-hinzufuegen.html' | relative_url }})
 - [Trikotsätze verwalten]({{ '/de/trikotsaetze-verwalten.html' | relative_url }})
+- [Aktivität erstellen]({{ '/de/aktivitaet-erstellen.html' | relative_url }})

@@ -1,203 +1,136 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import type { ActivityPayload } from '../src/types';
 
-const DEMO_MODE = (
-  globalThis as { process?: { env?: Record<string, string | undefined> } }
-).process?.env?.E2E_DEMO_MODE === '1';
+type Language = 'en' | 'de';
 
-test.describe('UC-EV-001 - Create Event', () => {
-  test('successfully creates an event from the Events page modal', async ({ page }) => {
-    const pause = async (ms = 700) => {
-      if (DEMO_MODE) {
-        await page.waitForTimeout(ms);
-      }
+const labels = {
+  en: {
+    add: 'Add', activitiesTitle: 'Activities', futureTitle: 'Future Activities ({{count}})',
+    empty: 'No activities created yet. Click "Create Activity" to get started.',
+    modalTitle: 'Create New Activity', kind: 'Activity type', match: 'Match', tournament: 'Tournament',
+    name: 'Activity Name *', date: 'Date *', startTime: 'Start time', location: 'Location',
+    opponent: 'Opponent', teams: 'Number of Teams *', maxPlayers: 'Max Players per Team *',
+    minPlayers: 'Min Players per Team *', submit: 'Add',
+    matchName: 'Saturday Friendly', tournamentName: 'Summer Tournament',
+  },
+  de: {
+    add: 'Hinzufügen', activitiesTitle: 'Aktivitäten', futureTitle: 'Kommende Aktivitäten ({{count}})',
+    empty: 'Noch keine Aktivitäten erstellt. Klicke auf "Aktivität erstellen", um zu starten.',
+    modalTitle: 'Neue Aktivität erstellen', kind: 'Aktivitätsart', match: 'Spiel', tournament: 'Turnier',
+    name: 'Aktivitätsname *', date: 'Datum *', startTime: 'Startzeit', location: 'Ort',
+    opponent: 'Gegner', teams: 'Anzahl Teams *', maxPlayers: 'Max. Spieler pro Team *',
+    minPlayers: 'Min. Spieler pro Team *', submit: 'Hinzufügen',
+    matchName: 'Samstagsspiel', tournamentName: 'Sommerturnier',
+  },
+} satisfies Record<Language, Record<string, string>>;
+
+async function screenshot(page: Page, language: Language, name: string) {
+  if (process.env.DOCS_SCREENSHOT_CAPTURE !== '1') return;
+  const directory = resolve('docs/assets', language);
+  await mkdir(directory, { recursive: true });
+  await page.screenshot({ path: resolve(directory, `activity-${name}.png`), fullPage: true, animations: 'disabled' });
+}
+
+function futureDateInput(daysAhead: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+for (const language of ['en', 'de'] as const) {
+  test(`UC-EV-001 creates a match and tournament (${language})`, async ({ page }) => {
+    const text = labels[language];
+    const squadId = 'squad-activity-guide';
+    const squad = {
+      id: squadId, name: 'Harbor U12', periods: [], matchPlanningEnabled: false,
+      members: [{ id: 'manager-1', email: 'coach@example.test', roles: ['admin'] }],
     };
+    const createdActivities: Array<ActivityPayload & { id: string; squadId: string }> = [];
 
-    const groupId = 'group-1';
-    const groups = [
-      {
-        id: groupId,
-        name: 'U12 Tigers',
-        periods: [],
-      },
-    ];
-
-    type EventPayload = {
-      name: string;
-      date: string;
-      maxPlayersPerTeam: number;
-      minPlayersPerTeam: number;
-      location?: string;
-      teams: Array<{
-        id: string;
-        name: string;
-        strength: number;
-        startTime: string;
-        selectedPlayers: string[];
-      }>;
-      invitations: Array<unknown>;
-    };
-
-    let createPayload: EventPayload | null = null;
-
-    await page.addInitScript((selectedId) => {
-      window.localStorage.setItem('token', 'e2e-token');
-      window.localStorage.setItem('selectedGroupId', selectedId);
-    }, groupId);
-
-    await page.route('**/health', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ status: 'ok' }),
-      });
-    });
-
-    await page.route('**/auth/me', async (route) => {
-      if (route.request().method() !== 'GET') {
-        await route.continue();
-        return;
-      }
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          id: 'user-1',
-          email: 'trainer@example.com',
-          firstName: 'Taylor',
-          lastName: 'Trainer',
-        }),
-      });
-    });
-
+    await page.addInitScript((locale) => {
+      localStorage.setItem('token', 'docs-activity-token');
+      localStorage.setItem('selectedGroupId', 'squad-activity-guide');
+      localStorage.setItem('my-teams-language-preference', locale);
+    }, language);
+    await page.route('**/health', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok"}' }));
+    await page.route('**/auth/me', (route) => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ id: 'manager-1', firstName: 'Alex', lastName: 'Coach', email: 'coach@example.test' }),
+    }));
     await page.route('**/api/**', async (route) => {
-      const request = route.request();
-      const url = new URL(request.url());
-      const { pathname } = url;
-      const method = request.method();
-
-      if (pathname === '/api/groups' && method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(groups),
-        });
-        return;
+      const { pathname } = new URL(route.request().url());
+      const method = route.request().method();
+      if (pathname === '/api/squads' && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([squad]) });
+      } else if (pathname === `/api/squads/${squadId}` && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(squad) });
+      } else if (pathname === `/api/squads/${squadId}/members` && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ players: [], trainers: [] }) });
+      } else if (pathname === `/api/squads/${squadId}/members/manager-1` && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(squad.members[0]) });
+      } else if (pathname === `/api/squads/${squadId}/activities` && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(createdActivities) });
+      } else if (pathname === `/api/squads/${squadId}/activities` && method === 'POST') {
+        const payload = JSON.parse(route.request().postData() ?? '{}') as ActivityPayload;
+        const created = { id: `activity-${createdActivities.length + 1}`, squadId, ...payload };
+        createdActivities.push(created);
+        await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(created) });
+      } else if (pathname === `/api/squads/${squadId}/shirtsets` && method === 'GET') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      } else {
+        await route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ message: `Unhandled ${method} ${pathname}` }) });
       }
-
-      if (pathname === `/api/groups/${groupId}` && method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(groups[0]),
-        });
-        return;
-      }
-
-      if (pathname === `/api/groups/${groupId}/members` && method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify({ players: [], trainers: [] }),
-        });
-        return;
-      }
-
-      if (pathname === `/api/groups/${groupId}/shirtsets` && method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([]),
-        });
-        return;
-      }
-
-      if (pathname === `/api/groups/${groupId}/events` && method === 'GET') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([]),
-        });
-        return;
-      }
-
-      if (pathname === `/api/groups/${groupId}/events` && method === 'POST') {
-        createPayload = JSON.parse(request.postData() ?? '{}') as EventPayload;
-
-        const createdEvent = {
-          id: 'event-1',
-          ...createPayload,
-        };
-
-        await route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify(createdEvent),
-        });
-        return;
-      }
-
-      await route.fulfill({
-        status: 404,
-        contentType: 'application/json',
-        body: JSON.stringify({ message: `Unhandled route: ${method} ${pathname}` }),
-      });
     });
 
-    await page.goto('/events');
-    await pause(1200);
+    await page.goto('/activities');
+    await expect(page.getByRole('heading', { name: text.activitiesTitle, exact: true })).toBeVisible();
+    await expect(page.getByText(text.empty, { exact: true })).toBeVisible();
+    await screenshot(page, language, 'empty');
 
-    await expect(page.getByRole('heading', { name: 'Future Events (0)' })).toBeVisible();
-    await expect(page.getByText('No events created yet. Click "Create Event" to get started.')).toBeVisible();
+    const openForm = async () => {
+      await page.getByRole('button', { name: text.add, exact: true }).first().click();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog.getByRole('heading', { name: text.modalTitle, exact: true })).toBeVisible();
+      return dialog;
+    };
+    const fillCoreFields = async (dialog: ReturnType<typeof page.getByRole>, name: string) => {
+      await dialog.getByLabel(text.name).fill(name);
+      await dialog.getByLabel(text.date).fill(futureDateInput(14));
+      await dialog.getByLabel(text.startTime).fill('10:30');
+      await dialog.getByLabel(text.location).fill('Harbor Field');
+    };
 
-    await page.getByRole('button', { name: 'Add' }).click();
-    await pause(800);
+    const matchForm = await openForm();
+    await expect(matchForm.getByLabel(text.kind)).toHaveValue('match');
+    await fillCoreFields(matchForm, text.matchName);
+    await matchForm.getByLabel(text.opponent).fill('Riverside U12');
+    await screenshot(page, language, 'create-match');
+    await matchForm.getByRole('button', { name: text.submit, exact: true }).click();
+    await expect(page.getByRole('heading', { name: text.futureTitle.replace('{{count}}', '1'), exact: true })).toBeVisible();
+    await expect(page.getByText(text.matchName, { exact: true })).toBeVisible();
+    await screenshot(page, language, 'match-created');
 
-    await expect(page.getByRole('heading', { name: 'Create New Event' })).toBeVisible();
-
-    await page.getByLabel('Event Name *').fill('Saturday Training Matchday');
-    await page.getByLabel('Date *').fill('2026-08-22');
-    await page.getByLabel('Start Time *').fill('09:30');
-    await page.getByLabel('Location').fill('Main Field');
-    await page.getByLabel('Number of Teams *').fill('2');
-    await page.getByLabel('Max Players per Team *').fill('10');
-    await page.getByLabel('Min Players per Team *').fill('7');
-    await pause(700);
-
-    await page.getByRole('button', { name: 'Create Event' }).click();
-    await pause(1000);
-
-    await expect(page.getByRole('heading', { name: 'Create New Event' })).not.toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Future Events (1)' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Saturday Training Matchday' })).toBeVisible();
-
-    expect(createPayload).not.toBeNull();
-    expect(createPayload).toMatchObject({
-      name: 'Saturday Training Matchday',
-      date: '2026-08-22',
-      maxPlayersPerTeam: 10,
-      minPlayersPerTeam: 7,
-      location: 'Main Field',
-      invitations: [],
-      teams: [
-        {
-          name: 'Team 1',
-          strength: 2,
-          startTime: '09:30',
-          selectedPlayers: [],
-        },
-        {
-          name: 'Team 2',
-          strength: 2,
-          startTime: '09:30',
-          selectedPlayers: [],
-        },
-      ],
+    expect(createdActivities[0]).toMatchObject({
+      kind: 'match', name: text.matchName, location: 'Harbor Field', opponentName: 'Riverside U12',
+      minPlayersPerTeam: 6, maxPlayersPerTeam: 9, invitations: [],
     });
+    expect(createdActivities[0].teams).toHaveLength(1);
+    expect(createdActivities[0].teams[0]).toMatchObject({ strength: 2, selectedPlayers: [], startTime: '10:30' });
 
-    expect(createPayload?.teams).toHaveLength(2);
-    for (const team of createPayload?.teams ?? []) {
-      expect(team.id).toBeTruthy();
-    }
+    const tournamentForm = await openForm();
+    await tournamentForm.getByLabel(text.kind).selectOption('tournament');
+    await fillCoreFields(tournamentForm, text.tournamentName);
+    await tournamentForm.getByLabel(text.teams).fill('2');
+    await screenshot(page, language, 'create-tournament');
+    await tournamentForm.getByRole('button', { name: text.submit, exact: true }).click();
+    await expect(page.getByRole('heading', { name: text.futureTitle.replace('{{count}}', '2'), exact: true })).toBeVisible();
+    await expect(page.getByText(text.tournamentName, { exact: true })).toBeVisible();
+
+    expect(createdActivities[1]).toMatchObject({ kind: 'tournament', name: text.tournamentName, invitations: [] });
+    expect(createdActivities[1].teams).toHaveLength(2);
+    expect(createdActivities[1].teams.every((team) => team.strength === 2 && team.selectedPlayers.length === 0)).toBe(true);
+    await screenshot(page, language, 'created');
   });
-});
+}

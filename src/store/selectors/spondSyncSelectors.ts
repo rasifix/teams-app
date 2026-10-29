@@ -138,7 +138,7 @@ export function selectSpondMemberRows(members: SpondMemberSnapshot[], players: P
 const isTrainerMember = (member: SpondMemberSnapshot): boolean => {
   const roles = member.roles?.map((role) => role.trim().toLocaleLowerCase()) ?? [];
   return !roles.some((role) => role === 'admin' || role === 'administrator')
-    && roles.some((role) => /(^|\s)(coach|trainer)(\s|$)/.test(role));
+    && roles.some((role) => /(^|[\s_])(coach|trainer)(?=$|[\s_])/.test(role));
 };
 
 export function selectSpondTrainerRows(members: SpondMemberSnapshot[], trainers: Trainer[]): SpondTrainerRow[] {

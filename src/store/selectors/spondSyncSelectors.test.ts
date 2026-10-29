@@ -130,6 +130,16 @@ describe('Spond trainer selectors', () => {
     expect(selectActionableSpondTrainerRows(rows).map((row) => row.source.id)).toEqual(['new', 'player-coach']);
   });
 
+  it('recognizes underscore-separated Spond coach and trainer role names', () => {
+    const rows = selectSpondTrainerRows([
+      member({ id: 'assistant-coach', roles: ['COACH_ASSISTANT'] }),
+      member({ id: 'assistant-trainer', roles: ['TRAINER_ASSISTANT'] }),
+      member({ id: 'opaque-role', roles: ['spond-coach-role-id'] }),
+    ], []);
+
+    expect(rows.map((row) => row.source.id)).toEqual(['assistant-coach', 'assistant-trainer']);
+  });
+
   it('defaults to link for a unique name match and create otherwise, and supports bulk skip', () => {
     const rows = selectSpondTrainerRows([
       member({ id: 'matched', firstName: 'Maya', lastName: 'Coach', roles: ['trainer'] }),

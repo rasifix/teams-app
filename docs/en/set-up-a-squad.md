@@ -7,7 +7,7 @@ title: Set up a squad
 
 Create a squad, then add its first players and trainers. If Spond holds your roster, connect it before adding members manually.
 
-**Before you start:** Sign in to My Team. You need an account that can create or manage the squad.
+**Before you start:** Sign in to My Team with an account that can create or manage the squad. [Register an account]({{ '/en/register-an-account.html' | relative_url }}) if you don't have one yet.
 
 ## Create the squad
 

@@ -7,7 +7,7 @@ title: Mannschaft einrichten
 
 Erstelle eine Mannschaft und füge die ersten Spieler und Trainer hinzu. Wenn du deine Mitglieder in Spond verwaltest, verbinde Spond, bevor du Mitglieder manuell erfasst.
 
-**Bevor du beginnst:** Melde dich bei Mein Team an. Du brauchst ein Konto, mit dem du die Mannschaft erstellen oder verwalten kannst.
+**Bevor du beginnst:** Melde dich bei Mein Team mit einem Konto an, mit dem du die Mannschaft erstellen oder verwalten kannst. [Registriere ein Konto]({{ '/de/konto-registrieren.html' | relative_url }}), wenn du noch keines hast.
 
 ## Mannschaft erstellen
 

@@ -6,6 +6,7 @@ type Language = 'en' | 'de';
 
 const labels = {
   en: {
+    publicHomeTitle: 'Team management', register: 'Register', createAccount: 'Create your account',
     overview: 'Overview', selectSquad: 'Select Your Squad', createNew: 'Create a new squad',
     createTitle: 'Create New Squad', createAction: 'Create Squad', squadName: 'Squad name',
     club: 'Club', description: 'Description', playersTitle: 'All Players',
@@ -14,6 +15,7 @@ const labels = {
     birthDate: 'Birth Date', email: 'Email',
   },
   de: {
+    publicHomeTitle: 'Teamverwaltung', register: 'Registrieren', createAccount: 'Erstelle dein Konto',
     overview: 'Übersicht', selectSquad: 'Mannschaft auswählen', createNew: 'Neue Mannschaft erstellen',
     createTitle: 'Neue Mannschaft erstellen', createAction: 'Mannschaft erstellen', squadName: 'Mannschaftsname',
     club: 'Verein', description: 'Beschreibung', playersTitle: 'Alle Spieler',
@@ -30,6 +32,21 @@ async function screenshot(page: Page, language: Language, name: string) {
 }
 
 for (const language of ['en', 'de'] as const) {
+  test(`capture registration guide in ${language}`, async ({ page }) => {
+    const text = labels[language];
+    await page.addInitScript((locale) => {
+      localStorage.setItem('my-teams-language-preference', locale);
+    }, language);
+
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: text.publicHomeTitle })).toBeVisible();
+    await screenshot(page, language, 'registration-home');
+
+    await page.getByRole('link', { name: text.register, exact: true }).click();
+    await expect(page.getByRole('heading', { name: text.createAccount })).toBeVisible();
+    await screenshot(page, language, 'registration-form');
+  });
+
   test(`capture squad setup guide in ${language}`, async ({ page }) => {
     const text = labels[language];
     const squads: Array<Record<string, unknown>> = [];

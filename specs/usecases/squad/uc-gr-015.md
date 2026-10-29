@@ -24,7 +24,7 @@ and auditability, but are excluded from the active squad experience.
 
 ## API contract
 
-`PUT /api/squads/:id` accepts `{ "active": false }` and returns the complete
+`PUT /api/squads/{squadId}` accepts `{ "active": false }` and returns the complete
 updated squad, including `active`. `GET /api/squads` may return inactive
 squads; the client filters them from active UI collections.
 

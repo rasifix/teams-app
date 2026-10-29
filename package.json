@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "docs:screenshots": "playwright test -c playwright.docs.config.ts",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:video": "E2E_DEMO_MODE=1 playwright test -c playwright.video.config.ts e2e/uc-gr-001.spec.ts"
   },

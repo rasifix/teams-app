@@ -17,8 +17,9 @@ has started.
    name. Players who were invited but not selected are not included.
 3. System shows the counts of present, absent, excused and not recorded.
 4. User picks present, absent or excused for a player.
-5. System persists the status through `PUT /activities/{id}/attendance` and
-   updates the row and counts.
+5. System persists the status through
+   `PUT /api/squads/{squadId}/activities/{id}/attendance` and updates the row
+   and counts.
 
 ## Alternative Flows
 

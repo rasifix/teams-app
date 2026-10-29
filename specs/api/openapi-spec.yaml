@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Teams API
-  description: API for managing soccer teams, players, trainers, activities, and equipment
+  description: API for managing soccer teams, players, trainers, events, and equipment
   version: 1.0.0
   contact:
     name: Teams API Support
@@ -12,7 +12,7 @@ info:
 servers:
   - url: https://api.teams.com
     description: Production server
-# Authentication is optional for most endpoints, but required for some
+# Authentication is specified per operation.
 security: []
 paths:
   /api/birthday-calendars/{token}.ics:
@@ -37,7 +37,11 @@ paths:
           content:
             text/calendar:
               schema: { type: string }
-        '404': { description: Calendar not found or revoked }
+        '404':
+          description: Calendar not found or revoked
+          content:
+            text/html:
+              schema: { type: string }
   /api/squads/{squadId}/birthday-calendar:
     get:
       operationId: getBirthdayCalendarSubscription
@@ -74,8 +78,16 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Existing subscription URL }
-        '201': { description: Subscription URL created }
+        '200':
+          description: Existing subscription URL
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BirthdayCalendarSubscription' }
+        '201':
+          description: Subscription URL created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BirthdayCalendarSubscription' }
         '403': { description: Admin or trainer access required }
     delete:
       operationId: revokeBirthdayCalendarSubscription
@@ -91,6 +103,124 @@ paths:
       responses:
         '204': { description: Subscription revoked }
         '403': { description: Admin or trainer access required }
+  /api/squads/{squadId}/spond/import:
+    post:
+      operationId: importSpondSnapshot
+      summary: Apply a reviewed Spond snapshot
+      description: Applies selected links and creates or updates records using stable Spond identifiers.
+      tags:
+        - Spond Integration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpondImportRequest'
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpondImportResult'
+        '400':
+          description: Invalid import payload
+        '401':
+          description: Not authenticated
+        '403':
+          description: Admin or trainer permission required
+        '409':
+          description: Conflicting Spond link
+  /api/integrations/spond/groups:
+    post:
+      operationId: listSpondGroups
+      summary: List groups available to the supplied Spond account
+      description: Credentials and the resulting Spond access token are used only for this request and are not persisted.
+      tags:
+        - Spond Integration
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpondCredentials'
+      responses:
+        '200':
+          description: Spond groups accessible to the account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpondGroupSummary'
+        '400':
+          description: Credentials are missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: App or Spond authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Spond returned an invalid response or could not be reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/integrations/spond/snapshot:
+    post:
+      operationId: getSpondSnapshot
+      summary: Read a normalized Spond group snapshot
+      description: Credentials and the resulting Spond access token are used only for this request and are not persisted.
+      tags:
+        - Spond Integration
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpondSnapshotRequest'
+      responses:
+        '200':
+          description: Normalized members and events for the requested group and time range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpondSnapshot'
+        '400':
+          description: Credentials or snapshot scope are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: App or Spond authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: Spond returned an invalid response or could not be reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/sfv-categories:
     get:
       operationId: getSfvCategories
@@ -116,111 +246,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/integrations/spond/groups:
-    post:
-      operationId: proxySpondGroups
-      summary: List Spond groups through the optional read-only proxy
-      description: >-
-        Credentials and the resulting Spond token are request-scoped and must
-        never be persisted or logged. This operation is used when initially
-        choosing a group to link. Scoped player and event synchronization use
-        the Squad's existing spondId and do not allow a different group.
-      tags: [Spond]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SpondCredentials'
-      responses:
-        '200':
-          description: Sanitized groups visible to the Spond account
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SpondGroupSummary'
-        '401': { description: Authentication failed }
-        '403': { description: Not authorized }
-  /api/integrations/spond/snapshot:
-    post:
-      operationId: proxySpondSnapshot
-      summary: Read a Spond snapshot through the optional read-only proxy
-      description: >-
-        The proxy may call only Spond login and GET endpoints and discards all
-        secrets before returning. The requested group must be accessible to the
-        supplied Spond account. Date-time bounds are instants; consumers convert
-        returned event instants exactly once to the Europe/Zurich wall-clock
-        convention used by the application.
-      tags: [Spond]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/SpondCredentials'
-                - type: object
-                  properties:
-                    groupId: { type: string }
-                    subGroupId:
-                      type: string
-                      description: Optional single Spond subgroup ID to include; omitted means the whole group.
-                    from: { type: string, format: date-time }
-                    to: { type: string, format: date-time }
-                  required: [groupId, from, to]
-      responses:
-        '200':
-          description: Normalized Spond group and supported activities
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SpondSnapshot'
-        '401': { description: Authentication failed }
-        '403': { description: Not authorized }
-  /api/squads/{squadId}/spond/import:
-    post:
-      operationId: importSpondSnapshot
-      summary: Atomically apply a reviewed Spond snapshot
-      description: >-
-        Validates permissions, local revisions, link uniqueness and the complete
-        normalized payload before applying all selected changes in one transaction.
-        On initial import the selected Spond group is linked to the Squad. Later
-        scoped synchronization must use that linked group. Repeating an already
-        completed importId returns its original result.
-      tags: [Spond]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SpondImportRequest'
-      responses:
-        '200':
-          description: Import result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SpondImportResult'
-        '400': { description: Invalid or incomplete import payload }
-        '401': { description: Not authenticated }
-        '403': { description: Admin or trainer permission required }
-        '409': { description: Stale preview, concurrent import, or duplicate Spond link }
   /api/squads/{squadId}/activities:
     get:
-      operationId: getSquadActivities
+      operationId: getGroupActivities
       summary: List activities in a squad
       tags:
         - Activities
@@ -234,7 +262,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Activities in the squad
+          description: Activities in the group
           content:
             application/json:
               schema:
@@ -242,9 +270,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/Activity'
     post:
-      operationId: createSquadActivity
+      operationId: createGroupActivity
       summary: Create a match or tournament activity
-      description: Create a match or tournament activity.
+      description: Training and social activities are not creatable in this phase.
       tags:
         - Activities
       security:
@@ -255,6 +283,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
       requestBody:
         required: true
         content:
@@ -264,6 +293,8 @@ paths:
       responses:
         '201':
           description: Activity created
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
           content:
             application/json:
               schema:
@@ -274,9 +305,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/activity-events:
+    get:
+      operationId: getSquadActivityAuditEvents
+      summary: List Activity audit events for a squad
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: activityId
+          in: query
+          schema:
+            type: string
+        - name: eventType
+          in: query
+          schema:
+            $ref: '#/components/schemas/ActivityEventType'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Immutable Activity event commits in descending record order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityAuditEventPage'
+        '400':
+          description: Invalid filter or cursor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Only Squad administrators may access the audit stream
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/activities/{id}:
     get:
-      operationId: getSquadActivity
+      operationId: getGroupActivity
       summary: Get an activity
       tags:
         - Activities
@@ -296,6 +379,9 @@ paths:
       responses:
         '200':
           description: Activity
+          headers:
+            ETag:
+              $ref: '#/components/headers/ActivityETag'
           content:
             application/json:
               schema:
@@ -307,7 +393,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     put:
-      operationId: updateSquadActivity
+      operationId: updateGroupActivity
+      deprecated: true
       summary: Update an activity
       tags:
         - Activities
@@ -324,6 +411,8 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
       requestBody:
         required: true
         content:
@@ -333,6 +422,9 @@ paths:
       responses:
         '200':
           description: Activity updated
+          headers:
+            ETag:
+              $ref: '#/components/headers/ActivityETag'
           content:
             application/json:
               schema:
@@ -349,8 +441,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '409':
+          description: Activity revision or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     delete:
-      operationId: deleteSquadActivity
+      operationId: deleteGroupActivity
       summary: Delete an activity
       tags:
         - Activities
@@ -367,6 +465,8 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
       responses:
         '204':
           description: Activity deleted
@@ -376,26 +476,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '409':
+          description: Activity revision or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/activities/{id}/status:
     put:
-      operationId: updateSquadActivityStatus
-      summary: Update an activity status
-      description: Set an activity to active or cancelled. Cancelled activities are read-only until restored.
-      tags:
-        - Activities
-      security:
-        - bearerAuth: []
+      operationId: updateActivityStatus
+      summary: Cancel or restore an Activity
+      description: Spond-linked Activities receive their status from Spond and cannot be changed here.
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
       parameters:
-        - name: squadId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
       requestBody:
         required: true
         content:
@@ -404,30 +502,22 @@ paths:
               type: object
               required: [status]
               properties:
-                status:
-                  $ref: '#/components/schemas/ActivityStatus'
+                status: { $ref: '#/components/schemas/ActivityStatus' }
       responses:
         '200':
-          description: Activity status updated
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Activity'
-        '400':
-          description: Invalid activity status or lifecycle transition
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Activity not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid status or Spond-linked Activity }
+        '404': { description: Activity not found }
+        '409': { description: Revision or idempotency conflict }
   /api/squads/{squadId}/activities/{id}/invitations:
     put:
-      operationId: setSquadActivityInvitations
+      operationId: updateGroupActivityInvitations
+      deprecated: true
       summary: Set the complete activity invitation list
       tags:
         - Activities
@@ -464,16 +554,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/Activity'
         '400':
-          description: Invalid invitation list
+          description: Invalid invitation update
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    post:
+      operationId: addActivityInvitations
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddActivityInvitationsCommand' }
+      responses:
+        '200':
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid command }
+        '404': { description: Activity or team not found }
+        '409': { description: Revision or idempotency conflict }
   /api/squads/{squadId}/activities/{id}/invitations/{playerId}:
     put:
-      operationId: updateSquadActivityInvitation
-      summary: Manually update an activity RSVP
-      description: Admin/trainer-only manual RSVP fallback. Guardian and player responses are collected in Spond.
+      operationId: updateGroupActivityInvitation
+      summary: Respond to an activity invitation
       tags:
         - Activities
       security:
@@ -508,14 +622,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/Activity'
         '403':
-          description: Only an authorized admin or trainer may update RSVP data
+          description: Guardian may only respond for their own child
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    delete:
+      operationId: removeActivityInvitation
+      description: Removing an invitation that would change selection is allowed only before the Activity starts and before attendance is recorded.
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - { name: playerId, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      responses:
+        '200':
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid command }
+        '404': { description: Activity or team not found }
+        '409': { description: Revision or idempotency conflict }
   /api/squads/{squadId}/activities/{id}/selection:
     put:
-      operationId: updateSquadActivitySelection
+      operationId: updateGroupActivitySelection
+      deprecated: true
       summary: Update activity team selections
       tags:
         - Activities
@@ -559,11 +696,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/activities/{id}/selection/sent:
     put:
-      operationId: markSquadActivitySelectionSent
-      summary: Mark activity selection as finalized
-      description: >-
-        Internal planning state only. Nothing is sent or published; Spond does
-        not provide selections and this application does not notify members.
+      operationId: markGroupActivitySelectionSent
+      summary: Mark activity selection as sent
       tags:
         - Activities
       security:
@@ -581,7 +715,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Selection finalized
+          description: Selection sent
           content:
             application/json:
               schema:
@@ -594,7 +728,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/activities/{id}/teams:
     put:
-      operationId: updateSquadActivityTeams
+      operationId: updateGroupActivityTeams
+      deprecated: true
       summary: Replace teams for an activity
       tags:
         - Activities
@@ -632,9 +767,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Team'
+    post:
+      operationId: addActivityTeam
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddActivityTeam' }
+      responses:
+        '200':
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid command }
+        '404': { description: Activity or team not found }
+        '409': { description: Revision or idempotency conflict }
   /api/squads/{squadId}/activities/{id}/attendance:
     put:
-      operationId: updateSquadActivityAttendance
+      operationId: updateGroupActivityAttendance
+      deprecated: true
       summary: Bulk upsert activity attendance
       description: Admins and trainers may record attendance only after the activity starts. Attendance is independent of invitations and selection.
       tags: [Activities]
@@ -678,11 +839,2132 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    patch:
+      operationId: patchActivityAttendance
+      description: Attendance can be recorded only after the Activity starts, for selected players.
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityAttendanceChangesCommand' }
+      responses:
+        '200':
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid command }
+        '404': { description: Activity or team not found }
+        '409': { description: Revision or idempotency conflict }
+  /api/squads/{squadId}/match-formats:
+    get:
+      operationId: getSquadMatchFormats
+      summary: Get match formats for a squad
+      description: Compatibility alias of the squad's playing-modes collection.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved match formats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayingMode'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this squad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createSquadMatchFormat
+      summary: Create a match format for a squad
+      description: Compatibility alias of creating a playing mode.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlayingModeRequest'
+      responses:
+        '201':
+          description: Match format created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '400':
+          description: Invalid match format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to modify this squad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/match-formats/{matchFormatId}:
+    put:
+      operationId: updateSquadMatchFormat
+      summary: Update a squad match format
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: matchFormatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlayingModeRequest'
+      responses:
+        '200':
+          description: Match format updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '403':
+          description: Not authorized to modify this squad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteSquadMatchFormat
+      summary: Delete a squad match format
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: matchFormatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Match format deleted successfully
+        '403':
+          description: Not authorized to modify this squad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/match-formats/{matchFormatId}/set-default:
+    post:
+      operationId: setSquadDefaultMatchFormat
+      summary: Set the default match format for a squad
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: matchFormatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Default match format updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '403':
+          description: Not authorized to modify this squad
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/register:
+    post:
+      operationId: registerUser
+      summary: Register a new user
+      description: Create a new user account with email and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  example: mySecurePassword123
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+              required:
+                - email
+                - password
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+                  token:
+                    type: string
+                    description: JWT authentication token
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/login:
+    post:
+      operationId: loginUser
+      summary: Login user
+      description: Authenticate with email and password to receive a JWT token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: mySecurePassword123
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse'
+                  token:
+                    type: string
+                    description: JWT authentication token
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      summary: Get current user info
+      description: Get the authenticated user's information
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/request-reset:
+    post:
+      operationId: requestPasswordReset
+      summary: Request password reset
+      description: Send a password reset email with a one-time link valid for 1 hour
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+              required:
+                - email
+      responses:
+        '200':
+          description: Password reset email sent (or will be sent if account exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: If an account exists with this email, you will receive a password reset link shortly.
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      summary: Reset password with token
+      description: Reset user password using the token received via email
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                resetToken:
+                  type: string
+                  example: a1b2c3d4e5f6...
+                newPassword:
+                  type: string
+                  minLength: 6
+                  example: myNewSecurePassword123
+              required:
+                - email
+                - resetToken
+                - newPassword
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password has been reset successfully
+        '400':
+          description: Invalid request data or expired/invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      description: Returns the health status of the API and database connection
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  message:
+                    type: string
+                    example: "Teams API is running"
+                  database:
+                    type: object
+                    required: [status, database, collections]
+                    properties:
+                      status:
+                        type: string
+                        enum: [healthy]
+                      database:
+                        type: string
+                      collections:
+                        type: integer
+                  activityEventSourcing:
+                    type: object
+                    required: [enabled, metrics]
+                    properties:
+                      enabled: { type: boolean }
+                      metrics:
+                        $ref: '#/components/schemas/ActivityEventSourcingMetrics'
+        '503':
+          description: Service unavailable - database unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, message, error]
+                properties:
+                  status: { type: string, enum: [error] }
+                  message: { type: string }
+                  error: { type: string }
+  /metrics:
+    get:
+      operationId: getActivityEventSourcingMetrics
+      summary: Process-local Activity event sourcing metrics
+      tags: [Health]
+      security: []
+      responses:
+        '200':
+          description: Prometheus text exposition
+          content:
+            text/plain:
+              schema: { type: string }
+  /internal/migrations/activity-events:
+    post:
+      operationId: runActivityEventMigration
+      summary: Migrate Activity projections to event streams
+      description: Internal migration endpoint. Activity writes must be paused before calling it.
+      tags: [Internal]
+      security: []
+      parameters:
+        - name: X-Migration-Token
+          in: header
+          required: true
+          schema: { type: string }
+        - name: X-Confirm-Activity-Writes-Paused
+          in: header
+          required: true
+          schema: { type: string, enum: ['yes'] }
+      responses:
+        '200':
+          description: Migration completed with no mismatches
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActivityEventMigrationResult' }
+        '400': { description: Activity writes pause was not confirmed }
+        '401': { description: Invalid migration token }
+        '409': { description: Migration in progress or mismatches detected }
+        '500': { description: Migration failed }
+        '503': { description: Migration endpoint is not configured }
+  /api/squads:
+    get:
+      operationId: getAllGroups
+      summary: Get all groups
+      description: Retrieve all groups where the authenticated user is a trainer member
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Squad'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createGroup
+      summary: Create a new group
+      description: Create a new group
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Squad created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Squad'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}:
+    get:
+      operationId: getGroupById
+      summary: Get group by ID
+      description: Retrieve a specific group by ID
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Squad found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Squad'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateGroupById
+      summary: Update group by ID
+      description: Update a specific group by ID
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupRequest'
+      responses:
+        '200':
+          description: Squad updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Squad'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteGroupById
+      summary: Delete group by ID
+      description: Delete a specific group by ID
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Squad deleted successfully
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members:
+    get:
+      operationId: getAllMembers
+      summary: Get all members in a squad
+      description: Without a roles filter, returns players and trainers together. With roles=player or roles=trainer, returns the matching array. Guardians can read this endpoint, but sensitive player fields are hidden.
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: roles
+          in: query
+          schema:
+            type: string
+            enum: [player, trainer]
+      responses:
+        '200':
+          description: Successfully retrieved members
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    required: [players, trainers]
+                    properties:
+                      players:
+                        type: array
+                        items: { $ref: '#/components/schemas/Player' }
+                      trainers:
+                        type: array
+                        items: { $ref: '#/components/schemas/Trainer' }
+                  - type: array
+                    items: { $ref: '#/components/schemas/Player' }
+                  - type: array
+                    items: { $ref: '#/components/schemas/Trainer' }
+        '400':
+          description: Invalid roles filter
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createMember
+      summary: Create a new member in a squad
+      description: Create either a player or trainer based on the role field in a specific group
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/CreatePlayerRequest'
+                - $ref: '#/components/schemas/CreateTrainerRequest'
+      responses:
+        '201':
+          description: Member created successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PlayerWithRole'
+                  - $ref: '#/components/schemas/TrainerWithRole'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{id}:
+    get:
+      operationId: getMemberById
+      summary: Get member by ID
+      description: Retrieve a specific member (player or trainer) by ID in a specific group. Guardians can read this endpoint, but sensitive player fields are hidden.
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Member found
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PlayerWithRole'
+                  - $ref: '#/components/schemas/TrainerWithRole'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateMemberById
+      summary: Update member by ID
+      description: Update a specific Member (player or trainer) by ID in a specific group
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/UpdatePlayerRequest'
+                - $ref: '#/components/schemas/UpdateTrainerRequest'
+      responses:
+        '200':
+          description: Member updated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PlayerWithRole'
+                  - $ref: '#/components/schemas/TrainerWithRole'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteMemberById
+      summary: Delete member by ID
+      description: Delete a specific Member (player or trainer) by ID in a specific group
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Member deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{id}/roles/{role}:
+    delete:
+      operationId: revokeMemberRole
+      summary: Revoke role from a member
+      description: Revoke an admin, trainer, or guardian role from a member in a specific group.
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: role
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [admin, trainer, guardian]
+      responses:
+        '200':
+          description: Role revoked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainerWithRole'
+        '400':
+          description: Invalid role parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Role revocation conflict (last admin, last role, guardian role, or role not assigned)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{id}/guardians:
+    post:
+      operationId: linkGuardianToPlayer
+      summary: Link a guardian to player
+      description: Link a single guardian to a specific player in a specific group. 
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGuardianRequest'
+      responses:
+        '200':
+          description: Guardian added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerWithRole'
+        '400':
+          description: Invalid guardian payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Guardian already exists (same email)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{id}/guardians/{guardianId}:
+    delete:
+      operationId: unlinkGuardianFromPlayer
+      summary: Unlink a guardian from player
+      description: Unlink a single guardian from a specific player in a specific group
+      tags:
+        - Members
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: guardianId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Guardian deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerWithRole'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Player or guardian not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{memberId}/evaluations:
+    parameters:
+      - name: squadId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: memberId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      operationId: getAllEvaluationsForMember
+      summary: Get all evaluations for a member
+      description: Retrieve all evaluations for a specific member (player) in a specific group
+      tags:
+        - Evaluations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved evaluations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerEvaluation'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createEvaluation
+      summary: Create a new evaluation for a player
+      description: Create a new evaluation for a specific player in a specific group
+      tags:
+        - Evaluations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerEvaluation'
+      responses:
+        '201':
+          description: Evaluation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerEvaluation'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/members/{memberId}/evaluations/{evaluationId}:
+    put:
+      operationId: updateEvaluation
+      summary: Update evaluation by ID
+      description: Update a specific evaluation by ID for a specific member (player) in a specific group
+      tags:
+        - Evaluations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evaluationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerEvaluation'
+      responses:
+        '200':
+          description: Evaluation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerEvaluation'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Evaluation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteEvaluation
+      summary: Delete evaluation by ID
+      description: Delete a specific evaluation by ID for a specific member (player) in a specific group
+      tags:
+        - Evaluations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: evaluationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Evaluation deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Evaluation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/periods:
+    get:
+      operationId: getGroupPeriods
+      summary: Get periods for a squad
+      description: Retrieve all periods belonging to a specific group
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved periods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Period'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createGroupPeriod
+      summary: Create period for a squad
+      description: Add a new period to a specific group
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePeriodRequest'
+      responses:
+        '201':
+          description: Period created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Period'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/periods/{periodId}:
+    put:
+      operationId: updateGroupPeriod
+      summary: Update period for a squad
+      description: Update an existing period belonging to a specific group
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: periodId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePeriodRequest'
+      responses:
+        '200':
+          description: Period updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Period'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or period not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteGroupPeriod
+      summary: Delete period for a squad
+      description: Delete an existing period from a specific group
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: periodId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Period deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or period not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/playing-modes:
+    x-aliases:
+      - /api/squads/{squadId}/playing-modes
+    get:
+      operationId: getGroupPlayingModes
+      summary: Get playing modes for a squad
+      description: >-
+        Retrieve all Playing Modes belonging to a specific group. This is a
+        group-scoped subresource; there is no top-level playing-modes
+        collection.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved playing modes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayingMode'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createGroupPlayingMode
+      summary: Create playing mode for a squad
+      description: >-
+        Add a new Playing Mode to a group. Requires admin or trainer role in
+        the group (same authorization as event/team modification). The first
+        Playing Mode created for a squad is automatically marked default.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlayingModeRequest'
+      responses:
+        '201':
+          description: Playing mode created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '400':
+          description: >-
+            Invalid request data: name is empty, numberOfPeriods or
+            periodLengthMinutes is not an integer >= 1, or
+            minimumPeriodsPerPlayer is not an integer between 0 and
+            numberOfPeriods.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/playing-modes/{playingModeId}:
+    put:
+      operationId: updateGroupPlayingMode
+      summary: Update playing mode for a squad
+      description: >-
+        Update an existing Playing Mode belonging to a specific group.
+        Requires admin or trainer role in the group.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: playingModeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlayingModeRequest'
+      responses:
+        '200':
+          description: Playing mode updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '400':
+          description: >-
+            Invalid request data: name is empty, numberOfPeriods or
+            periodLengthMinutes is not an integer >= 1, or
+            minimumPeriodsPerPlayer is not an integer between 0 and the
+            resulting numberOfPeriods.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or playing mode not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteGroupPlayingMode
+      summary: Delete playing mode for a squad
+      description: >-
+        Delete an existing Playing Mode from a specific group. Requires admin
+        or trainer role in the group.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: playingModeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Playing mode deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or playing mode not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: >-
+            Playing mode is referenced by at least one Event's playingModeId
+            in this group and cannot be deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/playing-modes/{playingModeId}/set-default:
+    post:
+      operationId: setDefaultGroupPlayingMode
+      summary: Set a playing mode as the group's default
+      description: >-
+        Atomically marks this Playing Mode as the group's default and unsets
+        isDefault on any other Playing Mode in the group, avoiding a race
+        between two concurrent updates both claiming default. Requires admin
+        or trainer role in the group.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: playingModeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Playing mode marked as default successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayingMode'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or playing mode not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/formations:
+    get:
+      operationId: getGroupFormations
+      summary: Get formations for a squad
+      description: >-
+        Retrieve all Formations belonging to a specific group. This is a
+        group-scoped subresource; there is no top-level formations
+        collection.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved formations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Formation'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized to access this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createGroupFormation
+      summary: Create formation for a squad
+      description: >-
+        Add a new Formation to a group. Requires admin or trainer role in
+        the group (same authorization as event/team modification).
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFormationRequest'
+      responses:
+        '201':
+          description: Formation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formation'
+        '400':
+          description: >-
+            Invalid request data: name is empty, fewer than 2 slots, a
+            duplicate slot label, or not exactly one slot with isGoalkeeper
+            true.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/formations/{formationId}:
+    put:
+      operationId: updateGroupFormation
+      summary: Update formation for a squad
+      description: >-
+        Update an existing Formation belonging to a specific group. Requires
+        admin or trainer role in the group.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: formationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFormationRequest'
+      responses:
+        '200':
+          description: Formation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Formation'
+        '400':
+          description: >-
+            Invalid request data: name is empty, fewer than 2 slots, a
+            duplicate slot label, or not exactly one slot with isGoalkeeper
+            true.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or formation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteGroupFormation
+      summary: Delete formation for a squad
+      description: >-
+        Delete an existing Formation from a specific group. Requires admin or
+        trainer role in the group.
+      tags:
+        - Squads
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: squadId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: formationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Formation deleted successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Not authorized: requires admin or trainer role in this group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Squad or formation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: >-
+            Formation is referenced by at least one Team's formationId in
+            this group and cannot be deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /api/squads/{squadId}/shirtsets:
     get:
       operationId: getAllShirtSets
       summary: Get all shirt sets in a squad
-      description: Retrieve all shirt sets in a specific squad
+      description: Retrieve all shirt sets in a specific group
       tags:
         - Shirt Sets
       security:
@@ -709,7 +2991,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -723,7 +3005,7 @@ paths:
     post:
       operationId: createShirtSet
       summary: Create a new shirt set in a squad
-      description: Create a new shirt set in a specific squad
+      description: Create a new shirt set in a specific group
       tags:
         - Shirt Sets
       security:
@@ -760,7 +3042,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -775,7 +3057,7 @@ paths:
     get:
       operationId: getShirtSetById
       summary: Get shirt set by ID
-      description: Retrieve a specific shirt set by ID in a specific squad
+      description: Retrieve a specific shirt set by ID in a specific group
       tags:
         - Shirt Sets
       security:
@@ -805,7 +3087,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -825,7 +3107,7 @@ paths:
     put:
       operationId: updateShirtSetById
       summary: Update shirt set by ID
-      description: Update a specific shirt set by ID in a specific squad
+      description: Update a specific shirt set by ID in a specific group
       tags:
         - Shirt Sets
       security:
@@ -867,7 +3149,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -887,7 +3169,7 @@ paths:
     delete:
       operationId: deleteShirtSetById
       summary: Delete shirt set by ID
-      description: Delete a specific shirt set by ID in a specific squad
+      description: Delete a specific shirt set by ID in a specific group
       tags:
         - Shirt Sets
       security:
@@ -913,7 +3195,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -988,7 +3270,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Not authorized to access this squad
+          description: Not authorized to access this group
           content:
             application/json:
               schema:
@@ -1005,6 +3287,127 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/squads/{squadId}/activities/{id}/history:
+    get:
+      operationId: getActivityHistory
+      summary: Get enriched Activity history, newest commit first
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      description: Squad administrators only. Deleted Activities remain readable while their event stream exists.
+      parameters:
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+      responses:
+        '200':
+          description: One item per commit, with changes in event ordinal order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActivityHistoryPage' }
+        '404': { description: Activity event stream not found }
+  /api/squads/{squadId}/activities/{id}/details:
+    patch:
+      operationId: patchActivityDetails
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: &activityCommandParameters
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityDetailsPatch' }
+      responses: &activityCommandResponses
+        '200':
+          description: Complete updated Activity
+          headers:
+            ETag: { $ref: '#/components/headers/ActivityETag' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Activity' }
+        '400': { description: Invalid command }
+        '404': { description: Activity or team not found }
+        '409': { description: Revision or idempotency conflict }
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/details:
+    patch:
+      operationId: patchActivityTeamDetails
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: &activityTeamCommandParameters
+        - $ref: '#/components/parameters/ActivitySquadId'
+        - $ref: '#/components/parameters/ActivityPathId'
+        - $ref: '#/components/parameters/ActivityTeamId'
+        - $ref: '#/components/parameters/ActivityIfMatch'
+        - $ref: '#/components/parameters/ActivityIdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityTeamDetailsPatch' }
+      responses: *activityCommandResponses
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/responsible-person:
+    put:
+      operationId: setActivityTeamResponsiblePerson
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: *activityTeamCommandParameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityResponsiblePersonCommand' }
+      responses: *activityCommandResponses
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/formation:
+    put:
+      operationId: setActivityTeamFormation
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: *activityTeamCommandParameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityFormationCommand' }
+      responses: *activityCommandResponses
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/shirts:
+    put:
+      operationId: setActivityTeamShirts
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: *activityTeamCommandParameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityShirtsCommand' }
+      responses: *activityCommandResponses
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/lineup:
+    put:
+      operationId: setActivityTeamLineup
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: *activityTeamCommandParameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivityLineupCommand' }
+      responses: *activityCommandResponses
+  /api/squads/{squadId}/activities/{id}/teams/{teamId}/selection-changes:
+    post:
+      operationId: changeActivityTeamSelection
+      description: Selection can change only before the Activity starts and before attendance is recorded.
+      tags: [Activities]
+      security: [{ bearerAuth: [] }]
+      parameters: *activityTeamCommandParameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActivitySelectionChangesCommand' }
+      responses: *activityCommandResponses
 components:
   securitySchemes:
     bearerAuth:
@@ -1012,7 +3415,586 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from /auth/login or /auth/register
+  parameters:
+    ActivitySquadId: { name: squadId, in: path, required: true, schema: { type: string } }
+    ActivityPathId: { name: id, in: path, required: true, schema: { type: string } }
+    ActivityTeamId: { name: teamId, in: path, required: true, schema: { type: string } }
+    ActivityIfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: Expected Activity event revision, returned as the ETag from a previous read.
+      schema:
+        type: string
+        pattern: '^"activity-revision-[0-9]+"$'
+    ActivityIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Client-generated key for safely retrying the same Activity command.
+      schema:
+        type: string
+        minLength: 1
+  headers:
+    ActivityETag:
+      description: Current Activity event revision.
+      schema:
+        type: string
+        pattern: '^"activity-revision-[0-9]+"$'
   schemas:
+    BirthdayCalendarSubscription:
+      type: object
+      required: [subscriptionUrl]
+      properties:
+        subscriptionUrl: { type: string, format: uri }
+    ActivityEventSourcingMetrics:
+      type: object
+      required: [commandsAppended, commandConflicts, projectionRepairs, replayFailures, reconciliationFailures]
+      properties:
+        commandsAppended: { type: integer, minimum: 0 }
+        commandConflicts: { type: integer, minimum: 0 }
+        projectionRepairs: { type: integer, minimum: 0 }
+        replayFailures: { type: integer, minimum: 0 }
+        reconciliationFailures: { type: integer, minimum: 0 }
+    ActivityEventMigrationResult:
+      type: object
+      required: [scanned, imported, alreadyMigrated, skipped, verified, mismatches]
+      properties:
+        scanned: { type: integer, minimum: 0 }
+        imported: { type: integer, minimum: 0 }
+        alreadyMigrated: { type: integer, minimum: 0 }
+        skipped: { type: integer, minimum: 0 }
+        verified: { type: integer, minimum: 0 }
+        mismatches:
+          type: array
+          items:
+            type: object
+            required: [squadId, activityId, revision, reason, differences]
+            properties:
+              squadId: { type: string }
+              activityId: { type: string }
+              revision: { type: integer }
+              reason: { type: string }
+              differences:
+                type: array
+                items:
+                  type: object
+                  required: [path]
+                  properties:
+                    path: { type: string }
+                    expected: {}
+                    actual: {}
+    ActivityHistoryPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ActivityHistoryItem' }
+    ActivityHistoryItem:
+      type: object
+      required: [id, revision, recordedAt, actor, changes]
+      properties:
+        id: { type: string }
+        revision: { type: integer }
+        recordedAt: { type: string, format: date-time }
+        actor: { $ref: '#/components/schemas/ActivityHistoryActor' }
+        changes:
+          type: array
+          items: { $ref: '#/components/schemas/ActivityHistoryChange' }
+    ActivityHistoryActor:
+      type: object
+      required: [type, memberId, displayName]
+      properties:
+        type: { type: string, enum: [user, system] }
+        memberId: { type: string, nullable: true }
+        displayName: { type: string, nullable: true }
+    ActivityHistorySubject:
+      type: object
+      required: [type, id, displayName]
+      properties:
+        type: { type: string, enum: [activity, team, player, person] }
+        id: { type: string }
+        displayName: { type: string, nullable: true }
+    ActivityHistoryChange:
+      oneOf:
+        - { $ref: '#/components/schemas/ActivityHistoryFieldChange' }
+        - { $ref: '#/components/schemas/ActivityHistorySelectionChange' }
+        - { $ref: '#/components/schemas/ActivityHistoryLineupChange' }
+        - { $ref: '#/components/schemas/ActivityHistoryUnsupportedChange' }
+        - { $ref: '#/components/schemas/ActivityHistorySimpleChange' }
+    ActivityHistoryFieldChange:
+      type: object
+      required: [type, subject, field, previous, current]
+      properties:
+        type: { type: string, enum: [activity.detailsChanged, team.detailsChanged, invitation.responseChanged, attendance.changed] }
+        subject: { $ref: '#/components/schemas/ActivityHistorySubject' }
+        field: { type: string }
+        previous: { nullable: true }
+        current: { nullable: true }
+    ActivityHistorySimpleChange:
+      type: object
+      required: [type, subject]
+      properties:
+        type: { type: string, enum: [activity.created, activity.imported, activity.deleted, team.added, team.removed, invitation.added, invitation.removed, selection.markedSent, attendance.removed] }
+        subject: { $ref: '#/components/schemas/ActivityHistorySubject' }
+        previous: { nullable: true }
+        current: { nullable: true }
+    ActivityHistorySelectionChange:
+      type: object
+      required: [type, subject, context]
+      properties:
+        type: { type: string, enum: [selection.playerAdded, selection.playerRemoved] }
+        subject: { $ref: '#/components/schemas/ActivityHistorySubject' }
+        context: { $ref: '#/components/schemas/ActivitySelectionHistoryContext' }
+    ActivityHistoryLineupChange:
+      type: object
+      required: [type, subject, context]
+      properties:
+        type: { type: string, enum: [lineup.changed] }
+        subject: { $ref: '#/components/schemas/ActivityHistorySubject' }
+        context: { $ref: '#/components/schemas/ActivityLineupHistoryContext' }
+    ActivityHistoryUnsupportedChange:
+      type: object
+      required: [type, subject, context]
+      properties:
+        type: { type: string, enum: [event.unsupported] }
+        subject: { $ref: '#/components/schemas/ActivityHistorySubject' }
+        context: { $ref: '#/components/schemas/ActivityUnsupportedHistoryContext' }
+    ActivitySelectionHistoryContext:
+      type: object
+      required: [teamId, teamName]
+      properties:
+        teamId: { type: string }
+        teamName: { type: string, nullable: true }
+        reason: { type: string }
+        removedAt: { type: string, format: date-time }
+    ActivityLineupHistoryContext:
+      type: object
+      required: [periods, assignmentChanges]
+      properties:
+        periods: { type: array, items: { type: integer } }
+        assignmentChanges: { type: integer }
+    ActivityUnsupportedHistoryContext:
+      type: object
+      required: [eventType, schemaVersion]
+      properties:
+        eventType: { type: string }
+        schemaVersion: { type: integer }
+    ActivityDetailsPatch:
+      type: object
+      description: >-
+        Switching a Match to a Tournament clears its opponent, match format,
+        and all team lineups in the same Activity commit. A Tournament can
+        become a Match only when it has exactly one team. Spond-linked
+        Activities may change kind locally while schedule fields stay managed
+        by Spond.
+      additionalProperties: false
+      properties:
+        kind: { $ref: '#/components/schemas/ActivityKind' }
+        name: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time, nullable: true }
+        location: { type: string, nullable: true }
+        opponentName: { type: string, nullable: true }
+        matchFormatId: { type: string, nullable: true }
+        minPlayersPerTeam: { type: integer, minimum: 1 }
+        maxPlayersPerTeam: { type: integer, minimum: 1 }
+    AddActivityTeam:
+      type: object
+      additionalProperties: false
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        strength: { type: integer, minimum: 1, maximum: 3 }
+        startTime: { type: string, pattern: '^\\d{2}:\\d{2}$' }
+    ActivityTeamDetailsPatch:
+      type: object
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        strength: { type: integer, minimum: 1, maximum: 3 }
+        startTime: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        meetingTime: { type: string, nullable: true }
+        meetingLocation: { type: string, nullable: true }
+    ActivityResponsiblePersonCommand:
+      type: object
+      additionalProperties: false
+      required: [responsiblePersonId]
+      properties:
+        responsiblePersonId: { type: string, nullable: true }
+    ActivityFormationCommand:
+      type: object
+      additionalProperties: false
+      required: [formationId]
+      properties:
+        formationId: { type: string, nullable: true }
+    ActivityShirtsCommand:
+      type: object
+      additionalProperties: false
+      required: [shirtSetId, assignments]
+      properties:
+        shirtSetId: { type: string }
+        assignments:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [playerId, shirtNumber]
+            properties:
+              playerId: { type: string }
+              shirtNumber: { type: integer }
+    ActivityLineupCommand:
+      type: object
+      additionalProperties: false
+      required: [periods]
+      properties:
+        periods:
+          type: array
+          items: { $ref: '#/components/schemas/TeamLineupPeriod' }
+    ActivitySelectionChangesCommand:
+      type: object
+      additionalProperties: false
+      required: [add, remove]
+      properties:
+        add: { type: array, items: { type: string } }
+        remove:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [playerId]
+            properties:
+              playerId: { type: string }
+              reason: { type: string }
+    AddActivityInvitationsCommand:
+      type: object
+      additionalProperties: false
+      required: [players]
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [playerId, response]
+            properties:
+              playerId: { type: string }
+              response: { type: string, enum: [open, accepted, declined] }
+    ActivityAttendanceChangesCommand:
+      type: object
+      additionalProperties: false
+      required: [changes]
+      properties:
+        changes:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [personId, status]
+            properties:
+              personId: { type: string }
+              status: { type: string, enum: [present, absent, excused], nullable: true }
+              reason: { type: string, minLength: 1 }
+    SpondCredentials:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required: [email, password]
+    SpondSnapshotRequest:
+      allOf:
+        - $ref: '#/components/schemas/SpondCredentials'
+        - type: object
+          additionalProperties: false
+          properties:
+            groupId:
+              type: string
+            subGroupId:
+              type: string
+            from:
+              type: string
+              format: date-time
+            to:
+              type: string
+              format: date-time
+          required: [groupId, from, to]
+    SpondSubGroupSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+      required: [id, name]
+    SpondGroupSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        subGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondSubGroupSummary'
+      required: [id, name]
+    SpondGuardianSnapshot:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+      required: [id, firstName, lastName]
+    SpondMemberSnapshot:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        guardians:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondGuardianSnapshot'
+        roles:
+          type: array
+          items:
+            type: string
+        subGroups:
+          type: array
+          items:
+            type: string
+      required: [id, firstName, lastName, guardians, roles]
+    SpondEventResponse:
+      type: object
+      properties:
+        spondMemberId:
+          type: string
+        response:
+          type: string
+          enum: [open, accepted, declined]
+      required: [spondMemberId, response]
+    SpondEventSnapshot:
+      type: object
+      properties:
+        id:
+          type: string
+        groupId:
+          type: string
+        type:
+          type: string
+        matchEvent:
+          type: boolean
+        status:
+          type: string
+          enum: [active, cancelled, deleted]
+        name:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        location:
+          type: string
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondEventResponse'
+      required: [id, groupId, type, status, name, startsAt, responses]
+    SpondSnapshot:
+      type: object
+      properties:
+        group:
+          allOf:
+            - $ref: '#/components/schemas/SpondGroupSummary'
+            - type: object
+              properties:
+                members:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SpondMemberSnapshot'
+              required: [members]
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondEventSnapshot'
+        sourceReadAt:
+          type: string
+          format: date-time
+      required: [group, activities, sourceReadAt]
+    SpondMemberDecision:
+      oneOf:
+        - type: object
+          properties:
+            action: { type: string, enum: [link] }
+            spondMemberId: { type: string }
+            memberId: { type: string }
+          required: [action, spondMemberId, memberId]
+        - type: object
+          properties:
+            action: { type: string, enum: [create-player] }
+            spondMemberId: { type: string }
+            birthDate: { type: string, format: date }
+            level: { type: integer, minimum: 1, maximum: 5 }
+            status: { type: string, enum: [active, trial, inactive] }
+            guardianIds:
+              type: array
+              items: { type: string }
+          required: [action, spondMemberId, birthDate, level, status, guardianIds]
+        - type: object
+          properties:
+            action: { type: string, enum: [skip] }
+            spondMemberId: { type: string }
+          required: [action, spondMemberId]
+    SpondActivityDecision:
+      oneOf:
+        - type: object
+          properties:
+            action: { type: string, enum: [link] }
+            spondEventId: { type: string }
+            activityId: { type: string }
+          required: [action, spondEventId, activityId]
+        - type: object
+          properties:
+            action: { type: string, enum: [create] }
+            spondEventId: { type: string }
+            kind:
+              $ref: '#/components/schemas/ActivityKind'
+            trainerIds:
+              type: array
+              items: { type: string }
+            teams:
+              type: array
+              items:
+                $ref: '#/components/schemas/SpondImportTeam'
+          required: [action, spondEventId, kind]
+        - type: object
+          properties:
+            action: { type: string, enum: [skip] }
+            spondEventId: { type: string }
+          required: [action, spondEventId]
+    SpondImportTeam:
+      type: object
+      properties:
+        name: { type: string }
+        strength: { type: integer, minimum: 1, maximum: 3 }
+        selectedPlayers:
+          type: array
+          items: { type: string }
+      required: [name, strength, selectedPlayers]
+    SpondImportRequest:
+      type: object
+      properties:
+        importId: { type: string, format: uuid }
+        spondGroupId: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        squadUpdatedAt: { type: string, format: date-time }
+        snapshot:
+          $ref: '#/components/schemas/SpondSnapshot'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondMemberDecision'
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpondActivityDecision'
+      required: [importId, spondGroupId, from, to, snapshot, members, activities]
+    SpondImportResult:
+      type: object
+      properties:
+        importId: { type: string, format: uuid }
+        created: { type: integer, minimum: 0 }
+        linked: { type: integer, minimum: 0 }
+        updated: { type: integer, minimum: 0 }
+        unchanged: { type: integer, minimum: 0 }
+        skipped: { type: integer, minimum: 0 }
+        warnings:
+          type: array
+          items: { type: string }
+      required: [importId, created, linked, updated, unchanged, skipped, warnings]
+    ActivityEventType:
+      type: string
+      enum:
+        - ActivityCreated
+        - ActivityImported
+        - ActivityDetailsChanged
+        - ActivityDeleted
+        - InvitationAdded
+        - InvitationRemoved
+        - InvitationResponseChanged
+        - TeamAdded
+        - TeamChanged
+        - TeamRemoved
+        - PlayerSelected
+        - PlayerUnselected
+        - LineupChanged
+        - SelectionPublished
+        - AttendanceRecorded
+        - AttendanceRemoved
+        - TaskCreated
+        - TaskChanged
+        - TaskDeleted
+        - TaskSignupAdded
+        - TaskSignupRemoved
+        - TrainingPlanChanged
+    ActivityAuditEvent:
+      type: object
+      properties:
+        _id: { type: string }
+        streamId: { type: string }
+        aggregateType: { type: string, enum: [activity] }
+        aggregateId: { type: string }
+        squadId: { type: string }
+        revision: { type: integer, minimum: 1 }
+        command:
+          type: object
+          additionalProperties: true
+        actor:
+          type: object
+          additionalProperties: true
+        recordedAt: { type: string, format: date-time }
+        correlationId: { type: string }
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      required: [_id, streamId, aggregateType, aggregateId, squadId, revision, command, actor, recordedAt, correlationId, events]
+    ActivityAuditEventPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityAuditEvent'
+        nextCursor:
+          type: string
+      required: [items]
     Error:
       type: object
       properties:
@@ -1032,8 +4014,10 @@ components:
           format: email
         firstName:
           type: string
+          nullable: true
         lastName:
           type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -1043,28 +4027,22 @@ components:
       required:
         - id
         - email
-        - firstName
-        - lastName
     Squad:
       type: object
       properties:
         id:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
-        name:
-          type: string
         active:
           type: boolean
           default: true
-          description: Soft lifecycle state. Inactive squads remain persisted but are omitted from active UI pickers.
+          description: Soft lifecycle state. Inactive groups remain persisted but are omitted from API reads.
+        name:
+          type: string
         club:
           type: string
           nullable: true
         category:
-          $ref: '#/components/schemas/SquadCategory'
+          $ref: '#/components/schemas/GroupCategory'
         description:
           type: string
           nullable: true
@@ -1091,17 +4069,24 @@ components:
         matchPlanningEnabled:
           type: boolean
           default: false
-          description: Opt-in flag for Match Formats/Formations/lineup planning.
+          description: Opt-in flag for Playing Modes/Formations/lineup planning.
+        playingModes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayingMode'
+          description: Squad-scoped only; never shared with other groups.
         matchFormats:
           type: array
           items:
-            $ref: '#/components/schemas/MatchFormat'
-          description: Squad-scoped only; never shared with other squads.
+            $ref: '#/components/schemas/PlayingMode'
+          description: >-
+            Squad alias of playingModes; returned on /api/squads routes with
+            the same values. Stored as playingModes.
         formations:
           type: array
           items:
             $ref: '#/components/schemas/Formation'
-          description: Squad-scoped only; never shared with other squads.
+          description: Squad-scoped only; never shared with other groups.
         createdAt:
           type: string
           format: date-time
@@ -1128,6 +4113,12 @@ components:
               activityType:
                 type: string
                 enum: [match, tournament]
+              minPlayersPerTeam:
+                type: integer
+                minimum: 1
+              maxPlayersPerTeam:
+                type: integer
+                minimum: 1
               matchFormat:
                 $ref: '#/components/schemas/MatchFormatDefinition'
             required: [activityType]
@@ -1174,20 +4165,16 @@ components:
         - name
         - startDate
         - endDate
-    CreateSquadRequest:
+    CreateGroupRequest:
       type: object
       properties:
         name:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         club:
           type: string
           nullable: true
         category:
-          $ref: '#/components/schemas/SquadCategory'
+          $ref: '#/components/schemas/GroupCategory'
         description:
           type: string
           nullable: true
@@ -1203,20 +4190,19 @@ components:
                 format: email
       required:
         - name
-    UpdateSquadRequest:
+    UpdateGroupRequest:
       type: object
       properties:
+        active:
+          type: boolean
+          description: Set to false to deactivate the group without deleting its data. Requires the admin role.
         name:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         club:
           type: string
           nullable: true
         category:
-          $ref: '#/components/schemas/SquadCategory'
+          $ref: '#/components/schemas/GroupCategory'
         description:
           type: string
           nullable: true
@@ -1233,14 +4219,11 @@ components:
         matchPlanningEnabled:
           type: boolean
           description: >-
-            Toggling this does not delete existing Match Formats, Formations,
+            Toggling this does not delete existing Playing Modes, Formations,
             or Team lineup data. Requires admin or trainer role.
-        active:
-          type: boolean
-          description: Set to false to deactivate the squad without deleting its data. Requires admin or trainer role.
-    SquadCategory:
+    GroupCategory:
       type: string
-      enum: [A, B, C, D9, D7, E, F, G, FF9, FF11, FF14, FF17]
+      enum: [A, B, C, D9, D7, E, F, G, FF7, FF9, FF11, FF14, FF17]
       description: Swiss Football Association (SFV) team category.
     CreatePeriodRequest:
       type: object
@@ -1268,11 +4251,11 @@ components:
         endDate:
           type: string
           format: date
-    MatchFormat:
+    PlayingMode:
       type: object
       description: >-
-        Squad-scoped subresource (see Squad.matchFormats). Never referenced
-        across squads.
+        Squad-scoped subresource (see Squad.playingModes). Never referenced
+        across groups.
       properties:
         id:
           type: string
@@ -1300,7 +4283,7 @@ components:
         isDefault:
           type: boolean
           default: false
-          description: Exactly one Match Format per squad may be true.
+          description: Exactly one Playing Mode per group may be true.
         playersOnField:
           type: integer
           minimum: 1
@@ -1318,7 +4301,7 @@ components:
         - numberOfPeriods
         - periodLengthMinutes
         - minimumPeriodsPerPlayer
-    CreateMatchFormatRequest:
+    CreatePlayingModeRequest:
       type: object
       properties:
         name:
@@ -1351,7 +4334,7 @@ components:
         - numberOfPeriods
         - periodLengthMinutes
         - minimumPeriodsPerPlayer
-    UpdateMatchFormatRequest:
+    UpdatePlayingModeRequest:
       type: object
       properties:
         name:
@@ -1417,7 +4400,7 @@ components:
       type: object
       description: >-
         Squad-scoped subresource (see Squad.formations). Never referenced
-        across squads.
+        across groups.
       properties:
         id:
           type: string
@@ -1489,7 +4472,7 @@ components:
         periodNumber:
           type: integer
           minimum: 1
-          description: Must not exceed the Activity's Match Format numberOfPeriods.
+          description: Must not exceed the Event's Playing Mode numberOfPeriods.
         assignments:
           type: array
           items:
@@ -1505,14 +4488,10 @@ components:
       properties:
         id:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/SquadRole'
+            $ref: '#/components/schemas/GroupRole'
         firstName:
           type: string
         lastName:
@@ -1547,8 +4526,6 @@ components:
         - firstName
         - lastName
         - level
-        - birthDate
-        - status
     PlayerEvaluation:
       type: object
       properties:
@@ -1593,14 +4570,10 @@ components:
       properties:
         id:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/SquadRole'
+            $ref: '#/components/schemas/GroupRole'
         firstName:
           type: string
         lastName:
@@ -1619,26 +4592,27 @@ components:
       properties:
         id:
           type: string
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
-        squadId:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupRole'
+        groupId:
           type: string
         firstName:
           type: string
+          nullable: true
         lastName:
           type: string
+          nullable: true
         email:
           type: string
           format: email
           nullable: true
       required:
         - id
-        - squadId
-        - firstName
-        - lastName
-    SquadRole:
+        - groupId
+        - roles
+    GroupRole:
       type: string
       enum: [admin, trainer, guardian, player]
     CreateGuardianRequest:
@@ -1657,14 +4631,9 @@ components:
     CreatePlayerRequest:
       type: object
       properties:
-        spondId:
+        role:
           type: string
-          maxLength: 255
-          nullable: true
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/SquadRole'
+          enum: [player]
         firstName:
           type: string
         lastName:
@@ -1685,22 +4654,17 @@ components:
           enum: [active, trial, inactive]
           default: active
       required:
+        - role
         - firstName
         - lastName
         - birthDate
         - level
-        - roles
     CreateTrainerRequest:
       type: object
       properties:
-        spondId:
+        role:
           type: string
-          maxLength: 255
-          nullable: true
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/SquadRole'
+          enum: [trainer]
         firstName:
           type: string
         lastName:
@@ -1709,20 +4673,15 @@ components:
           type: string
           format: email
       required:
+        - role
         - firstName
         - lastName
-        - roles
     UpdatePlayerRequest:
       type: object
       properties:
-        spondId:
+        role:
           type: string
-          maxLength: 255
-          nullable: true
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/SquadRole'
+          enum: [player]
         firstName:
           type: string
         lastName:
@@ -1742,17 +4701,18 @@ components:
           type: string
           enum: [active, trial, inactive]
           default: active
+      required:
+        - role
+        - firstName
+        - lastName
+        - birthDate
+        - level
     UpdateTrainerRequest:
       type: object
       properties:
-        spondId:
+        role:
           type: string
-          maxLength: 255
-          nullable: true
-        roles:
-          type: array
-          items:
-            $ref: '#/components/schemas/SquadRole'
+          enum: [trainer]
         firstName:
           type: string
         lastName:
@@ -1760,6 +4720,26 @@ components:
         email:
           type: string
           format: email
+      required:
+        - role
+        - firstName
+        - lastName
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          
+        playerId:
+          type: string
+          
+        status:
+          type: string
+          enum: [open, accepted, declined, injured, sick, unavailable]
+      required:
+        - id
+        - playerId
+        - status
     ActivityKind:
       type: string
       enum: [match, tournament]
@@ -1778,8 +4758,6 @@ components:
           $ref: '#/components/schemas/AttendanceStatus'
         reason:
           type: string
-          enum: [sick, injured, noShow, other]
-          description: Optional reason, used for excused attendance.
       required: [personId, status]
     ActivityInvitation:
       type: object
@@ -1809,211 +4787,6 @@ components:
           type: string
           enum: [injured, sick, unavailable]
       required: [response]
-    SpondCredentials:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-          writeOnly: true
-      required: [email, password]
-    SpondGuardianSnapshot:
-      type: object
-      properties:
-        id: { type: string }
-        firstName: { type: string }
-        lastName: { type: string }
-        email: { type: string, format: email }
-      required: [id, firstName, lastName]
-    SpondMemberSnapshot:
-      type: object
-      properties:
-        id: { type: string }
-        firstName: { type: string }
-        lastName: { type: string }
-        birthDate: { type: string, format: date }
-        guardians:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondGuardianSnapshot'
-        roles:
-          type: array
-          items: { type: string }
-          description: >-
-            Normalized Spond group roles. Explicit trainer-only members are not
-            candidates for player import.
-      required: [id, firstName, lastName, guardians]
-    SpondGroupSnapshot:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        subGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondSubGroup'
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondMemberSnapshot'
-      required: [id, name, members]
-    SpondSubGroup:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        color: { type: string }
-      required: [id, name]
-    SpondGroupSummary:
-      type: object
-      properties:
-        id: { type: string }
-        name: { type: string }
-        subGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondSubGroup'
-      required: [id, name, subGroups]
-    SpondEventResponse:
-      type: object
-      properties:
-        spondMemberId: { type: string }
-        response:
-          type: string
-          enum: [open, accepted, declined]
-      required: [spondMemberId, response]
-    SpondEventSnapshot:
-      type: object
-      properties:
-        id: { type: string }
-        groupId: { type: string }
-        type:
-          type: string
-        matchEvent:
-          type: boolean
-        status:
-          type: string
-          enum: [active, cancelled, deleted]
-        name: { type: string }
-        startsAt: { type: string, format: date-time }
-        endsAt: { type: string, format: date-time }
-        location: { type: string }
-        responses:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondEventResponse'
-      required: [id, groupId, type, status, name, startsAt, responses]
-    SpondSnapshot:
-      type: object
-      properties:
-        group:
-          $ref: '#/components/schemas/SpondGroupSnapshot'
-        activities:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondEventSnapshot'
-        sourceReadAt: { type: string, format: date-time }
-      required: [group, activities, sourceReadAt]
-    SpondMemberDecision:
-      oneOf:
-        - type: object
-          properties:
-            action: { type: string, enum: [link] }
-            spondMemberId: { type: string }
-            memberId: { type: string }
-            guardianIds:
-              type: array
-              items: { type: string }
-          required: [action, spondMemberId, memberId, guardianIds]
-        - type: object
-          properties:
-            action: { type: string, enum: [create-player] }
-            spondMemberId: { type: string }
-            birthDate: { type: string, format: date }
-            level: { type: integer, minimum: 1, maximum: 5 }
-            status: { type: string, enum: [active, trial, inactive] }
-            guardianIds:
-              type: array
-              items: { type: string }
-          required: [action, spondMemberId, birthDate, level, status, guardianIds]
-        - type: object
-          properties:
-            action: { type: string, enum: [skip] }
-            spondMemberId: { type: string }
-          required: [action, spondMemberId]
-    SpondActivityDecision:
-      oneOf:
-        - type: object
-          properties:
-            action: { type: string, enum: [link] }
-            spondEventId: { type: string }
-            activityId: { type: string }
-          required: [action, spondEventId, activityId]
-        - type: object
-          properties:
-            action: { type: string, enum: [create] }
-            spondEventId: { type: string }
-            kind:
-              $ref: '#/components/schemas/ActivityKind'
-            teams:
-              type: array
-              items:
-                $ref: '#/components/schemas/SpondImportTeam'
-          required: [action, spondEventId, kind]
-        - type: object
-          properties:
-            action: { type: string, enum: [skip] }
-            spondEventId: { type: string }
-          required: [action, spondEventId]
-        - type: object
-          properties:
-            action: { type: string, enum: [delete] }
-            spondEventId: { type: string }
-          required: [action, spondEventId]
-    SpondImportTeam:
-      type: object
-      properties:
-        name: { type: string }
-        strength: { type: integer, minimum: 1, maximum: 3 }
-        selectedPlayers:
-          type: array
-          items: { type: string }
-      required: [name, strength, selectedPlayers]
-    SpondImportRequest:
-      type: object
-      properties:
-        importId: { type: string, format: uuid }
-        spondGroupId: { type: string }
-        from: { type: string, format: date }
-        to: { type: string, format: date }
-        squadUpdatedAt: { type: string, format: date-time }
-        snapshot:
-          $ref: '#/components/schemas/SpondSnapshot'
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondMemberDecision'
-        activities:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpondActivityDecision'
-      required: [importId, spondGroupId, from, to, snapshot, members, activities]
-    SpondImportResult:
-      type: object
-      properties:
-        importId: { type: string, format: uuid }
-        created: { type: integer, minimum: 0 }
-        linked: { type: integer, minimum: 0 }
-        updated: { type: integer, minimum: 0 }
-        unchanged: { type: integer, minimum: 0 }
-        skipped: { type: integer, minimum: 0 }
-        warnings:
-          type: array
-          items: { type: string }
-      required: [importId, created, linked, updated, unchanged, skipped, warnings]
     Activity:
       type: object
       properties:
@@ -2021,7 +4794,6 @@ components:
           type: string
         spondId:
           type: string
-          maxLength: 255
           nullable: true
         squadId:
           type: string
@@ -2062,7 +4834,6 @@ components:
         selectionSentAt:
           type: string
           format: date-time
-          description: Time planning was finalized internally; implies no communication.
         attendance:
           type: array
           items:
@@ -2071,13 +4842,8 @@ components:
     CreateActivityRequest:
       type: object
       properties:
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         kind:
-          type: string
-          enum: [match, tournament]
+          $ref: '#/components/schemas/ActivityKind'
         name:
           type: string
         startsAt:
@@ -2104,22 +4870,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Team'
-          description: Match requires exactly one team; tournament requires at least one team.
+          description: Match requires exactly one team; tournament requires at least one.
         invitations:
           type: array
           items:
             $ref: '#/components/schemas/ActivityInvitation'
-      required: [kind, name, startsAt]
+      required: [kind, name, startsAt, minPlayersPerTeam, maxPlayersPerTeam, teams]
     UpdateActivityRequest:
       type: object
       properties:
-        spondId:
-          type: string
-          maxLength: 255
-          nullable: true
         kind:
-          type: string
-          enum: [match, tournament]
+          $ref: '#/components/schemas/ActivityKind'
         name:
           type: string
         startsAt:
@@ -2176,23 +4937,28 @@ components:
           default: 2
         startTime:
           type: string
-          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
+          pattern: '^\d{2}:\d{2}$'
           example: "14:30"
         location:
           type: string
-          description: Optional location for the team (overrides activity location)
+          description: Optional location for the team (overrides event location)
+        meetingTime:
+          type: string
+          pattern: '^\d{2}:\d{2}$'
+          example: "13:45"
+          description: Time when the team meets before the match
+        meetingLocation:
+          type: string
+          description: Location where the team meets before the match
         selectedPlayers:
           type: array
           items:
             type: string
-        selectionRemovals:
-          type: array
-          description: Audit trail of players removed after the selection was sent.
-          items:
-            $ref: '#/components/schemas/SelectionRemoval'
         responsiblePersonId:
           type: string
-          nullable: true
+        status:
+          type: string
+          enum: [new, selected]
         shirtSetId:
           type: string
           nullable: true
@@ -2205,8 +4971,8 @@ components:
           type: string
           nullable: true
           description: >-
-            References a Formation in the same squad. Only settable while the
-            Activity has a non-null matchFormatId. Fixed for the whole
+            References a Formation in the same group. Only settable while the
+            Team's Event has a non-null playingModeId. Fixed for the whole
             match.
         lineup:
           type: array
@@ -2219,18 +4985,6 @@ components:
         - name
         - strength
         - selectedPlayers
-    SelectionRemoval:
-      type: object
-      properties:
-        playerId:
-          type: string
-        reason:
-          type: string
-          enum: [sick, injured, noShow, other]
-        removedAt:
-          type: string
-          format: date-time
-      required: [playerId, reason, removedAt]
     Shirt:
       type: object
       properties:
@@ -2300,6 +5054,8 @@ components:
         - color
         - shirts
 tags:
+  - name: Spond Integration
+    description: Request-scoped access to Spond for manual synchronization
   - name: Authentication
     description: User registration and authentication endpoints
   - name: Health

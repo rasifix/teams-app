@@ -270,6 +270,6 @@ current squad.
 - Player detail page also shows historical event participation and future events
   without invitation, but those are read-only enrichments and not part of
   player CRUD itself.
-- Current detail-delete flow attempts navigation to /players after success,
+- Current detail-delete flow navigates to `/members/players` after success.
 - Current detail-delete flow should remove active invitations and block players
    with past team assignment history.

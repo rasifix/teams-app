@@ -153,7 +153,7 @@ Current API endpoints used by implementation:
 - `DELETE /api/squads/{squadId}/shirtsets/{id}`
 
 Shirt add/edit/remove operations are implemented as shirt set updates by sending
-the full `shirts` array through `PUT /shirtsets/{id}`.
+the full `shirts` array through `PUT /api/squads/{squadId}/shirtsets/{id}`.
 
 ## Acceptance Criteria
 

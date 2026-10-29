@@ -2,7 +2,7 @@
 
 ## Goal
 
-Allow a visitor to create a My Team account and verify ownership of the
+Allow a visitor to create a Squadra account and verify ownership of the
 provided email address before signing in.
 
 ## Scope
@@ -17,7 +17,7 @@ Unauthenticated visitor
 
 ## Supporting Actors
 
-- My Team frontend (home page, registration form, verification page)
+- Squadra frontend (home page, registration form, verification page)
 - Authentication API
 - Email delivery service
 

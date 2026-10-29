@@ -39,9 +39,10 @@ export default function Header() {
           {/* Logo/Title */}
           <Link to="/" className="app-brand">
             <span className="app-brand-mark">
-              <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8.5 12 5l7 3.5v7L12 19l-7-3.5v-7Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="m8.5 10.25 3.5 1.8 3.5-1.8M12 12v4" />
+              <svg className="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="12" cy="7" r="3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 19v-1.25c0-2.9 2.46-5.25 5.5-5.25s5.5 2.35 5.5 5.25V19a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.6 8.2a2.45 2.45 0 1 0 .15 4.8M17.4 8.2a2.45 2.45 0 1 1-.15 4.8M4.5 19v-.8c0-1.4.8-2.6 2-3.2M19.5 19v-.8c0-1.4-.8-2.6-2-3.2" />
               </svg>
             </span>
             <div>

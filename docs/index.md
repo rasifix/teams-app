@@ -3,7 +3,7 @@ layout: default
 title: Documentation
 ---
 
-# My Team documentation
+# Squadra documentation
 
 Choose a language to get started. / Wähle eine Sprache, um zu beginnen.
 

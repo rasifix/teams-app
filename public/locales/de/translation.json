@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Mein Team",
+    "name": "Squadra",
     "tagline": "Teamorganisation",
     "documentTitle": {
       "matchWithOpponent": "{{name}} {{opponent}}",

@@ -5,7 +5,7 @@ title: Add a player
 
 # Add a player
 
-You need a squad in My Team before adding players. For Spond-managed rosters, connect Spond and sync members instead of adding them manually.
+You need a squad in Squadra before adding players. For Spond-managed rosters, connect Spond and sync members instead of adding them manually.
 
 1. Open **Members → Players** and select **Add**.
 2. Enter the player's **First name**, **Last name**, and **Birth Date**. Set **Level** and **Status**. **Preferred Shirt Number** is optional.

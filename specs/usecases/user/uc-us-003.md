@@ -2,7 +2,7 @@
 
 ## Goal
 
-Authenticate a verified user and establish a session for protected My Team
+Authenticate a verified user and establish a session for protected Squadra
 features.
 
 ## Scope
@@ -17,7 +17,7 @@ Registered user with a verified email address
 
 ## Supporting Actors
 
-- My Team frontend (home page, sign-in form, protected routes)
+- Squadra frontend (home page, sign-in form, protected routes)
 - Authentication API
 - Authentication context and API client
 

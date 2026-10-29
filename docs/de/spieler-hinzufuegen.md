@@ -5,7 +5,7 @@ title: Spieler hinzufügen
 
 # Spieler hinzufügen
 
-Du brauchst zuerst eine Mannschaft in Mein Team. Wenn du Mitglieder in Spond verwaltest, verbinde Spond und synchronisiere die Mitglieder, anstatt sie manuell hinzuzufügen.
+Du brauchst zuerst eine Mannschaft in Squadra. Wenn du Mitglieder in Spond verwaltest, verbinde Spond und synchronisiere die Mitglieder, anstatt sie manuell hinzuzufügen.
 
 1. Öffne **Mitglieder → Spieler** und wähle **Hinzufügen**.
 2. Gib **Vorname**, **Nachname** und **Geburtsdatum** ein. Lege **Level** und **Status** fest. Die **bevorzugte Trikotnummer** ist optional.

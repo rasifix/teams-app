@@ -1,4 +1,4 @@
-# Copilot Instructions for My Teams
+# Copilot Instructions for Squadras
 
 ## Project Overview
 This is a React + Vite + TypeScript application for managing fair soccer team selection. The app ensures equitable player participation across events by tracking attendance history.

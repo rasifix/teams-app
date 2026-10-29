@@ -17,7 +17,7 @@ User who needs to reset their password
 
 ## Supporting Actors
 
-- My Team frontend (login and reset-password pages)
+- Squadra frontend (login and reset-password pages)
 - Authentication API
 - Email delivery service
 

@@ -13,6 +13,11 @@ export interface AuthResponse {
   token: string;
 }
 
+export interface RegistrationResponse {
+  user: User;
+  message: string;
+}
+
 export interface LoginCredentials {
   email: string;
   password: string;
@@ -32,7 +37,7 @@ class AuthService {
     this.baseUrl = API_CONFIG.baseUrl;
   }
 
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
+  async register(credentials: RegisterCredentials): Promise<RegistrationResponse> {
     const response = await fetch(`${this.baseUrl}/auth/register`, {
       method: 'POST',
       headers: {
@@ -45,12 +50,19 @@ class AuthService {
       if (response.status === 409) {
         throw new Error('Email already registered. Please use a different email or try logging in.');
       }
-      const error = await response.json().catch(() => ({ message: 'Registration failed' }));
-      throw new Error(error.message || 'Registration failed');
+      const error = await response.json().catch(() => ({ error: 'Registration failed' }));
+      throw new Error(error.error || error.message || 'Registration failed');
     }
 
-    const data: AuthResponse = await response.json();
-    localStorage.setItem('token', data.token);
+    return await response.json();
+  }
+
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/auth/verify-email?token=${encodeURIComponent(token)}`);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Email verification failed');
+    }
     return data;
   }
 
@@ -70,8 +82,8 @@ class AuthService {
       if (response.status === 404) {
         throw new Error('Account not found. Please check your email or register.');
       }
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      throw new Error(error.message || 'Login failed');
+      const error = await response.json().catch(() => ({ error: 'Login failed' }));
+      throw new Error(error.error || error.message || 'Login failed');
     }
 
     const data: AuthResponse = await response.json();

@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -40,10 +41,12 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         await login(email, password);
+        navigate(from, { replace: true });
       } else {
         await register(email, password, firstName, lastName);
+        setIsLogin(true);
+        setNotice(t('auth.registrationVerificationNotice'));
       }
-      navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.errors.authenticationFailed'));
     } finally {
@@ -78,6 +81,7 @@ export default function LoginPage() {
         {wasLoggedOut && (
           <Alert tone="info">{t('auth.loggedOutMessage')}</Alert>
         )}
+        {notice && <Alert tone="success">{notice}</Alert>}
 
         <form onSubmit={handleSubmit}>
           <Stack gap="lg">

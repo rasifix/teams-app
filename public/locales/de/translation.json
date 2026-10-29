@@ -1074,6 +1074,11 @@
     "password": "Passwort",
     "forgotPassword": "Passwort vergessen?",
     "loggedOutMessage": "Du wurdest abgemeldet. Bitte melde dich erneut an.",
+    "registrationVerificationNotice": "Dein Konto wurde erstellt. Prüfe deine E-Mails auf den Bestätigungslink und melde dich anschließend an.",
+    "verifyEmailTitle": "E-Mail-Adresse bestätigen",
+    "verificationInProgress": "Deine E-Mail-Adresse wird bestätigt…",
+    "verificationSuccess": "Deine E-Mail-Adresse wurde bestätigt. Du kannst dich jetzt anmelden.",
+    "verificationError": "Dieser Bestätigungslink ist ungültig, abgelaufen oder wurde bereits verwendet. Bitte wende dich an den Support.",
     "errors": {
       "authenticationFailed": "Authentifizierung fehlgeschlagen"
     }

@@ -12,6 +12,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import HomePage from './pages/HomePage';
 import MembersPage from './pages/MembersPage';
 import MembersPlayersPage from './pages/MembersPlayersPage';
@@ -69,6 +70,7 @@ function AppRoutes() {
                     {/* Public routes */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/verify-email" element={<VerifyEmailPage />} />
                     <Route path="/" element={<HomePage />} />
                     {UiKitPage && <Route path="/ui-kit" element={<Suspense fallback={null}><UiKitPage /></Suspense>} />}
                     

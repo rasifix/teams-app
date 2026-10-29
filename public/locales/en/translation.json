@@ -1074,6 +1074,11 @@
     "password": "Password",
     "forgotPassword": "Forgot your password?",
     "loggedOutMessage": "You have been logged out. Please sign in again.",
+    "registrationVerificationNotice": "Your account was created. Check your email for a verification link, then sign in.",
+    "verifyEmailTitle": "Verify your email",
+    "verificationInProgress": "Verifying your email address…",
+    "verificationSuccess": "Your email address is verified. You can now sign in.",
+    "verificationError": "This verification link is invalid, expired, or already used. Please contact support.",
     "errors": {
       "authenticationFailed": "Authentication failed"
     }

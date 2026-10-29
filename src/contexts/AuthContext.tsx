@@ -37,8 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
-    const response = await authService.register({ email, password, firstName, lastName });
-    setUser(response.user);
+    await authService.register({ email, password, firstName, lastName });
   };
 
   const logout = () => {

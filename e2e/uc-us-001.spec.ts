@@ -50,7 +50,7 @@ for (const locale of ['en', 'de'] as const) {
     await expect(page.getByText(locale === 'en' ? /email.*verified/i : /E-Mail-Adresse.*bestätigt/i)).toBeVisible();
     await captureGuideScreenshot(page, locale, 'registration-verified');
     expect(new URL(verificationRequest).searchParams.get('token')).toBe('token+with space');
-    await expect(page.getByRole('link', { name: locale === 'en' ? 'Sign in' : 'Anmelden' })).toBeVisible();
+    await expect(page.locator('main.auth-shell').getByRole('link', { name: locale === 'en' ? 'Sign in' : 'Anmelden', exact: true })).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
   });
 }

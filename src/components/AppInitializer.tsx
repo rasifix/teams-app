@@ -103,7 +103,7 @@ export default function AppInitializer({ children }: AppInitializerProps) {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !isInitialized) {
     return (
       <div className="auth-shell">
         <LoadingState

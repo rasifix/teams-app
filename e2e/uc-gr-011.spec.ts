@@ -59,11 +59,16 @@ for (const locale of ['en', 'de'] as const) {
     await expect(page.getByText('Harbor FC U12')).toBeVisible();
     await captureGuideScreenshot(page, locale, 'spond-group');
     await page.getByRole('radio').check();
+    const linkResponse = page.waitForResponse((response) => (
+      response.url().endsWith('/api/squads/squad-1')
+      && response.request().method() === 'PUT'
+    ));
     await page.getByRole('button', { name: locale === 'en' ? 'Continue' : 'Weiter' }).click();
+    await linkResponse;
 
-    await expect(page.getByText(locale === 'en' ? /linked/i : /verknüpft/i)).toBeVisible();
-    await captureGuideScreenshot(page, locale, 'spond-linked');
     expect(updatedSquad).toMatchObject({ spondId: 'spond-group-1' });
+    await expect(page.getByRole('heading', { name: locale === 'en' ? 'Group linked' : 'Gruppe verknüpft', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: locale === 'en' ? 'Done' : 'Fertig' })).toBeVisible();
+    await captureGuideScreenshot(page, locale, 'spond-linked');
   });
 }

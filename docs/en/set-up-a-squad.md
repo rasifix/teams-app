@@ -32,42 +32,9 @@ Create a squad, then add its first players and trainers. If Spond holds your ros
 
 If you keep your roster in Spond, follow the separate **Connect a Spond group** guide before entering members. Once linked, Spond supplies member identity data; manual member creation and deletion are hidden. Synchronization is a separate, reviewed action. The Spond guide explains which other data comes from Spond and which planning details stay in My Team.
 
-If you manage members in My Team, continue below.
+If you manage members in My Team, use these guides to add them:
 
-## Add a player
-
-1. Open **Members → Players** and select **Add**.
-2. Enter the player's **First name**, **Last name**, and **Birth Date**. Set **Level** and **Status**. **Preferred Shirt Number** is optional.
-3. Select **Add Player** and check that the player appears in the Players list.
-
-![Players tab with the Add action](../assets/en/setup-players.png)
-
-*Open Members → Players and select Add.*
-
-![Add New Player form filled with fictional details](../assets/en/setup-add-player.png)
-
-*Enter the player's details.*
-
-![Players list showing the newly added player](../assets/en/setup-player-added.png)
-
-*Check that the player appears in the list.*
-
-## Add a trainer
-
-1. Open **Members → Trainers** and select **Add**.
-2. Enter the trainer's **First name** and **Last name**. **Email** is optional.
-3. Select **Add Trainer** and check that the trainer appears in the Trainers list.
-
-![Trainers tab with the Add action](../assets/en/setup-trainers.png)
-
-*Open Members → Trainers and select Add.*
-
-![Add New Trainer form filled with fictional details](../assets/en/setup-add-trainer.png)
-
-*Enter the trainer's details.*
-
-![Trainers list showing the newly added trainer](../assets/en/setup-trainer-added.png)
-
-*Check that the trainer appears in the list.*
+- [Add a player]({{ '/en/add-a-player.html' | relative_url }})
+- [Add a trainer]({{ '/en/add-a-trainer.html' | relative_url }})
 
 Your squad is ready for its first activity. Open **Activities** to plan a match or tournament.

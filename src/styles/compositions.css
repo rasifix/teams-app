@@ -317,9 +317,10 @@
   .lineup-shirt-row { min-height: 18mm; break-inside: avoid; padding: 2.5mm 3mm !important; }
   .team-print-header { display: none !important; }
   .modal-overlay:has(.team-print-content),
-  .team-print-modal { position: static !important; display: block !important; max-width: none !important; max-height: none !important; overflow: visible !important; border: 0 !important; background: var(--color-print-paper) !important; box-shadow: none !important; }
-  .team-print-content { position: static !important; display: block !important; width: 100%; margin: 0 !important; overflow: visible !important; background: var(--color-print-paper) !important; padding: 0 !important; }
-  .team-print-grid { display: block !important; }
-  .team-print-card { break-inside: avoid-page; page-break-inside: avoid; margin-bottom: var(--space-4); background: var(--color-print-paper) !important; }
+  .team-print-modal { position: static !important; display: contents !important; width: auto !important; max-width: none !important; max-height: none !important; min-height: 0 !important; overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+  .team-print-content { position: static !important; display: block !important; width: 100% !important; margin: 0 !important; overflow: visible !important; background: var(--color-print-paper) !important; padding: 0 !important; }
+  .team-print-grid { display: block !important; margin: 0 !important; padding: 0 !important; }
+  .team-print-card { display: block !important; break-inside: avoid-page; page-break-inside: avoid; break-after: page; page-break-after: always; margin: 0 !important; background: var(--color-print-paper) !important; }
+  .team-print-card:last-child { break-after: auto; page-break-after: auto; }
   body { background: var(--color-print-paper) !important; }
 }

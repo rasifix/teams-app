@@ -318,8 +318,8 @@
   .team-print-header { display: none !important; }
   .modal-overlay:has(.team-print-content),
   .team-print-modal { position: static !important; display: block !important; max-width: none !important; max-height: none !important; overflow: visible !important; border: 0 !important; background: var(--color-print-paper) !important; box-shadow: none !important; }
-  .team-print-content { position: absolute !important; top: 0; left: 0; width: 100%; margin: 0 !important; overflow: visible !important; background: var(--color-print-paper) !important; padding: 0 !important; }
-  .team-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: var(--space-4) !important; }
-  .team-print-card { break-inside: avoid; background: var(--color-print-paper) !important; }
+  .team-print-content { position: static !important; display: block !important; width: 100%; margin: 0 !important; overflow: visible !important; background: var(--color-print-paper) !important; padding: 0 !important; }
+  .team-print-grid { display: block !important; }
+  .team-print-card { break-inside: avoid-page; page-break-inside: avoid; margin-bottom: var(--space-4); background: var(--color-print-paper) !important; }
   body { background: var(--color-print-paper) !important; }
 }

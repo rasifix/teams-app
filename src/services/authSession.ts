@@ -30,6 +30,9 @@ export function clearSessionAndRedirectToLogin(): void {
   localStorage.removeItem('token');
 
   if (window.location.pathname !== '/login') {
-    window.location.assign(LOGGED_OUT_LOGIN_PATH);
+    const currentLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const loginUrl = new URL(LOGGED_OUT_LOGIN_PATH, window.location.origin);
+    loginUrl.searchParams.set('returnTo', currentLocation);
+    window.location.assign(`${loginUrl.pathname}${loginUrl.search}`);
   }
 }

@@ -25,7 +25,12 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const locationState = location.state as LoginLocationState | null;
-  const from = locationState?.from?.pathname || '/';
+  const returnTo = searchParams.get('returnTo');
+  const from = locationState?.from
+    ? `${locationState.from.pathname}${locationState.from.search}${locationState.from.hash}`
+    : returnTo?.startsWith('/') && !returnTo.startsWith('//')
+      ? returnTo
+      : '/';
   const wasLoggedOut = searchParams.get('reason') === LOGGED_OUT_REASON
     || locationState?.reason === LOGGED_OUT_REASON;
 

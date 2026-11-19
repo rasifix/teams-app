@@ -52,10 +52,10 @@ it('clears the token and redirects to login', () => {
   const removeItem = vi.fn();
   const assign = vi.fn();
   vi.stubGlobal('localStorage', { removeItem });
-  vi.stubGlobal('window', { location: { pathname: '/activities', assign } });
+  vi.stubGlobal('window', { location: { pathname: '/activities', search: '?filter=upcoming', hash: '#week', origin: 'http://localhost', assign } });
 
   clearSessionAndRedirectToLogin();
 
   expect(removeItem).toHaveBeenCalledWith('token');
-  expect(assign).toHaveBeenCalledWith(LOGGED_OUT_LOGIN_PATH);
+  expect(assign).toHaveBeenCalledWith(`${LOGGED_OUT_LOGIN_PATH}&returnTo=%2Factivities%3Ffilter%3Dupcoming%23week`);
 });

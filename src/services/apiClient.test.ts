@@ -35,7 +35,7 @@ describe('Spond proxy errors', () => {
       getItem: vi.fn(() => validToken),
       removeItem,
     });
-    vi.stubGlobal('window', { location: { pathname: '/activities', assign } });
+    vi.stubGlobal('window', { location: { pathname: '/activities', search: '', hash: '', origin: 'http://localhost', assign } });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, {
       status: 401,
       statusText: 'Unauthorized',
@@ -45,6 +45,6 @@ describe('Spond proxy errors', () => {
       .rejects.toThrow('API Error: 401 - Unauthorized');
 
     expect(removeItem).toHaveBeenCalledWith('token');
-    expect(assign).toHaveBeenCalledWith('/login?reason=logged-out');
+    expect(assign).toHaveBeenCalledWith('/login?reason=logged-out&returnTo=%2Factivities');
   });
 });

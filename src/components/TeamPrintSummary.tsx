@@ -138,8 +138,8 @@ export default function TeamPrintSummary({
                                       </p>
                                     )}
                                   </div>
-                                  {shirtNumber && shirtNumber > 0 && (
-                                    <span className="team-print-shirt-number">{shirtNumber}</span>
+                                  {shirtNumber !== undefined && (
+                                    <span className="team-print-shirt-number">#{shirtNumber}</span>
                                   )}
                                 </div>
                               )}

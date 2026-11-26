@@ -40,7 +40,7 @@ export function SpondCredentialsStep({
           type="password"
           value={password}
           onChange={(event) => onPasswordChange(event.target.value)}
-          autoComplete="off"
+          autoComplete="new-password"
         />
       </Field>
       <Cluster align="end" className="spond-next-action">
